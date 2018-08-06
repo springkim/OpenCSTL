@@ -1,21 +1,67 @@
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
 #pragma once
+#if !defined(_OPENCSTL_TREE_H)
+#define _OPENCSTL_TREE_H
 #include"types.h"
 #include"error.h"
 #include"defines.h"
+
 #define P	-4
 #define R -1
 #define L -2
-#define RED (void*)1
-#define BLACK (void*)0
+#define RED ((void*)1)
+#define BLACK ((void*)0)
+#ifdef _MSC_VER
 #define _(N,V)	((void*)OPENCSTL_NIDX(&N,V))
+#else
+#define _(N,V)	OPENCSTL_NIDX(&N,V)
+#endif
 #define COLOR(N)	_(N,-5)
 
+
+char nil_buffer[sizeof(void*) * 5] = { 0 };
+void* nil = nil_buffer + sizeof(void*) * 5;
 void* __cstl_tree_node(size_t type_size,size_t node_type) {
 	//[color][parent][node type][left][right] ¢Ù [data]
 	size_t node_sz = type_size + sizeof(void*) * 5;
 	void* ptr = (char*)calloc(node_sz,1) + sizeof(void*) * 5;
 	OPENCSTL_NIDX(&ptr, -3) = node_type;
-	COLOR(ptr) = (void*)BLACK;
+	COLOR(ptr) = BLACK;
 	return ptr;
 }
 #define cstl_set(KEY,...)	__cstl_set(sizeof(KEY),ARGN(__VA_ARGS__),__VA_ARGS__)
@@ -29,7 +75,6 @@ void* __cstl_set(size_t key_size,int argc, ...) {
 	size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
 	void* ptr = (char*)malloc(header_sz + sizeof(size_t)) + header_sz;
 	void** container = &ptr;
-	void* nil = __cstl_tree_node(sizeof(size_t),OPENCSTL_SET);
 	OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_SET;
 	OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
 	OPENCSTL_NIDX(container, NIDX_TSIZE) = key_size;
@@ -51,7 +96,6 @@ void* __cstl_map(size_t key_size, size_t value_size,int argc, ...) {
 	size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
 	void* ptr = (char*)malloc(header_sz + sizeof(size_t)) + header_sz;
 	void** container = &ptr;
-	void* nil = __cstl_tree_node(sizeof(size_t), OPENCSTL_MAP);
 	OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_MAP;
 	OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
 	OPENCSTL_NIDX(container, NIDX_TSIZE) = key_size;
@@ -65,7 +109,6 @@ void* __cstl_map(size_t key_size, size_t value_size,int argc, ...) {
 
 void __cstl_tree_left_rotate(void** container, void* x) {
 	void*** root = (void***)*container;
-	void* nil = (void*)OPENCSTL_NIDX(container, -2);
 	void* y = _(x,R);
 	_(x, R) = _(y, L);
 	if (_(y,L) != nil) {
@@ -84,7 +127,6 @@ void __cstl_tree_left_rotate(void** container, void* x) {
 }
 void __cstl_tree_right_rotate(void** container, void* x) {
 	void*** root = (void***)*container;
-	void* nil = (void*)OPENCSTL_NIDX(container, -2);
 	void* y = _(x, L);
 	_(x, L) = _(y, R);
 	if (_(y, R) != nil) {
@@ -147,7 +189,6 @@ void __cstl_tree_insert(void** container, void* key,void* value) {
 	size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	size_t value_size = OPENCSTL_NIDX(container, -4);
 	size_t type_size = key_size + value_size;
-	void* nil = (void*)OPENCSTL_NIDX(container, -2);
 	cstl_compare compare = (cstl_compare)OPENCSTL_NIDX(container, -1);
 
 	void*** root = (void***)*container;
@@ -179,7 +220,6 @@ void __cstl_tree_insert(void** container, void* key,void* value) {
 
 void __cstl_tree_transplant(void** container, void* u, void* v) {
 	void*** root = (void***)*container;
-	void* nil = (void*)OPENCSTL_NIDX(container, -2);
 	if (_(u, P) == nil) {
 		*root = v;
 	} else if (u == _(_(u, P), L)) {
@@ -189,9 +229,15 @@ void __cstl_tree_transplant(void** container, void* u, void* v) {
 	}
 	_(v, P) = _(u, P);
 }
-void* __cstl_tree_toleft(void* n,void* nil) {
-	while (_(n, L)!=nil) {
+void* __cstl_tree_toleft(void* n) {
+	while (_(n, L)!=nil) {	
 		n = _(n, L);
+	}
+	return n;
+}
+void* __cstl_tree_toright(void* n) {
+	while (_(n, R) != nil) {
+		n = _(n, R);
 	}
 	return n;
 }
@@ -234,7 +280,6 @@ void __cstl_tree_erase(void** container, void** iter) {
 	size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	size_t value_size = OPENCSTL_NIDX(container, -4);
 	size_t type_size = key_size + value_size;
-	void* nil = (void*)OPENCSTL_NIDX(container, -2);
 	cstl_compare compare = (cstl_compare)OPENCSTL_NIDX(container, -1);
 	void*** root = (void***)*container;
 	void* z = iter;
@@ -249,7 +294,7 @@ void __cstl_tree_erase(void** container, void** iter) {
 		x = _(z, L);
 		__cstl_tree_transplant(container, z, _(z, L));
 	} else {
-		y = __cstl_tree_toleft(_(z, R),nil);
+		y = __cstl_tree_toleft(_(z, R));
 		y_original_color = (size_t)COLOR(y);
 		x = _(y, R);
 		if (_(y, P) == z) {
@@ -276,7 +321,6 @@ void* __cstl_tree_find(void** container, void* key) {
 	size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	size_t value_size = OPENCSTL_NIDX(container, -4);
 	size_t type_size = key_size + value_size;
-	void* nil = (void*)OPENCSTL_NIDX(container, -2);
 	cstl_compare compare = (cstl_compare)OPENCSTL_NIDX(container, -1);
 	void*** root = (void***)*container;
 	while (*root != nil) {
@@ -293,14 +337,34 @@ void* __cstl_tree_find(void** container, void* key) {
 }
 
 void* __cstl_tree_begin(void** container) {
-	void* nil = (void*)OPENCSTL_NIDX(container, -2);
 	void*** root = (void***)*container;
-	return __cstl_tree_toleft(nil, root);
+	return **root ? __cstl_tree_toleft(*root) : nil;
 }
-void* __cstl_tree_end(void** container) {
-	void* nil = (void*)OPENCSTL_NIDX(container, -2);
+void* __cstl_tree_rbegin(void** container) {
+	void*** root = (void***)*container;
+	return **root ? __cstl_tree_toright(*root) : nil;
+}
+void* __cstl_tree_end_rend(void** container) {
 	return nil;
 }
+void* __cstl_tree_next_prev(void* it,int r,int l,void*(todeep)(void*)) {
+	//next = r(-1) , l(-2)
+	//prev = r(-2), l(-1)
+	if (_(it, r) != nil) {
+		it = todeep(_(it,r));
+	} else if (_(it, P)!=nil) {
+		if (_(_(it, P), l) == it) {
+			it = _(it, P);
+		} else {
+			while (_(it, P)!=nil && _(_(it, P), r) == it) {
+				it = _(it, P);
+			}
+			it = _(it, P);
+		}
+	}
+	return it;
+}
+
 #undef P
 #undef L
 #undef R
@@ -309,17 +373,4 @@ void* __cstl_tree_end(void** container) {
 #undef BLACK
 
 
-//NODE* to_next(NODE* it) {
-//	if (it->right)
-//		it = to_left(it->right);
-//	else if (it->parent) {
-//		if (it->parent->left == it)
-//			it = it->parent;
-//		else {
-//			while (it->parent&&it->parent->right == it)
-//				it = it->parent;
-//			it = it->parent;
-//		}
-//	}
-//	return it;
-//}
+#endif

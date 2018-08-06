@@ -60,53 +60,56 @@ void cstl_list_test02() {
 	puts("");
 }
 
-
-
-
-void* nil = NULL;
-void PrintTree(int* root) {
-	if (root != nil) {
-		PrintTree(OPENCSTL_NIDX(&root, -2));
-		printf("%d\n", *root);
-		PrintTree(OPENCSTL_NIDX(&root, -1));
-	}
-}
 int IntCmp(const void* a, const void* b) {
 	return *(int*)a < *(int*)b ? -1 : *(int*)a > *(int*)b;
 }
 void cstl_set_test() {
 	int** tree = cstl_set(int, IntCmp);
-	nil = tree[-2];
 	
 	for (int i = 0; i < 1000; i++) {
 		cstl_insert(tree,rand()%1000);
 	}
-	PrintTree(tree[0]);
-	puts("======");
+	
+	for (int* it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
+		printf("[%d]", *it);
+	}
+	puts("");;
 	for (int i = 0; i < 1000; i++) {
 		int* it = cstl_find(tree, i);
 		cstl_erase(tree, it);
 	}
-	PrintTree(tree[0]);
-	puts("======");
+
+	for (int* it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
+		printf("[%d]", *it);
+	}
+	puts("");
 }
 void cstl_map_test() {
 	int** tree = cstl_map(int, double,IntCmp);
-	nil = tree[-2];
 
 	for (int i = 0; i < 10; i++) {
 		double d = (double)i;
 		cstl_insert(tree, i,d*d);
 	}
-	PrintTree(tree[0]);
-	puts("======");
+	for (int* it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
+		printf("[%d]", *it);
+	}
+	puts("");
+
+	for (int* it = cstl_rbegin(tree); it != cstl_rend(tree); it = cstl_prev(it)) {
+		printf("[%d]", *it);
+	}
+	puts("");
+
 	for (int i = 0; i < 10; i++) {
 		int* it = cstl_find(tree, i);
 		printf("%f\n", cstl_value(it,double));
 		cstl_erase(tree, it);
 	}
-	PrintTree(tree[0]);
-	puts("======");
+	for (int* it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
+		printf("[%d]", *it);
+	}
+	puts("");
 }
 void cstl_deque_test() {
 	int* deque = cstl_deque(int);
@@ -123,9 +126,9 @@ void cstl_deque_test() {
 	
 }
 int main() {
-	//cstl_vector_test();
-	//cstl_list_test02();
-	//cstl_set_test();
-	//cstl_map_test();
+	cstl_vector_test();
+	cstl_list_test02();
+	cstl_set_test();
+	cstl_map_test();
 	cstl_deque_test();
 }
