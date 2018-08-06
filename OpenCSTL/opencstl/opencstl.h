@@ -7,8 +7,8 @@
 #include"deque.h"
 #include"tree.h"
 
-int is_deque(void** container) {
-	if (OPENCSTL_NIDX(((void**)container), -1) > INT_MAX) //음수 여부 판단
+intmax_t is_deque(void** container) {
+	if (OPENCSTL_NIDX(container, -1) > INT_MAX) //음수 여부 판단
 		return 1;
 	return 0;
 }
@@ -18,12 +18,9 @@ void _cstl_push_back(void* container, ...) {
 	va_list vl;
 	va_start(vl, container);
 	void* value = vl;
-	size_t container_type;
-	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+	size_t container_type= OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+	if (container_type!=OPENCSTL_LIST && is_deque((void**)container)) {
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	switch (container_type) {
 		case OPENCSTL_VECTOR: {
@@ -45,7 +42,7 @@ void _cstl_push_front(void* container, ...) {
 	void* value = vl;
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
@@ -64,7 +61,7 @@ void _cstl_push_front(void* container, ...) {
 void _cstl_pop_back(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
@@ -85,7 +82,7 @@ void _cstl_pop_back(void* container) {
 void _cstl_pop_front(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
@@ -103,7 +100,7 @@ void _cstl_pop_front(void* container) {
 size_t _cstl_size(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
@@ -163,7 +160,7 @@ void _cstl_insert(void* container,int argc, ...) {
 	void* param3 = (char*)param2 + sizeof(void*);
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
@@ -199,7 +196,7 @@ void _cstl_erase(void* container, int argc, ...) {
 	void* param2 = (char*)param1 + sizeof(void*);
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
@@ -220,7 +217,7 @@ void _cstl_erase(void* container, int argc, ...) {
 		}break;
 		case OPENCSTL_DEQUE: {
 			if (argc == 1) {
-				param2 = (*(char**)param1) + OPENCSTL_NIDX((void**)container, NIDX_TSIZE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+				param2 = (*(char**)param1) + OPENCSTL_NIDX((void**)container, NIDX_TSIZE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 				__cstl_deque_erase((void**)container, param1, &param2);
 			} else __cstl_deque_erase((void**)container, param1, param2);
 		}break;
@@ -238,7 +235,7 @@ void _cstl_resize(void* container, int argc, ...) {
 	void* param2 = (char*)param1 + sizeof(void*);
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
@@ -264,7 +261,7 @@ void _cstl_resize(void* container, int argc, ...) {
 void* _cstl_begin(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
@@ -291,7 +288,7 @@ void* _cstl_begin(void* container) {
 void* _cstl_rbegin(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
@@ -318,7 +315,7 @@ void* _cstl_rbegin(void* container) {
 void* _cstl_end(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
@@ -345,7 +342,7 @@ void* _cstl_end(void* container) {
 void* _cstl_rend(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
@@ -372,7 +369,7 @@ void* _cstl_rend(void* container) {
 void _cstl_clear(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
@@ -394,7 +391,7 @@ void* _cstl_find(void* container,int argc, ...) {
 	void* param2 = (char*)param1 + sizeof(void*);
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (int)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 	}
 	else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);

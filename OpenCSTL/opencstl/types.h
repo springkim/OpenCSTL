@@ -41,7 +41,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<stdarg.h>
-
+#include<stdint.h>
 typedef int(*cstl_compare)(const void*, const void*);
 
 #endif

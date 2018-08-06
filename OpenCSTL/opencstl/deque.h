@@ -54,11 +54,9 @@ void* __cstl_deque(size_t type_size) {
 	return (void*)((char*)ptr + type_size);
 }
 void __cstl_deque_push_back(void** container, void* value) {
-#if defined(WIN32)
-	int distance = OPENCSTL_NIDX(container, -1) + 1;
-#elif defined(WIN64)
-	_int64 distance = OPENCSTL_NIDX(container, -1) + 1;
-#endif
+
+	intmax_t distance = OPENCSTL_NIDX(container, -1) + 1;
+
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE + distance);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE + distance);
 	size_t length = OPENCSTL_NIDX(container, -2 + distance);
@@ -78,11 +76,8 @@ void __cstl_deque_push_back(void** container, void* value) {
 	OPENCSTL_NIDX(container, -2 + OPENCSTL_NIDX(container, -1) + 1)++;
 }
 void __cstl_deque_push_front(void** container, void* value) {
-#if defined(WIN32)
-	int distance = OPENCSTL_NIDX(container, -1) + 1;
-#elif defined(WIN64)
-	_int64 distance = OPENCSTL_NIDX(container, -1) + 1;
-#endif
+	intmax_t distance = OPENCSTL_NIDX(container, -1) + 1;
+
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE + distance);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE + distance);
 	size_t length = OPENCSTL_NIDX(container, -2 + distance);
@@ -121,11 +116,8 @@ void __cstl_deque_pop_front(void** container) {
 }
 
 void __cstl_deque_insert(void** container, void* it, size_t n, void* value) {
-#if defined(WIN32)
-	int distance = OPENCSTL_NIDX(container, -1) + 1;
-#elif defined(WIN64)
-	_int64 distance = OPENCSTL_NIDX(container, -1) + 1;
-#endif
+	intmax_t distance = OPENCSTL_NIDX(container, -1) + 1;
+
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE + distance);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE + distance);
 	size_t length = OPENCSTL_NIDX(container, -2 + distance);
@@ -138,7 +130,7 @@ void __cstl_deque_insert(void** container, void* it, size_t n, void* value) {
 		OPENCSTL_NIDX(container, -3 + distance) += 2;
 	}
 	memmove((char*)*container + (pos + n)* type_size, (char*)*container + pos*type_size, (length - pos)*type_size);
-	for (int i = 0; i < n; i++) {
+	for (size_t i = 0; i < n; i++) {
 		memcpy((char*)*container + (pos + i)*type_size, value, type_size);
 	}
 	OPENCSTL_NIDX(container, -2 + OPENCSTL_NIDX(container, -1) + 1) += n;
@@ -158,11 +150,7 @@ size_t __cstl_deque_size(void** container) {
 }
 
 void __cstl_deque_resize(void** container, size_t n, void* value) {
-#if defined(WIN32)
-	int distance = OPENCSTL_NIDX(container, -1) + 1;
-#elif defined(WIN64)
-	_int64 distance = OPENCSTL_NIDX(container, -1) + 1;
-#endif
+	intmax_t distance = OPENCSTL_NIDX(container, -1) + 1;
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE + distance);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE + distance);
 	size_t length = OPENCSTL_NIDX(container, -2 + distance);
@@ -184,7 +172,7 @@ void __cstl_deque_resize(void** container, size_t n, void* value) {
 			memset((char*)*container + length*type_size, 0, (n - length)*type_size);
 		}
 		else {
-			for (int i = length; i < n; i++) {
+			for (size_t i = length; i < n; i++) {
 				memcpy((char*)*container + i*type_size, value, type_size);
 			}
 		}
@@ -210,11 +198,7 @@ void* __cstl_deque_rend(void** container) {
 }
 
 void* __cstl_deque_find(void** container, void* iter_begin, void* value) {
-#if defined(WIN32)
-	int distance = OPENCSTL_NIDX(container, -1) + 1;
-#elif defined(WIN64)
-	_int64 distance = OPENCSTL_NIDX(container, -1) + 1;
-#endif
+	intmax_t distance = OPENCSTL_NIDX(container, -1) + 1;
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE + distance);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE + distance);
 	size_t length = OPENCSTL_NIDX(container, -2 + distance);

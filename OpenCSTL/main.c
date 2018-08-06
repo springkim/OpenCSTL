@@ -123,7 +123,7 @@ void cstl_deque_test() {
 	for (it = cstl_begin(deque); it != cstl_end(deque); it++) {
 		printf("%d ", *it);
 	}
-	
+	puts("");
 }
 int main() {
 	cstl_vector_test();
