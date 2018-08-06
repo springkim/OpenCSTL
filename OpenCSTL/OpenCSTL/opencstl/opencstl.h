@@ -34,7 +34,7 @@ void _cstl_push_front(void* container, ...) {
 		default:cstl_error("Invalid operator"); break;
 	}
 }
-#define cstl_pop_back(container,...)	_cstl_pop_back(&(container),__VA_ARGS__)
+#define cstl_pop_back(container)	_cstl_pop_back(&(container))
 void _cstl_pop_back(void* container) {
 	size_t container_type = OPENCSTL_NIDX((void**)container, NIDX_CTYPE);
 	switch (container_type) {
@@ -46,7 +46,7 @@ void _cstl_pop_back(void* container) {
 		}
 	}
 }
-#define cstl_pop_front(container,...)	_cstl_pop_front(&(container),__VA_ARGS__)
+#define cstl_pop_front(container)	_cstl_pop_front(&(container))
 void _cstl_pop_front(void* container) {
 	size_t container_type = OPENCSTL_NIDX((void**)container, NIDX_CTYPE);
 	switch (container_type) {
@@ -76,6 +76,11 @@ void* _cstl_next(void* it) {
 		case OPENCSTL_LIST:{
 			return __cstl_list_next_prev(it,-1);
 		}break;
+		case OPENCSTL_SET:
+		case OPENCSTL_MAP: {
+			return __cstl_tree_next_prev(it,-1,-2,__cstl_tree_toleft);
+		}break;
+		default:cstl_error("Invalid operation"); break;
 	}
 	return NULL;
 }
@@ -86,6 +91,11 @@ void* _cstl_prev(void* it) {
 		case OPENCSTL_LIST: {
 			return __cstl_list_next_prev(it,-2);
 		}break;
+		case OPENCSTL_SET:
+		case OPENCSTL_MAP: {
+			return __cstl_tree_next_prev(it, -2, -1, __cstl_tree_toright);
+		}break;
+		default:cstl_error("Invalid operation"); break;
 	}
 	return NULL;
 }
@@ -173,7 +183,12 @@ void* _cstl_begin(void* container) {
 		}break;
 		case OPENCSTL_LIST: {
 			return __cstl_list_begin((void**)container);
-		}
+		}break;
+		case OPENCSTL_SET:
+		case OPENCSTL_MAP: {
+			return __cstl_tree_begin((void**)container);
+		}break;
+		default:cstl_error("Invalid operation"); break;
 	}
 	return NULL;
 }
@@ -186,7 +201,12 @@ void* _cstl_rbegin(void* container) {
 		}break;
 		case OPENCSTL_LIST: {
 			return __cstl_list_rbegin((void**)container);
-		}
+		}break;
+		case OPENCSTL_SET:
+		case OPENCSTL_MAP: {
+			return __cstl_tree_rbegin((void**)container);
+		}break;
+		default:cstl_error("Invalid operation"); break;
 	}
 	return NULL;
 }
@@ -199,7 +219,12 @@ void* _cstl_end(void* container) {
 		}break;
 		case OPENCSTL_LIST: {
 			return __cstl_list_end_rend((void**)container);
-		}
+		}break;
+		case OPENCSTL_SET:
+		case OPENCSTL_MAP: {
+			return __cstl_tree_end_rend((void**)container);
+		}break;
+		default:cstl_error("Invalid operation"); break;
 	}
 	return NULL;
 }
@@ -212,7 +237,12 @@ void* _cstl_rend(void* container) {
 		}break;
 		case OPENCSTL_LIST: {
 			return __cstl_list_end_rend((void**)container);
-		}
+		}break;
+		case OPENCSTL_SET:
+		case OPENCSTL_MAP: {
+			return __cstl_tree_end_rend((void**)container);
+		}break;
+		default:cstl_error("Invalid operation"); break;
 	}
 	return NULL;
 }
@@ -225,7 +255,7 @@ void _cstl_clear(void* container) {
 		}break;
 		case OPENCSTL_LIST: {
 			__cstl_list_clear((void**)container);
-		}
+		}break;
 	}
 }
 #define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
@@ -247,7 +277,7 @@ void* _cstl_find(void* container,int argc, ...) {
 		case OPENCSTL_MAP:
 		case OPENCSTL_SET: {
 			return __cstl_tree_find((void**)container, param1);
-		}
+		}break;
 		default:cstl_error("Invalid operator"); break;
 	}
 	return NULL;
