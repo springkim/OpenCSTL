@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<time.h>
 #include"opencstl/opencstl.h"
 void cstl_vector_test() {
