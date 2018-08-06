@@ -59,6 +59,7 @@
 #define OPENCSTL_MAP			1
 #define OPENCSTL_VECTOR		2
 #define OPENCSTL_LIST		3
+#define OPENCSTL_DEQUE		4
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
 #include<Windows.h>
 #endif
