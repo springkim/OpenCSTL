@@ -145,6 +145,7 @@
     <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="opencstl\deque.h" />
     <ClInclude Include="opencstl\opencstl.h" />
     <ClInclude Include="opencstl\vector.h" />
     <ClInclude Include="opencstl\defines.h" />

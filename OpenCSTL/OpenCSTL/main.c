@@ -108,11 +108,24 @@ void cstl_map_test() {
 	PrintTree(tree[0]);
 	puts("======");
 }
+void cstl_deque_test() {
+	int* deque = cstl_deque(int);
+	for (int i = 0; i < 10; i++) {
+
+		cstl_push_back(deque, i);
+	}
+	int* it = cstl_find(deque, 5);
+	cstl_erase(deque, it, it + 2);
+	cstl_resize(deque, 10);
+	for (it = cstl_begin(deque); it != cstl_end(deque); it++) {
+		printf("%d ", *it);
+	}
+	
+}
 int main() {
 	//cstl_vector_test();
-	
 	//cstl_list_test02();
 	//cstl_set_test();
-	cstl_map_test();
-
+	//cstl_map_test();
+	cstl_deque_test();
 }

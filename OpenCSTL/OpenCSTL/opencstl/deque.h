@@ -1,8 +1,47 @@
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018, Woo Cheol, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
 #pragma once
+#if !defined(_OPENCSTL_DEQUE_H)
+#define _OPENCSTL_DEQUE_H
 #include"types.h"
 #include"defines.h"
 #include"error.h"
-void* cstl_deque(size_t type_size) {
+
+#define cstl_deque(TYPE)	__cstl_deque(sizeof(TYPE))
+void* __cstl_deque(size_t type_size) {
 	size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
 	void* ptr = (char*)malloc(header_sz + type_size * 2) + header_sz; // 2 = capacity
 	void** container = &ptr;
@@ -91,7 +130,7 @@ void __cstl_deque_insert(void** container, void* it, size_t n, void* value) {
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE + distance);
 	size_t length = OPENCSTL_NIDX(container, -2 + distance);
 	size_t capacity = OPENCSTL_NIDX(container, -3 + distance);
-	size_t pos = ((char*)it - *container) / type_size;
+	size_t pos = (*(char**)it - *(char**)container) / type_size;
 	if (length + n > capacity + distance) {
 		capacity += n;
 		void* b = realloc((char*)*container - header_sz + distance*type_size, header_sz + (capacity - distance)* type_size);
@@ -108,9 +147,9 @@ void __cstl_deque_insert(void** container, void* it, size_t n, void* value) {
 void __cstl_deque_erase(void** container, void* begin, void* end) {
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE + OPENCSTL_NIDX(container, -1) + 1);
 	size_t length = OPENCSTL_NIDX(container, -2 + OPENCSTL_NIDX(container, -1) + 1);
-	size_t pos = ((char*)end - begin) / type_size;
+	size_t pos = (*(char**)end - *(char**)begin) / type_size;
 
-	memmove((char*)begin, (char*)end, (char*)*container + length*type_size - (char*)end);
+	memmove(*(char**)begin, *(char**)end, (char*)*container + (length+1)*type_size - *(char**)end);
 	OPENCSTL_NIDX(container, -2 + OPENCSTL_NIDX(container, -1) + 1) -= pos;
 }
 
@@ -169,3 +208,23 @@ void* __cstl_deque_rend(void** container) {
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE + OPENCSTL_NIDX(container, -1) + 1);
 	return (char*)*container - type_size;
 }
+
+void* __cstl_deque_find(void** container, void* iter_begin, void* value) {
+#if defined(WIN32)
+	int distance = OPENCSTL_NIDX(container, -1) + 1;
+#elif defined(WIN64)
+	_int64 distance = OPENCSTL_NIDX(container, -1) + 1;
+#endif
+	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE + distance);
+	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE + distance);
+	size_t length = OPENCSTL_NIDX(container, -2 + distance);
+	size_t capacity = OPENCSTL_NIDX(container, -3 + distance);
+	size_t pos = (*(char**)iter_begin - *(char**)container) / type_size;
+	for (size_t i = pos; i < length; i++) {
+		if (memcmp((char*)*container + type_size*(i), value, type_size) == 0) {
+			return (char*)*container + type_size*(i);
+		}
+	}
+	return NULL;
+}
+#endif

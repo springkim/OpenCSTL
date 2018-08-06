@@ -1,9 +1,11 @@
 ﻿  main.c
-c:\users\spring\documents\git\springkim\opencstl\opencstl\opencstl\main.c(10): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-c:\users\spring\documents\git\springkim\opencstl\opencstl\opencstl\main.c(25): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-c:\users\spring\documents\git\springkim\opencstl\opencstl\opencstl\main.c(67): warning C4047: '함수': 'int *'의 간접 참조 수준이 'std::size_t'과(와) 다릅니다.
-c:\users\spring\documents\git\springkim\opencstl\opencstl\opencstl\main.c(67): warning C4024: 'PrintTree': 형식 및 실제 매개 변수 1의 형식이 서로 다릅니다.
-c:\users\spring\documents\git\springkim\opencstl\opencstl\opencstl\main.c(69): warning C4047: '함수': 'int *'의 간접 참조 수준이 'std::size_t'과(와) 다릅니다.
-c:\users\spring\documents\git\springkim\opencstl\opencstl\opencstl\main.c(69): warning C4024: 'PrintTree': 형식 및 실제 매개 변수 1의 형식이 서로 다릅니다.
-  OpenCSTL.vcxproj -> C:\Users\spring\Documents\git\springkim\OpenCSTL\OpenCSTL\Debug\OpenCSTL.exe
-  OpenCSTL.vcxproj -> C:\Users\spring\Documents\git\springkim\OpenCSTL\OpenCSTL\Debug\OpenCSTL.pdb (Full PDB)
+c:\users\cwc00\documents\github\opencstl\opencstl\opencstl\opencstl\deque.h(141): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+c:\users\cwc00\documents\github\opencstl\opencstl\opencstl\opencstl\deque.h(187): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+c:\users\cwc00\documents\github\opencstl\opencstl\opencstl\main.c(12): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+c:\users\cwc00\documents\github\opencstl\opencstl\opencstl\main.c(27): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+c:\users\cwc00\documents\github\opencstl\opencstl\opencstl\main.c(69): warning C4047: '함수': 'int *'의 간접 참조 수준이 'std::size_t'과(와) 다릅니다.
+c:\users\cwc00\documents\github\opencstl\opencstl\opencstl\main.c(69): warning C4024: 'PrintTree': 형식 및 실제 매개 변수 1의 형식이 서로 다릅니다.
+c:\users\cwc00\documents\github\opencstl\opencstl\opencstl\main.c(71): warning C4047: '함수': 'int *'의 간접 참조 수준이 'std::size_t'과(와) 다릅니다.
+c:\users\cwc00\documents\github\opencstl\opencstl\opencstl\main.c(71): warning C4024: 'PrintTree': 형식 및 실제 매개 변수 1의 형식이 서로 다릅니다.
+  OpenCSTL.vcxproj -> C:\Users\cwc00\Documents\GitHub\OpenCSTL\OpenCSTL\Debug\OpenCSTL.exe
+  OpenCSTL.vcxproj -> C:\Users\cwc00\Documents\GitHub\OpenCSTL\OpenCSTL\Debug\OpenCSTL.pdb (Full PDB)

@@ -44,5 +44,8 @@
     <ClInclude Include="opencstl\tree.h">
       <Filter>opencstl</Filter>
     </ClInclude>
+    <ClInclude Include="opencstl\deque.h">
+      <Filter>opencstl</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
