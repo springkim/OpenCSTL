@@ -312,7 +312,6 @@ void __cstl_tree_erase(void** container, void** iter) {
 	if (y_original_color == (size_t)BLACK) {
 		__cstl_tree_erase_fixup(container, x);
 	}
-	printf("deleted[%d]\n", *(int*)iter);
 	free(&OPENCSTL_NIDX(&iter, -5));
 }
 
@@ -339,11 +338,11 @@ void* __cstl_tree_find(void** container, void* key) {
 
 void* __cstl_tree_begin(void** container) {
 	void*** root = (void***)*container;
-	return **root ? __cstl_tree_toleft(*root) : nil;
+	return *root!=nil ? __cstl_tree_toleft(*root) : nil;
 }
 void* __cstl_tree_rbegin(void** container) {
 	void*** root = (void***)*container;
-	return **root ? __cstl_tree_toright(*root) : nil;
+	return *root != nil ? __cstl_tree_toright(*root) : nil;
 }
 void* __cstl_tree_end_rend(void** container) {
 	return nil;
@@ -353,11 +352,11 @@ void* __cstl_tree_next_prev(void* it,int r,int l,void*(todeep)(void*)) {
 	//prev = r(-2), l(-1)
 	if (_(it, r) != nil) {
 		it = todeep(_(it,r));
-	} else if (_(it, P)!=nil) {
+	} else {
 		if (_(_(it, P), l) == it) {
 			it = _(it, P);
 		} else {
-			while (_(it, P)!=nil && _(_(it, P), r) == it) {
+			while (_(_(it, P), r) == it) {
 				it = _(it, P);
 			}
 			it = _(it, P);

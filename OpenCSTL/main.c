@@ -64,23 +64,22 @@ int IntCmp(const void* a, const void* b) {
 	return *(int*)a < *(int*)b ? -1 : *(int*)a > *(int*)b;
 }
 void cstl_set_test() {
-	int** tree = cstl_set(int, IntCmp);
+	intmax_t** tree = cstl_set(intmax_t, IntCmp);
 	
-	for (int i = 0; i < 10; i++) {
-		cstl_insert(tree,rand()%10);
+	for (intmax_t i = 0; i < 1000; i++) {
+		cstl_insert(tree,i);
 	}
 	
-	for (int* it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
-		printf("[%d]", *it);
+	for (intmax_t* it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
+		printf("[%jd]", *it);
 	}
 	puts("");;
-	for (int i = 0; i < 10; i++) {
-		int* it = cstl_find(tree, i);
+	for (intmax_t i = 0; i < 1000; i++) {
+		intmax_t* it = cstl_find(tree, i);
 		cstl_erase(tree, it);
 	}
-
-	for (int* it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
-		printf("[%d]", *it);
+	for (intmax_t* it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
+		printf("[%jd]", *it);
 	}
 	puts("");
 }
@@ -126,9 +125,9 @@ void cstl_deque_test() {
 	puts("");
 }
 int main() {
-	//cstl_vector_test();
-	//cstl_list_test02();
+	cstl_vector_test();
+	cstl_list_test02();
 	cstl_set_test();
-	//cstl_map_test();
+	cstl_map_test();
 	//cstl_deque_test();
 }
