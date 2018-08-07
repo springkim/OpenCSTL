@@ -130,10 +130,12 @@ void* __cstl_vector_rend(void** container) {
 	return (void*)((char*)*container - (type_size));
 }
 void __cstl_vector_resize(void** container, size_t n, void* value) {
+
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	size_t length = OPENCSTL_NIDX(container, -1);
 	size_t capacity = OPENCSTL_NIDX(container, -2);
+
 	if (capacity < n) {
 		void* b = realloc((char*)*container - header_sz, header_sz + n * type_size);
 		if (b == NULL) {

@@ -7,9 +7,12 @@
 void cstl_vector_test() {
 	Decorate("opencstl{vector} test begin");
 	int* arr = cstl_vector(int);
+	
 	for (int i = 0; i < 10; i++) {
+
 		cstl_push_back(arr, i);
 	}
+
 	///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
 	cstl_pop_back(arr);
 	///[0] [1] [2] [3] [4] [5] [6] [7] [8]
@@ -18,8 +21,10 @@ void cstl_vector_test() {
 	cstl_insert(arr, arr + 5, 5,999);
 	///[777] [0] [1] [2] [3] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
 	cstl_erase(arr, arr + 3, arr+5);
+
 	///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
 	cstl_resize(arr, 15, -1);
+
 	///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8] [-1] [-1]
 	for (int* it = cstl_begin(arr); it != cstl_end(arr); it++) {
 		printf("[%3d] ", *it);
@@ -59,7 +64,7 @@ int IntCmp(const void* a, const void* b) {
 	return *(int*)a < *(int*)b ? -1 : *(int*)a > *(int*)b;
 }
 void cstl_set_test() {
-	Decorate("opencstl{list} set begin");
+	Decorate("opencstl{set} test begin");
 	int** tree = cstl_set(int, IntCmp);
 	for (int i = 0; i < 100; i++) {
 		cstl_insert(tree,i);
@@ -75,10 +80,10 @@ void cstl_set_test() {
 	}
 	puts("");
 	cstl_free(tree);
-	Decorate("opencstl{list} set end");
+	Decorate("opencstl{set} test end");
 }
 void cstl_map_test() {
-	Decorate("opencstl{list} map begin");
+	Decorate("opencstl{map} test begin");
 	int** tree = cstl_map(int, double,IntCmp);
 	for (int i = 0; i < 10; i++) {
 		double d = (double)i;
@@ -94,7 +99,7 @@ void cstl_map_test() {
 		printf("[%3d]{%.3f} ", *it,cstl_value(it,double));
 	}
 	puts("");
-	Decorate("opencstl{list} map end");
+	Decorate("opencstl{map} test end");
 }
 void cstl_deque_test() {
 	int* deque = cstl_deque(int);

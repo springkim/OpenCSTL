@@ -57,7 +57,7 @@
 char nil_buffer[sizeof(void*) * 5] = { 0 };
 void* nil = NULL;
 void* __cstl_tree_node(size_t type_size,size_t node_type) {
-	//[color][parent][node type][left][right] ¢Ù [data]
+	//[color][parent][node type][left][right] -> [data]
 	size_t node_sz = type_size + sizeof(void*) * 5;
 	void* ptr = (char*)calloc(node_sz,1) + sizeof(void*) * 5;
 	OPENCSTL_NIDX(&ptr, -3) = node_type;
@@ -72,7 +72,7 @@ void* __cstl_set(size_t key_size,int argc, ...) {
 	}
 	va_list vl;
 	va_start(vl, argc);
-	void* compare = *(void**)vl;
+	void* compare = va_arg(vl,void*);
 	if (argc == 0) {
 		compare = NULL;		//use default compare function(memcmp)
 	}
@@ -97,7 +97,7 @@ void* __cstl_map(size_t key_size, size_t value_size,int argc, ...) {
 	}
 	va_list vl;
 	va_start(vl, argc);
-	void* compare = *(void**)vl;
+	void* compare = va_arg(vl,void*);
 	if (argc == 0) {
 		compare = NULL;		//use default compare function(memcmp)
 	}
@@ -198,7 +198,6 @@ void __cstl_tree_insert(void** container, void* key,void* value) {
 	size_t value_size = OPENCSTL_NIDX(container, -4);
 	size_t type_size = key_size + value_size;
 	cstl_compare compare = (cstl_compare)OPENCSTL_NIDX(container, -2);
-
 	void*** root = (void***)*container;
 	void* n = __cstl_tree_node(type_size,container_type);
 	memcpy(n, key, key_size);
