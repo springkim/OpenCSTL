@@ -55,7 +55,7 @@
 
 
 char nil_buffer[sizeof(void*) * 5] = { 0 };
-void* nil = nil_buffer + sizeof(void*) * 5;
+void* nil = NULL;
 void* __cstl_tree_node(size_t type_size,size_t node_type) {
 	//[color][parent][node type][left][right] ¢Ù [data]
 	size_t node_sz = type_size + sizeof(void*) * 5;
@@ -66,6 +66,10 @@ void* __cstl_tree_node(size_t type_size,size_t node_type) {
 }
 #define cstl_set(KEY,...)	__cstl_set(sizeof(KEY),ARGN(__VA_ARGS__),__VA_ARGS__)
 void* __cstl_set(size_t key_size,int argc, ...) {
+	if (nil == NULL) {
+		nil = nil_buffer + sizeof(void*) * 5;
+		_(nil, -1) = _(nil, -2)= _(nil, -4)=nil;
+	}
 	va_list vl;
 	va_start(vl, argc);
 	void* compare = *(void**)vl;
@@ -87,6 +91,10 @@ void* __cstl_set(size_t key_size,int argc, ...) {
 }
 #define cstl_map(KEY,VALUE,...)	__cstl_map(sizeof(KEY),sizeof(VALUE),ARGN(__VA_ARGS__),__VA_ARGS__)
 void* __cstl_map(size_t key_size, size_t value_size,int argc, ...) {
+	if (nil == NULL) {
+		nil = nil_buffer + sizeof(void*) * 5;
+		_(nil, -1) = _(nil, -2)= _(nil, -4)=nil;
+	}
 	va_list vl;
 	va_start(vl, argc);
 	void* compare = *(void**)vl;
@@ -247,11 +255,17 @@ void __cstl_tree_erase_fixup(void** container, void* x) {
 		intmax_t expression = (x == _(_(x, P), L));
 		intmax_t left = expression ? L : R;
 		intmax_t right = expression ? R : L;
+		void(*func[2])(void**, void*) = { __cstl_tree_left_rotate,__cstl_tree_right_rotate };
+		if (!expression) {
+			void(*tmp)(void**, void*) = func[0];
+			func[0] = func[1];
+			func[1] = tmp;
+		}
 		void* w = _(_(x, P), right);
 		if (COLOR(w) == RED) {
 			COLOR(w) = BLACK;
 			COLOR(_(x, P)) = RED;
-			__cstl_tree_left_rotate(container, _(x, P));
+			func[0](container, _(x, P));
 			w= _(_(x, P), right);
 		}
 		if (COLOR(_(w, left)) == BLACK && COLOR(_(w, right)) == BLACK) {
@@ -261,13 +275,13 @@ void __cstl_tree_erase_fixup(void** container, void* x) {
 			if (COLOR(_(w, right)) == BLACK) {
 				COLOR(_(w, left)) = BLACK;
 				COLOR(w) = RED;
-				__cstl_tree_right_rotate(container, w);
+				func[1](container, w);
 				w = _(_(x, P), right);
 			}
 			COLOR(w) = COLOR(_(x, P));
 			COLOR(_(x, P)) = BLACK;
 			COLOR(_(w, right)) = BLACK;
-			__cstl_tree_left_rotate(container, _(x, P));
+			func[0](container, _(x, P));
 			x = *root;
 		}
 	}
@@ -346,6 +360,35 @@ void* __cstl_tree_rbegin(void** container) {
 }
 void* __cstl_tree_end_rend(void** container) {
 	return nil;
+}
+void __cstl_tree_clear(void** container) {
+	size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
+	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+	size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+	size_t value_size = OPENCSTL_NIDX(container, -4);
+	size_t type_size = key_size + value_size;
+	cstl_compare compare = (cstl_compare)OPENCSTL_NIDX(container, -2);
+	void*** root = (void***)*container;
+	
+	void* c = *root;
+	while (c != nil) {
+		if (_(c, R) != nil) {
+			void* m = __cstl_tree_toleft(c);
+			_(m, L) = _(c, R);
+			_(_(c, R), P) = _(m, L);
+		}
+		void* t = c;
+		c = _(c, L);
+		free(&OPENCSTL_NIDX(&t, -5));
+	}
+	*root = nil;
+	
+}
+void __cstl_tree_free(void** container) {
+	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+	__cstl_tree_clear(container);
+	free((char*)(*container) - header_sz);
+	*container = NULL;
 }
 void* __cstl_tree_next_prev(void* it,int r,int l,void*(todeep)(void*)) {
 	//next = r(-1) , l(-2)

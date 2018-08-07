@@ -178,8 +178,6 @@ void* __cstl_list_rbegin(void** container) {
 	return (void*)OPENCSTL_NIDX(container, -2);
 }
 void __cstl_list_clear(void** container) {
-	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	void** tail = (void**)&OPENCSTL_NIDX(container, -2);
 	void** head = (void**)&OPENCSTL_NIDX(container, 0);
 
@@ -190,6 +188,12 @@ void __cstl_list_clear(void** container) {
 		it = tmp;
 	}
 	*head = *tail = NULL;
+}
+void __cstl_list_free(void** container) {
+	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+	__cstl_list_clear(container);
+	free((char*)(*container) - header_sz);
+	*container = NULL;
 }
 void* __cstl_list_find(void** container, void** iter_begin,void* value) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);

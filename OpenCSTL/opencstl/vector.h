@@ -166,4 +166,12 @@ void* __cstl_vector_find(void** container, void* iter_begin, void* value) {
 	}
 	return NULL;
 }
+void __cstl_vector_clear(void** container) {
+	OPENCSTL_NIDX(container, -1) = 0;
+}
+void __cstl_vector_free(void** container) {
+	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+	free((char*)(*container) - header_sz);
+	*container = NULL;
+}
 #endif

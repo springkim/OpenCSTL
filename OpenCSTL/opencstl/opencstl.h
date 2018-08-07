@@ -378,11 +378,38 @@ void _cstl_clear(void* container) {
 	}
 	switch (container_type) {
 		case OPENCSTL_VECTOR: {
-
+			__cstl_vector_clear((void**)container);
 		}break;
 		case OPENCSTL_LIST: {
 			__cstl_list_clear((void**)container);
 		}break;
+		case OPENCSTL_SET:
+		case OPENCSTL_MAP: {
+			__cstl_tree_clear((void**)container);
+		}break;
+		default:cstl_error("Invalid operation"); break;
+	}
+}
+#define cstl_free(container)	_cstl_free(&(container))
+void _cstl_free(void* container) {
+	size_t container_type;
+	if (is_deque((void**)container)) {
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
+	} else {
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+	}
+	switch (container_type) {
+		case OPENCSTL_VECTOR: {
+			__cstl_vector_free((void**)container);
+		}break;
+		case OPENCSTL_LIST: {
+			__cstl_list_free((void**)container);
+		}break;
+		case OPENCSTL_SET:
+		case OPENCSTL_MAP: {
+			__cstl_tree_free((void**)container);
+		}break;
+		default:cstl_error("Invalid operation"); break;
 	}
 }
 #define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
