@@ -66,15 +66,15 @@ int IntCmp(const void* a, const void* b) {
 void cstl_set_test() {
 	int** tree = cstl_set(int, IntCmp);
 	
-	for (int i = 0; i < 1000; i++) {
-		cstl_insert(tree,rand()%1000);
+	for (int i = 0; i < 10; i++) {
+		cstl_insert(tree,rand()%10);
 	}
 	
 	for (int* it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
 		printf("[%d]", *it);
 	}
 	puts("");;
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < 10; i++) {
 		int* it = cstl_find(tree, i);
 		cstl_erase(tree, it);
 	}
@@ -126,9 +126,9 @@ void cstl_deque_test() {
 	puts("");
 }
 int main() {
-	cstl_vector_test();
-	cstl_list_test02();
+	//cstl_vector_test();
+	//cstl_list_test02();
 	cstl_set_test();
-	cstl_map_test();
-	cstl_deque_test();
+	//cstl_map_test();
+	//cstl_deque_test();
 }

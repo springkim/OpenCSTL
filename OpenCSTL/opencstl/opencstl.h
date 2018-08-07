@@ -18,9 +18,11 @@ void _cstl_push_back(void* container, ...) {
 	va_list vl;
 	va_start(vl, container);
 	void* value = vl;
-	size_t container_type= OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
-	if (container_type!=OPENCSTL_LIST && is_deque((void**)container)) {
+	size_t container_type;
+	if (is_deque((void**)container)) {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
+	} else {
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
 		case OPENCSTL_VECTOR: {
