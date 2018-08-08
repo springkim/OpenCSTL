@@ -117,6 +117,9 @@ void cstl_deque_test() {
 		printf("%d ", deque[i]);
 	}
 	puts("");
+	
+	printf("front : %d\n", deque[0]);
+	printf("front : %d\n", cstl_front(deque));
 	cstl_free(deque);
 	Decorate("opencstl{deque} test end");
 }
