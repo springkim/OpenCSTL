@@ -169,10 +169,14 @@ size_t _cstl_size(void* container) {
 		case OPENCSTL_LIST: {
 			sz = __cstl_list_size((void**)container);
 		}break;
-			break;
+		case OPENCSTL_SET:
+		case OPENCSTL_MAP: {
+			sz = __cstl_tree_size((void**)container);
+		}break;
 		case OPENCSTL_DEQUE: {
 			sz = __cstl_deque_size((void**)container);
 		}break;
+		default:cstl_error("Invalid operation"); break;
 	}
 	return sz;
 }
@@ -454,7 +458,30 @@ void _cstl_clear(void* container) {
 		default:cstl_error("Invalid operation"); break;
 	}
 }
-
+bool _cstl_empty(void* container) {
+	size_t container_type;
+	if (is_deque((void**)container)) {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+	}
+	size_t sz = 0;
+	switch (container_type) {
+		case OPENCSTL_VECTOR: {
+			sz = __cstl_vector_size((void**)container);
+		}break;
+		case OPENCSTL_LIST: {
+			sz = __cstl_list_size((void**)container);
+		}break;
+		case OPENCSTL_STACK:
+		case OPENCSTL_QUEUE:
+		case OPENCSTL_DEQUE: {
+			sz = __cstl_deque_size((void**)container);
+		}break;
+	}
+	return sz ? true : false;
+}
 void _cstl_free(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {

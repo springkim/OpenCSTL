@@ -44,7 +44,8 @@
 #include<stdint.h>
 #include<limits.h>
 #include<stddef.h>
+#include<stdbool.h>
 typedef int(*cstl_compare)(const void*, const void*);
-typedef void* cstl;
+typedef size_t cstl_ptr;
 
 #endif

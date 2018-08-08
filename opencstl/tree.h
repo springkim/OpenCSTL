@@ -40,7 +40,7 @@
 #include"types.h"
 #include"error.h"
 #include"defines.h"
-
+#include"queue.h"
 #define P	-4
 #define R -1
 #define L -2
@@ -428,7 +428,22 @@ void* __cstl_tree_next_prev(void* it,int r,int l,void*(todeep)(void*)) {
 	}
 	return it;
 }
-
+size_t ___cstl_tree_size(void* n) {
+	if (n == nil)return 0;
+	return ___cstl_tree_size(_(n, L)) + ___cstl_tree_size(_(n, R)) + 1;
+}
+size_t __cstl_tree_size(void** container) {
+	size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
+	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+	size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+	size_t value_size = OPENCSTL_NIDX(container, -4);
+	size_t type_size = key_size + value_size;
+	cstl_compare compare = (cstl_compare)OPENCSTL_NIDX(container, -2);
+	void*** root = (void***)*container;
+	void* c = *root;
+	
+	return ___cstl_tree_size(c);
+}
 #undef P
 #undef L
 #undef R

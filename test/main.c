@@ -71,26 +71,27 @@ int IntCmp(const void *a, const void *b) {
 }
 void cstl_set_test() {
     Decorate("opencstl{set} test begin");
-    cstl tree = cstl_set(float, IntCmp);
+    float** tree = cstl_set(float, IntCmp);
     for (float i = 0; i < 100; i++) {
         cstl_insert(tree, i);
     }
     /// [0] [1] ... [98] [99]
-    // for (float i = 50; i < 70; i++) {
-    //	int* it = cstl_find(tree, i);
-    //	cstl_erase(tree, it);
-    // }
+     for (float i = 50; i < 70; i++) {
+    	int* it = cstl_find(tree, i);
+    	cstl_erase(tree, it);
+     }
     /// [0] [1] ... [48] [49] [70] [71] ... [98] [99]
     for (float *it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
         printf("[%f]", *it);
     }
     puts("");
+	printf("size : %d\n", cstl_size(tree));
     cstl_free(tree);
     Decorate("opencstl{set} test end");
 }
 void cstl_map_test() {
     Decorate("opencstl{map} test begin");
-    cstl tree = cstl_map(int, float, IntCmp);
+    int** tree = cstl_map(int, float, IntCmp);
     for (int i = 0; i < 10; i++) {
         float d = (float) i;
         cstl_insert(tree, i, d * d);
@@ -105,6 +106,7 @@ void cstl_map_test() {
         printf("[%3d]{%.3f} ", *it, cstl_value(it, float));
     }
     puts("");
+	printf("size : %d\n", cstl_size(tree));
     cstl_free(tree);
     Decorate("opencstl{map} test end");
 }
@@ -150,7 +152,7 @@ void cstl_queue_test() {
         cstl_push(queue, i);
     }
     for (int i = 0; i < 100; i++) {
-        printf("[%3d]", cstl_top(queue));
+        printf("[%3d]", cstl_front(queue));
         cstl_pop(queue);
     }
     puts("");
