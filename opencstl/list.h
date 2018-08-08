@@ -41,7 +41,7 @@
 #include"error.h"
 #define cstl_list(TYPE)		__cstl_list(sizeof(TYPE),#TYPE)
 #define NTAIL(N)	(N==-1?-2:N)
-void* __cstl_list(size_t type_size,char* type) {
+OPENCSTL_FUNC void* __cstl_list(size_t type_size,char* type) {
 	size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
 	void* ptr = (char*)malloc(header_sz + sizeof(size_t)) + header_sz;
 	void** container = &ptr;
@@ -54,7 +54,7 @@ void* __cstl_list(size_t type_size,char* type) {
 	OPENCSTL_NIDX(container, 0) = 0;	//head
 	return ptr;
 }
-void* __cstl_list_node(size_t type_size) {
+OPENCSTL_FUNC void* __cstl_list_node(size_t type_size) {
 	//[node type][prev][next] ¢Ù [data]
 	size_t header_sz = sizeof(void*) * 3;
 	size_t node_sz = type_size + header_sz;
@@ -63,7 +63,7 @@ void* __cstl_list_node(size_t type_size) {
 	OPENCSTL_NIDX(node, -3) = OPENCSTL_LIST;
 	return ptr;
 }
-void __cstl_list_push_back_front(void** container, void* value, int ntail, int nhead) {
+OPENCSTL_FUNC void __cstl_list_push_back_front(void** container, void* value, int ntail, int nhead) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	void** tail = (void**)&OPENCSTL_NIDX(container, NTAIL(ntail));	    //-1 , 0
@@ -84,7 +84,7 @@ void __cstl_list_push_back_front(void** container, void* value, int ntail, int n
 		*tail = n;
 	}
 }
-void __cstl_list_pop_back_front(void** container, int ntail, int nhead) {
+OPENCSTL_FUNC void __cstl_list_pop_back_front(void** container, int ntail, int nhead) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	void** tail = (void**)&OPENCSTL_NIDX(container, NTAIL(ntail));	//-1 , 0
@@ -102,11 +102,11 @@ void __cstl_list_pop_back_front(void** container, int ntail, int nhead) {
 		OPENCSTL_NIDX(tail, -(ntail + 2)) = 0;
 	}
 }
-void* __cstl_list_next_prev(void* it, int n) {
+OPENCSTL_FUNC void* __cstl_list_next_prev(void* it, int n) {
 	//next(-1), prev(-2)
 	return (void*)OPENCSTL_NIDX(&it, n);
 }
-size_t __cstl_list_size(void** container) {
+OPENCSTL_FUNC size_t __cstl_list_size(void** container) {
 	size_t sz = 0;
 	for (void** it = (void**)OPENCSTL_NIDX(container, 0); it != NULL; it=(void**)__cstl_list_next_prev(it,-1)) {
 		sz++;
@@ -114,7 +114,7 @@ size_t __cstl_list_size(void** container) {
 	return sz;
 }
 
-void __cstl_list_insert(void** container, void** iter, size_t N, void* value) {
+OPENCSTL_FUNC void __cstl_list_insert(void** container, void** iter, size_t N, void* value) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	void** tail = (void**)&OPENCSTL_NIDX(container, -2);
@@ -152,7 +152,7 @@ void __cstl_list_insert(void** container, void** iter, size_t N, void* value) {
 		*tail = ntail;
 	}
 }
-void __cstl_list_erase(void** container, void** iter_begin, void** iter_end) {
+OPENCSTL_FUNC void __cstl_list_erase(void** container, void** iter_begin, void** iter_end) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	void** tail = (void**)&OPENCSTL_NIDX(container, -2);
@@ -181,16 +181,16 @@ void __cstl_list_erase(void** container, void** iter_begin, void** iter_end) {
 		*tail = 0;
 	}
 }
-void* __cstl_list_begin(void** container) {
+OPENCSTL_FUNC void* __cstl_list_begin(void** container) {
 	return (void*)OPENCSTL_NIDX(container, 0);
 }
-void* __cstl_list_end_rend(void** container) {
+OPENCSTL_FUNC void* __cstl_list_end_rend(void** container) {
 	return NULL;
 }
-void* __cstl_list_rbegin(void** container) {
+OPENCSTL_FUNC void* __cstl_list_rbegin(void** container) {
 	return (void*)OPENCSTL_NIDX(container, -2);
 }
-void __cstl_list_clear(void** container) {
+OPENCSTL_FUNC void __cstl_list_clear(void** container) {
 	void** tail = (void**)&OPENCSTL_NIDX(container, -2);
 	void** head = (void**)&OPENCSTL_NIDX(container, 0);
 
@@ -202,13 +202,13 @@ void __cstl_list_clear(void** container) {
 	}
 	*head = *tail = NULL;
 }
-void __cstl_list_free(void** container) {
+OPENCSTL_FUNC void __cstl_list_free(void** container) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	__cstl_list_clear(container);
 	free((char*)(*container) - header_sz);
 	*container = NULL;
 }
-void* __cstl_list_find(void** container, void** iter_begin,void* value) {
+OPENCSTL_FUNC void* __cstl_list_find(void** container, void** iter_begin,void* value) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	void** tail = (void**)&OPENCSTL_NIDX(container, -2);

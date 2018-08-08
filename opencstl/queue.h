@@ -41,7 +41,7 @@
 #include"error.h"
 
 #define cstl_queue(TYPE)	__cstl_queue(sizeof(TYPE),#TYPE)
-void* __cstl_queue(size_t type_size, char* type) {
+OPENCSTL_FUNC void* __cstl_queue(size_t type_size, char* type) {
 	size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
 	void* ptr = (char*)malloc(header_sz + type_size * 2) + header_sz; // 2 = capacity
 	void** container = &ptr;

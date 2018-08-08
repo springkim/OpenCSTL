@@ -88,6 +88,7 @@
 
 #endif
 
+
 #define cstl_value(iter,TYPE)	(*(TYPE*)(iter+1))
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -256,3 +257,10 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #elif defined(__APPLE__)
 #error Not implemented in OSX
 #endif
+
+#if defined(_WIN32) || defined(_WIN64)
+#define SELECT_ANY	__declspec(selectany)
+#elif defined(__linux__)
+#define SELECT_ANY	__attribute__((weak))
+#endif
+#define OPENCSTL_FUNC	static inline

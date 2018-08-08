@@ -42,7 +42,7 @@
 #include"error.h"
 
 #define cstl_vector(TYPE)	__cstl_vector(sizeof(TYPE),#TYPE)
-void* __cstl_vector(size_t type_size,char* type) {
+OPENCSTL_FUNC void* __cstl_vector(size_t type_size,char* type) {
 	size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
 	void* ptr = (char*)malloc(header_sz + type_size * 1) + header_sz;
 	void** container = &ptr;
@@ -56,7 +56,7 @@ void* __cstl_vector(size_t type_size,char* type) {
 	OPENCSTL_NIDX(container, -1) = 0;	//length
 	return ptr;
 }
-void __cstl_vector_push_back(void** container, void* value) {
+OPENCSTL_FUNC void __cstl_vector_push_back(void** container, void* value) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	size_t length = OPENCSTL_NIDX(container, -1);
@@ -78,16 +78,16 @@ void __cstl_vector_push_back(void** container, void* value) {
 	memcpy((char*)*container + type_size*length, value, type_size);
 	OPENCSTL_NIDX(container, -1)++;
 }
-void __cstl_vector_pop_back(void** container) {
+OPENCSTL_FUNC void __cstl_vector_pop_back(void** container) {
 	if (OPENCSTL_NIDX(container, -1) <= 0) {
 		cstl_error("No elements in cstl_vector");
 	}
 	OPENCSTL_NIDX(container, -1)--;
 }
-size_t __cstl_vector_size(void** container) {
+OPENCSTL_FUNC size_t __cstl_vector_size(void** container) {
 	return OPENCSTL_NIDX(container, -1);
 }
-void __cstl_vector_insert(void** container, void* iter, size_t N, void* value) {
+OPENCSTL_FUNC void __cstl_vector_insert(void** container, void* iter, size_t N, void* value) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	size_t length = OPENCSTL_NIDX(container, -1);
@@ -114,7 +114,7 @@ void __cstl_vector_insert(void** container, void* iter, size_t N, void* value) {
 	}
 	OPENCSTL_NIDX(container, -1) += N;
 }
-void __cstl_vector_erase(void** container, void* iter_begin, void* iter_end) {
+OPENCSTL_FUNC void __cstl_vector_erase(void** container, void* iter_begin, void* iter_end) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	size_t length = OPENCSTL_NIDX(container, -1);
@@ -124,24 +124,24 @@ void __cstl_vector_erase(void** container, void* iter_begin, void* iter_end) {
 	memmove((char*)*container + type_size*(pos_begin), (char*)*container + type_size*(pos_end), (length-pos_begin+1)*type_size);
 	OPENCSTL_NIDX(container, -1) -= (pos_end - pos_begin);
 }
-void* __cstl_vector_begin(void** container) {
+OPENCSTL_FUNC void* __cstl_vector_begin(void** container) {
 	return (void*)*container;
 }
-void* __cstl_vector_end(void** container) {
+OPENCSTL_FUNC void* __cstl_vector_end(void** container) {
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	size_t length = OPENCSTL_NIDX(container, -1);
 	return (void*)((char*)*container + (type_size*length));
 }
-void* __cstl_vector_rbegin(void** container) {
+OPENCSTL_FUNC void* __cstl_vector_rbegin(void** container) {
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	size_t length = OPENCSTL_NIDX(container, -1);
 	return (void*)((char*)*container + (type_size*(length-1)));
 }
-void* __cstl_vector_rend(void** container) {
+OPENCSTL_FUNC void* __cstl_vector_rend(void** container) {
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	return (void*)((char*)*container - (type_size));
 }
-void __cstl_vector_resize(void** container, size_t n, void* value) {
+OPENCSTL_FUNC void __cstl_vector_resize(void** container, size_t n, void* value) {
 
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -172,7 +172,7 @@ void __cstl_vector_resize(void** container, size_t n, void* value) {
 	}
 	OPENCSTL_NIDX(container, -1) = n;
 }
-void* __cstl_vector_find(void** container, void* iter_begin, void* value) {
+OPENCSTL_FUNC void* __cstl_vector_find(void** container, void* iter_begin, void* value) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	size_t length = OPENCSTL_NIDX(container, -1);
@@ -191,10 +191,10 @@ void* __cstl_vector_find(void** container, void* iter_begin, void* value) {
 	}
 	return NULL;
 }
-void __cstl_vector_clear(void** container) {
+OPENCSTL_FUNC void __cstl_vector_clear(void** container) {
 	OPENCSTL_NIDX(container, -1) = 0;
 }
-void __cstl_vector_free(void** container) {
+OPENCSTL_FUNC void __cstl_vector_free(void** container) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	free((char*)(*container) - header_sz);
 	*container = NULL;

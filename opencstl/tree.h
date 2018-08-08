@@ -54,9 +54,9 @@
 #define COLOR(N)	_(N,-5)
 
 
-char nil_buffer[sizeof(void*) * 5] = { 0 };
-void* nil = NULL;
-void* __cstl_tree_node(size_t type_size,size_t node_type) {
+SELECT_ANY char nil_buffer[sizeof(void*) * 5] = { 0 };
+SELECT_ANY void* nil = NULL;
+OPENCSTL_FUNC void* __cstl_tree_node(size_t type_size,size_t node_type) {
 	//[color][parent][node type][left][right] -> [data]
 	size_t node_sz = type_size + sizeof(void*) * 5;
 	void* ptr = (char*)calloc(node_sz,1) + sizeof(void*) * 5;
@@ -65,7 +65,7 @@ void* __cstl_tree_node(size_t type_size,size_t node_type) {
 	return ptr;
 }
 #define cstl_set(KEY,...)	__cstl_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),__VA_ARGS__)
-void* __cstl_set(size_t key_size,char* type_key,int argc, ...) {
+OPENCSTL_FUNC void* __cstl_set(size_t key_size,char* type_key,int argc, ...) {
 	if (nil == NULL) {
 		nil = nil_buffer + sizeof(void*) * 5;
 		_(nil, -1) = _(nil, -2)= _(nil, -4)=nil;
@@ -90,7 +90,7 @@ void* __cstl_set(size_t key_size,char* type_key,int argc, ...) {
 	return ptr;
 }
 #define cstl_map(KEY,VALUE,...)	__cstl_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,ARGN(__VA_ARGS__),__VA_ARGS__)
-void* __cstl_map(size_t key_size, size_t value_size,char* type_key,char* type_value,int argc, ...) {
+OPENCSTL_FUNC void* __cstl_map(size_t key_size, size_t value_size,char* type_key,char* type_value,int argc, ...) {
 	if (nil == NULL) {
 		nil = nil_buffer + sizeof(void*) * 5;
 		_(nil, -1) = _(nil, -2)= _(nil, -4)=nil;
@@ -116,7 +116,7 @@ void* __cstl_map(size_t key_size, size_t value_size,char* type_key,char* type_va
 	return ptr;
 }
 
-void __cstl_tree_left_rotate(void** container, void* x) {
+OPENCSTL_FUNC void __cstl_tree_left_rotate(void** container, void* x) {
 	void*** root = (void***)*container;
 	void* y = _(x,R);
 	_(x, R) = _(y, L);
@@ -134,7 +134,7 @@ void __cstl_tree_left_rotate(void** container, void* x) {
 	_(y, L) = x;
 	_(x, P) = y;
 }
-void __cstl_tree_right_rotate(void** container, void* x) {
+OPENCSTL_FUNC void __cstl_tree_right_rotate(void** container, void* x) {
 	void*** root = (void***)*container;
 	void* y = _(x, L);
 	_(x, L) = _(y, R);
@@ -152,7 +152,7 @@ void __cstl_tree_right_rotate(void** container, void* x) {
 	_(y, R) = x;
 	_(x, P) = y;
 }
-void __cstl_tree_insert_fixup(void** container, void* z) {
+OPENCSTL_FUNC void __cstl_tree_insert_fixup(void** container, void* z) {
 	while (COLOR(_(z, P)) == RED) {
 		if (_(z, P) == _(_(_(z, P), P), L)) {
 			void* y = _(_(_(z, P), P), R);
@@ -192,7 +192,7 @@ void __cstl_tree_insert_fixup(void** container, void* z) {
 	COLOR(*root) = BLACK;
 }
 
-void __cstl_tree_insert(void** container, void* key,void* value) {
+OPENCSTL_FUNC void __cstl_tree_insert(void** container, void* key,void* value) {
 	size_t container_type=OPENCSTL_NIDX(container, NIDX_CTYPE);
 	size_t header_sz=OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -240,7 +240,7 @@ void __cstl_tree_insert(void** container, void* key,void* value) {
 	__cstl_tree_insert_fixup(container, n);
 }
 
-void __cstl_tree_transplant(void** container, void* u, void* v) {
+OPENCSTL_FUNC void __cstl_tree_transplant(void** container, void* u, void* v) {
 	void*** root = (void***)*container;
 	if (_(u, P) == nil) {
 		*root = v;
@@ -251,19 +251,19 @@ void __cstl_tree_transplant(void** container, void* u, void* v) {
 	}
 	_(v, P) = _(u, P);
 }
-void* __cstl_tree_toleft(void* n) {
+OPENCSTL_FUNC void* __cstl_tree_toleft(void* n) {
 	while (_(n, L)!=nil) {	
 		n = _(n, L);
 	}
 	return n;
 }
-void* __cstl_tree_toright(void* n) {
+OPENCSTL_FUNC void* __cstl_tree_toright(void* n) {
 	while (_(n, R) != nil) {
 		n = _(n, R);
 	}
 	return n;
 }
-void __cstl_tree_erase_fixup(void** container, void* x) {
+OPENCSTL_FUNC void __cstl_tree_erase_fixup(void** container, void* x) {
 	void*** root = (void***)*container;
 	while (x != *root && COLOR(x) == BLACK) {
 		intmax_t expression = (x == _(_(x, P), L));
@@ -301,7 +301,7 @@ void __cstl_tree_erase_fixup(void** container, void* x) {
 	}
 	COLOR(x) = BLACK;
 }
-void __cstl_tree_erase(void** container, void** iter) {
+OPENCSTL_FUNC void __cstl_tree_erase(void** container, void** iter) {
 	if (iter == NULL)return;
 	size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
@@ -343,7 +343,7 @@ void __cstl_tree_erase(void** container, void** iter) {
 	free(&OPENCSTL_NIDX(&iter, -5));
 }
 
-void* __cstl_tree_find(void** container, void* key) {
+OPENCSTL_FUNC void* __cstl_tree_find(void** container, void* key) {
 	size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -371,18 +371,18 @@ void* __cstl_tree_find(void** container, void* key) {
 	return NULL;
 }
 
-void* __cstl_tree_begin(void** container) {
+OPENCSTL_FUNC void* __cstl_tree_begin(void** container) {
 	void*** root = (void***)*container;
 	return *root!=nil ? __cstl_tree_toleft(*root) : nil;
 }
-void* __cstl_tree_rbegin(void** container) {
+OPENCSTL_FUNC void* __cstl_tree_rbegin(void** container) {
 	void*** root = (void***)*container;
 	return *root != nil ? __cstl_tree_toright(*root) : nil;
 }
-void* __cstl_tree_end_rend(void** container) {
+OPENCSTL_FUNC void* __cstl_tree_end_rend(void** container) {
 	return nil;
 }
-void __cstl_tree_clear(void** container) {
+OPENCSTL_FUNC void __cstl_tree_clear(void** container) {
 	size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -405,13 +405,13 @@ void __cstl_tree_clear(void** container) {
 	*root = nil;
 	
 }
-void __cstl_tree_free(void** container) {
+OPENCSTL_FUNC void __cstl_tree_free(void** container) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	__cstl_tree_clear(container);
 	free((char*)(*container) - header_sz);
 	*container = NULL;
 }
-void* __cstl_tree_next_prev(void* it,int r,int l,void*(todeep)(void*)) {
+OPENCSTL_FUNC void* __cstl_tree_next_prev(void* it,int r,int l,void*(todeep)(void*)) {
 	//next = r(-1) , l(-2)
 	//prev = r(-2), l(-1)
 	if (_(it, r) != nil) {
@@ -428,11 +428,11 @@ void* __cstl_tree_next_prev(void* it,int r,int l,void*(todeep)(void*)) {
 	}
 	return it;
 }
-size_t ___cstl_tree_size(void* n) {
+OPENCSTL_FUNC size_t ___cstl_tree_size(void* n) {
 	if (n == nil)return 0;
 	return ___cstl_tree_size(_(n, L)) + ___cstl_tree_size(_(n, R)) + 1;
 }
-size_t __cstl_tree_size(void** container) {
+OPENCSTL_FUNC size_t __cstl_tree_size(void** container) {
 	size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
