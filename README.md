@@ -128,10 +128,40 @@ void deque_example(){
 		cstl_push_front(deque, i);
 	}
 	for(int i=0;i<cstl_size(deque);i++){
-		printf("%d ", deque[i]);
+		printf("[%3d] ", deque[i]);
 	}
 	puts("");
 	cstl_free(deque);
+}
+```
+#### `stack example`
+```cpp
+void stack_example(){
+	int* stack = cstl_stack(int);
+	for (int i = 0; i < 10; i++) {
+		cstl_push(stack, i);
+	}
+	for (int i = 0; i < 10; i++) {
+		printf("[%3d] ", cstl_top(stack);
+		cstl_pop(stack, i);
+	}
+	puts("");
+	cstl_free(stack);
+}
+```
+#### `queue example`
+```cpp
+void queue_example(){
+	int* queue = cstl_queue(int);
+	for (int i = 0; i < 10; i++) {
+		cstl_push(queue, i);
+	}
+	for (int i = 0; i < 10; i++) {
+		printf("[%3d] ", cstl_top(queue);
+		cstl_pop(queue, i);
+	}
+	puts("");
+	cstl_free(queue);
 }
 ```
 ### Reference
@@ -246,17 +276,35 @@ void cstl_resize(<deque>,<N>);				//Not implemented
 void cstl_resize(<deque>,<N>,<value>);		//Not implemented
 void cstl_free(<deque>);
 ```
+### `stack references`
+```
+<type*> cstl_stack(<type>);
+void cstl_clear(<stack>);
+bool cstl_empty(<stack>);					//Not implemented
+<type> cstl_top(<stack>);
+void cstl_pop(<stack>);
+void cstl_push(<stack>,<value>);
+void cstl_free(<stack>);
+```
+### `stack references`
+```
+<type*> cstl_queue(<type>);
+void cstl_clear(<queue>);
+bool cstl_empty(<queue>);					//Not implemented
+<type> cstl_top(<queue>);
+void cstl_pop(<queue>);
+void cstl_push(<queue>,<value>);
+void cstl_free(<queue>);
+```
 ### Warnings
 * Unable to recognize typedef float
-	* OpenCSTL is based on variadic function. 
-	* Basically it can handle char,short,int,int64,double and struct. 
-	* But we made this can handle float too. 
+	* OpenCSTL is based on variadic function.
+	* Basically it can handle char,short,int,int64,double and struct.
+	* But we made this can handle float too.
 	* But other float name can't be handle.
 * Array based structure use <type*>, Node based structure use <type**>.
 
 ### TODO
-*	stack
-*	queue
 *	priority queue
 *	unorded set/map(hash)
 *	algorithm
