@@ -9,10 +9,7 @@
 #include"stack.h"
 #include"queue.h"
 
-#define _cstl_deque_front(container) (*(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
-#define cstl_front(C)	is_deque(&C)?\
-_cstl_deque_front(&C)==OPENCSTL_DEQUE?(C[0]):(cstl_error("Invalid Operation")) :\
-(0) 
+
 
 
 ptrdiff_t is_deque(void** container) {
@@ -21,13 +18,7 @@ ptrdiff_t is_deque(void** container) {
 	return 0;
 }
 
-#define OPENCSTL_DEQUE_NIDX(container, nidx) (*(size_t*)((char*)*(void**)container + nidx * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
-#define _cstl_stack_top(container)	*container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
-#define _cstl_queue_top(container)	*container[0]
-#define cstl_top(container)	is_deque(&container)?\
-OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) :\
-OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_QUEUE ? _cstl_queue_top(&container) : (0):\
-(0)
+
 
 void _cstl_push(void* container, ...) {
 	va_list vl;

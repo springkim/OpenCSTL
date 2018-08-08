@@ -113,6 +113,42 @@
 #define cstl_rend(container)	_cstl_rend(&(container))
 #define cstl_clear(container)	_cstl_clear(&(container))
 #define cstl_free(container)	_cstl_free(&(container))
+//Macro only functions
+
+#define _cstl_deque_type(container) (*(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
+#ifdef _MSC_VER
+#pragma warning(disable:4047)
+#pragma warning(disable:4477)
+#pragma warning(disable:4313)
+#define cstl_front(C)	*(is_deque((void**)&C)?\
+_cstl_deque_type(&C)==OPENCSTL_DEQUE?(C):(cstl_error("Invalid Operation")) :\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(C):\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(C[0]):(cstl_error("Invalid Operation"))))
+
+#define cstl_back(C)	*(is_deque((void**)&C)?\
+_cstl_deque_type(&C)==OPENCSTL_DEQUE?(C+cstl_size(C)-1):(cstl_error("Invalid Operation")) :\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(C+cstl_size(C)-1):\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(C[-2]):(cstl_error("Invalid Operation"))))
+#elif	defined(__GNUC__)
+#define cstl_front(C)	(is_deque(&C)?\
+_cstl_deque_type(&C)==OPENCSTL_DEQUE?(C[0]):(cstl_error("Invalid Operation")) :\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(C[0]):\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(((typeof(C)*)(C[0]))[0]):(cstl_error("Invalid Operation"))))
+
+#define cstl_back(C)	(is_deque(&C)?\
+_cstl_deque_type(&C)==OPENCSTL_DEQUE?(C[cstl_size(C)-1]):(cstl_error("Invalid Operation")) :\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(C[cstl_size(C)-1]):\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(((typeof(C)*)(C[-2]))[0]):(cstl_error("Invalid Operation"))))
+#endif
+
+#define OPENCSTL_DEQUE_NIDX(container, nidx) (*(size_t*)((char*)*(void**)container + nidx * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
+#define _cstl_stack_top(container)	*container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
+#define _cstl_queue_top(container)	*container[0]
+#define cstl_top(container)	is_deque(&container)?\
+OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) :\
+OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_QUEUE ? _cstl_queue_top(&container) : (cstl_error("Invalid Operation")):\
+(cstl_error("Invalid Operation"))	//priority queue
+
 
 #if defined(_WIN32) || defined(_WIN64)
 

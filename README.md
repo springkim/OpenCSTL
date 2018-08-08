@@ -174,8 +174,8 @@ void cstl_clear(<vector>);
 bool cstl_empty(<vector>);					//Not implemented
 <type*> cstl_find(<vector>,<iter>,<value>);
 <type*> cstl_find(<vector>,<value>);
-<type> cstl_front(<vector>)					//Not implemented
-<type> cstl_back(<vector>)					//Not implemented
+<type> cstl_front(<vector>)					
+<type> cstl_back(<vector>)					
 void cstl_erase(<vector>,<iter>);
 void cstl_erase(<vector>,<iter_begin>,<iter_end>);
 void cstl_insert(<vector>,<iter>,<value>);
@@ -198,8 +198,8 @@ void cstl_clear(<list>);
 bool cstl_empty(<list>);					//Not implemented
 <type*> cstl_find(<list>,<iter>,<value>);
 <type*> cstl_find(<list>,<value>);
-<type> cstl_front(<list>)					//Not implemented
-<type> cstl_back(<list>)					//Not implemented
+<type> cstl_front(<list>)					
+<type> cstl_back(<list>)					
 void cstl_erase(<list>,<iter>);
 void cstl_erase(<list>,<iter_begin>,<iter_end>);
 void cstl_insert(<list>,<iter>,<value>);
@@ -259,8 +259,8 @@ void cstl_clear(<deque>);
 bool cstl_empty(<deque>);					//Not implemented
 <type*> cstl_find(<deque>,<iter>,<value>);
 <type*> cstl_find(<deque>,<value>);
-<type> cstl_front(<deque>)					//Not implemented
-<type> cstl_back(<deque>)					//Not implemented
+<type> cstl_front(<deque>)					
+<type> cstl_back(<deque>)					
 void cstl_erase(<deque>,<iter>);
 void cstl_erase(<deque>,<iter_begin>,<iter_end>);
 void cstl_insert(<deque>,<iter>,<value>);
@@ -272,8 +272,8 @@ void cstl_push_front(<deque>,<value>);
 <type*> cstl_rbegin(<deque>);
 <type*> cstl_rend(<deque>);
 void cstl_size(<deque>);
-void cstl_resize(<deque>,<N>);				//Not implemented
-void cstl_resize(<deque>,<N>,<value>);		//Not implemented
+void cstl_resize(<deque>,<N>);				
+void cstl_resize(<deque>,<N>,<value>);		
 void cstl_free(<deque>);
 ```
 ### `stack references`

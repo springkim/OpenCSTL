@@ -6,58 +6,60 @@
 #define Decorate(STR)	for (int i = 0; i < 30; i++)putchar('='); printf(STR); for (int i = 0; i < 30; i++)putchar('=');putchar('\n');
 void cstl_vector_test() {
 	Decorate("opencstl{vector} test begin");
-	cstl arr = cstl_vector(float);
+	int* arr = cstl_vector(int);
 
 	//cstl_push_back(arr, 88);
 	for (int i = 0; i < 10; i++) {
-		float f = i;
-		cstl_push_back(arr, f);
+		cstl_push_back(arr, i);
 	}
 
 	///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
-	//cstl_pop_back(arr);
+	cstl_pop_back(arr);
 	///[0] [1] [2] [3] [4] [5] [6] [7] [8]
-	//cstl_insert(arr, arr + 0, 777);
+	cstl_insert(arr, arr + 0, 777);
 	///[777] [0] [1] [2] [3] [4] [5] [6] [7] [8]
-	//cstl_insert(arr, arr + 5, 5,999);
+	cstl_insert(arr, arr + 5, 5,999);
 	///[777] [0] [1] [2] [3] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
-	//cstl_erase(arr, arr + 3, arr+5);
+	cstl_erase(arr, arr + 3, arr+5);
 
 	///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
-	//cstl_resize(arr, 15, -1);
+	cstl_resize(arr, 15, -1);
 
 	///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8] [-1] [-1]
-	for (float* it = cstl_begin(arr); it != cstl_end(arr); it++) {
-		printf("[%f] ", *it);
+	for (int* it = cstl_begin(arr); it != cstl_end(arr); it++) {
+		printf("[%d] ", *it);
 	}
 	puts("");
 
-	//int* pos = cstl_find(arr, 7);
-	//if(pos!=NULL) printf("find : [%3d]\n", *pos);
+	int* pos = cstl_find(arr, 7);
+	if(pos!=NULL) printf("find : [%3d]\n", *pos);
 	cstl_free(arr);
 	Decorate("opencstl{vector} test end");
 }
 
 void cstl_list_test02() {
 	Decorate("opencstl{list} test begin");
-	cstl list = cstl_list(float);
+	int** list = cstl_list(int);
 	for (int i = 0; i < 10; i++) {
-		float f = i;
-		cstl_push_back(list, f);
+		cstl_push_back(list, i);
 	}
 	///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
-	//cstl_pop_back(list);
+	cstl_pop_back(list);
 	///[0] [1] [2] [3] [4] [5] [6] [7] [8]
-	cstl_insert(list, cstl_begin(list), 777.0F);
+	cstl_insert(list, cstl_begin(list), 777);
 	///[777] [0] [1] [2] [3] [4] [5] [6] [7] [8]
-	//cstl_insert(list, cstl_find(list,4), 5, 999);
+	cstl_insert(list, cstl_find(list,4), 5, 999);
 	///[777] [0] [1] [2] [3] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
-	//cstl_erase(list, cstl_find(list, 2), cstl_find(list, 999));
+	cstl_erase(list, cstl_find(list, 2), cstl_find(list, 999));
 	///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
-	for (float* it = cstl_begin(list); it != cstl_end(list); it = cstl_next(it)) {
-		printf("[%f] ", *it);
+	for (int* it = cstl_begin(list); it != cstl_end(list); it = cstl_next(it)) {
+		printf("[%d] ", *it);
 	}
 	puts("");
+	printf("front : %d\n", list[0][0]);
+	printf("front : %d\n", cstl_front(list));
+	printf("back : %d\n", list[-2][0]);
+	printf("back : %d\n", cstl_back(list));
 	cstl_free(list);
 	Decorate("opencstl{list} test end");
 }
@@ -121,6 +123,7 @@ void cstl_deque_test() {
 	
 	printf("front : %d\n", deque[0]);
 	printf("front : %d\n", cstl_front(deque));
+	printf("back : %d\n", cstl_back(deque));
 	cstl_free(deque);
 	Decorate("opencstl{deque} test end");
 }
@@ -154,7 +157,6 @@ void cstl_queue_test() {
 }
 
 int main() {
-
 	cstl_vector_test();
 	cstl_list_test02();
 	cstl_set_test();
@@ -162,4 +164,5 @@ int main() {
 	cstl_deque_test();
 	cstl_stack_test();
 	cstl_queue_test();
+	return 0;
 }
