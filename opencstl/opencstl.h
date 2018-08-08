@@ -6,6 +6,8 @@
 #include"list.h"
 #include"deque.h"
 #include"tree.h"
+#include"stack.h"
+#include"queue.h"
 
 ptrdiff_t is_deque(void** container) {
 	if (OPENCSTL_NIDX(container, -1) > INT_MAX)
@@ -13,6 +15,34 @@ ptrdiff_t is_deque(void** container) {
 	return 0;
 }
 
+#define OPENCSTL_DEQUE_NIDX(container, nidx) (*(size_t*)((char*)*(void**)container + nidx * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
+#define _cstl_stack_top(container)	*container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
+#define _cstl_queue_top(container)	*container[0]
+#define cstl_top(container)	is_deque(&container)?\
+OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) :\
+OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_QUEUE ? _cstl_queue_top(&container) : (0):\
+(0)
+
+void _cstl_push(void* container, ...) {
+	va_list vl;
+	va_start(vl, container);
+	void* value = vl;
+	size_t container_type;
+	if (is_deque((void**)container)) {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	}
+	else {
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+	}
+	switch (container_type) {
+	case OPENCSTL_STACK:
+	case OPENCSTL_QUEUE: {
+		__cstl_deque_push_back((void**)container, value);
+	}break;
+	default:cstl_error("Invalid operator"); break;
+	}
+}
 
 void _cstl_push_back(void* container, ...) {
 	va_list vl;
@@ -60,6 +90,26 @@ void _cstl_push_front(void* container, ...) {
 			__cstl_deque_push_front((void**)container, param1);
 		}break;
 		default:cstl_error("Invalid operator"); break;
+	}
+}
+
+void _cstl_pop(void* container) {
+	size_t container_type;
+	if (is_deque((void**)container)) {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	}
+	else {
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+	}
+	switch (container_type) {
+	case OPENCSTL_STACK: {
+		__cstl_deque_pop_back((void**)container);
+	}break;
+	case OPENCSTL_QUEUE: {
+		__cstl_deque_pop_front((void**)container);
+	}break;
+	default:cstl_error("Invalid operator"); break;
 	}
 }
 
@@ -391,6 +441,8 @@ void _cstl_clear(void* container) {
 		case OPENCSTL_LIST: {
 			__cstl_list_clear((void**)container);
 		}break;
+		case OPENCSTL_STACK:
+		case OPENCSTL_QUEUE:
 		case OPENCSTL_DEQUE: {
 			__cstl_deque_clear((void**)container);
 		}break;
@@ -417,6 +469,8 @@ void _cstl_free(void* container) {
 		case OPENCSTL_LIST: {
 			__cstl_list_free((void**)container);
 		}break;
+		case OPENCSTL_STACK:
+		case OPENCSTL_QUEUE:
 		case OPENCSTL_DEQUE: {
 			__cstl_deque_free((void**)container);
 		}break;
@@ -427,6 +481,7 @@ void _cstl_free(void* container) {
 		default:cstl_error("Invalid operation"); break;
 	}
 }
+
 void* _cstl_find(void* container,int argc, ...) {
 	va_list vl;
 	void* va_ptr=NULL;

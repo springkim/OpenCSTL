@@ -47,5 +47,11 @@
     <ClInclude Include="..\opencstl\vector.h">
       <Filter>opencstl</Filter>
     </ClInclude>
+    <ClInclude Include="..\opencstl\queue.h">
+      <Filter>opencstl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\opencstl\stack.h">
+      <Filter>opencstl</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

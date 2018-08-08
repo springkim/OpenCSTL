@@ -60,6 +60,8 @@
 #define OPENCSTL_VECTOR		2
 #define OPENCSTL_LIST		3
 #define OPENCSTL_DEQUE		4
+#define OPENCSTL_STACK		5
+#define OPENCSTL_QUEUE		6
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
 #include<Windows.h>
 #endif
@@ -99,6 +101,7 @@
 #endif
 
 //Unary Functions
+#define cstl_pop(container)	_cstl_pop(&(container))
 #define cstl_pop_back(container)	_cstl_pop_back(&(container))
 #define cstl_pop_front(container)	_cstl_pop_front(&(container))
 #define cstl_size(container)	_cstl_size(&(container))
@@ -113,6 +116,7 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 
+#define cstl_push(container,...)	_cstl_push(&(container),__VA_ARGS__)
 #define cstl_push_back(container,...)	_cstl_push_back(&(container),__VA_ARGS__)
 #define cstl_push_front(container,...)	_cstl_push_front(&(container),__VA_ARGS__)
 #define cstl_insert(container,...)	_cstl_insert(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
