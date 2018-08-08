@@ -49,7 +49,7 @@ void* __cstl_vector(size_t type_size,char* type) {
 	OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_VECTOR;
 	OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
 	OPENCSTL_NIDX(container,NIDX_TSIZE) = type_size;
-	OPENCSTL_NIDX(container, -4) = type;
+	OPENCSTL_NIDX(container, -4) = (size_t)type;
 
 	OPENCSTL_NIDX(container, -3) = 0;	//
 	OPENCSTL_NIDX(container, -2) = 1;	//capacity
@@ -64,7 +64,7 @@ void __cstl_vector_push_back(void** container, void* value) {
 	char* type= (char*)OPENCSTL_NIDX(container, -4);
 	float valuef = 0.0F;
 	if (strcmp(type, "float") == 0) {
-		valuef= *(double*)value;
+		valuef= (float)*(double*)value;
 		value =&valuef;
 	}
 	if (length == capacity) {
@@ -96,7 +96,7 @@ void __cstl_vector_insert(void** container, void* iter, size_t N, void* value) {
 	char* type = (char*)OPENCSTL_NIDX(container, -4);
 	float valuef = 0.0F;
 	if (strcmp(type, "float") == 0) {
-		valuef = *(double*)value;
+		valuef = (float)*(double*)value;
 		value = &valuef;
 	}
 	if (length+N >= capacity) {
@@ -150,7 +150,7 @@ void __cstl_vector_resize(void** container, size_t n, void* value) {
 	char* type = (char*)OPENCSTL_NIDX(container, -4);
 	float valuef = 0.0F;
 	if (strcmp(type, "float") == 0) {
-		valuef = *(double*)value;
+		valuef = (float)*(double*)value;
 		value = &valuef;
 	}
 	if (capacity < n) {
@@ -181,7 +181,7 @@ void* __cstl_vector_find(void** container, void* iter_begin, void* value) {
 	char* type = (char*)OPENCSTL_NIDX(container, -4);
 	float valuef = 0.0F;
 	if (strcmp(type, "float") == 0) {
-		valuef = *(double*)value;
+		valuef = (float)*(double*)value;
 		value = &valuef;
 	}
 	for (size_t i = pos; i < length; i++) {

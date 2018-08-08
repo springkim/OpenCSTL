@@ -48,7 +48,7 @@ void* __cstl_list(size_t type_size,char* type) {
 	OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_LIST;
 	OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
 	OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
-	OPENCSTL_NIDX(container, -4) = type;
+	OPENCSTL_NIDX(container, -4) = (size_t)type;
 	OPENCSTL_NIDX(container, -2) = 0;	//tail
 	OPENCSTL_NIDX(container, -1) = 0;	//Not reserved
 	OPENCSTL_NIDX(container, 0) = 0;	//head
@@ -72,7 +72,7 @@ void __cstl_list_push_back_front(void** container, void* value, int ntail, int n
 	char* type = (char*)OPENCSTL_NIDX(container, -4);
 	float valuef = 0.0F;
 	if (strcmp(type, "float") == 0) {
-		valuef = *(double*)value;
+		valuef = (float)*(double*)value;
 		value = &valuef;
 	}
 	memcpy(n, value, type_size);
@@ -122,7 +122,7 @@ void __cstl_list_insert(void** container, void** iter, size_t N, void* value) {
 	char* type = (char*)OPENCSTL_NIDX(container, -4);
 	float valuef = 0.0F;
 	if (strcmp(type, "float") == 0) {
-		valuef = *(double*)value;
+		valuef = (float)*(double*)value;
 		value = &valuef;
 	}
 	void* nhead = __cstl_list_node(type_size); memcpy(nhead, value, type_size);
@@ -216,7 +216,7 @@ void* __cstl_list_find(void** container, void** iter_begin,void* value) {
 	char* type = (char*)OPENCSTL_NIDX(container, -4);
 	float valuef = 0.0F;
 	if (strcmp(type, "float") == 0) {
-		valuef = *(double*)value;
+		valuef = (float)*(double*)value;
 		value = &valuef;
 	}
 	void* it = *iter_begin;

@@ -83,7 +83,7 @@ void* __cstl_set(size_t key_size,char* type_key,int argc, ...) {
 	OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
 	OPENCSTL_NIDX(container, NIDX_TSIZE) = key_size;
 	OPENCSTL_NIDX(container, -4) = 0;					//value size, but set does not have value.
-	OPENCSTL_NIDX(container, -3) = type_key;					//type
+	OPENCSTL_NIDX(container, -3) = (size_t)type_key;					//type
 	OPENCSTL_NIDX(container, -2) = (size_t)compare;	//compare function
 	OPENCSTL_NIDX(container, -1) = 0;
 	OPENCSTL_NIDX(container, 0) = (size_t)nil;			//root
@@ -107,9 +107,9 @@ void* __cstl_map(size_t key_size, size_t value_size,char* type_key,char* type_va
 	OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_MAP;
 	OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
 	OPENCSTL_NIDX(container, NIDX_TSIZE) = key_size;
-	OPENCSTL_NIDX(container, -5) = type_value;					//not-reserved
+	OPENCSTL_NIDX(container, -5) = (size_t)type_value;					//not-reserved
 	OPENCSTL_NIDX(container, -4) = value_size;					//value size, but set does not have value.
-	OPENCSTL_NIDX(container, -3) = type_key;					//not-reserved
+	OPENCSTL_NIDX(container, -3) = (size_t)type_key;					//not-reserved
 	OPENCSTL_NIDX(container, -2) = (size_t)compare;	//compare function
 	OPENCSTL_NIDX(container, -1) = 0;
 	OPENCSTL_NIDX(container, 0) = (size_t)nil;			//root
@@ -203,13 +203,13 @@ void __cstl_tree_insert(void** container, void* key,void* value) {
 	char* type_key = (char*)OPENCSTL_NIDX(container, -3);
 	float keyf = 0.0F;
 	if (strcmp(type_key, "float") == 0) {
-		keyf = *(double*)key;
+		keyf = (float)*(double*)key;
 		key = &keyf;
 	}
 	char* type_value = (char*)OPENCSTL_NIDX(container, -5);
 	float valuef = 0.0F;
 	if (value && strcmp(type_value, "float") == 0) {
-		valuef = *(double*)value;
+		valuef = (float)*(double*)value;
 		value = &valuef;
 	}
 
@@ -352,7 +352,7 @@ void* __cstl_tree_find(void** container, void* key) {
 	char* type_key = (char*)OPENCSTL_NIDX(container, -3);
 	float keyf = 0.0F;
 	if (strcmp(type_key, "float") == 0) {
-		keyf = *(double*)key;
+		keyf = (float)*(double*)key;
 		key = &keyf;
 	}
 

@@ -106,15 +106,15 @@ void cstl_map_test() {
 }
 void cstl_deque_test() {
 	Decorate("opencstl{deque} test begin");
-	cstl deque = cstl_deque(int);
+	int* deque = cstl_deque(int);
 	for (int i = 0; i < 10; i++) {
 		cstl_push_back(deque, i);
 	}
-	int* it = cstl_find(deque, 5);
-	cstl_erase(deque, it, it + 2);
-	cstl_resize(deque, 10);
-	for (it = cstl_begin(deque); it != cstl_end(deque); it++) {
-		printf("%d ", *it);
+	for (int i = 0; i < 10; i++) {
+		cstl_push_front(deque, i);
+	}
+	for(int i=0;i<cstl_size(deque);i++){
+		printf("%d ", deque[i]);
 	}
 	puts("");
 	cstl_free(deque);
