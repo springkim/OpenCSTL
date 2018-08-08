@@ -22,8 +22,9 @@ ptrdiff_t is_deque(void** container) {
 
 void _cstl_push(void* container, ...) {
 	va_list vl;
-	va_start(vl, container);
-	void* value = vl;
+	void* va_ptr=NULL;
+	__cstl_va_start(vl,container,va_ptr);
+	void* value = __cstl_va_arg(va_ptr);
 	size_t container_type;
 	if (is_deque((void**)container)) {
 		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -46,13 +47,16 @@ void _cstl_push_back(void* container, ...) {
 	void* va_ptr=NULL;
 	__cstl_va_start(vl,container,va_ptr);
 	void* param1 = __cstl_va_arg(va_ptr);
+
 	size_t container_type;
+
 	if (is_deque((void**)container)) {
 		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
 		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
 	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
+
 	switch (container_type) {
 		case OPENCSTL_VECTOR: {
 			__cstl_vector_push_back((void**)container, param1);
@@ -71,7 +75,7 @@ void _cstl_push_front(void* container, ...) {
 	va_list vl;
 	void* va_ptr=NULL;
 	__cstl_va_start(vl,container,va_ptr);
-	void* param1 = va_ptr;
+	void* param1 = __cstl_va_arg(va_ptr);
 	size_t container_type;
 	if (is_deque((void**)container)) {
 		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -210,7 +214,7 @@ void _cstl_insert(void* container,int argc, ...) {
 	__cstl_va_start(vl,argc,va_ptr);
 	void* param1 = __cstl_va_arg(va_ptr);
 	void* param2 = __cstl_va_arg((char*)va_ptr + sizeof(void*)*1);
-	void* param3 = __cstl_va_arg((char*)va_ptr + sizeof(void*)*2);	
+	void* param3 = __cstl_va_arg((char*)va_ptr + sizeof(void*)*2);
 	size_t container_type;
 	if (is_deque((void**)container)) {
 		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -305,7 +309,7 @@ void _cstl_resize(void* container, int argc, ...) {
 			__cstl_vector_resize((void**)container, *(int*)param1, param2);
 		}break;
 		case OPENCSTL_LIST: {
-			
+
 		}break;
 		case OPENCSTL_DEQUE: {
 			if (argc == 1)param2 = NULL;

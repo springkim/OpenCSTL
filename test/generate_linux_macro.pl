@@ -36,7 +36,7 @@ for(my $t=0;$t<=$#arr;$t++){
 		
 		print ")    {";
 		
-		print "__auto_type __0=C;";
+		print "__auto_type __0=&C;";
 
 		for(my $j=1;$j<=$i;$j++){
 			print "__auto_type __$j=_$j;";
@@ -44,7 +44,7 @@ for(my $t=0;$t<=$#arr;$t++){
 		if($ret[$t]==1){
 			print "return ";
 		}
-		print "_$name( &__0";
+		print "_$name( __0";
 		if($check[$t]==1){
 			print ",argc";
 		}

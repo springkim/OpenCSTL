@@ -91,7 +91,7 @@
 #define cstl_value(iter,TYPE)	(*(TYPE*)(iter+1))
 
 #if defined(_WIN32) || defined(_WIN64)
-#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=V;	
+#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=V;
 #define __cstl_va_arg(PTR)	(PTR)
 #elif defined(__linux__)
 #define __cstl_va_start(V,C,beg)	va_start(V,C);beg=((char*)V->reg_save_area)+sizeof(void*)*2;
@@ -164,95 +164,95 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_QUEUE ? _cstl_queue_top(
 
 #define cstl_push_back(C,...) _linux_cstl_push_back(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
 #define _linux_cstl_push_back(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_back ## _ ## N
-#define _cstl_push_back_0(C)    {__auto_type __0=C;_cstl_push_back( &__0);}
-#define _cstl_push_back_1(C,_1)    {__auto_type __0=C;__auto_type __1=_1;_cstl_push_back( &__0,&__1);}
-#define _cstl_push_back_2(C,_1,_2)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;_cstl_push_back( &__0,&__1,&__2);}
-#define _cstl_push_back_3(C,_1,_2,_3)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_push_back( &__0,&__1,&__2,&__3);}
-#define _cstl_push_back_4(C,_1,_2,_3,_4)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_push_back( &__0,&__1,&__2,&__3,&__4);}
-#define _cstl_push_back_5(C,_1,_2,_3,_4,_5)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_push_back( &__0,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_push_back_6(C,_1,_2,_3,_4,_5,_6)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_push_back( &__0,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_push_back_7(C,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_push_back( &__0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_push_back_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_push_back( &__0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_push_back_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_push_back( &__0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_push_back_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_push_back( &__0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define _cstl_push_back_0(C)    {__auto_type __0=&C;_cstl_push_back( __0);}
+#define _cstl_push_back_1(C,_1)    {__auto_type __0=&C;__auto_type __1=_1;_cstl_push_back( __0,&__1);}
+#define _cstl_push_back_2(C,_1,_2)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;_cstl_push_back( __0,&__1,&__2);}
+#define _cstl_push_back_3(C,_1,_2,_3)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_push_back( __0,&__1,&__2,&__3);}
+#define _cstl_push_back_4(C,_1,_2,_3,_4)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_push_back( __0,&__1,&__2,&__3,&__4);}
+#define _cstl_push_back_5(C,_1,_2,_3,_4,_5)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_push_back_6(C,_1,_2,_3,_4,_5,_6)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_push_back_7(C,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_push_back_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_push_back_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_push_back_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 #define cstl_push_front(C,...) _linux_cstl_push_front(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
 #define _linux_cstl_push_front(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_front ## _ ## N
-#define _cstl_push_front_0(C)    {__auto_type __0=C;_cstl_push_front( &__0);}
-#define _cstl_push_front_1(C,_1)    {__auto_type __0=C;__auto_type __1=_1;_cstl_push_front( &__0,&__1);}
-#define _cstl_push_front_2(C,_1,_2)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;_cstl_push_front( &__0,&__1,&__2);}
-#define _cstl_push_front_3(C,_1,_2,_3)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_push_front( &__0,&__1,&__2,&__3);}
-#define _cstl_push_front_4(C,_1,_2,_3,_4)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_push_front( &__0,&__1,&__2,&__3,&__4);}
-#define _cstl_push_front_5(C,_1,_2,_3,_4,_5)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_push_front( &__0,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_push_front_6(C,_1,_2,_3,_4,_5,_6)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_push_front( &__0,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_push_front_7(C,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_push_front( &__0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_push_front_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_push_front( &__0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_push_front_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_push_front( &__0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_push_front_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_push_front( &__0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define _cstl_push_front_0(C)    {__auto_type __0=&C;_cstl_push_front( __0);}
+#define _cstl_push_front_1(C,_1)    {__auto_type __0=&C;__auto_type __1=_1;_cstl_push_front( __0,&__1);}
+#define _cstl_push_front_2(C,_1,_2)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;_cstl_push_front( __0,&__1,&__2);}
+#define _cstl_push_front_3(C,_1,_2,_3)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_push_front( __0,&__1,&__2,&__3);}
+#define _cstl_push_front_4(C,_1,_2,_3,_4)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_push_front( __0,&__1,&__2,&__3,&__4);}
+#define _cstl_push_front_5(C,_1,_2,_3,_4,_5)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_push_front_6(C,_1,_2,_3,_4,_5,_6)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_push_front_7(C,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_push_front_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_push_front_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_push_front_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 #define cstl_insert(C,...) _linux_cstl_insert(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
 #define _linux_cstl_insert(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_insert ## _ ## N
-#define _cstl_insert_0(C,argc)    {__auto_type __0=C;_cstl_insert( &__0,argc);}
-#define _cstl_insert_1(C,argc,_1)    {__auto_type __0=C;__auto_type __1=_1;_cstl_insert( &__0,argc,&__1);}
-#define _cstl_insert_2(C,argc,_1,_2)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;_cstl_insert( &__0,argc,&__1,&__2);}
-#define _cstl_insert_3(C,argc,_1,_2,_3)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_insert( &__0,argc,&__1,&__2,&__3);}
-#define _cstl_insert_4(C,argc,_1,_2,_3,_4)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_insert( &__0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_insert_5(C,argc,_1,_2,_3,_4,_5)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_insert( &__0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_insert_6(C,argc,_1,_2,_3,_4,_5,_6)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_insert( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_insert_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_insert( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_insert_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_insert( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_insert_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_insert( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_insert_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_insert( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define _cstl_insert_0(C,argc)    {__auto_type __0=&C;_cstl_insert( __0,argc);}
+#define _cstl_insert_1(C,argc,_1)    {__auto_type __0=&C;__auto_type __1=_1;_cstl_insert( __0,argc,&__1);}
+#define _cstl_insert_2(C,argc,_1,_2)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;_cstl_insert( __0,argc,&__1,&__2);}
+#define _cstl_insert_3(C,argc,_1,_2,_3)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_insert( __0,argc,&__1,&__2,&__3);}
+#define _cstl_insert_4(C,argc,_1,_2,_3,_4)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_insert_5(C,argc,_1,_2,_3,_4,_5)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_insert_6(C,argc,_1,_2,_3,_4,_5,_6)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_insert_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_insert_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_insert_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_insert_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 #define cstl_erase(C,...) _linux_cstl_erase(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
 #define _linux_cstl_erase(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_erase ## _ ## N
-#define _cstl_erase_0(C,argc)    {__auto_type __0=C;_cstl_erase( &__0,argc);}
-#define _cstl_erase_1(C,argc,_1)    {__auto_type __0=C;__auto_type __1=_1;_cstl_erase( &__0,argc,&__1);}
-#define _cstl_erase_2(C,argc,_1,_2)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;_cstl_erase( &__0,argc,&__1,&__2);}
-#define _cstl_erase_3(C,argc,_1,_2,_3)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_erase( &__0,argc,&__1,&__2,&__3);}
-#define _cstl_erase_4(C,argc,_1,_2,_3,_4)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_erase( &__0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_erase_5(C,argc,_1,_2,_3,_4,_5)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_erase( &__0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_erase_6(C,argc,_1,_2,_3,_4,_5,_6)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_erase( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_erase_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_erase( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_erase_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_erase( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_erase_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_erase( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_erase_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_erase( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define _cstl_erase_0(C,argc)    {__auto_type __0=&C;_cstl_erase( __0,argc);}
+#define _cstl_erase_1(C,argc,_1)    {__auto_type __0=&C;__auto_type __1=_1;_cstl_erase( __0,argc,&__1);}
+#define _cstl_erase_2(C,argc,_1,_2)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;_cstl_erase( __0,argc,&__1,&__2);}
+#define _cstl_erase_3(C,argc,_1,_2,_3)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_erase( __0,argc,&__1,&__2,&__3);}
+#define _cstl_erase_4(C,argc,_1,_2,_3,_4)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_erase_5(C,argc,_1,_2,_3,_4,_5)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_erase_6(C,argc,_1,_2,_3,_4,_5,_6)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_erase_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_erase_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_erase_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_erase_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 #define cstl_resize(C,...) _linux_cstl_resize(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
 #define _linux_cstl_resize(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_resize ## _ ## N
-#define _cstl_resize_0(C,argc)    {__auto_type __0=C;_cstl_resize( &__0,argc);}
-#define _cstl_resize_1(C,argc,_1)    {__auto_type __0=C;__auto_type __1=_1;_cstl_resize( &__0,argc,&__1);}
-#define _cstl_resize_2(C,argc,_1,_2)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;_cstl_resize( &__0,argc,&__1,&__2);}
-#define _cstl_resize_3(C,argc,_1,_2,_3)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_resize( &__0,argc,&__1,&__2,&__3);}
-#define _cstl_resize_4(C,argc,_1,_2,_3,_4)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_resize( &__0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_resize_5(C,argc,_1,_2,_3,_4,_5)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_resize( &__0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_resize_6(C,argc,_1,_2,_3,_4,_5,_6)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_resize( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_resize_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_resize( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_resize_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_resize( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_resize_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_resize( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_resize_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_resize( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define _cstl_resize_0(C,argc)    {__auto_type __0=&C;_cstl_resize( __0,argc);}
+#define _cstl_resize_1(C,argc,_1)    {__auto_type __0=&C;__auto_type __1=_1;_cstl_resize( __0,argc,&__1);}
+#define _cstl_resize_2(C,argc,_1,_2)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;_cstl_resize( __0,argc,&__1,&__2);}
+#define _cstl_resize_3(C,argc,_1,_2,_3)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_resize( __0,argc,&__1,&__2,&__3);}
+#define _cstl_resize_4(C,argc,_1,_2,_3,_4)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_resize_5(C,argc,_1,_2,_3,_4,_5)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_resize_6(C,argc,_1,_2,_3,_4,_5,_6)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_resize_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_resize_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_resize_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_resize_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 #define cstl_find(C,...) ({void* _() {_linux_cstl_find(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)}_;})();
 #define _linux_cstl_find(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_find ## _ ## N
-#define _cstl_find_0(C,argc)    {__auto_type __0=C;return _cstl_find( &__0,argc);}
-#define _cstl_find_1(C,argc,_1)    {__auto_type __0=C;__auto_type __1=_1;return _cstl_find( &__0,argc,&__1);}
-#define _cstl_find_2(C,argc,_1,_2)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;return _cstl_find( &__0,argc,&__1,&__2);}
-#define _cstl_find_3(C,argc,_1,_2,_3)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;return _cstl_find( &__0,argc,&__1,&__2,&__3);}
-#define _cstl_find_4(C,argc,_1,_2,_3,_4)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;return _cstl_find( &__0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_find_5(C,argc,_1,_2,_3,_4,_5)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;return _cstl_find( &__0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_find_6(C,argc,_1,_2,_3,_4,_5,_6)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;return _cstl_find( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_find_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;return _cstl_find( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_find_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;return _cstl_find( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_find_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;return _cstl_find( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_find_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;return _cstl_find( &__0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define _cstl_find_0(C,argc)    {__auto_type __0=&C;return _cstl_find( __0,argc);}
+#define _cstl_find_1(C,argc,_1)    {__auto_type __0=&C;__auto_type __1=_1;return _cstl_find( __0,argc,&__1);}
+#define _cstl_find_2(C,argc,_1,_2)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;return _cstl_find( __0,argc,&__1,&__2);}
+#define _cstl_find_3(C,argc,_1,_2,_3)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;return _cstl_find( __0,argc,&__1,&__2,&__3);}
+#define _cstl_find_4(C,argc,_1,_2,_3,_4)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_find_5(C,argc,_1,_2,_3,_4,_5)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_find_6(C,argc,_1,_2,_3,_4,_5,_6)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_find_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_find_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_find_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_find_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 #define cstl_push(C,...) _linux_cstl_push(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
 #define _linux_cstl_push(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push ## _ ## N
-#define _cstl_push_0(C)    {__auto_type __0=C;_cstl_push( &__0);}
-#define _cstl_push_1(C,_1)    {__auto_type __0=C;__auto_type __1=_1;_cstl_push( &__0,&__1);}
-#define _cstl_push_2(C,_1,_2)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;_cstl_push( &__0,&__1,&__2);}
-#define _cstl_push_3(C,_1,_2,_3)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_push( &__0,&__1,&__2,&__3);}
-#define _cstl_push_4(C,_1,_2,_3,_4)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_push( &__0,&__1,&__2,&__3,&__4);}
-#define _cstl_push_5(C,_1,_2,_3,_4,_5)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_push( &__0,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_push_6(C,_1,_2,_3,_4,_5,_6)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_push( &__0,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_push_7(C,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_push( &__0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_push_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_push( &__0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_push_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_push( &__0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_push_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_push( &__0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define _cstl_push_0(C)    {__auto_type __0=&C;_cstl_push( __0);}
+#define _cstl_push_1(C,_1)    {__auto_type __0=&C;__auto_type __1=_1;_cstl_push( __0,&__1);}
+#define _cstl_push_2(C,_1,_2)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;_cstl_push( __0,&__1,&__2);}
+#define _cstl_push_3(C,_1,_2,_3)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_push( __0,&__1,&__2,&__3);}
+#define _cstl_push_4(C,_1,_2,_3,_4)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_push( __0,&__1,&__2,&__3,&__4);}
+#define _cstl_push_5(C,_1,_2,_3,_4,_5)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_push_6(C,_1,_2,_3,_4,_5,_6)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_push_7(C,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_push_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_push_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_push_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 
 #elif defined(__APPLE__)
 #error Not implemented in OSX
