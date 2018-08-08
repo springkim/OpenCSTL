@@ -112,6 +112,7 @@
 #define cstl_end(container)	_cstl_end(&(container))
 #define cstl_rend(container)	_cstl_rend(&(container))
 #define cstl_clear(container)	_cstl_clear(&(container))
+#define cstl_empty(container)	_cstl_empty(&(container))
 #define cstl_free(container)	_cstl_free(&(container))
 //Macro only functions
 

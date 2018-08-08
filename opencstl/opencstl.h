@@ -474,6 +474,10 @@ bool _cstl_empty(void* container) {
 		case OPENCSTL_LIST: {
 			sz = __cstl_list_size((void**)container);
 		}break;
+		case OPENCSTL_SET:
+		case OPENCSTL_MAP: {
+			sz = __cstl_tree_size((void**)container);
+		}break;
 		case OPENCSTL_STACK:
 		case OPENCSTL_QUEUE:
 		case OPENCSTL_DEQUE: {
