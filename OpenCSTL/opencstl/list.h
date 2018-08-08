@@ -39,15 +39,16 @@
 #define _OPENCSTL_LIST_H
 #include"types.h"
 #include"error.h"
-#define cstl_list(TYPE)		__cstl_list(sizeof(TYPE))
+#define cstl_list(TYPE)		__cstl_list(sizeof(TYPE),#TYPE)
 #define NTAIL(N)	(N==-1?-2:N)
-void* __cstl_list(size_t type_size) {
+void* __cstl_list(size_t type_size,char* type) {
 	size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
 	void* ptr = (char*)malloc(header_sz + sizeof(size_t)) + header_sz;
 	void** container = &ptr;
 	OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_LIST;
 	OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
 	OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
+	OPENCSTL_NIDX(container, -4) = type;
 	OPENCSTL_NIDX(container, -2) = 0;	//tail
 	OPENCSTL_NIDX(container, -1) = 0;	//Not reserved
 	OPENCSTL_NIDX(container, 0) = 0;	//head
@@ -68,6 +69,12 @@ void __cstl_list_push_back_front(void** container, void* value, int ntail, int n
 	void** tail = (void**)&OPENCSTL_NIDX(container, NTAIL(ntail));	    //-1 , 0
 	void** head = (void**)&OPENCSTL_NIDX(container, nhead);   //0  , -1
 	void* n = __cstl_list_node(type_size);
+	char* type = (char*)OPENCSTL_NIDX(container, -4);
+	float valuef = 0.0F;
+	if (strcmp(type, "float") == 0) {
+		valuef = *(double*)value;
+		value = &valuef;
+	}
 	memcpy(n, value, type_size);
 	if (*head == NULL && *tail == NULL) {
 		*head = *tail = n;
@@ -112,6 +119,12 @@ void __cstl_list_insert(void** container, void** iter, size_t N, void* value) {
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	void** tail = (void**)&OPENCSTL_NIDX(container, -2);
 	void** head = (void**)&OPENCSTL_NIDX(container, 0);
+	char* type = (char*)OPENCSTL_NIDX(container, -4);
+	float valuef = 0.0F;
+	if (strcmp(type, "float") == 0) {
+		valuef = *(double*)value;
+		value = &valuef;
+	}
 	void* nhead = __cstl_list_node(type_size); memcpy(nhead, value, type_size);
 	void* ntail = nhead;
 	for (size_t i = 1; i < N; i++) {
@@ -200,7 +213,12 @@ void* __cstl_list_find(void** container, void** iter_begin,void* value) {
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	void** tail = (void**)&OPENCSTL_NIDX(container, -2);
 	void** head = (void**)&OPENCSTL_NIDX(container, 0);
-
+	char* type = (char*)OPENCSTL_NIDX(container, -4);
+	float valuef = 0.0F;
+	if (strcmp(type, "float") == 0) {
+		valuef = *(double*)value;
+		value = &valuef;
+	}
 	void* it = *iter_begin;
 	while (it != NULL) {
 		if (memcmp(it, value, type_size) == 0) {

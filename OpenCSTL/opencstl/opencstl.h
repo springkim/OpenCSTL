@@ -7,7 +7,7 @@
 #include"deque.h"
 #include"tree.h"
 
-intmax_t is_deque(void** container) {
+ptrdiff_t is_deque(void** container) {
 	if (OPENCSTL_NIDX(container, -1) > INT_MAX)
 		return 1;
 	return 0;
@@ -21,7 +21,8 @@ void _cstl_push_back(void* container, ...) {
 	void* param1 = __cstl_va_arg(va_ptr);
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
 	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
@@ -46,9 +47,9 @@ void _cstl_push_front(void* container, ...) {
 	void* param1 = va_ptr;
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
@@ -65,9 +66,9 @@ void _cstl_push_front(void* container, ...) {
 void _cstl_pop_back(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
@@ -86,9 +87,9 @@ void _cstl_pop_back(void* container) {
 void _cstl_pop_front(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
@@ -104,9 +105,9 @@ void _cstl_pop_front(void* container) {
 size_t _cstl_size(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	size_t sz = 0;
@@ -165,9 +166,9 @@ void _cstl_insert(void* container,int argc, ...) {
 	void* param3 = __cstl_va_arg((char*)va_ptr + sizeof(void*)*2);	
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
@@ -191,6 +192,7 @@ void _cstl_insert(void* container,int argc, ...) {
 			if(argc==1) __cstl_tree_insert((void**)container, param1,NULL);
 			else cstl_error("Invalid operation");
 		}break;
+		default:cstl_error("Invalid operation"); break;
 	}
 }
 
@@ -203,9 +205,9 @@ void _cstl_erase(void* container, int argc, ...) {
 
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
@@ -224,7 +226,7 @@ void _cstl_erase(void* container, int argc, ...) {
 		}break;
 		case OPENCSTL_DEQUE: {
 			if (argc == 1) {
-				param2 = (*(char**)param1) + OPENCSTL_NIDX((void**)container, NIDX_TSIZE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
+				param2 = (*(char**)param1) + OPENCSTL_NIDX((void**)container, NIDX_TSIZE + (ptrdiff_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
 				__cstl_deque_erase((void**)container, param1, &param2);
 			} else __cstl_deque_erase((void**)container, param1, param2);
 		}break;
@@ -232,6 +234,7 @@ void _cstl_erase(void* container, int argc, ...) {
 		case OPENCSTL_SET: {
 			__cstl_tree_erase((void**)container,*(void**) param1);
 		}break;
+		default:cstl_error("Invalid operation"); break;
 	}
 }
 
@@ -244,9 +247,9 @@ void _cstl_resize(void* container, int argc, ...) {
 
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
@@ -261,18 +264,16 @@ void _cstl_resize(void* container, int argc, ...) {
 			if (argc == 1)param2 = NULL;
 			__cstl_deque_resize((void**)container, *(int*)param1, &param2);
 		}break;
-		case OPENCSTL_SET: {
-
-		}break;
+		default:cstl_error("Invalid operation"); break;
 	}
 }
 
 void* _cstl_begin(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
@@ -297,9 +298,9 @@ void* _cstl_begin(void* container) {
 void* _cstl_rbegin(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
@@ -324,9 +325,9 @@ void* _cstl_rbegin(void* container) {
 void* _cstl_end(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
@@ -351,9 +352,9 @@ void* _cstl_end(void* container) {
 void* _cstl_rend(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
@@ -378,9 +379,9 @@ void* _cstl_rend(void* container) {
 void _cstl_clear(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
@@ -389,6 +390,9 @@ void _cstl_clear(void* container) {
 		}break;
 		case OPENCSTL_LIST: {
 			__cstl_list_clear((void**)container);
+		}break;
+		case OPENCSTL_DEQUE: {
+			__cstl_deque_clear((void**)container);
 		}break;
 		case OPENCSTL_SET:
 		case OPENCSTL_MAP: {
@@ -401,7 +405,8 @@ void _cstl_clear(void* container) {
 void _cstl_free(void* container) {
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
 	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
@@ -412,17 +417,15 @@ void _cstl_free(void* container) {
 		case OPENCSTL_LIST: {
 			__cstl_list_free((void**)container);
 		}break;
+		case OPENCSTL_DEQUE: {
+			__cstl_deque_free((void**)container);
+		}break;
 		case OPENCSTL_SET:
 		case OPENCSTL_MAP: {
 			__cstl_tree_free((void**)container);
 		}break;
 		default:cstl_error("Invalid operation"); break;
 	}
-}
-void* __cstl_find_wrapper(){
-	void* r=NULL;
-
-	return r;
 }
 void* _cstl_find(void* container,int argc, ...) {
 	va_list vl;
@@ -434,9 +437,9 @@ void* _cstl_find(void* container,int argc, ...) {
 
 	size_t container_type;
 	if (is_deque((void**)container)) {
-		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE + (intmax_t)OPENCSTL_NIDX(((void**)container), -1) + 1);
-	}
-	else {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	} else {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {

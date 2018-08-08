@@ -64,8 +64,8 @@ void* __cstl_tree_node(size_t type_size,size_t node_type) {
 	COLOR(ptr) = BLACK;
 	return ptr;
 }
-#define cstl_set(KEY,...)	__cstl_set(sizeof(KEY),ARGN(__VA_ARGS__),__VA_ARGS__)
-void* __cstl_set(size_t key_size,int argc, ...) {
+#define cstl_set(KEY,...)	__cstl_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),__VA_ARGS__)
+void* __cstl_set(size_t key_size,char* type_key,int argc, ...) {
 	if (nil == NULL) {
 		nil = nil_buffer + sizeof(void*) * 5;
 		_(nil, -1) = _(nil, -2)= _(nil, -4)=nil;
@@ -83,14 +83,14 @@ void* __cstl_set(size_t key_size,int argc, ...) {
 	OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
 	OPENCSTL_NIDX(container, NIDX_TSIZE) = key_size;
 	OPENCSTL_NIDX(container, -4) = 0;					//value size, but set does not have value.
-	OPENCSTL_NIDX(container, -3) = 0;					//not-reserved
+	OPENCSTL_NIDX(container, -3) = type_key;					//type
 	OPENCSTL_NIDX(container, -2) = (size_t)compare;	//compare function
 	OPENCSTL_NIDX(container, -1) = 0;
 	OPENCSTL_NIDX(container, 0) = (size_t)nil;			//root
 	return ptr;
 }
-#define cstl_map(KEY,VALUE,...)	__cstl_map(sizeof(KEY),sizeof(VALUE),ARGN(__VA_ARGS__),__VA_ARGS__)
-void* __cstl_map(size_t key_size, size_t value_size,int argc, ...) {
+#define cstl_map(KEY,VALUE,...)	__cstl_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,ARGN(__VA_ARGS__),__VA_ARGS__)
+void* __cstl_map(size_t key_size, size_t value_size,char* type_key,char* type_value,int argc, ...) {
 	if (nil == NULL) {
 		nil = nil_buffer + sizeof(void*) * 5;
 		_(nil, -1) = _(nil, -2)= _(nil, -4)=nil;
@@ -107,8 +107,9 @@ void* __cstl_map(size_t key_size, size_t value_size,int argc, ...) {
 	OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_MAP;
 	OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
 	OPENCSTL_NIDX(container, NIDX_TSIZE) = key_size;
+	OPENCSTL_NIDX(container, -5) = type_value;					//not-reserved
 	OPENCSTL_NIDX(container, -4) = value_size;					//value size, but set does not have value.
-	OPENCSTL_NIDX(container, -3) = 0;					//not-reserved
+	OPENCSTL_NIDX(container, -3) = type_key;					//not-reserved
 	OPENCSTL_NIDX(container, -2) = (size_t)compare;	//compare function
 	OPENCSTL_NIDX(container, -1) = 0;
 	OPENCSTL_NIDX(container, 0) = (size_t)nil;			//root
@@ -198,6 +199,20 @@ void __cstl_tree_insert(void** container, void* key,void* value) {
 	size_t value_size = OPENCSTL_NIDX(container, -4);
 	size_t type_size = key_size + value_size;
 	cstl_compare compare = (cstl_compare)OPENCSTL_NIDX(container, -2);
+
+	char* type_key = (char*)OPENCSTL_NIDX(container, -3);
+	float keyf = 0.0F;
+	if (strcmp(type_key, "float") == 0) {
+		keyf = *(double*)key;
+		key = &keyf;
+	}
+	char* type_value = (char*)OPENCSTL_NIDX(container, -5);
+	float valuef = 0.0F;
+	if (value && strcmp(type_value, "float") == 0) {
+		valuef = *(double*)value;
+		value = &valuef;
+	}
+
 	void*** root = (void***)*container;
 	void* n = __cstl_tree_node(type_size,container_type);
 	memcpy(n, key, key_size);
@@ -334,6 +349,13 @@ void* __cstl_tree_find(void** container, void* key) {
 	size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	size_t value_size = OPENCSTL_NIDX(container, -4);
 	size_t type_size = key_size + value_size;
+	char* type_key = (char*)OPENCSTL_NIDX(container, -3);
+	float keyf = 0.0F;
+	if (strcmp(type_key, "float") == 0) {
+		keyf = *(double*)key;
+		key = &keyf;
+	}
+
 	cstl_compare compare = (cstl_compare)OPENCSTL_NIDX(container, -2);
 	void*** root = (void***)*container;
 	while (*root != nil) {

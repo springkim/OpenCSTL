@@ -67,10 +67,10 @@
 //For access header element
 //OPENCSTL_AccessContainerAsIndex
 #define OPENCSTL_NIDX(container,nidx) (((size_t*)*container)[(nidx)])
-#define OPENCSTL_HEADER	(7)
-#define NIDX_CTYPE	(-7)	//container type
-#define NIDX_HSIZE	(-6)	//header size
-#define NIDX_TSIZE	(-5)	//type size
+#define OPENCSTL_HEADER	(8)
+#define NIDX_CTYPE	(-8)	//container type
+#define NIDX_HSIZE	(-7)	//header size
+#define NIDX_TSIZE	(-6)	//type size
 
 
 #ifdef _MSC_VER // Microsoft compilers
