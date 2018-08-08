@@ -157,7 +157,7 @@ void queue_example(){
 		cstl_push(queue, i);
 	}
 	for (int i = 0; i < 10; i++) {
-		printf("[%3d] ", cstl_top(queue);
+		printf("[%3d] ", cstl_front(queue);
 		cstl_pop(queue, i);
 	}
 	puts("");
@@ -171,11 +171,11 @@ void queue_example(){
 <type*> cstl_begin(<vector>);
 <type*> cstl_end(<vector>);
 void cstl_clear(<vector>);
-bool cstl_empty(<vector>);					//Not implemented
+bool cstl_empty(<vector>);
 <type*> cstl_find(<vector>,<iter>,<value>);
 <type*> cstl_find(<vector>,<value>);
-<type> cstl_front(<vector>)					
-<type> cstl_back(<vector>)					
+<type> cstl_front(<vector>)
+<type> cstl_back(<vector>)
 void cstl_erase(<vector>,<iter>);
 void cstl_erase(<vector>,<iter_begin>,<iter_end>);
 void cstl_insert(<vector>,<iter>,<value>);
@@ -195,11 +195,11 @@ void cstl_free(<vector>);
 <type*> cstl_begin(<list>);
 <type*> cstl_end(<list>);
 void cstl_clear(<list>);
-bool cstl_empty(<list>);					//Not implemented
+bool cstl_empty(<list>);
 <type*> cstl_find(<list>,<iter>,<value>);
 <type*> cstl_find(<list>,<value>);
-<type> cstl_front(<list>)					
-<type> cstl_back(<list>)					
+<type> cstl_front(<list>)
+<type> cstl_back(<list>)
 void cstl_erase(<list>,<iter>);
 void cstl_erase(<list>,<iter_begin>,<iter_end>);
 void cstl_insert(<list>,<iter>,<value>);
@@ -221,13 +221,13 @@ void cstl_free(<list>);
 <type*> cstl_begin(<set>);
 <type*> cstl_end(<set>);
 void cstl_clear(<set>);
-bool cstl_empty(<set>);					//Not implemented
+bool cstl_empty(<set>);
 <type*> cstl_find(<set>,<value>);
 void cstl_erase(<set>,<iter>);
 void cstl_insert(<set>,<iter>,<value>);
 <type*> cstl_rbegin(<set>);
 <type*> cstl_rend(<set>);
-void cstl_size(<set>);					//Not implemented
+void cstl_size(<set>);
 void cstl_free(<set>);
 <type*> cstl_next(<iter>);
 <type*> cstl_prev(<iter>);
@@ -238,13 +238,13 @@ void cstl_free(<set>);
 <type*> cstl_begin(<map>);
 <type*> cstl_end(<map>);
 void cstl_clear(<map>);
-bool cstl_empty(<map>);					//Not implemented
+bool cstl_empty(<map>);
 <type*> cstl_find(<map>,<value>);
 void cstl_erase(<map>,<iter>);
 void cstl_insert(<map>,<iter>,<value>);
 <type*> cstl_rbegin(<map>);
 <type*> cstl_rend(<map>);
-void cstl_size(<map>);					//Not implemented
+void cstl_size(<map>);
 void cstl_free(<map>);
 <type*> cstl_next(<iter>);
 <type*> cstl_prev(<iter>);
@@ -256,11 +256,11 @@ void cstl_free(<map>);
 <type*> cstl_begin(<deque>);
 <type*> cstl_end(<deque>);
 void cstl_clear(<deque>);
-bool cstl_empty(<deque>);					//Not implemented
+bool cstl_empty(<deque>);
 <type*> cstl_find(<deque>,<iter>,<value>);
 <type*> cstl_find(<deque>,<value>);
-<type> cstl_front(<deque>)					
-<type> cstl_back(<deque>)					
+<type> cstl_front(<deque>)
+<type> cstl_back(<deque>)
 void cstl_erase(<deque>,<iter>);
 void cstl_erase(<deque>,<iter_begin>,<iter_end>);
 void cstl_insert(<deque>,<iter>,<value>);
@@ -272,26 +272,27 @@ void cstl_push_front(<deque>,<value>);
 <type*> cstl_rbegin(<deque>);
 <type*> cstl_rend(<deque>);
 void cstl_size(<deque>);
-void cstl_resize(<deque>,<N>);				
-void cstl_resize(<deque>,<N>,<value>);		
+void cstl_resize(<deque>,<N>);
+void cstl_resize(<deque>,<N>,<value>);
 void cstl_free(<deque>);
 ```
 ### `stack references`
 ```
 <type*> cstl_stack(<type>);
 void cstl_clear(<stack>);
-bool cstl_empty(<stack>);					//Not implemented
+bool cstl_empty(<stack>);
 <type> cstl_top(<stack>);
 void cstl_pop(<stack>);
 void cstl_push(<stack>,<value>);
 void cstl_free(<stack>);
 ```
-### `stack references`
+### `queue references`
 ```
 <type*> cstl_queue(<type>);
 void cstl_clear(<queue>);
-bool cstl_empty(<queue>);					//Not implemented
-<type> cstl_top(<queue>);
+bool cstl_empty(<queue>);
+<type> cstl_front(<queue>)
+<type> cstl_back(<queue>)
 void cstl_pop(<queue>);
 void cstl_push(<queue>,<value>);
 void cstl_free(<queue>);
