@@ -9,6 +9,12 @@
 #include"stack.h"
 #include"queue.h"
 
+#define _cstl_deque_front(container) (*(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
+#define cstl_front(C)	is_deque(&C)?\
+_cstl_deque_front(&C)==OPENCSTL_DEQUE?(C[0]):(cstl_error("Invalid Operation")) :\
+(0) 
+
+
 ptrdiff_t is_deque(void** container) {
 	if (OPENCSTL_NIDX(container, -1) > INT_MAX)
 		return 1;
