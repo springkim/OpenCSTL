@@ -18,6 +18,13 @@
 * Header only library
 	* You just need include `opencstl/opencstl.h`.
 
+### Usage
+```
+git clone https://github.com/springkim/OpenCSTL
+```
+Copy `OpenCSTL/opencstl/*.h` into your project directory.
+
+Write `#include<opencstl/opencstl.h>` above your c source file.
 
 
 ### Example
@@ -247,3 +254,9 @@ void cstl_free(<deque>);
 	* But other float name can't be handle.
 * Array based structure use <type*>, Node based structure use <type**>.
 
+### TODO
+*	stack
+*	queue
+*	priority queue
+*	unorded set/map(hash)
+*	algorithm

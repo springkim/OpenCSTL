@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<time.h>
-#include"opencstl/opencstl.h"
+#include"../opencstl/opencstl.h"
 #define Decorate(STR)	for (int i = 0; i < 30; i++)putchar('='); printf(STR); for (int i = 0; i < 30; i++)putchar('=');putchar('\n');
 void cstl_vector_test() {
 	Decorate("opencstl{vector} test begin");

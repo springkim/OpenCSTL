@@ -40,7 +40,7 @@
 #include"types.h"
 #include"defines.h"
 #define cstl_error(msg)		__cstl_error(msg,__FILE__,__FUNCTION__,__LINE__)
-void __cstl_error(char* msg, char* file, char* function, int line) {
+void __cstl_error(const char* msg, const char* file, const char* function, int line) {
 	char err_msg[1024] = { 0 };
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
 	sprintf_s(err_msg,1024, "[%s] in %s , %s , %d\n", msg, file, function, line);

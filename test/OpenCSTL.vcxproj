@@ -145,14 +145,14 @@
     <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="opencstl\deque.h" />
-    <ClInclude Include="opencstl\opencstl.h" />
-    <ClInclude Include="opencstl\vector.h" />
-    <ClInclude Include="opencstl\defines.h" />
-    <ClInclude Include="opencstl\error.h" />
-    <ClInclude Include="opencstl\list.h" />
-    <ClInclude Include="opencstl\tree.h" />
-    <ClInclude Include="opencstl\types.h" />
+    <ClInclude Include="..\opencstl\defines.h" />
+    <ClInclude Include="..\opencstl\deque.h" />
+    <ClInclude Include="..\opencstl\error.h" />
+    <ClInclude Include="..\opencstl\list.h" />
+    <ClInclude Include="..\opencstl\opencstl.h" />
+    <ClInclude Include="..\opencstl\tree.h" />
+    <ClInclude Include="..\opencstl\types.h" />
+    <ClInclude Include="..\opencstl\vector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

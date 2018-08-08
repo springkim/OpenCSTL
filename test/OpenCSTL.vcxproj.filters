@@ -18,34 +18,34 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="opencstl\defines.h">
-      <Filter>opencstl</Filter>
-    </ClInclude>
-    <ClInclude Include="opencstl\types.h">
-      <Filter>opencstl</Filter>
-    </ClInclude>
-    <ClInclude Include="opencstl\error.h">
-      <Filter>opencstl</Filter>
-    </ClInclude>
-    <ClInclude Include="opencstl\vector.h">
-      <Filter>opencstl</Filter>
-    </ClInclude>
-    <ClInclude Include="opencstl\opencstl.h">
-      <Filter>opencstl</Filter>
-    </ClInclude>
-    <ClInclude Include="opencstl\list.h">
-      <Filter>opencstl</Filter>
-    </ClInclude>
-    <ClInclude Include="opencstl\tree.h">
-      <Filter>opencstl</Filter>
-    </ClInclude>
-    <ClInclude Include="opencstl\deque.h">
-      <Filter>opencstl</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="main.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\opencstl\defines.h">
+      <Filter>opencstl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\opencstl\deque.h">
+      <Filter>opencstl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\opencstl\error.h">
+      <Filter>opencstl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\opencstl\list.h">
+      <Filter>opencstl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\opencstl\opencstl.h">
+      <Filter>opencstl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\opencstl\tree.h">
+      <Filter>opencstl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\opencstl\types.h">
+      <Filter>opencstl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\opencstl\vector.h">
+      <Filter>opencstl</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
