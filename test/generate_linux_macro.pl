@@ -2,9 +2,9 @@ use strict;
 use warnings;
 
 
-my @arr=qw/ cstl_push_back cstl_push_front cstl_insert cstl_erase cstl_resize cstl_find /;
-my @check=qw/ 0 0 1 1 1 1 /;
-my @ret=qw/ 0 0 0 0 0 1 /;
+my @arr=qw/ cstl_push_back cstl_push_front cstl_insert cstl_erase cstl_resize cstl_find cstl_push/;
+my @check=qw/ 0 0 1 1 1 1 0/;
+my @ret=qw/ 0 0 0 0 0 1 0/;
 for(my $t=0;$t<=$#arr;$t++){
 	my $name=$arr[$t];
 	

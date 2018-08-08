@@ -43,6 +43,8 @@
 #include<stdarg.h>
 #include<stdint.h>
 #include<limits.h>
+#include<stddef.h>
 typedef int(*cstl_compare)(const void*, const void*);
 typedef void* cstl;
+
 #endif
