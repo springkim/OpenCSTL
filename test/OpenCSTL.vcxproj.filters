@@ -53,5 +53,8 @@
     <ClInclude Include="..\opencstl\stack.h">
       <Filter>opencstl</Filter>
     </ClInclude>
+    <ClInclude Include="..\opencstl\priority_queue.h">
+      <Filter>opencstl</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

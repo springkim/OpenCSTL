@@ -62,6 +62,7 @@
 #define OPENCSTL_DEQUE		4
 #define OPENCSTL_STACK		5
 #define OPENCSTL_QUEUE		6
+#define OPENCSTL_PRIORITY_QUEUE	7
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
 #include<Windows.h>
 #endif
@@ -145,9 +146,10 @@ _cstl_deque_type(&C)==OPENCSTL_DEQUE?(C[cstl_size(C)-1]):(_cstl_deque_type(&C)==
 
 #define OPENCSTL_DEQUE_NIDX(container, nidx) (*(size_t*)((char*)*(void**)container + nidx * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
 #define _cstl_stack_top(container)   *container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
+#define _cstl_priority_queue_top(container)	*container[0]
 #define cstl_top(container)   is_deque(&container)?\
-OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) : (cstl_error("Invalid Operation")):\
-(cstl_error("Invalid Operation"))   //priority queue
+(OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) : (cstl_error("Invalid Operation"))):\
+(OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE) == OPENCSTL_PRIORITY_QUEUE?_cstl_priority_queue_top(&container):((cstl_error("Invalid Operation"))))
 
 
 #if defined(_WIN32) || defined(_WIN64)

@@ -150,6 +150,7 @@
     <ClInclude Include="..\opencstl\error.h" />
     <ClInclude Include="..\opencstl\list.h" />
     <ClInclude Include="..\opencstl\opencstl.h" />
+    <ClInclude Include="..\opencstl\priority_queue.h" />
     <ClInclude Include="..\opencstl\queue.h" />
     <ClInclude Include="..\opencstl\stack.h" />
     <ClInclude Include="..\opencstl\tree.h" />

@@ -6,14 +6,14 @@
 #define Decorate(STR) for (int i = 0; i < 30; i++) { putchar('='); } printf(STR); for (int i = 0; i < 30; i++) { putchar('='); } putchar('\n');
 void cstl_vector_test() {
     Decorate("opencstl{vector} test begin");
-    int *arr = cstl_vector(int);
+    double *arr = cstl_vector(double);
 
     // cstl_push_back(arr, 88);
-    for (int i = 0; i < 10; i++) {
+    for (double i = 0; i < 10; i++) {
         cstl_push_back(arr, i);
     }
 
-    ///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
+  /*  ///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
     cstl_pop_back(arr);
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8]
     cstl_insert(arr, arr + 0, 777);
@@ -25,7 +25,7 @@ void cstl_vector_test() {
     ///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
     cstl_resize(arr, 15, -1);
 
-    ///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8] [-1] [-1]
+    ///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8] [-1] [-1]*/
     for (int *it = cstl_begin(arr); it != cstl_end(arr); it++) {
         printf("[%d] ", *it);
     }
@@ -71,18 +71,18 @@ int IntCmp(const void *a, const void *b) {
 }
 void cstl_set_test() {
     Decorate("opencstl{set} test begin");
-    float** tree = cstl_set(float, IntCmp);
-    for (float i = 0; i < 100; i++) {
+    int** tree = cstl_set(int, IntCmp);
+    for (int i = 0; i < 100; i++) {
         cstl_insert(tree, i);
     }
     /// [0] [1] ... [98] [99]
-     for (float i = 50; i < 70; i++) {
+     for (int i = 50; i < 70; i++) {
     	int* it = cstl_find(tree, i);
     	cstl_erase(tree, it);
      }
     /// [0] [1] ... [48] [49] [70] [71] ... [98] [99]
-    for (float *it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
-        printf("[%f]", *it);
+    for (int *it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
+        printf("[%3d]", *it);
     }
     puts("");
 	printf("size : %d\n", cstl_size(tree));
@@ -159,6 +159,21 @@ void cstl_queue_test() {
     cstl_free(queue);
     Decorate("opencstl{stack} test end");
 }
+void cstl_priority_queue_test() {
+	Decorate("opencstl{priority_queue} test begin");
+	int *pqueue = cstl_priority_queue(int,IntCmp);
+	for (int i = 0; i < 100; i++) {
+		cstl_push(pqueue, rand()%100);
+	}
+
+	for (int i = 0; i < 100; i++) {
+		printf("[%3d]",cstl_top(pqueue));
+		cstl_pop(pqueue);
+	}
+	puts("");
+	cstl_free(pqueue);
+	Decorate("opencstl{priority_queue} test end");
+}
 
 int main() {
     cstl_vector_test();
@@ -168,5 +183,6 @@ int main() {
     cstl_deque_test();
     cstl_stack_test();
     cstl_queue_test();
+	cstl_priority_queue_test();
     return 0;
 }

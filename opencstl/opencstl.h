@@ -8,6 +8,7 @@
 #include"tree.h"
 #include"stack.h"
 #include"queue.h"
+#include"priority_queue.h"
 
 
 
@@ -38,6 +39,9 @@ OPENCSTL_FUNC void _cstl_push(void* container, ...) {
 	case OPENCSTL_QUEUE: {
 		__cstl_deque_push_back((void**)container, value);
 	}break;
+	case OPENCSTL_PRIORITY_QUEUE: {
+		__cstl_priority_queue_push((void**)container, value);
+	}break;		
 	default:cstl_error("Invalid operator"); break;
 	}
 }
@@ -110,6 +114,9 @@ OPENCSTL_FUNC void _cstl_pop(void* container) {
 	case OPENCSTL_QUEUE: {
 		__cstl_deque_pop_front((void**)container);
 	}break;
+	case OPENCSTL_PRIORITY_QUEUE: {
+		__cstl_priority_queue_pop((void**)container);
+	}break;
 	default:cstl_error("Invalid operator"); break;
 	}
 }
@@ -163,6 +170,7 @@ OPENCSTL_FUNC size_t _cstl_size(void* container) {
 	}
 	size_t sz = 0;
 	switch (container_type) {
+		case OPENCSTL_PRIORITY_QUEUE:
 		case OPENCSTL_VECTOR: {
 			sz=__cstl_vector_size((void**)container);
 		}break;
@@ -173,6 +181,8 @@ OPENCSTL_FUNC size_t _cstl_size(void* container) {
 		case OPENCSTL_MAP: {
 			sz = __cstl_tree_size((void**)container);
 		}break;
+		case OPENCSTL_STACK:
+		case OPENCSTL_QUEUE:
 		case OPENCSTL_DEQUE: {
 			sz = __cstl_deque_size((void**)container);
 		}break;
@@ -440,6 +450,7 @@ OPENCSTL_FUNC void _cstl_clear(void* container) {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
+		case OPENCSTL_PRIORITY_QUEUE:
 		case OPENCSTL_VECTOR: {
 			__cstl_vector_clear((void**)container);
 		}break;
@@ -468,6 +479,7 @@ OPENCSTL_FUNC bool _cstl_empty(void* container) {
 	}
 	size_t sz = 0;
 	switch (container_type) {
+		case OPENCSTL_PRIORITY_QUEUE:
 		case OPENCSTL_VECTOR: {
 			sz = __cstl_vector_size((void**)container);
 		}break;
@@ -495,6 +507,7 @@ OPENCSTL_FUNC void _cstl_free(void* container) {
 		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 	}
 	switch (container_type) {
+		case OPENCSTL_PRIORITY_QUEUE:
 		case OPENCSTL_VECTOR: {
 			__cstl_vector_free((void**)container);
 		}break;
