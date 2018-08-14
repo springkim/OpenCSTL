@@ -164,6 +164,21 @@ void queue_example(){
 	cstl_free(queue);
 }
 ```
+#### `priority_queue example`
+```cpp
+void priority_queue_example(){
+	int* priority_queue = cstl_priority_queue(int);
+	for (int i = 0; i < 10; i++) {
+		cstl_push(priority_queue, i);
+	}
+	for (int i = 0; i < 10; i++) {
+		printf("[%3d] ", cstl_top(priority_queue);
+		cstl_pop(priority_queue, i);
+	}
+	puts("");
+	cstl_free(priority_queue);
+}
+```
 ### Reference
 #### `vector references`
 ```
@@ -284,6 +299,7 @@ bool cstl_empty(<stack>);
 <type> cstl_top(<stack>);
 void cstl_pop(<stack>);
 void cstl_push(<stack>,<value>);
+void cstl_size(<stack>);
 void cstl_free(<stack>);
 ```
 ### `queue references`
@@ -295,7 +311,19 @@ bool cstl_empty(<queue>);
 <type> cstl_back(<queue>)
 void cstl_pop(<queue>);
 void cstl_push(<queue>,<value>);
+void cstl_size(<queue>);
 void cstl_free(<queue>);
+```
+### `priority_queue references`
+```
+<type*> cstl_priority_queue(<type>);
+void cstl_clear(<priority_queue>);
+bool cstl_empty(<priority_queue>);
+<type> cstl_top(<priority_queue>);
+void cstl_pop(<priority_queue>);
+void cstl_push(<priority_queue>,<value>);
+void cstl_size(<priority_queue>);
+void cstl_free(<priority_queue>);
 ```
 ### Warnings
 * Unable to recognize typedef float
@@ -306,6 +334,5 @@ void cstl_free(<queue>);
 * Array based structure use <type*>, Node based structure use <type**>.
 
 ### TODO
-*	priority queue
 *	unorded set/map(hash)
 *	algorithm

@@ -73,7 +73,9 @@ OPENCSTL_FUNC void __cstl_priority_queue_heapifyD2U(void**container, size_t i) {
 	cstl_compare compare = OPENCSTL_NIDX(container, -3);
 
 	size_t idx = i;
-	while (idx > 0 && compare((char*)*container + idx*type_size, (char*)*container + (idx - 1) / 2 * type_size) > 0) {
+	int result = compare ? compare((char*)*container + idx*type_size, (char*)*container + (idx - 1) / 2 * type_size) : \
+		memcmp((char*)*container + idx*type_size, (char*)*container + (idx - 1) / 2 * type_size, type_size);
+	while (idx > 0 && result > 0) {
 		__cstl_priority_queue_swap((char*)*container + idx*type_size, (char*)*container + (idx - 1) / 2 * type_size, type_size);
 		idx = (idx - 1) / 2;
 	}
@@ -85,9 +87,13 @@ OPENCSTL_FUNC void __cstl_priority_queue_heapifyU2D(void**container, size_t i) {
 	cstl_compare compare = OPENCSTL_NIDX(container, -3);
 	size_t idx = i, c = idx;
 	while (idx < length) {
-		if (compare((char*)*container + idx*type_size, (char*)*container + (idx * 2 + 1)*type_size) < 0 && idx * 2 + 1 < length)
+		int result = compare ? compare((char*)*container + idx*type_size, (char*)*container + (idx * 2 + 1)*type_size) : \
+			memcmp((char*)*container + idx*type_size, (char*)*container + (idx * 2 + 1)*type_size, type_size);
+		if (result < 0 && idx * 2 + 1 < length)
 			c = idx * 2 + 1;
-		if (compare((char*)*container + c*type_size, (char*)*container + (idx * 2 + 2)*type_size) < 0 && idx * 2 + 2 < length)
+		result = compare ? compare((char*)*container + c*type_size, (char*)*container + (idx * 2 + 2)*type_size) : \
+			memcmp((char*)*container + c*type_size, (char*)*container + (idx * 2 + 2)*type_size, type_size);
+		if (result < 0 && idx * 2 + 2 < length)
 			c = idx * 2 + 2;
 		if (c == idx)break;
 		__cstl_priority_queue_swap((char*)*container + c*type_size, (char*)*container + idx*type_size, type_size);

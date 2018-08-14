@@ -161,9 +161,9 @@ void cstl_queue_test() {
 }
 void cstl_priority_queue_test() {
 	Decorate("opencstl{priority_queue} test begin");
-	int *pqueue = cstl_priority_queue(int,IntCmp);
+	int *pqueue = cstl_priority_queue(int);
 	for (int i = 0; i < 100; i++) {
-		cstl_push(pqueue, rand()%100);
+		cstl_push(pqueue, (rand()%100));
 	}
 
 	for (int i = 0; i < 100; i++) {
