@@ -10,7 +10,7 @@
 	* OpenCSTL has a function name and parameters such as C++ STL.
 	* You just need passing `container` to first parameter.
 * Overloading in C
-	* We implement overloading function as variadic grammar.
+	* We implement overloading function using variadic grammar.
 * Fast performance
 	* OpenCSTL doesn't have bootleneck.
 * Crossplatform
@@ -164,6 +164,21 @@ void queue_example(){
 	cstl_free(queue);
 }
 ```
+#### `priority_queue example`
+```cpp
+void queue_example(){
+	int *queue = cstl_priority_queue(int,IntCmp);
+	for (int i = 0; i < 10; i++) {
+		cstl_push(queue, i);
+	}
+	while(!cstl_empty(queue)){
+		printf("[%3d]", cstl_top(queue));
+		cstl_pop(queue);
+	}
+	puts("");
+	cstl_free(queue);
+}
+```
 ### Reference
 #### `vector references`
 ```
@@ -188,6 +203,8 @@ void cstl_size(<vector>);
 void cstl_resize(<vector>,<N>);
 void cstl_resize(<vector>,<N>,<value>);
 void cstl_free(<vector>);
+void cstl_assign(<vector>,<n>);
+void cstl_assign(<vector>,<n>,<value>)
 ```
 #### `list references`
 ```
@@ -211,9 +228,11 @@ void cstl_push_front(<list>,<value>);
 <type*> cstl_rbegin(<list>);
 <type*> cstl_rend(<list>);
 void cstl_size(<list>);
-void cstl_resize(<list>,<N>);				//Not implemented
-void cstl_resize(<list>,<N>,<value>);		//Not implemented
+void cstl_resize(<list>,<N>);
+void cstl_resize(<list>,<N>,<value>);
 void cstl_free(<list>);
+void cstl_assign(<list>,<n>);
+void cstl_assign(<list>,<n>,<value>)
 ```
 ### `set references`
 ```
@@ -275,6 +294,8 @@ void cstl_size(<deque>);
 void cstl_resize(<deque>,<N>);
 void cstl_resize(<deque>,<N>,<value>);
 void cstl_free(<deque>);
+void cstl_assign(<list>,<n>);
+void cstl_assign(<list>,<n>,<value>)
 ```
 ### `stack references`
 ```
@@ -306,6 +327,5 @@ void cstl_free(<queue>);
 * Array based structure use <type*>, Node based structure use <type**>.
 
 ### TODO
-*	priority queue
 *	unorded set/map(hash)
 *	algorithm

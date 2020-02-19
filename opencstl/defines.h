@@ -54,14 +54,19 @@
 #define OPENCSTL_CC_CLANG
 #endif
 
+//#define OPENCSTL_ARRAYBASE	0x80	//b10000000
+//#define OPENCSTL_NODEBASE	0x40	//b01000000
 
 #define OPENCSTL_SET		0
-#define OPENCSTL_MAP			1
+#define OPENCSTL_MAP		1
 #define OPENCSTL_VECTOR		2
 #define OPENCSTL_LIST		3
 #define OPENCSTL_DEQUE		4
 #define OPENCSTL_STACK		5
 #define OPENCSTL_QUEUE		6
+#define OPENCSTL_PRIORITY_QUEUE	7
+
+
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
 #include<Windows.h>
 #endif
@@ -73,7 +78,10 @@
 #define NIDX_CTYPE	(-8)	//container type
 #define NIDX_HSIZE	(-7)	//header size
 #define NIDX_TSIZE	(-6)	//type size
-
+//OPENCSTL_HEAP_MACROS
+#define HEAP_PARENT(I)	(((I)-1)>>1)
+#define HEAP_LEFT(I)		(((I)<<1)+1)
+#define HEAP_RIGHT(I)	(((I)<<1)+2)
 
 #ifdef _MSC_VER // Microsoft compilers
 #   define ARGN(...)  INTERNAL_EXPAND_ARGS_PRIVATE(INTERNAL_ARGS_AUGMENTER(__VA_ARGS__))
@@ -94,6 +102,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 #define __cstl_va_start(V,C,beg)	va_start(V,C);beg=V;
 #define __cstl_va_arg(PTR)	(PTR)
+#define __cstl_va_end(V)	va_end(V)
 #elif defined(__linux__)
 #define __cstl_va_start(V,C,beg)	va_start(V,C);beg=((char*)V->reg_save_area)+sizeof(void*)*2;
 #define __cstl_va_arg(PTR)	(*(void**)(PTR))
@@ -146,8 +155,8 @@ _cstl_deque_type(&C)==OPENCSTL_DEQUE?(C[cstl_size(C)-1]):(_cstl_deque_type(&C)==
 #define OPENCSTL_DEQUE_NIDX(container, nidx) (*(size_t*)((char*)*(void**)container + nidx * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
 #define _cstl_stack_top(container)   *container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
 #define cstl_top(container)   is_deque(&container)?\
-OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) : (cstl_error("Invalid Operation")):\
-(cstl_error("Invalid Operation"))   //priority queue
+OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) : (container[cstl_error("Invalid Operation")]):\
+(OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[cstl_error("Invalid Operation")]))   //priority queue
 
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -158,6 +167,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define cstl_insert(container,...)	_cstl_insert(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 #define cstl_erase(container,...)	_cstl_erase(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 #define cstl_resize(container,...)	_cstl_resize(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_assign(container,...)	_cstl_assign(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 #define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 
 #elif defined(__linux__)
@@ -227,6 +237,19 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define _cstl_resize_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
 #define _cstl_resize_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
 #define _cstl_resize_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_assign(C,...) _linux_cstl_assign(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_assign(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_assign ## _ ## N
+#define _cstl_assign_0(C,argc)    {__auto_type __0=&C;_cstl_assign( __0,argc);}
+#define _cstl_assign_1(C,argc,_1)    {__auto_type __0=&C;__auto_type __1=_1;_cstl_assign( __0,argc,&__1);}
+#define _cstl_assign_2(C,argc,_1,_2)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;_cstl_assign( __0,argc,&__1,&__2);}
+#define _cstl_assign_3(C,argc,_1,_2,_3)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_assign( __0,argc,&__1,&__2,&__3);}
+#define _cstl_assign_4(C,argc,_1,_2,_3,_4)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_assign_5(C,argc,_1,_2,_3,_4,_5)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_assign_6(C,argc,_1,_2,_3,_4,_5,_6)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_assign_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_assign_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_assign_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_assign_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 #define cstl_find(C,...) ({void* _() {_linux_cstl_find(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)}_;})();
 #define _linux_cstl_find(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_find ## _ ## N
 #define _cstl_find_0(C,argc)    {__auto_type __0=&C;return _cstl_find( __0,argc);}

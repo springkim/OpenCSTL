@@ -8,7 +8,6 @@ void cstl_vector_test() {
     Decorate("opencstl{vector} test begin");
     int *arr = cstl_vector(int);
 
-    // cstl_push_back(arr, 88);
     for (int i = 0; i < 10; i++) {
         cstl_push_back(arr, i);
     }
@@ -35,10 +34,48 @@ void cstl_vector_test() {
     if (pos != NULL) {
         printf("find : [%3d]\n", *pos);
     }
+	cstl_assign(arr, 5);
+	///[0] [0] [0] [0] [0]
+	for (int i = 0; i < cstl_size(arr); i++) {
+		printf("[%d] ", arr[i]);
+	}
+	puts("");
+	cstl_assign(arr, 5,7);
+	///[7] [7] [7] [7] [7]
+	for (int i = 0; i < cstl_size(arr); i++) {
+		printf("[%d] ", arr[i]);
+	}
+	puts("");
     cstl_free(arr);
     Decorate("opencstl{vector} test end");
 }
+void cstl_vector_test2() {
+	Decorate("opencstl{vector 2d} test begin");
+	int** matrix = cstl_vector(int*);
+	cstl_assign(matrix, 5);
+	for (int i = 0; i < cstl_size(matrix); i++) {
+		matrix[i] = cstl_vector(int);
+		cstl_assign(matrix[i], 5);
+	}
 
+	for (int i = 0; i < cstl_size(matrix); i++) {
+		for (int j = 0; j < cstl_size(matrix[i]); j++) {
+			matrix[i][j] = i * j;
+		}
+	}
+	for (int i = 0; i < cstl_size(matrix); i++) {
+		for (int j = 0; j < cstl_size(matrix[i]); j++) {
+			printf("[%3d]", matrix[i][j]);
+		}
+		puts("");
+	}
+
+	for (int i = 0; i < cstl_size(matrix); i++) {
+		cstl_free(matrix[i]);
+	}
+	cstl_free(matrix);
+	Decorate("opencstl{vector 2d} test end");
+}
 void cstl_list_test02() {
     Decorate("opencstl{list} test begin");
     int **list = cstl_list(int);
@@ -46,6 +83,8 @@ void cstl_list_test02() {
         cstl_push_back(list, i);
     }
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
+	printf("list size: %d\n", cstl_size(list));
+
     cstl_pop_back(list);
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8]
     cstl_insert(list, cstl_begin(list), 777);
@@ -58,10 +97,14 @@ void cstl_list_test02() {
         printf("[%d] ", *it);
     }
     puts("");
-    printf("front : %d\n", list[0][0]);
+	printf("list size: %d\n", cstl_size(list));
     printf("front : %d\n", cstl_front(list));
-    printf("back : %d\n", list[-2][0]);
     printf("back : %d\n", cstl_back(list));
+
+	cstl_resize(list, 20);
+	printf("list size: %d\n", cstl_size(list));
+	cstl_resize(list, 3);
+	printf("list size: %d\n", cstl_size(list));
     cstl_free(list);
     Decorate("opencstl{list} test end");
 }
@@ -128,6 +171,24 @@ void cstl_deque_test() {
     printf("front : %d\n", deque[0]);
     printf("front : %d\n", cstl_front(deque));
     printf("back : %d\n", cstl_back(deque));
+
+
+	cstl_assign(deque, 5);
+	///[0] [0] [0] [0] [0]
+	printf("size: %d\n", cstl_size(deque));
+	for (int i = 0; i < cstl_size(deque); i++) {
+		printf("[%d] ", deque[i]);
+	}
+	puts("");
+	cstl_assign(deque, 5, 7);
+	cstl_resize(deque, 10);
+	///[7] [7] [7] [7] [7]
+	for (int i = 0; i < cstl_size(deque); i++) {
+		printf("[%d] ", deque[i]);
+	}
+	puts("");
+
+
     cstl_free(deque);
     Decorate("opencstl{deque} test end");
 }
@@ -157,16 +218,92 @@ void cstl_queue_test() {
     }
     puts("");
     cstl_free(queue);
-    Decorate("opencstl{stack} test end");
+    Decorate("opencstl{queue} test end");
 }
 
+void cstl_priority_queue_test() {
+	Decorate("opencstl{priority_queue} test begin");
+	int *queue = cstl_priority_queue(int,IntCmp);
+	for (int i = 0; i < 10; i++) {
+		cstl_push(queue, i);
+	}
+	while(!cstl_empty(queue)){
+		printf("[%3d]", cstl_top(queue));
+		cstl_pop(queue);
+	}
+	puts("");
+	cstl_free(queue);
+	Decorate("opencstl{priority_queue} test end");
+}
+typedef struct {
+	int cost, to;
+}Edge;
+Edge make_edge(int cost, int to) { Edge r = { cost,to };return r;}
+int compare_edge(const void* _a, const void* _b) {
+	Edge* a = (Edge*)_a;
+	Edge* b = (Edge*)_b;
+	return a->cost > b->cost ? -1 : a->cost < b->cost;
+}
+int* dijkstra(Edge** vec, int begin) {
+	int* d = cstl_vector(int);
+	Edge* pqueue = cstl_priority_queue(Edge, compare_edge);
+	cstl_assign(d, cstl_size(vec), 99999);
+	d[begin] = 0;
+	cstl_push(pqueue, make_edge(0, begin));
+	while (!cstl_empty(pqueue)) {
+		Edge e = cstl_top(pqueue);
+		cstl_pop(pqueue);
+		int end = cstl_size(vec[e.to]);
+		for (int i = 0; i < end; i++) {
+			int* a = &d[vec[e.to][i].to];
+			int b = d[e.to];
+			int c = vec[e.to][i].cost;
+			if (*a > b + c) {
+				*a = b + c;
+				int value = vec[e.to][i].to;
+				cstl_push(pqueue, make_edge(*a, value));
+			}
+		}
+	}
+	cstl_free(pqueue);
+	return d;
+}
+void cstl_priority_queue_test2() {
+	Edge** vec = cstl_vector(Edge*);
+	cstl_assign(vec, 7);
+	for (int i = 0; i < cstl_size(vec); i++) {
+		vec[i] = cstl_vector(Edge);
+	}
+	cstl_push_back(vec[1], make_edge(10, 2));
+	cstl_push_back(vec[1], make_edge(30, 3));
+	cstl_push_back(vec[1], make_edge(15, 4));
+	cstl_push_back(vec[2], make_edge(20,5));
+	cstl_push_back(vec[3], make_edge(5,6));
+	cstl_push_back(vec[4], make_edge(5,3));
+	cstl_push_back(vec[4], make_edge(20,6));
+	cstl_push_back(vec[5], make_edge(20, 6));
+	cstl_push_back(vec[6], make_edge(20, 4));
+
+	int* d = dijkstra(vec, 1);
+	for (int i = 0; i < cstl_size(d); i++) {
+		printf("%d\n", d[i]);
+	}
+	cstl_free(d);
+	for (int i = 0; i < cstl_size(vec); i++) {
+		cstl_free(vec[i]);
+	}
+	cstl_free(vec);
+}
 int main() {
     cstl_vector_test();
+	cstl_vector_test2();
     cstl_list_test02();
     cstl_set_test();
     cstl_map_test();
     cstl_deque_test();
     cstl_stack_test();
     cstl_queue_test();
+	cstl_priority_queue_test();
+	cstl_priority_queue_test2();
     return 0;
 }

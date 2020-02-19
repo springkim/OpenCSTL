@@ -58,6 +58,42 @@ OPENCSTL_FUNC void * __cstl_deque(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, -1) = -type_size - 1;       
     return ptr;
 }
+
+OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_t n, void *value) {
+	ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
+	size_t header_sz = *(size_t *)((char *) *(void **)container + NIDX_HSIZE * sizeof(size_t) + distance);
+	size_t type_size = *(size_t *)((char *) *(void **)container + NIDX_TSIZE * sizeof(size_t) + distance);
+	size_t length = *(size_t *)((char *) *(void **)container + -2 * sizeof(size_t) + distance);
+	size_t capacity = *(size_t *)((char *) *(void **)container + -3 * sizeof(size_t) + distance);
+	char *type = (char *) *(size_t *)((char *) *(void **)container + -4 * sizeof(size_t) + distance);
+	float valuef = 0.0F;
+
+	if (strcmp(type, "float") == 0) {
+		valuef = (float) *(double *)value;
+		value = &valuef;
+	}
+	
+	capacity = n;
+	void *b = calloc(1, header_sz + capacity * type_size);
+	memcpy(b, (char *)*container - header_sz + distance, header_sz);
+	free(((char *)*container) - header_sz + distance);
+	*container = ((char *)b) + header_sz;
+	OPENCSTL_NIDX(container, -1) = -1;
+	distance = 0;
+	*(size_t *)((char *) *(void **)container + -3 * sizeof(size_t) + distance) = n;
+	*(size_t *)((char *) *(void **)container + -2 * sizeof(size_t) + distance) = n;
+
+	if (value == NULL) {
+		memset((char *)*container, 0, n*type_size);
+	}
+	else {
+		for (size_t i = 0; i < n; i++) {
+			memcpy((char*)*container + type_size * (i), value, type_size);
+		}
+	}
+	
+}
+
 OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
@@ -202,7 +238,7 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
         *container = (char *) b + header_sz;
         OPENCSTL_NIDX(container, -1) = -1;
         distance = 0;
-        *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
+		*(size_t *)((char *) *(void **)container + -3 * sizeof(size_t) + distance) = n;
     }
     *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) = n;
     if (length < n) {

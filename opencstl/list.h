@@ -50,7 +50,7 @@ OPENCSTL_FUNC void* __cstl_list(size_t type_size,char* type) {
 	OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
 	OPENCSTL_NIDX(container, -4) = (size_t)type;
 	OPENCSTL_NIDX(container, -2) = 0;	//tail
-	OPENCSTL_NIDX(container, -1) = 0;	//Not reserved
+	OPENCSTL_NIDX(container, -1) = 0;	//length
 	OPENCSTL_NIDX(container, 0) = 0;	//head
 	return ptr;
 }
@@ -75,7 +75,7 @@ OPENCSTL_FUNC void __cstl_list_push_back_front(void** container, void* value, in
 		valuef = (float)*(double*)value;
 		value = &valuef;
 	}
-	memcpy(n, value, type_size);
+	if(value)memcpy(n, value, type_size);
 	if (*head == NULL && *tail == NULL) {
 		*head = *tail = n;
 	} else {
@@ -83,6 +83,7 @@ OPENCSTL_FUNC void __cstl_list_push_back_front(void** container, void* value, in
 		OPENCSTL_NIDX(&n, -(nhead + 2)) = (size_t)*tail;
 		*tail = n;
 	}
+	OPENCSTL_NIDX(container, -1)++;
 }
 OPENCSTL_FUNC void __cstl_list_pop_back_front(void** container, int ntail, int nhead) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
@@ -101,19 +102,37 @@ OPENCSTL_FUNC void __cstl_list_pop_back_front(void** container, int ntail, int n
 		free(&OPENCSTL_NIDX(&fb, -3));
 		OPENCSTL_NIDX(tail, -(ntail + 2)) = 0;
 	}
+
+	OPENCSTL_NIDX(container, -1)--;
 }
 OPENCSTL_FUNC void* __cstl_list_next_prev(void* it, int n) {
 	//next(-1), prev(-2)
 	return (void*)OPENCSTL_NIDX(&it, n);
 }
 OPENCSTL_FUNC size_t __cstl_list_size(void** container) {
-	size_t sz = 0;
+	return OPENCSTL_NIDX(container, -1);
+	/*size_t sz = 0;
 	for (void** it = (void**)OPENCSTL_NIDX(container, 0); it != NULL; it=(void**)__cstl_list_next_prev(it,-1)) {
 		sz++;
 	}
-	return sz;
+	return sz;*/
 }
-
+OPENCSTL_FUNC void __cstl_list_resize(void** container, size_t n, void* value) {
+	size_t length = OPENCSTL_NIDX(container, -1);
+	if (n < length) {
+		while (n < length) {
+			__cstl_list_pop_back_front((void**)container, -1, 0);
+			length--;
+		}
+	}
+	else {
+		while (n >= length) {
+			__cstl_list_push_back_front((void**)container, value, -1, 0);
+			length++;
+		}
+	}
+	OPENCSTL_NIDX(container, -1) = n;
+}
 OPENCSTL_FUNC void __cstl_list_insert(void** container, void** iter, size_t N, void* value) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -151,6 +170,7 @@ OPENCSTL_FUNC void __cstl_list_insert(void** container, void** iter, size_t N, v
 		OPENCSTL_NIDX(&nhead, -2) = (size_t)*tail;		//n->prev=tail;
 		*tail = ntail;
 	}
+	OPENCSTL_NIDX(container, -1) += N;
 }
 OPENCSTL_FUNC void __cstl_list_erase(void** container, void** iter_begin, void** iter_end) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
@@ -175,11 +195,13 @@ OPENCSTL_FUNC void __cstl_list_erase(void** container, void** iter_begin, void**
 	while (it != *iter_end) {
 		void* tmp = (void*)OPENCSTL_NIDX(&it, -1);
 		free(&OPENCSTL_NIDX(&it, -3));
+		OPENCSTL_NIDX(container, -1)--;
 		it = tmp;
 	}
 	if (*iter_end == NULL) {
 		*tail = 0;
 	}
+	
 }
 OPENCSTL_FUNC void* __cstl_list_begin(void** container) {
 	return (void*)OPENCSTL_NIDX(container, 0);
@@ -201,6 +223,7 @@ OPENCSTL_FUNC void __cstl_list_clear(void** container) {
 		it = tmp;
 	}
 	*head = *tail = NULL;
+	OPENCSTL_NIDX(container, -1) = 0;
 }
 OPENCSTL_FUNC void __cstl_list_free(void** container) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);

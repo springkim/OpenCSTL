@@ -87,6 +87,7 @@ OPENCSTL_FUNC void* __cstl_set(size_t key_size,char* type_key,int argc, ...) {
 	OPENCSTL_NIDX(container, -2) = (size_t)compare;	//compare function
 	OPENCSTL_NIDX(container, -1) = 0;
 	OPENCSTL_NIDX(container, 0) = (size_t)nil;			//root
+	va_end(vl);
 	return ptr;
 }
 #define cstl_map(KEY,VALUE,...)	__cstl_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,ARGN(__VA_ARGS__),__VA_ARGS__)
@@ -113,6 +114,7 @@ OPENCSTL_FUNC void* __cstl_map(size_t key_size, size_t value_size,char* type_key
 	OPENCSTL_NIDX(container, -2) = (size_t)compare;	//compare function
 	OPENCSTL_NIDX(container, -1) = 0;
 	OPENCSTL_NIDX(container, 0) = (size_t)nil;			//root
+	va_end(vl);
 	return ptr;
 }
 

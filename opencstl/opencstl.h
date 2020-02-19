@@ -18,7 +18,42 @@ OPENCSTL_FUNC ptrdiff_t is_deque(void** container) {
 	return 0;
 }
 
-
+OPENCSTL_FUNC void _cstl_assign(void* container, int argc, ...) {
+	va_list vl;
+	void* va_ptr = NULL;
+	__cstl_va_start(vl, argc, va_ptr);
+	void* param1 = __cstl_va_arg(va_ptr);
+	void* param2 = __cstl_va_arg((char*)va_ptr + sizeof(void*) * 1);
+	void* param3 = __cstl_va_arg((char*)va_ptr + sizeof(void*) * 2);
+	size_t container_type;
+	if (is_deque((void**)container)) {
+		ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+		container_type = *(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + distance);
+	}
+	else {
+		container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+	}
+	switch (container_type) {
+	case OPENCSTL_VECTOR: {
+		if (argc >= 3) {
+			cstl_error("Not implemented");
+		}
+		else {
+			if (argc == 1)param2 = NULL;
+			__cstl_vector_assign((void**)container, *(int*)param1, param2);
+		}
+	}break;
+	case OPENCSTL_LIST: {
+		
+	}break;
+	case OPENCSTL_DEQUE: {
+		if (argc == 1)param2 = NULL;
+		__cstl_deque_assign((void**)container, *(int*)param1, param2);
+	}break;
+	default:cstl_error("Invalid operation"); break;
+	}
+	__cstl_va_end(vl);
+}
 
 OPENCSTL_FUNC void _cstl_push(void* container, ...) {
 	va_list vl;
@@ -37,6 +72,9 @@ OPENCSTL_FUNC void _cstl_push(void* container, ...) {
 	case OPENCSTL_STACK:
 	case OPENCSTL_QUEUE: {
 		__cstl_deque_push_back((void**)container, value);
+	}break;
+	case OPENCSTL_PRIORITY_QUEUE: {
+		__cstl_priority_queue_push((void**)container, value);
 	}break;
 	default:cstl_error("Invalid operator"); break;
 	}
@@ -69,6 +107,7 @@ OPENCSTL_FUNC void _cstl_push_back(void* container, ...) {
 		}break;
 		default:cstl_error("Invalid operator"); break;
 	}
+	__cstl_va_end(vl);
 }
 
 OPENCSTL_FUNC void _cstl_push_front(void* container, ...) {
@@ -92,6 +131,7 @@ OPENCSTL_FUNC void _cstl_push_front(void* container, ...) {
 		}break;
 		default:cstl_error("Invalid operator"); break;
 	}
+	__cstl_va_end(vl);
 }
 
 OPENCSTL_FUNC void _cstl_pop(void* container) {
@@ -109,6 +149,9 @@ OPENCSTL_FUNC void _cstl_pop(void* container) {
 	}break;
 	case OPENCSTL_QUEUE: {
 		__cstl_deque_pop_front((void**)container);
+	}break;
+	case OPENCSTL_PRIORITY_QUEUE: {
+		__cstl_priority_queue_pop((void**)container);
 	}break;
 	default:cstl_error("Invalid operator"); break;
 	}
@@ -163,6 +206,7 @@ OPENCSTL_FUNC size_t _cstl_size(void* container) {
 	}
 	size_t sz = 0;
 	switch (container_type) {
+		case OPENCSTL_PRIORITY_QUEUE:
 		case OPENCSTL_VECTOR: {
 			sz=__cstl_vector_size((void**)container);
 		}break;
@@ -249,6 +293,7 @@ OPENCSTL_FUNC void _cstl_insert(void* container,int argc, ...) {
 		}break;
 		default:cstl_error("Invalid operation"); break;
 	}
+	__cstl_va_end(vl);
 }
 
 OPENCSTL_FUNC void _cstl_erase(void* container, int argc, ...) {
@@ -291,6 +336,7 @@ OPENCSTL_FUNC void _cstl_erase(void* container, int argc, ...) {
 		}break;
 		default:cstl_error("Invalid operation"); break;
 	}
+	__cstl_va_end(vl);
 }
 
 OPENCSTL_FUNC void _cstl_resize(void* container, int argc, ...) {
@@ -313,7 +359,8 @@ OPENCSTL_FUNC void _cstl_resize(void* container, int argc, ...) {
 			__cstl_vector_resize((void**)container, *(int*)param1, param2);
 		}break;
 		case OPENCSTL_LIST: {
-
+			if (argc == 1)param2 = NULL;
+			__cstl_list_resize((void**)container, *(int*)param1, param2);
 		}break;
 		case OPENCSTL_DEQUE: {
 			if (argc == 1)param2 = NULL;
@@ -321,6 +368,7 @@ OPENCSTL_FUNC void _cstl_resize(void* container, int argc, ...) {
 		}break;
 		default:cstl_error("Invalid operation"); break;
 	}
+	__cstl_va_end(vl);
 }
 
 OPENCSTL_FUNC void* _cstl_begin(void* container) {
@@ -468,6 +516,7 @@ OPENCSTL_FUNC bool _cstl_empty(void* container) {
 	}
 	size_t sz = 0;
 	switch (container_type) {
+		case OPENCSTL_PRIORITY_QUEUE:
 		case OPENCSTL_VECTOR: {
 			sz = __cstl_vector_size((void**)container);
 		}break;
@@ -484,7 +533,7 @@ OPENCSTL_FUNC bool _cstl_empty(void* container) {
 			sz = __cstl_deque_size((void**)container);
 		}break;
 	}
-	return sz ? true : false;
+	return sz ? false : true;
 }
 OPENCSTL_FUNC void _cstl_free(void* container) {
 	size_t container_type;
@@ -509,6 +558,9 @@ OPENCSTL_FUNC void _cstl_free(void* container) {
 		case OPENCSTL_SET:
 		case OPENCSTL_MAP: {
 			__cstl_tree_free((void**)container);
+		}break;
+		case OPENCSTL_PRIORITY_QUEUE: {
+			__cstl_vector_free((void**)container);
 		}break;
 		default:cstl_error("Invalid operation"); break;
 	}
@@ -548,5 +600,6 @@ OPENCSTL_FUNC void* _cstl_find(void* container,int argc, ...) {
 		}break;
 		default:cstl_error("Invalid operator"); break;
 	}
+	__cstl_va_end(vl);
 	return NULL;
 }

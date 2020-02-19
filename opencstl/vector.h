@@ -56,6 +56,35 @@ OPENCSTL_FUNC void* __cstl_vector(size_t type_size,char* type) {
 	OPENCSTL_NIDX(container, -1) = 0;	//length
 	return ptr;
 }
+OPENCSTL_FUNC void __cstl_vector_assign(void** container, size_t n, void* value) {
+	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+	size_t length = OPENCSTL_NIDX(container, -1);
+	size_t capacity = OPENCSTL_NIDX(container, -2);
+	char* type = (char*)OPENCSTL_NIDX(container, -4);
+	float valuef = 0.0F;
+	if (strcmp(type, "float") == 0) {
+		valuef = (float)*(double*)value;
+		value = &valuef;
+	}
+	if (capacity < n) {
+		void* b = realloc((char*)*container - header_sz, header_sz + n * type_size);
+		if (b == NULL) {
+			cstl_error("Reallocation failed at vector resize");
+		}
+		*container = ((char*)b + header_sz);
+		OPENCSTL_NIDX(container, -2) = n;
+	}
+	if (value == NULL) {
+		memset(*container, 0, type_size*n);
+	}
+	else {
+		for (size_t i = 0; i < n; i++) {
+			memcpy((char*)*container + type_size * (i), value, type_size);
+		}
+	}
+	OPENCSTL_NIDX(container, -1) = n;
+}
 OPENCSTL_FUNC void __cstl_vector_push_back(void** container, void* value) {
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -142,7 +171,6 @@ OPENCSTL_FUNC void* __cstl_vector_rend(void** container) {
 	return (void*)((char*)*container - (type_size));
 }
 OPENCSTL_FUNC void __cstl_vector_resize(void** container, size_t n, void* value) {
-
 	size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
 	size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 	size_t length = OPENCSTL_NIDX(container, -1);
