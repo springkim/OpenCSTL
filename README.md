@@ -4,7 +4,7 @@
 
 ### Features
 
-* Support [ ] operator
+* Support [ ] operator  
   * `cstl_vector` and `cstl_deque` can use [ ] to access element.
 * Same interface with C++ STL.
   * OpenCSTL has a function name and parameters such as C++ STL.
