@@ -9,7 +9,7 @@
 //                               License Agreement
 //                Open Source C Container Library like STL in C++
 //
-//               Copyright (C) 2018, Kim Bomm, all rights reserved.
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
 //
 // Third party copyrights are property of their respective owners.
 //
@@ -45,7 +45,9 @@
 #include<limits.h>
 #include<stddef.h>
 #include<stdbool.h>
-typedef int(*cstl_compare)(const void*, const void*);
+
+typedef int (*cstl_compare)(const void *, const void *);
+
 typedef size_t cstl_ptr;
 
 #endif

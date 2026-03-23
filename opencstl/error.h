@@ -9,7 +9,7 @@
 //                               License Agreement
 //                Open Source C Container Library like STL in C++
 //
-//               Copyright (C) 2018, Kim Bomm, all rights reserved.
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
 //
 // Third party copyrights are property of their respective owners.
 //
@@ -40,16 +40,16 @@
 #include"types.h"
 #include"defines.h"
 #define cstl_error(msg)		__cstl_error(msg,__FILE__,__FUNCTION__,__LINE__)
-OPENCSTL_FUNC int __cstl_error(const char* msg, const char* file, const char* function, int line) {
-	char err_msg[1024] = { 0 };
+OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, const char *function, int line) {
+    char err_msg[1024] = {0};
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
-	sprintf_s(err_msg,1024, "[%s] in %s , %s , %d\n", msg, file, function, line);
-	MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
+    sprintf_s(err_msg, 1024, "[%s] in %s , %s , %d\n", msg, file, function, line);
+    MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
 #else
-	sprintf(err_msg, "[%s] in %s , %s , %d\n", msg, file, function, line);
-	//Other platform msg box...
+    sprintf(err_msg, "[%s] in %s , %s , %d\n", msg, file, function, line);
+    //Other platform msg box...
 #endif
-	exit(EXIT_FAILURE);
-	return 0;
+    exit(EXIT_FAILURE);
+    return 0;
 }
 #endif

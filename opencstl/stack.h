@@ -8,7 +8,7 @@
 //                               License Agreement
 //                Open Source C Container Library like STL in C++
 //
-//               Copyright (C) 2018, Woo Cheol, all rights reserved.
+//               Copyright (C) 2018-2026 KimBomm, Woo Cheol, all rights reserved.
 //
 // Third party copyrights are property of their respective owners.
 //
@@ -41,18 +41,18 @@
 #include"error.h"
 
 #define cstl_stack(TYPE)	__cstl_stack(sizeof(TYPE),#TYPE)
-OPENCSTL_FUNC void* __cstl_stack(size_t type_size, char* type) {
-	size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-	void* ptr = (char*)malloc(header_sz + type_size * 2) + header_sz; // 2 = capacity
-	void** container = &ptr;
-	OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_STACK;
-	OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
-	OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
-	OPENCSTL_NIDX(container, -4) = (size_t)type;
-	OPENCSTL_NIDX(container, -3) = 2;	//capacity
-	OPENCSTL_NIDX(container, -2) = 0;	//length
-	*container = (char*)ptr + type_size;
-	OPENCSTL_NIDX(container, -1) = -type_size - 1;	//distance  = -type_size -1 «◊ªÛ ¿Ωºˆø©æﬂ «œ±‚ ∂ßπÆ
-	return ptr;
+OPENCSTL_FUNC void *__cstl_stack(size_t type_size, char *type) {
+    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
+    void *ptr = (char *) malloc(header_sz + type_size * 2) + header_sz; // 2 = capacity
+    void **container = &ptr;
+    OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_STACK;
+    OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
+    OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
+    OPENCSTL_NIDX(container, -4) = (size_t) type;
+    OPENCSTL_NIDX(container, -3) = 2; //capacity
+    OPENCSTL_NIDX(container, -2) = 0; //length
+    *container = (char *) ptr + type_size;
+    OPENCSTL_NIDX(container, -1) = -type_size - 1; //distance  = -type_size -1 Ìï≠ÏÉÅ ÏùåÏàòÏó¨Ïïº ÌïòÍ∏∞ ÎïåÎ¨∏
+    return ptr;
 }
 #endif

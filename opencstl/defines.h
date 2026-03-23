@@ -9,7 +9,7 @@
 //                               License Agreement
 //                Open Source C Container Library like STL in C++
 //
-//               Copyright (C) 2018, Kim Bomm, all rights reserved.
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
 //
 // Third party copyrights are property of their respective owners.
 //
@@ -46,12 +46,12 @@
 #define OPENCSTL_OS_OSX
 #endif
 
-#if defined(_MSC_VER)
+#if defined(__clang__)
+#define OPENCSTL_CC_CLANG
+#elif defined(_MSC_VER)
 #define OPENCSTL_CC_MSVC
 #elif defined(__GNUC__)
 #define OPENCSTL_CC_GCC
-#elif defined(__clang__)
-#define OPENCSTL_CC_CLANG
 #endif
 
 //#define OPENCSTL_ARRAYBASE	0x80	//b10000000
@@ -67,13 +67,14 @@
 #define OPENCSTL_PRIORITY_QUEUE	7
 
 
-#if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
+#if defined(OPENCSTL_OS_WINDOWS)
 #include<Windows.h>
 #endif
 
 //For access header element
 //OPENCSTL_AccessContainerAsIndex
 #define OPENCSTL_NIDX(container,nidx) (((size_t*)*container)[(nidx)])
+
 #define OPENCSTL_HEADER	(8)
 #define NIDX_CTYPE	(-8)	//container type
 #define NIDX_HSIZE	(-7)	//header size
@@ -99,15 +100,29 @@
 
 #define cstl_value(iter,TYPE)	(*(TYPE*)(iter+1))
 
+// CSTL_USE_VAARG=0: Windows only (values passed directly on stack)
+// CSTL_USE_VAARG=1: Linux/macOS (macros pass pointers via &__1; standard va_arg is correct)
 #if defined(_WIN32) || defined(_WIN64)
+#  define CSTL_USE_VAARG 0
+#else
+#  define CSTL_USE_VAARG 1
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+// On Windows the dispatch macros pass values directly (not pointer-to-value).
+// va_arg(vl,void*) would read the value itself, so use PTR arithmetic instead.
 #define __cstl_va_start(V,C,beg)	va_start(V,C);beg=V;
 #define __cstl_va_arg(PTR)	(PTR)
+// Windows: __cstl_va_arg_next is unused (Windows uses PTR-based path),
+// but define it to avoid compile errors if referenced.
+#define __cstl_va_arg_next(V)	(NULL)
 #define __cstl_va_end(V)	va_end(V)
-#elif defined(__linux__)
-#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=((char*)V->reg_save_area)+sizeof(void*)*2;
-#define __cstl_va_arg(PTR)	(*(void**)(PTR))
-#elif defined(__APPLE__)
-#error Not implemented in OSX
+#else
+// On Linux/macOS the dispatch macros pass &__N (address of a local copy) for each arg.
+// So va_arg(vl, void*) returns void** -- we must dereference to get the actual value.
+#define __cstl_va_start(V,C,beg)	va_start(V,C)
+#define __cstl_va_arg_next(V)	va_arg((V),void*)
+#define __cstl_va_end(V)	va_end(V)
 #endif
 
 //Unary Functions
@@ -131,32 +146,39 @@
 #pragma warning(disable:4047)
 #pragma warning(disable:4477)
 #pragma warning(disable:4313)
-#define cstl_front(C)	*(is_deque((void**)&C)?\
-_cstl_deque_type(&C)==OPENCSTL_DEQUE?(C):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(C):(cstl_error("Invalid Operation"))) :\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(C):\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(C[0]):(cstl_error("Invalid Operation"))))
+#elif defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
+#pragma GCC diagnostic ignored "-Wint-conversion"
+#if !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wno-lto-type-mismatch"
+#endif
+#endif
 
-#define cstl_back(C)	*(is_deque((void**)&C)?\
-_cstl_deque_type(&C)==OPENCSTL_DEQUE?(C+cstl_size(C)-1):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(C+cstl_size(C)-1):(cstl_error("Invalid Operation"))) :\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(C+cstl_size(C)-1):\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(C[-2]):(cstl_error("Invalid Operation"))))
-#elif	defined(__GNUC__)
-#define cstl_front(C)	(is_deque(&C)?\
-_cstl_deque_type(&C)==OPENCSTL_DEQUE?(C[0]):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(C[0]):(cstl_error("Invalid Operation"))) :\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(C[0]):\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(((typeof(C)*)(C[0]))[0]):(cstl_error("Invalid Operation"))))
+#define _cstl_deref(P) (*(P))
+#define _cstl_err_ptr (void*)(size_t)cstl_error("Invalid Operation")
 
-#define cstl_back(C)	(is_deque(&C)?\
-_cstl_deque_type(&C)==OPENCSTL_DEQUE?(C[cstl_size(C)-1]):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(C[cstl_size(C)-1]):(cstl_error("Invalid Operation"))) :\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(C[cstl_size(C)-1]):\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(((typeof(C)*)(C[-2]))[0]):(cstl_error("Invalid Operation"))))
+#define cstl_front(C)	_cstl_deref((void**)(is_deque((void**)&C)?\
+_cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C):_cstl_err_ptr) :\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C):\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)(*(void**)C):_cstl_err_ptr)))
+
+#define cstl_back(C)	_cstl_deref((void**)(is_deque((void**)&C)?\
+_cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C+cstl_size(C)-1):_cstl_err_ptr) :\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C+cstl_size(C)-1):\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)((void**)C)[-2]:_cstl_err_ptr)))
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 
 #define OPENCSTL_DEQUE_NIDX(container, nidx) (*(size_t*)((char*)*(void**)container + nidx * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
 #define _cstl_stack_top(container)   *container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
-#define cstl_top(container)   is_deque(&container)?\
+// cstl_top: (void**)&container explicit cast for strict compilers (MinGW64, Windows Clang).
+#define cstl_top(container)   is_deque((void**)&container)?\
 OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) : (container[cstl_error("Invalid Operation")]):\
 (OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[cstl_error("Invalid Operation")]))   //priority queue
+
 
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -170,7 +192,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define cstl_assign(container,...)	_cstl_assign(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 #define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
 
 #define cstl_push_back(C,...) _linux_cstl_push_back(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
 #define _linux_cstl_push_back(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_back ## _ ## N
@@ -250,19 +272,19 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define _cstl_assign_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
 #define _cstl_assign_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
 #define _cstl_assign_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-#define cstl_find(C,...) ({void* _() {_linux_cstl_find(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)}_;})();
+#define cstl_find(C,...) _linux_cstl_find(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
 #define _linux_cstl_find(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_find ## _ ## N
-#define _cstl_find_0(C,argc)    {__auto_type __0=&C;return _cstl_find( __0,argc);}
-#define _cstl_find_1(C,argc,_1)    {__auto_type __0=&C;__auto_type __1=_1;return _cstl_find( __0,argc,&__1);}
-#define _cstl_find_2(C,argc,_1,_2)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;return _cstl_find( __0,argc,&__1,&__2);}
-#define _cstl_find_3(C,argc,_1,_2,_3)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;return _cstl_find( __0,argc,&__1,&__2,&__3);}
-#define _cstl_find_4(C,argc,_1,_2,_3,_4)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_find_5(C,argc,_1,_2,_3,_4,_5)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_find_6(C,argc,_1,_2,_3,_4,_5,_6)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_find_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_find_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_find_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_find_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;return _cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define _cstl_find_0(C,argc)    ({__auto_type __0=&C;_cstl_find( __0,argc);})
+#define _cstl_find_1(C,argc,_1)    (({__auto_type __0=&C;__auto_type __1=_1;_cstl_find( __0,argc,&__1);}))
+#define _cstl_find_2(C,argc,_1,_2)    (({__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;_cstl_find( __0,argc,&__1,&__2);}))
+#define _cstl_find_3(C,argc,_1,_2,_3)    (({__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;_cstl_find( __0,argc,&__1,&__2,&__3);}))
+#define _cstl_find_4(C,argc,_1,_2,_3,_4)    (({__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;_cstl_find( __0,argc,&__1,&__2,&__3,&__4);}))
+#define _cstl_find_5(C,argc,_1,_2,_3,_4,_5)    (({__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
+#define _cstl_find_6(C,argc,_1,_2,_3,_4,_5,_6)    (({__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
+#define _cstl_find_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
+#define _cstl_find_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
+#define _cstl_find_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
+#define _cstl_find_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
 #define cstl_push(C,...) _linux_cstl_push(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
 #define _linux_cstl_push(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push ## _ ## N
 #define _cstl_push_0(C)    {__auto_type __0=&C;_cstl_push( __0);}
@@ -277,13 +299,11 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define _cstl_push_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
 #define _cstl_push_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 
-#elif defined(__APPLE__)
-#error Not implemented in OSX
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
 #define SELECT_ANY	__declspec(selectany)
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
 #define SELECT_ANY	__attribute__((weak))
 #endif
 #define OPENCSTL_FUNC	static inline

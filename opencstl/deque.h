@@ -8,7 +8,7 @@
 //                               License Agreement
 //                Open Source C Container Library like STL in C++
 //
-//               Copyright (C) 2018, Woo Cheol, all rights reserved.
+//               Copyright (C) 2018-2026, Kim Bomm, Woo Cheol, all rights reserved.
 //
 // Third party copyrights are property of their respective owners.
 //
@@ -39,9 +39,11 @@
 #include "types.h"
 #include "defines.h"
 #include "error.h"
+#ifdef _MSC_VER
 #pragma warning(disable:4146)
 #pragma warning(disable:4308)
 #pragma warning(disable:4307)
+#endif
 #define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void * __cstl_deque(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
