@@ -208,7 +208,7 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
     char *type_key = (char *) OPENCSTL_NIDX(container, -3);
     char *type_value = (char *) OPENCSTL_NIDX(container, -5);
 
-#if !defined(__linux__)
+#if !defined(__linux__) && !defined(__APPLE__)
     float keyf = 0.0F;
     if (strcmp(type_key, "float") == 0) {
         keyf = (float) *(double *) key;
@@ -365,7 +365,7 @@ OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
     size_t value_size = OPENCSTL_NIDX(container, -4);
     size_t type_size = key_size + value_size;
     char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-#if !defined(__linux__)
+#if !defined(__linux__) && !defined(__APPLE__)
     float keyf = 0.0F;
     if (strcmp(type_key, "float") == 0) {
         keyf = (float) *(double *) key;

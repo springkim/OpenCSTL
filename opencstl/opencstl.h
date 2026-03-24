@@ -111,7 +111,7 @@ OPENCSTL_FUNC void _cstl_push_back(void *container, ...) {
     void *param1 = __cstl_va_arg(va_ptr);
 #endif
 
-
+    
     size_t container_type;
 
     if (is_deque((void **) container)) {
