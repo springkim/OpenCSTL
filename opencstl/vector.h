@@ -95,7 +95,6 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     size_t capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
 #if !defined(__linux__) && !defined(__APPLE__)
-    printf("valuef = %f\n", *(double*)value);
     float valuef = 0.0F;
     if (strcmp(type, "float") == 0) {
         valuef = (float) *(double *) value;
