@@ -57,14 +57,16 @@
 //#define OPENCSTL_ARRAYBASE	0x80	//b10000000
 //#define OPENCSTL_NODEBASE	0x40	//b01000000
 
-#define OPENCSTL_SET		0
-#define OPENCSTL_MAP		1
-#define OPENCSTL_VECTOR		2
-#define OPENCSTL_LIST		3
-#define OPENCSTL_DEQUE		4
-#define OPENCSTL_STACK		5
-#define OPENCSTL_QUEUE		6
+#define OPENCSTL_SET		    0
+#define OPENCSTL_MAP		    1
+#define OPENCSTL_VECTOR		    2
+#define OPENCSTL_LIST		    3
+#define OPENCSTL_DEQUE		    4
+#define OPENCSTL_STACK		    5
+#define OPENCSTL_QUEUE		    6
 #define OPENCSTL_PRIORITY_QUEUE	7
+#define OPENCSTL_UNORDERED_SET	8
+#define OPENCSTL_UNORDERED_MAP	9
 
 
 #if defined(OPENCSTL_OS_WINDOWS)
@@ -75,10 +77,13 @@
 //OPENCSTL_AccessContainerAsIndex
 #define OPENCSTL_NIDX(container,nidx) (((size_t*)*container)[(nidx)])
 
-#define OPENCSTL_HEADER	(8)
-#define NIDX_CTYPE	(-8)	//container type
-#define NIDX_HSIZE	(-7)	//header size
-#define NIDX_TSIZE	(-6)	//type size
+#define OPENCSTL_HEADER	(10)
+#define NIDX_CTYPE	(-10)	//container type
+#define NIDX_HSIZE	(-9)	//header size
+#define NIDX_TSIZE	(-8)	//type size
+
+#define NIDX_LIST_NODE_SIZE	(3)
+#define NIDX_TREE_NODE_SIZE	(5)
 //OPENCSTL_HEAP_MACROS
 #define HEAP_PARENT(I)	(((I)-1)>>1)
 #define HEAP_LEFT(I)		(((I)<<1)+1)
@@ -102,13 +107,13 @@
 
 // CSTL_USE_VAARG=0: Windows only (values passed directly on stack)
 // CSTL_USE_VAARG=1: Linux/macOS (macros pass pointers via &__1; standard va_arg is correct)
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32) || defined(_WIN64) || defined(__TINYC__)
 #  define CSTL_USE_VAARG 0
 #else
 #  define CSTL_USE_VAARG 1
 #endif
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32) || defined(_WIN64) || defined(__TINYC__)
 // On Windows the dispatch macros pass values directly (not pointer-to-value).
 // va_arg(vl,void*) would read the value itself, so use PTR arithmetic instead.
 #define __cstl_va_start(V,C,beg)	va_start(V,C);beg=V;
@@ -181,7 +186,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 
 
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32) || defined(_WIN64) || defined(__TINYC__)
 
 #define cstl_push(container,...)	_cstl_push(&(container),__VA_ARGS__)
 #define cstl_push_back(container,...)	_cstl_push_back(&(container),__VA_ARGS__)
@@ -306,4 +311,4 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #elif defined(__linux__) || defined(__APPLE__)
 #define SELECT_ANY	__attribute__((weak))
 #endif
-#define OPENCSTL_FUNC	static inline
+#define OPENCSTL_FUNC	static

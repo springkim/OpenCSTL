@@ -57,7 +57,7 @@ OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
 
 OPENCSTL_FUNC void *__cstl_list_node(size_t type_size) {
     //[node type][prev][next] ↘ [data]
-    size_t header_sz = sizeof(void *) * 3;
+    size_t header_sz = sizeof(void *) * NIDX_LIST_NODE_SIZE;
     size_t node_sz = type_size + header_sz;
     void *ptr = (char *) calloc(node_sz, 1) + header_sz;
     void **node = &ptr;
@@ -72,11 +72,13 @@ OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, in
     void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
     void *n = __cstl_list_node(type_size);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
+#if !defined(__linux__)
     float valuef = 0.0F;
     if (strcmp(type, "float") == 0) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
+#endif
     if (value)memcpy(n, value, type_size);
     if (*head == NULL && *tail == NULL) {
         *head = *tail = n;
@@ -145,11 +147,13 @@ OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_t N, v
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
+#if !defined(__linux__)
     float valuef = 0.0F;
     if (strcmp(type, "float") == 0) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
+#endif
     void *nhead = __cstl_list_node(type_size);
     memcpy(nhead, value, type_size);
     void *ntail = nhead;
@@ -251,11 +255,13 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
+#if !defined(__linux__)
     float valuef = 0.0F;
     if (strcmp(type, "float") == 0) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
+#endif
     void *it = *iter_begin;
     while (it != NULL) {
         if (memcmp(it, value, type_size) == 0) {

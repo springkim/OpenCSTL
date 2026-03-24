@@ -332,3 +332,7 @@ ASALocalRun/
 .localhistory/
 
 cmake-build-*/
+all_queries.txt
+words.txt
+perftest.c
+*.exe

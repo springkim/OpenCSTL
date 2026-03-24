@@ -1,4 +1,5 @@
 #pragma once
+#include<math.h>
 #include"defines.h"
 #include"error.h"
 #include"types.h"
@@ -8,7 +9,15 @@
 #include"tree.h"
 #include"stack.h"
 #include"queue.h"
+#include"compare.h"
 
+#define VECTOR(TYPE)    TYPE*
+#define LIST(TYPE)      TYPE**
+#define SET(TYPE)       TYPE**
+#define MAP(TYPE)       TYPE**
+#define DEQUE(TYPE)     TYPE*
+#define STACK(TYPE)     TYPE*
+#define QUEUE(TYPE)     TYPE*
 
 OPENCSTL_FUNC ptrdiff_t is_deque(void **container) {
     if (OPENCSTL_NIDX(container, -1) > INT_MAX)
@@ -102,6 +111,7 @@ OPENCSTL_FUNC void _cstl_push_back(void *container, ...) {
     void *param1 = __cstl_va_arg(va_ptr);
 #endif
 
+
     size_t container_type;
 
     if (is_deque((void **) container)) {
@@ -127,6 +137,7 @@ OPENCSTL_FUNC void _cstl_push_back(void *container, ...) {
         default: cstl_error("Invalid operator");
             break;
     }
+
     __cstl_va_end(vl);
 }
 
@@ -322,6 +333,7 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
+
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             if (argc == 2)__cstl_vector_insert((void **) container, param1, 1, param2);
@@ -353,6 +365,7 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
         default: cstl_error("Invalid operation");
             break;
     }
+
     __cstl_va_end(vl);
 }
 

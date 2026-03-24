@@ -68,12 +68,13 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_t n, void *value) 
 	size_t length = *(size_t *)((char *) *(void **)container + -2 * sizeof(size_t) + distance);
 	size_t capacity = *(size_t *)((char *) *(void **)container + -3 * sizeof(size_t) + distance);
 	char *type = (char *) *(size_t *)((char *) *(void **)container + -4 * sizeof(size_t) + distance);
-	float valuef = 0.0F;
-
-	if (strcmp(type, "float") == 0) {
-		valuef = (float) *(double *)value;
-		value = &valuef;
-	}
+#if !defined(__linux__)
+    float valuef = 0.0F;
+    if (strcmp(type, "float") == 0) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
 	
 	capacity = n;
 	void *b = calloc(1, header_sz + capacity * type_size);
@@ -103,11 +104,13 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+#if !defined(__linux__)
     float valuef = 0.0F;
     if (strcmp(type, "float") == 0) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
+#endif
 
     if (length == capacity + distance / (ptrdiff_t) type_size) {
         size_t distance_sz = -distance;
@@ -131,12 +134,13 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+#if !defined(__linux__)
     float valuef = 0.0F;
-
     if (strcmp(type, "float") == 0) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
+#endif
     if (distance == 0) {
         void *b = calloc(1, header_sz + capacity * 2 * type_size);
         memcpy(b, (char *) *container - header_sz, header_sz);
@@ -182,12 +186,13 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_t n, voi
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+#if !defined(__linux__)
     float valuef = 0.0F;
-
     if (strcmp(type, "float") == 0) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
+#endif
     size_t pos = (*(char **) it - *(char **) container) / type_size;
     if (length + n > capacity + distance / (ptrdiff_t) type_size) {
         capacity += n;
@@ -225,12 +230,13 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+#if !defined(__linux__)
     float valuef = 0.0F;
-
     if (strcmp(type, "float") == 0) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
+#endif
     if (capacity + distance / (ptrdiff_t) type_size < n) {
         capacity = n;
         void *b = calloc(1, header_sz + capacity * type_size);
@@ -298,12 +304,13 @@ OPENCSTL_FUNC void * __cstl_deque_find(void **container, void *iter_begin, void 
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+#if !defined(__linux__)
     float valuef = 0.0F;
-
     if (strcmp(type, "float") == 0) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
+#endif
     size_t pos = (*(char **) iter_begin - *(char **) container) / type_size;
     for (size_t i = pos; i < length; i++) {
         if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {

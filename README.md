@@ -2,6 +2,25 @@
 
 ## Open source C container library like C++ STL
 
+
+
+## Supported C compilers
+
+- [x] Windows
+  - [x] MSVC(cl.exe)
+  - [x] MinGW64(gcc.exe)
+  - [x] LLVM(clang.exe)
+  - [x] TCC(tcc.exe)
+- [x] Linux
+  - [x] GNU C Compiler(gcc)
+  - [x] LLVM(clang)
+  - [ ] TCC(tcc)
+- [x] MacOS
+  - [x] GNU C Compiler(gcc)
+  - [x] LLVM(clang)
+
+
+
 ### Features
 
 * Support [ ] operator  
@@ -34,7 +53,7 @@ Write `#include<opencstl/opencstl.h>` above your c source file.
 
 ```cpp
 void vector_example(){
-    int* arr = cstl_vector(int);        //Create vector.
+    VECTOR(int) arr = cstl_vector(int);        //Create vector.
     cstl_push_back(arr,88);                //Append(push_back) (literal) into vector.
     for (int i = 0; i < 10; i++) {
         cstl_push_back(arr, i);            //Append(push_back) (variable) into vector.
@@ -63,7 +82,7 @@ void vector_example(){
 
 ```cpp
 void list_example(){
-    int** list = cstl_list(int);        //Create list.
+    LIST(int) list = cstl_list(int);        //Create list.
     for (int i = 0; i < 10; i++) {
         cstl_push_back(list, i);        //Append(push_back) into list.
     }
@@ -83,12 +102,12 @@ void list_example(){
 #### `set example`
 
 ```cpp
-//Same as qsort compare function.
+
 int IntCmp(const void* a, const void* b) {
     return *(int*)a < *(int*)b ? -1 : *(int*)a > *(int*)b;
 }
 void set_example(){
-    int** tree = cstl_set(int, IntCmp);        //Create set
+    SET(int) tree = cstl_set(int, IntCmp);        //Create set
     for (int i = 0; i < 100; i++) {
         cstl_insert(tree,i);                //Insert value into set.
     }
@@ -108,21 +127,27 @@ void set_example(){
 #### `map example`
 
 ```cpp
-//Same as qsort compare function.
-int IntCmp(const void* a, const void* b) {
-    return *(int*)a < *(int*)b ? -1 : *(int*)a > *(int*)b;
+typedef const void *CVP;
+int IntCmp(CVP a, CVP b) {
+    return (*(int *) a > *(int *) b) - (*(int *) a < *(int *) b);
 }
 void map_example(){
-    float** tree = cstl_map(float, double,IntCmp);
+	MAP(int) tree = cstl_map(int, float, IntCmp);
     for (int i = 0; i < 10; i++) {
-        float f = (float)i;
-        double d = (double)i;
-        cstl_insert(tree, f,d*d);    //@Warning do not insert other(simular) type.
+        float d = (float) i;
+        cstl_insert(tree, i, d * d);
     }
-    for (int* it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
-        printf("[%3d]{%.3f} ", *it,cstl_value(it,double));
+    ///[0]{0} [1]{1} [2]{4} [3]{9} [4]{16} [5]{25} [6]{36} [7]{49} [8]{64} [9]{81}
+    for (int i = 0; i < 10; i += 2) {
+        int *it = cstl_find(tree, i);
+        cstl_erase(tree, it);
+    }
+    ///[1]{1} [3]{9} [5]{25} [7]{49} [9]{81}
+    for (int *it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {
+        printf("[%3d]{%.3f} ", *it, cstl_value(it, float));
     }
     puts("");
+    printf("size : %d\n", cstl_size(tree));
     cstl_free(tree);
 }
 ```
@@ -131,7 +156,7 @@ void map_example(){
 
 ```cpp
 void deque_example(){
-    int* deque = cstl_deque(int);
+    DEQUE(int) = cstl_deque(int);
     for (int i = 0; i < 10; i++) {
         cstl_push_back(deque, i);
     }
@@ -150,7 +175,7 @@ void deque_example(){
 
 ```cpp
 void stack_example(){
-    int* stack = cstl_stack(int);
+    STACK(int) stack = cstl_stack(int);
     for (int i = 0; i < 10; i++) {
         cstl_push(stack, i);
     }
@@ -167,7 +192,7 @@ void stack_example(){
 
 ```cpp
 void queue_example(){
-    int* queue = cstl_queue(int);
+    QUEUE(int) queue = cstl_queue(int);
     for (int i = 0; i < 10; i++) {
         cstl_push(queue, i);
     }
@@ -184,7 +209,7 @@ void queue_example(){
 
 ```cpp
 void queue_example(){
-    int *queue = cstl_priority_queue(int,IntCmp);
+    QUEUE(int) queue = cstl_priority_queue(int,IntCmp);
     for (int i = 0; i < 10; i++) {
         cstl_push(queue, i);
     }
