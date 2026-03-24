@@ -5,6 +5,6 @@ set(CMAKE_C_STANDARD 11)
 set(EXE_NAME OpenCSTL)
 add_executable(${EXE_NAME} main.c)
 
-#add_executable(PERFTEST perftest.c)
+add_executable(PERFTEST perftest.c)
 
-# add_executable(HASH_COLLECTION opencstl/dev/hash.c)
+add_executable(HASH_COLLECTION opencstl/dev/hash.c)

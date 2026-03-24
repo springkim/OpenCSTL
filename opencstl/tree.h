@@ -52,13 +52,91 @@
 #define _(N,V)	OPENCSTL_NIDX(&N,V)
 #define COLOR(N)	_(N,-5)
 
+// tree.h 상단에 추가
 
-SELECT_ANY char nil_buffer[sizeof(void *) * 5] = {0};
+#define CSTL_ARENA_CHUNK_SIZE 256  // 청크당 노드 수 (튜닝 가능)
+
+typedef struct cstl_arena_chunk {
+    struct cstl_arena_chunk *next;
+    size_t used;
+    size_t capacity;
+    size_t node_size;
+    // 이 뒤에 node_size * capacity 바이트의 노드 데이터가 붙음
+} cstl_arena_chunk;
+
+OPENCSTL_FUNC cstl_arena_chunk *__cstl_arena_new_chunk(size_t node_size, size_t capacity) {
+    cstl_arena_chunk *chunk = (cstl_arena_chunk *) malloc(
+        sizeof(cstl_arena_chunk) + node_size * capacity
+    );
+    chunk->next = NULL;
+    chunk->used = 0;
+    chunk->capacity = capacity;
+    chunk->node_size = node_size;
+    return chunk;
+}
+
+// 풀에서 노드 하나를 꺼내거나, 프리리스트에서 재활용
+OPENCSTL_FUNC void *__cstl_arena_alloc(cstl_arena_chunk **arena, void **freelist, size_t node_size) {
+    // 프리리스트에 반환된 노드가 있으면 재활용
+    if (*freelist != NULL) {
+        void *reused = *freelist;
+        *freelist = *(void **) reused; // freelist는 노드 원시 주소에 next ptr 저장
+        memset(reused, 0, node_size);
+        return reused;
+    }
+
+    // 현재 청크가 가득 찼으면 새 청크 할당
+    if (*arena == NULL || (*arena)->used >= (*arena)->capacity) {
+        cstl_arena_chunk *new_chunk = __cstl_arena_new_chunk(node_size, CSTL_ARENA_CHUNK_SIZE);
+        new_chunk->next = *arena;
+        *arena = new_chunk;
+    }
+
+    void *ptr = (char *) (*arena + 1) + (*arena)->node_size * (*arena)->used;
+    memset(ptr, 0, node_size);
+    (*arena)->used++;
+    return ptr;
+}
+
+// 개별 노드 삭제 시: 실제 free 대신 프리리스트에 반환
+OPENCSTL_FUNC void __cstl_arena_dealloc(void **freelist, void *raw_ptr) {
+    *(void **) raw_ptr = *freelist;
+    *freelist = raw_ptr;
+}
+
+// clear 시: 모든 청크를 한 번에 해제
+OPENCSTL_FUNC void __cstl_arena_free_all(cstl_arena_chunk **arena, void **freelist) {
+    cstl_arena_chunk *c = *arena;
+    while (c != NULL) {
+        cstl_arena_chunk *next = c->next;
+        free(c);
+        c = next;
+        //printf("free!\n");
+    }
+    *arena = NULL;
+    *freelist = NULL;
+}
+
+SELECT_ANY char nil_buffer[sizeof(void *) * NIDX_TREE_NODE_SIZE] = {0};
 SELECT_ANY void *nil = NULL;
 OPENCSTL_FUNC void *__cstl_tree_node(size_t type_size, size_t node_type) {
     //[color][parent][node type][left][right] -> [data]
     size_t node_sz = type_size + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     void *ptr = (char *) calloc(node_sz, 1) + sizeof(void *) * NIDX_TREE_NODE_SIZE;
+    OPENCSTL_NIDX(&ptr, -3) = node_type;
+    COLOR(ptr) = BLACK;
+    return ptr;
+}
+
+OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_t type_size, size_t node_type) {
+    // [color][parent][node type][left][right] -> [data]
+    size_t raw_node_sz = type_size + sizeof(void *) * NIDX_TREE_NODE_SIZE;
+
+    cstl_arena_chunk **arena = (cstl_arena_chunk **) &OPENCSTL_NIDX(container, -7);
+    void **freelist = (void **) &OPENCSTL_NIDX(container, -6);
+
+    char *raw = (char *) __cstl_arena_alloc(arena, freelist, raw_node_sz);
+    void *ptr = raw + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     OPENCSTL_NIDX(&ptr, -3) = node_type;
     COLOR(ptr) = BLACK;
     return ptr;
@@ -82,6 +160,8 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_SET;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
     OPENCSTL_NIDX(container, NIDX_TSIZE) = key_size;
+    OPENCSTL_NIDX(container, -7) = 0;
+    OPENCSTL_NIDX(container, -6) = 0;
     OPENCSTL_NIDX(container, -4) = 0; //value size, but set does not have value.
     OPENCSTL_NIDX(container, -3) = (size_t) type_key; //type
     OPENCSTL_NIDX(container, -2) = (size_t) compare; //compare function
@@ -109,8 +189,10 @@ OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_ke
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_MAP;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
     OPENCSTL_NIDX(container, NIDX_TSIZE) = key_size;
+    OPENCSTL_NIDX(container, -7) = 0;
+    OPENCSTL_NIDX(container, -6) = 0;
     OPENCSTL_NIDX(container, -5) = (size_t) type_value; //not-reserved
-    OPENCSTL_NIDX(container, -4) = value_size;          //value size
+    OPENCSTL_NIDX(container, -4) = value_size; //value size
     OPENCSTL_NIDX(container, -3) = (size_t) type_key; //not-reserved
     OPENCSTL_NIDX(container, -2) = (size_t) compare; //compare function
     OPENCSTL_NIDX(container, -1) = 0;
@@ -223,7 +305,8 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
 #endif
 
     void ***root = (void ***) *container;
-    void *n = __cstl_tree_node(type_size, container_type);
+    //void *n = __cstl_tree_node(type_size, container_type);
+    void *n = __cstl_tree_node_pooled(container, type_size, container_type);
     memcpy(n, key, key_size);
     if (value) {
         memcpy((char *) n + key_size, value, value_size);
@@ -355,7 +438,11 @@ OPENCSTL_FUNC void __cstl_tree_erase(void **container, void **iter) {
     if (y_original_color == (size_t) BLACK) {
         __cstl_tree_erase_fixup(container, x);
     }
-    free(&OPENCSTL_NIDX(&iter, -5));
+    //free(&OPENCSTL_NIDX(&iter, -5));
+    {
+        void **freelist = (void **) &OPENCSTL_NIDX(container, -6);
+        __cstl_arena_dealloc(freelist, &OPENCSTL_NIDX(&iter, -5));
+    }
 }
 
 OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
@@ -405,27 +492,38 @@ OPENCSTL_FUNC void *__cstl_tree_end_rend(void **container) {
     return nil;
 }
 
+// OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
+//     size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
+//     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+//     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+//     size_t value_size = OPENCSTL_NIDX(container, -4);
+//     size_t type_size = key_size + value_size;
+//     cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
+//     void ***root = (void ***) *container;
+//
+//     void *c = *root;
+//     while (c != nil) {
+//         if ((void *) _(c, R) != nil) {
+//             void *m = __cstl_tree_toleft(c);
+//             _(m, L) = _(c, R);
+//             _(_(c, R), P) = _(m, L);
+//         }
+//         void *t = c;
+//         c = (void *) _(c, L);
+//         free(&OPENCSTL_NIDX(&t, -5));
+//
+//     }
+//     *root = nil;
+// }
+
 OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    size_t type_size = key_size + value_size;
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
+    cstl_arena_chunk **arena = (cstl_arena_chunk **) &OPENCSTL_NIDX(container, -7);
+    void **freelist = (void **) &OPENCSTL_NIDX(container, -6);
     void ***root = (void ***) *container;
 
-    void *c = *root;
-    while (c != nil) {
-        if ((void *) _(c, R) != nil) {
-            void *m = __cstl_tree_toleft(c);
-            _(m, L) = _(c, R);
-            _(_(c, R), P) = _(m, L);
-        }
-        void *t = c;
-        c = (void *) _(c, L);
-        free(&OPENCSTL_NIDX(&t, -5));
+    // 노드 순회 없이 청크만 해제 — O(chunk_count)
+    __cstl_arena_free_all(arena, freelist);
 
-    }
     *root = nil;
 }
 

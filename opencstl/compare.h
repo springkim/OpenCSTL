@@ -59,7 +59,7 @@ int DoubleCmp(CVP a, CVP b) {
 }
 
 int StringCmp(CVP a, CVP b) {
-    return strcmp((char *) a, (char *) b);
+    return strcmp(*(char **) a, *(char **) b);
 }
 
 #define GetCompare(T) _Generic((T){0}, \
