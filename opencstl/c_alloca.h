@@ -1,4 +1,3 @@
-//
 //  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
 //  By downloading, copying, installing or using the software you agree to this license.
@@ -9,7 +8,7 @@
 //                               License Agreement
 //                Open Source C Container Library like STL in C++
 //
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//               Copyright (C) 2026, Kim Bomm, Woo Cheol, all rights reserved.
 //
 // Third party copyrights are property of their respective owners.
 //
@@ -35,37 +34,17 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#if !defined(_OPENCSTL_ERROR_H)
-#define _OPENCSTL_ERROR_H
-#include"types.h"
-#include"defines.h"
-#if defined(__FUNCTION__)
-#define cstl_error(msg)		__cstl_error(msg,__FILE__,__FUNCTION__,__LINE__)
-OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, const char *function, int line) {
-    char err_msg[1024] = {0};
-#if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
-sprintf_s(err_msg, 1024, "[%s] in %s , %s , %d\n", msg, file, function, line);
-MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
+#if !defined(_OPENCSTL_C_ALLOCA_H)
+#define _OPENCSTL_C_ALLOCA_H
+
+#if defined(__linux__) || defined(__MAXOS__)
+#include <alloca.h>
+#define stack_alloc(size) alloca(size)
+#elif defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#define stack_alloc(size) _alloca(size)
 #else
-sprintf(err_msg, "[%s] in %s , %s , %d\n", msg, file, function, line);
-//Other platform msg box...
+#error "No Alloca Function"
 #endif
-exit(EXIT_FAILURE);
-    return 0;
-}
-#else
-#define cstl_error(msg)		__cstl_error(msg,__FILE__,__LINE__)
-OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, int line) {
-    char err_msg[1024] = {0};
-#if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
-    sprintf_s(err_msg, 1024, "[%s] in %s , %d\n", msg, file, line);
-    MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
-#else
-    sprintf(err_msg, "[%s] in %s , %d\n", msg, file, line);
-    //Other platform msg box...
-#endif
-    exit(EXIT_FAILURE);
-    return 0;
-}
-#endif
-#endif
+
+#endif //_OPENCSTL_C_ALLOCA_H

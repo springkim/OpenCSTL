@@ -10,6 +10,7 @@
 #include"stack.h"
 #include"queue.h"
 #include"compare.h"
+#include"c_random.h"
 
 #define VECTOR(TYPE)    TYPE*
 #define LIST(TYPE)      TYPE**
@@ -35,8 +36,8 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     void *param3 = __cstl_va_arg_next(vl);
 #else
     void *param1 = __cstl_va_arg(va_ptr);
-    void *param2 = __cstl_va_arg((char*)va_ptr + sizeof(void*) * 1);
-    void *param3 = __cstl_va_arg((char*)va_ptr + sizeof(void*) * 2);
+    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
+    void *param3 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 2);
 #endif
     size_t container_type;
     if (is_deque((void **) container)) {
@@ -111,7 +112,7 @@ OPENCSTL_FUNC void _cstl_push_back(void *container, ...) {
     void *param1 = __cstl_va_arg(va_ptr);
 #endif
 
-    
+
     size_t container_type;
 
     if (is_deque((void **) container)) {
@@ -323,8 +324,8 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
     void *param3 = __cstl_va_arg_next(vl);
 #else
     void *param1 = __cstl_va_arg(va_ptr);
-    void *param2 = __cstl_va_arg((char*)va_ptr + sizeof(void*)*1);
-    void *param3 = __cstl_va_arg((char*)va_ptr + sizeof(void*)*2);
+    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
+    void *param3 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 2);
 #endif
     size_t container_type;
     if (is_deque((void **) container)) {
@@ -378,7 +379,7 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
     void *param2 = __cstl_va_arg_next(vl);
 #else
     void *param1 = __cstl_va_arg(va_ptr);
-    void *param2 = __cstl_va_arg((char*)va_ptr + sizeof(void*)*1);
+    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
 #endif
 
     size_t container_type;
@@ -432,7 +433,7 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
     void *param2 = __cstl_va_arg_next(vl);
 #else
     void *param1 = __cstl_va_arg(va_ptr);
-    void *param2 = __cstl_va_arg((char*)va_ptr + sizeof(void*)*1);
+    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
 #endif
 
     size_t container_type;
@@ -705,7 +706,7 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     void *param2 = __cstl_va_arg_next(vl);
 #else
     void *param1 = __cstl_va_arg(va_ptr);
-    void *param2 = __cstl_va_arg((char*)va_ptr + sizeof(void*)*1);
+    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
 #endif
 
 

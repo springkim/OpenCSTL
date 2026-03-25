@@ -34,69 +34,23 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
+#pragma once
+#if !defined(_OPENCSTL_C_RANDOM_H)
+#define _OPENCSTL_C_RANDOM_H
+#include <limits.h>
 
-#ifndef OPENCSTL_COMPARE_H
-#define OPENCSTL_COMPARE_H
-#include <string.h>
-typedef const void *CVP;
+static unsigned long long current_state = 1;
 
-typedef int (*CompareFunc)(CVP a, CVP b);
-
-#define _SAFE_COMPARE(TYPE,X,Y)  (*(TYPE *) (X) > *(TYPE *) (Y)) - (*(TYPE *) (X) < *(TYPE *) (Y))
-
-int IntCmp(CVP a, CVP b) {
-    return _SAFE_COMPARE(int, a, b);
+static void cstl_rand_seed(unsigned long long seed) {
+    current_state = seed;
 }
 
-int UIntCmp(CVP a, CVP b) {
-    return _SAFE_COMPARE(unsigned int, a, b);
-}
+#define CSTL_RAND_MAX ULLONG_MAX
 
-int Int64Cmp(CVP a, CVP b) {
-    return _SAFE_COMPARE(long long, a, b);
-}
-
-int UInt64Cmp(CVP a, CVP b) {
-    return _SAFE_COMPARE(unsigned long long, a, b);
-}
-
-int FloatCmp(CVP a, CVP b) {
-    return (*(float *) a > *(float *) b) - (*(float *) a < *(float *) b);
-}
-
-int DoubleCmp(CVP a, CVP b) {
-    return (*(double *) a > *(double *) b) - (*(double *) a < *(double *) b);
-}
-
-int StringCmp(CVP a, CVP b) {
-    return strcmp(*(char **) a, *(char **) b);
+static unsigned long long cstl_rand() {
+    current_state = (current_state * 6364136223846793005ULL) + 1442695040888963407ULL;
+    return current_state;
 }
 
 
-CompareFunc Compare(const char *type_str) {
-    while (*type_str == ' ') type_str++;
-
-    const char *end = type_str + strlen(type_str);
-    while (end > type_str && *(end - 1) == ' ') end--;
-
-    char buf[256];
-    size_t len = end - type_str;
-    if (len >= sizeof(buf)) return NULL;
-
-    memcpy(buf, type_str, len);
-    buf[len] = '\0';
-
-    if (strcmp(buf, "float") == 0) return FloatCmp;
-    if (strcmp(buf, "double") == 0) return DoubleCmp;
-    if (strcmp(buf, "int") == 0) return IntCmp;
-    if (strcmp(buf, "long long") == 0) return Int64Cmp;
-    if (strcmp(buf, "unsigned long long") == 0) return UInt64Cmp;
-    if (strcmp(buf, "unsigned int") == 0)return UIntCmp;
-    if (strcmp(buf, "char*") == 0)return StringCmp;
-    if (strcmp(buf, "char *") == 0)return StringCmp;
-
-    return NULL;
-}
-
-#define COMPARE(TYPE) Compare(#TYPE)
-#endif //OPENCSTL_COMPARE_H
+#endif //_OPENCSTL_C_RANDOM_H

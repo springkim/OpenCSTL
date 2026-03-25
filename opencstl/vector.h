@@ -49,6 +49,9 @@ OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_VECTOR;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
     OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
+
+    OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
+
     OPENCSTL_NIDX(container, -4) = (size_t) type;
 
     OPENCSTL_NIDX(container, -3) = 0; //
@@ -63,9 +66,10 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value)
     size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
+    size_t is_float = OPENCSTL_NIDX(container, -8);
 #if !defined(__linux__) && !defined(__APPLE__)
     float valuef = 0.0F;
-    if (strcmp(type, "float") == 0) {
+    if (is_float) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
@@ -94,13 +98,13 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
+    size_t is_float = OPENCSTL_NIDX(container, -8);
 #if !defined(__linux__) && !defined(__APPLE__)
     float valuef = 0.0F;
-    if (strcmp(type, "float") == 0) {
+    if (is_float) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
-    
 #endif
     if (length == capacity) {
         void *b = realloc((char *) *container - header_sz, header_sz + capacity * 2 * type_size);
@@ -132,9 +136,10 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
     size_t capacity = OPENCSTL_NIDX(container, -2);
     size_t pos = (*(char **) iter - *(char **) container) / type_size;
     char *type = (char *) OPENCSTL_NIDX(container, -4);
+    size_t is_float = OPENCSTL_NIDX(container, -8);
 #if !defined(__linux__) && !defined(__APPLE__)
     float valuef = 0.0F;
-    if (strcmp(type, "float") == 0) {
+    if (is_float) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
@@ -195,9 +200,10 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
     size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
+    size_t is_float = OPENCSTL_NIDX(container, -8);
 #if !defined(__linux__) && !defined(__APPLE__)
     float valuef = 0.0F;
-    if (strcmp(type, "float") == 0) {
+    if (is_float) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
@@ -229,9 +235,10 @@ OPENCSTL_FUNC void *__cstl_vector_find(void **container, void *iter_begin, void 
     size_t capacity = OPENCSTL_NIDX(container, -2);
     size_t pos = (*(char **) iter_begin - *(char **) container) / type_size;
     char *type = (char *) OPENCSTL_NIDX(container, -4);
+    size_t is_float = OPENCSTL_NIDX(container, -8);
 #if !defined(__linux__) && !defined(__APPLE__)
     float valuef = 0.0F;
-    if (strcmp(type, "float") == 0) {
+    if (is_float) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }

@@ -48,6 +48,7 @@ OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_LIST;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
     OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
+    OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
     OPENCSTL_NIDX(container, -4) = (size_t) type;
     OPENCSTL_NIDX(container, -2) = 0; //tail
     OPENCSTL_NIDX(container, -1) = 0; //length
@@ -72,9 +73,10 @@ OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, in
     void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
     void *n = __cstl_list_node(type_size);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
+#if !defined(__linux__) && !defined(__APPLE__)
     float valuef = 0.0F;
-    if (strcmp(type, "float") == 0) {
+    if (is_float) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
@@ -147,9 +149,10 @@ OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_t N, v
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
+#if !defined(__linux__) && !defined(__APPLE__)
     float valuef = 0.0F;
-    if (strcmp(type, "float") == 0) {
+    if (is_float) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
@@ -255,9 +258,10 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
+#if !defined(__linux__) && !defined(__APPLE__)
     float valuef = 0.0F;
-    if (strcmp(type, "float") == 0) {
+    if (is_float) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }

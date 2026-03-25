@@ -97,20 +97,6 @@ void cstl_vector_test3() {
     Decorate("opencstl{vector/qsort} test end");
 }
 
-void cstl_vector_tes4() {
-    Decorate("opencstl{vector/qsort} test begin");
-    VECTOR(int) vec = cstl_vector(int);
-    for (int i = 0; i < 100; i++) {
-        int val = (int) (rand() % RAND_MAX);
-        cstl_push_back(vec, val);
-    }
-    qsort(vec,cstl_size(vec), sizeof(int), COMPARE(int));
-    for (int i = 0; i < cstl_size(vec); i++) {
-        printf("Sorted: [%d]\n", vec[i]);
-    }
-    cstl_free(vec);
-    Decorate("opencstl{vector/qsort} test end");
-}
 
 void cstl_list_test02() {
     Decorate("opencstl{list} test begin");
@@ -195,9 +181,11 @@ void cstl_deque_test() {
     for (int i = 0; i < 10; i++) {
         cstl_push_back(deque, i);
     }
+    printf("deque pb size: %lld\n", cstl_size(deque));
     for (int i = 0; i < 10; i++) {
         cstl_push_front(deque, i);
     }
+    printf("deque pf size: %lld\n", cstl_size(deque));
     for (int i = 0; i < cstl_size(deque); i++) {
         printf("[%3d] ", deque[i]);
     }

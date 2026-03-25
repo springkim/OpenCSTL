@@ -90,11 +90,10 @@ static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
 int main() {
     setlocale(LC_ALL, "");
     FILE *fp = NULL;
-
-#if defined(__linux__) && defined(__GNUC__)
-    fp = fopen("/mnt/c/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
-#elif defined(__TINYC__)
+#if defined(_WIN32) || defined(_WIN64) ||defined(__TINYC__)
     fp = fopen("C:/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
+#elif defined(__linux__) && defined(__GNUC__)
+    fp = fopen("/mnt/c/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
 #elif defined(__APPLE__)
     fp = fopen("/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
 #else

@@ -200,8 +200,6 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #elif defined(__linux__) || defined(__APPLE__)
 
 
-
-
 #define cstl_push_back(C,...) _linux_cstl_push_back(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
 #define _linux_cstl_push_back(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_back ## _ ## N
 #define _cstl_push_back_0(C)    {__auto_type __0=&C;_cstl_push_back( __0);}
@@ -308,7 +306,6 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define _cstl_push_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {__auto_type __0=&C;__auto_type __1=_1;__auto_type __2=_2;__auto_type __3=_3;__auto_type __4=_4;__auto_type __5=_5;__auto_type __6=_6;__auto_type __7=_7;__auto_type __8=_8;__auto_type __9=_9;__auto_type __10=_10;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 
 #endif
-
 
 
 #if defined(_WIN32) || defined(_WIN64)

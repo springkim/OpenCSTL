@@ -41,6 +41,7 @@
 #include"types.h"
 #include"defines.h"
 #include"error.h"
+#include"c_alloca.h"
 
 #define cstl_queue(TYPE)	__cstl_queue(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_queue(size_t type_size, char *type) {
@@ -50,6 +51,8 @@ OPENCSTL_FUNC void *__cstl_queue(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_QUEUE;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
     OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
+    OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
+
     OPENCSTL_NIDX(container, -4) = (size_t) type;
     OPENCSTL_NIDX(container, -3) = 2; //capacity
     OPENCSTL_NIDX(container, -2) = 0; //length
@@ -66,6 +69,7 @@ OPENCSTL_FUNC void *__cstl_priority_queue(size_t type_size, char *type, int argc
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_PRIORITY_QUEUE;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
     OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
+    OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
     OPENCSTL_NIDX(container, -4) = (size_t) type;
 
     va_list vl;
@@ -86,11 +90,8 @@ OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
     cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -3);
-#if defined(_WIN32) || defined(_WIN64)
-    void *tmp = _alloca(type_size);
-#else
-    void *tmp = malloc(type_size);
-#endif
+
+    void *tmp = stack_alloc(type_size);
     size_t idx = length - 1;
     memcpy(tmp, ((char *) *container) + type_size * idx, type_size);
     while (idx > 0) {
@@ -102,9 +103,6 @@ OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
         idx = HEAP_PARENT(idx);
     }
     memcpy(((char *) *container) + type_size * idx, tmp, type_size);
-#if !defined(_WIN32) && !defined(_WIN64)
-    free(tmp);
-#endif
 }
 
 OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
@@ -118,11 +116,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
     OPENCSTL_NIDX(container, -1)--;
     length--;
     size_t idx = 0;
-#if defined(_WIN32) || defined(_WIN64)
-    void *tmp = _alloca(type_size);
-#else
-    void *tmp = malloc(type_size);
-#endif
+    void *tmp = stack_alloc(type_size);
     size_t L, R, C;
     memcpy(tmp, *container, type_size);
     void *ptr = tmp;
@@ -148,9 +142,6 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
         idx = C;
     } while (1);
     memcpy(((char *) *container) + type_size * idx, tmp, type_size);
-#if !defined(_WIN32) && !defined(_WIN64)
-    free(tmp);
-#endif
 }
 
 
