@@ -77,10 +77,10 @@
 //OPENCSTL_AccessContainerAsIndex
 #define OPENCSTL_NIDX(container,nidx) (((size_t*)*container)[(nidx)])
 
-#define OPENCSTL_HEADER	(10)
-#define NIDX_CTYPE	(-10)	//container type
-#define NIDX_HSIZE	(-9)	//header size
-#define NIDX_TSIZE	(-8)	//type size
+#define OPENCSTL_HEADER	(12)
+#define NIDX_CTYPE	(-12)	//container type
+#define NIDX_HSIZE	(-11)	//header size
+#define NIDX_TSIZE	(-10)	//type size
 
 #define NIDX_LIST_NODE_SIZE	(3)
 #define NIDX_TREE_NODE_SIZE	(5)
@@ -156,7 +156,7 @@
 #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
 #pragma GCC diagnostic ignored "-Wint-conversion"
 #if !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wno-lto-type-mismatch"
+//#pragma GCC diagnostic ignored "-Wno-lto-type-mismatch"
 #endif
 #endif
 

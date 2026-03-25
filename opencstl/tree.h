@@ -52,16 +52,14 @@
 #define _(N,V)	OPENCSTL_NIDX(&N,V)
 #define COLOR(N)	_(N,-5)
 
-// tree.h 상단에 추가
 
-#define CSTL_ARENA_CHUNK_SIZE 256  // 청크당 노드 수 (튜닝 가능)
+#define CSTL_ARENA_CHUNK_SIZE 256
 
 typedef struct cstl_arena_chunk {
     struct cstl_arena_chunk *next;
     size_t used;
     size_t capacity;
     size_t node_size;
-    // 이 뒤에 node_size * capacity 바이트의 노드 데이터가 붙음
 } cstl_arena_chunk;
 
 OPENCSTL_FUNC cstl_arena_chunk *__cstl_arena_new_chunk(size_t node_size, size_t capacity) {
@@ -75,17 +73,15 @@ OPENCSTL_FUNC cstl_arena_chunk *__cstl_arena_new_chunk(size_t node_size, size_t 
     return chunk;
 }
 
-// 풀에서 노드 하나를 꺼내거나, 프리리스트에서 재활용
+
 OPENCSTL_FUNC void *__cstl_arena_alloc(cstl_arena_chunk **arena, void **freelist, size_t node_size) {
-    // 프리리스트에 반환된 노드가 있으면 재활용
     if (*freelist != NULL) {
         void *reused = *freelist;
-        *freelist = *(void **) reused; // freelist는 노드 원시 주소에 next ptr 저장
+        *freelist = *(void **) reused;
         memset(reused, 0, node_size);
         return reused;
     }
 
-    // 현재 청크가 가득 찼으면 새 청크 할당
     if (*arena == NULL || (*arena)->used >= (*arena)->capacity) {
         cstl_arena_chunk *new_chunk = __cstl_arena_new_chunk(node_size, CSTL_ARENA_CHUNK_SIZE);
         new_chunk->next = *arena;
@@ -98,20 +94,17 @@ OPENCSTL_FUNC void *__cstl_arena_alloc(cstl_arena_chunk **arena, void **freelist
     return ptr;
 }
 
-// 개별 노드 삭제 시: 실제 free 대신 프리리스트에 반환
 OPENCSTL_FUNC void __cstl_arena_dealloc(void **freelist, void *raw_ptr) {
     *(void **) raw_ptr = *freelist;
     *freelist = raw_ptr;
 }
 
-// clear 시: 모든 청크를 한 번에 해제
 OPENCSTL_FUNC void __cstl_arena_free_all(cstl_arena_chunk **arena, void **freelist) {
     cstl_arena_chunk *c = *arena;
     while (c != NULL) {
         cstl_arena_chunk *next = c->next;
         free(c);
         c = next;
-        //printf("free!\n");
     }
     *arena = NULL;
     *freelist = NULL;
@@ -145,7 +138,7 @@ OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_t type_size, 
 #define cstl_set(KEY,...)	__cstl_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),__VA_ARGS__)
 OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
     if (nil == NULL) {
-        nil = nil_buffer + sizeof(void *) * 5;
+        nil = nil_buffer + sizeof(void *) * NIDX_TREE_NODE_SIZE;
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
     }
     va_list vl;
@@ -160,6 +153,8 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_SET;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
     OPENCSTL_NIDX(container, NIDX_TSIZE) = key_size;
+    OPENCSTL_NIDX(container, -9) = 0;
+    OPENCSTL_NIDX(container, -8) = !strcmp(type_key, "float");
     OPENCSTL_NIDX(container, -7) = 0;
     OPENCSTL_NIDX(container, -6) = 0;
     OPENCSTL_NIDX(container, -4) = 0; //value size, but set does not have value.
@@ -189,6 +184,8 @@ OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_ke
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_MAP;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
     OPENCSTL_NIDX(container, NIDX_TSIZE) = key_size;
+    OPENCSTL_NIDX(container, -9) = !strcmp(type_value, "float");
+    OPENCSTL_NIDX(container, -8) = !strcmp(type_key, "float");
     OPENCSTL_NIDX(container, -7) = 0;
     OPENCSTL_NIDX(container, -6) = 0;
     OPENCSTL_NIDX(container, -5) = (size_t) type_value; //not-reserved
@@ -290,15 +287,18 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
     char *type_key = (char *) OPENCSTL_NIDX(container, -3);
     char *type_value = (char *) OPENCSTL_NIDX(container, -5);
 
+    size_t is_float_key = OPENCSTL_NIDX(container, -8);
+    size_t is_float_value = OPENCSTL_NIDX(container, -9);
+
 #if !defined(__linux__) && !defined(__APPLE__)
     float keyf = 0.0F;
-    if (strcmp(type_key, "float") == 0) {
+    if (is_float_key) {
         keyf = (float) *(double *) key;
         key = &keyf;
     }
 
     float valuef = 0.0F;
-    if (value && strcmp(type_value, "float") == 0) {
+    if (is_float_value) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
@@ -452,9 +452,12 @@ OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
     size_t value_size = OPENCSTL_NIDX(container, -4);
     size_t type_size = key_size + value_size;
     char *type_key = (char *) OPENCSTL_NIDX(container, -3);
+
+    size_t is_float_key = OPENCSTL_NIDX(container, -8);
+
 #if !defined(__linux__) && !defined(__APPLE__)
     float keyf = 0.0F;
-    if (strcmp(type_key, "float") == 0) {
+    if (is_float_key) {
         keyf = (float) *(double *) key;
         key = &keyf;
     }

@@ -336,3 +336,4 @@ all_queries.txt
 words.txt
 perftest.c
 *.exe
+convert.py
