@@ -29,21 +29,21 @@ static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
 
     time_t now = tv.tv_sec;
     struct tm tm_now;
-#if defined(__clang__)
-localtime_r(&now, &tm_now);
+#if defined(__clang__) || (defined(__GNUC__) && defined(__APPLE__))
+    localtime_r(&now, &tm_now);
 #else
-localtime_s(&tm_now, &now);
+    localtime_s(&tm_now, &now);
 #endif
-int ms = (int) (tv.tv_usec / 1000);
+    int ms = (int) (tv.tv_usec / 1000);
 
-snprintf(timestr, 32, "%04d_%02d_%02d_%02d_%02d_%02d_%03d",
-         tm_now.tm_year+ 1900,
-         tm_now.tm_mon+ 1,
-         tm_now.tm_mday,
-         tm_now.tm_hour,
-         tm_now.tm_min,
-         tm_now.tm_sec,
-         ms);
+    snprintf(timestr, 32, "%04d_%02d_%02d_%02d_%02d_%02d_%03d",
+             tm_now.tm_year+ 1900,
+             tm_now.tm_mon+ 1,
+             tm_now.tm_mday,
+             tm_now.tm_hour,
+             tm_now.tm_min,
+             tm_now.tm_sec,
+             ms);
 }
 
 #elif defined(_MSC_VER) || defined(__TINYC__)  // MSVC, clang-cl
@@ -95,6 +95,8 @@ int main() {
     fp = fopen("/mnt/c/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
 #elif defined(__TINYC__)
     fp = fopen("C:/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
+#elif defined(__APPLE__)
+    fp = fopen("/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
 #else
     //fopen_s(&fp, "C:/Users/spring/Documents/GitHub/OpenCSTL/all_queries.txt", "rt");
     fopen_s(&fp, "C:/Users/spring/Documents/GitHub/OpenCSTL/words1.txt", "rt");
