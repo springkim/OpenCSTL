@@ -37,7 +37,7 @@
 #if !defined(_OPENCSTL_C_ALLOCA_H)
 #define _OPENCSTL_C_ALLOCA_H
 
-#if defined(__linux__) || defined(__MACOS__)
+#if defined(__linux__) || defined(__APPLE__)
 #include <alloca.h>
 #define stack_alloc(size) alloca(size)
 #elif defined(_WIN32) || defined(_WIN64)
