@@ -96,6 +96,9 @@ int main() {
     fp = fopen("C:/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
 #elif defined(__linux__) && defined(__GNUC__)
     fp = fopen("/mnt/c/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
+    if(!fp){
+	fp = fopen("/home/spring/Documents/Github/OpenCSTL/words.txt","rt");
+    }
 #elif defined(__APPLE__)
     fp = fopen("/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
 #else
