@@ -332,6 +332,8 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
 
     *root = (void **) n;
     __cstl_tree_insert_fixup(container, n);
+
+    OPENCSTL_NIDX(container, -1) = (OPENCSTL_NIDX(container, -1)) + 1;
 }
 
 OPENCSTL_FUNC void __cstl_tree_transplant(void **container, void *u, void *v) {
@@ -442,6 +444,7 @@ OPENCSTL_FUNC void __cstl_tree_erase(void **container, void **iter) {
     {
         void **freelist = (void **) &OPENCSTL_NIDX(container, -6);
         __cstl_arena_dealloc(freelist, &OPENCSTL_NIDX(&iter, -5));
+        OPENCSTL_NIDX(container, -1) = (OPENCSTL_NIDX(container, -1)) - 1;
     }
 }
 
@@ -526,7 +529,7 @@ OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
 
     // 노드 순회 없이 청크만 해제 — O(chunk_count)
     __cstl_arena_free_all(arena, freelist);
-
+    OPENCSTL_NIDX(container, -1) = 0;
     *root = nil;
 }
 
@@ -558,6 +561,7 @@ OPENCSTL_FUNC void *__cstl_tree_next_prev(void *it, int r, int l, void *(todeep)
 OPENCSTL_FUNC size_t ___cstl_tree_size(void *n) {
     if (n == nil)return 0;
     return ___cstl_tree_size((void *) _(n, L)) + ___cstl_tree_size((void *) _(n, R)) + 1;
+
 }
 
 OPENCSTL_FUNC size_t __cstl_tree_size(void **container) {
@@ -569,8 +573,9 @@ OPENCSTL_FUNC size_t __cstl_tree_size(void **container) {
     cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
     void ***root = (void ***) *container;
     void *c = *root;
-
-    return ___cstl_tree_size(c);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    //return ___cstl_tree_size(c);
+    return length;
 }
 #undef P
 #undef L

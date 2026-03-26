@@ -1,5 +1,11 @@
 #pragma once
 #include<math.h>
+
+
+#if defined(__linux__) || defined(__APPLE__)
+#pragma GCC push_options
+#pragma GCC optimize("O0")
+#endif
 #include"defines.h"
 #include"error.h"
 #include"types.h"
@@ -10,7 +16,7 @@
 #include"stack.h"
 #include"queue.h"
 #include"compare.h"
-#include"c_random.h"
+//#include"c_random.h"
 
 #define VECTOR(TYPE)    TYPE*
 #define LIST(TYPE)      TYPE**
@@ -746,3 +752,8 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     __cstl_va_end(vl);
     return NULL;
 }
+#if defined(__linux__) || defined(__APPLE__)
+
+#pragma GCC pop_options
+
+#endif

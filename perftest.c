@@ -29,7 +29,9 @@ static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
 
     time_t now = tv.tv_sec;
     struct tm tm_now;
-#if defined(__clang__) || (defined(__GNUC__) && defined(__APPLE__))
+#if defined(__MINGW32__) || defined(__MINGW64__)
+    localtime_s(&tm_now, &now);
+#elif defined(__clang__) || (defined(__GNUC__) && defined(__APPLE__)) || defined(__GNUC__)
     localtime_r(&now, &tm_now);
 #else
     localtime_s(&tm_now, &now);
@@ -37,8 +39,8 @@ static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
     int ms = (int) (tv.tv_usec / 1000);
 
     snprintf(timestr, 32, "%04d_%02d_%02d_%02d_%02d_%02d_%03d",
-             tm_now.tm_year+ 1900,
-             tm_now.tm_mon+ 1,
+             tm_now.tm_year + 1900,
+             tm_now.tm_mon + 1,
              tm_now.tm_mday,
              tm_now.tm_hour,
              tm_now.tm_min,

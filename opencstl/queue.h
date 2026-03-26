@@ -57,7 +57,7 @@ OPENCSTL_FUNC void *__cstl_queue(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, -3) = 2; //capacity
     OPENCSTL_NIDX(container, -2) = 0; //length
     *container = (char *) ptr + type_size;
-    OPENCSTL_NIDX(container, -1) = -type_size - 1; //distance  = -type_size -1 �׻� �������� �ϱ� ����
+    OPENCSTL_NIDX(container, -1) = -type_size - 1; //distance  = -type_size -1
     return ptr;
 }
 

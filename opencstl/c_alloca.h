@@ -39,7 +39,7 @@
 
 #if defined(__linux__) || defined(__APPLE__)
 #include <alloca.h>
-#define stack_alloc(size) alloca(size)
+#define stack_alloc(size) (void*)alloca(size)
 #elif defined(_WIN32) || defined(_WIN64)
 #include <malloc.h>
 #define stack_alloc(size) _alloca(size)

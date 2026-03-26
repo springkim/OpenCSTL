@@ -38,18 +38,27 @@
 #if !defined(_OPENCSTL_C_RANDOM_H)
 #define _OPENCSTL_C_RANDOM_H
 #include <limits.h>
+#define CSTL_RAND64_MAX ULLONG_MAX
+#define CSTL_RAND32_MAX UINT_MAX
+static unsigned long long _seed64 = 1;
+static unsigned long _seed32 = 1;
 
-static unsigned long long current_state = 1;
-
-static void cstl_rand_seed(unsigned long long seed) {
-    current_state = seed;
+static void cstl_rand_seed32(unsigned int seed) {
+    _seed32 = seed;
 }
 
-#define CSTL_RAND_MAX ULLONG_MAX
+static unsigned int cstl_rand32(void) {
+    _seed32 = _seed32 * 1103515245 + 12345;
+    return (unsigned int) (_seed32 / 65536);
+}
 
-static unsigned long long cstl_rand() {
-    current_state = (current_state * 6364136223846793005ULL) + 1442695040888963407ULL;
-    return current_state;
+static void cstl_rand_seed64(unsigned long long seed) {
+    _seed64 = seed;
+}
+
+static unsigned long long cstl_rand64() {
+    _seed64 = (_seed64 * 6364136223846793005ULL) + 1442695040888963407ULL;
+    return _seed64;
 }
 
 
