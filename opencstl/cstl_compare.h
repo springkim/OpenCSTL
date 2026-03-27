@@ -73,7 +73,7 @@ int StringCmp(CVP a, CVP b) {
 }
 
 
-CompareFunc Compare(const char *type_str) {
+CompareFunc CSTL_Compare(const char *type_str) {
     while (*type_str == ' ') type_str++;
 
     const char *end = type_str + strlen(type_str);
@@ -98,5 +98,5 @@ CompareFunc Compare(const char *type_str) {
     return NULL;
 }
 
-#define COMPARE(TYPE) Compare(#TYPE)
+#define COMPARE(TYPE) CSTL_Compare(#TYPE)
 #endif //OPENCSTL_COMPARE_H

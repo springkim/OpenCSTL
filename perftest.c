@@ -96,8 +96,8 @@ int main() {
     fp = fopen("C:/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
 #elif defined(__linux__) && defined(__GNUC__)
     fp = fopen("/mnt/c/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
-    if(!fp){
-	fp = fopen("/home/spring/Documents/Github/OpenCSTL/words.txt","rt");
+    if (!fp) {
+        fp = fopen("/home/spring/Documents/Github/OpenCSTL/words.txt", "rt");
     }
 #elif defined(__APPLE__)
     fp = fopen("/Users/spring/Documents/GitHub/OpenCSTL/words.txt", "rt");
@@ -140,19 +140,20 @@ int main() {
     }
     //printf("max size: %lld\n", max_size);
     double push_back_ms = elapsed_time(t_beg, timetime());
-    printf("size: %lld\telapsed_time: %lf\n",cstl_size(arr), push_back_ms);
+    printf("size: %lu\telapsed_time: %lf\n",cstl_size(arr), push_back_ms);
 
 
     t_beg = timetime();
 
-    char ***tree = cstl_set(char*, StringCmp);
+    //char ***tree = cstl_set(char*, StringCmp);
+    UNORDERED_SET(char*) tree = cstl_unordered_set(char*, NULL);
     for (int i = 0; i < cstl_size(arr); i++) {
         char *line = arr[i];
         cstl_insert(tree, line);
         //puts(line);
     }
     double insert_time = elapsed_time(t_beg, timetime());
-    printf("size: %lld\telapsed_time: %lf\n",cstl_size(tree), insert_time);
+    printf("size: %lu\telapsed_time: %lf\n",cstl_size(tree), insert_time);
 
 
     // for (char **it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {

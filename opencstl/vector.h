@@ -41,6 +41,13 @@
 #include"defines.h"
 #include"error.h"
 
+// ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
+// ██║░░░██║██╔════╝██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗
+// ╚██╗░██╔╝█████╗░░██║░░╚═╝░░░██║░░░██║░░██║██████╔╝
+// ░╚████╔╝░██╔══╝░░██║░░██╗░░░██║░░░██║░░██║██╔══██╗
+// ░░╚██╔╝░░███████╗╚█████╔╝░░░██║░░░╚█████╔╝██║░░██║
+// ░░░╚═╝░░░╚══════╝░╚════╝░░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝
+
 #define cstl_vector(TYPE)	__cstl_vector(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
@@ -77,7 +84,7 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value)
     if (capacity < n) {
         void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
-            cstl_error("Reallocation failed at vector resize");
+            cstl_error("Reallocation failed at vector assign");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
@@ -127,6 +134,10 @@ OPENCSTL_FUNC void __cstl_vector_pop_back(void **container) {
 
 OPENCSTL_FUNC size_t __cstl_vector_size(void **container) {
     return OPENCSTL_NIDX(container, -1);
+}
+
+OPENCSTL_FUNC size_t __cstl_vector_capacity(void **container) {
+    return OPENCSTL_NIDX(container, -2);
 }
 
 OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, void *value) {
@@ -260,4 +271,6 @@ OPENCSTL_FUNC void __cstl_vector_free(void **container) {
     free((char *) (*container) - header_sz);
     *container = NULL;
 }
+
+
 #endif

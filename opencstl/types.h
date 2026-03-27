@@ -50,4 +50,6 @@ typedef int (*cstl_compare)(const void *, const void *);
 
 typedef size_t cstl_ptr;
 
+typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
+
 #endif

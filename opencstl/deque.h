@@ -231,6 +231,12 @@ OPENCSTL_FUNC size_t __cstl_deque_size(void **container) {
     return *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
 }
 
+OPENCSTL_FUNC size_t __cstl_deque_capacity(void **container) {
+    size_t capacity = OPENCSTL_NIDX(container, -3);
+
+    return capacity;
+}
+
 OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);

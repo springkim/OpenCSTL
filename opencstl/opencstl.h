@@ -1,10 +1,12 @@
 #pragma once
-#include<math.h>
 
+#define USE_CSTL_FUNC
 
 #if defined(__linux__) || defined(__APPLE__)
+#if !defined(__8cc__ )
 #pragma GCC push_options
 #pragma GCC optimize("O0")
+#endif
 #endif
 #include"defines.h"
 #include"error.h"
@@ -15,8 +17,11 @@
 #include"tree.h"
 #include"stack.h"
 #include"queue.h"
-#include"compare.h"
-//#include"c_random.h"
+#include"cstl_compare.h"
+#include"cstl_random.h"
+#include"hashtable.h"
+
+#include "cstl_msort.h"
 
 #define VECTOR(TYPE)    TYPE*
 #define LIST(TYPE)      TYPE**
@@ -25,11 +30,67 @@
 #define DEQUE(TYPE)     TYPE*
 #define STACK(TYPE)     TYPE*
 #define QUEUE(TYPE)     TYPE*
+#define UNORDERED_SET(TYPE) TYPE*
+#define UNORDERED_MAP(TYPE) TYPE*
+
+#if defined(USE_CSTL_FUNC)
+
+#define push_back       cstl_push_back
+#define pop_back        cstl_pop_back
+#define push_front      cstl_push_front
+#define pop_front       cstl_pop_front
+#define push            cstl_push
+#define pop             cstl_pop
+#define insert          cstl_insert
+#define erase           cstl_erase
+#define resize          cstl_resize
+#define assign          cstl_assign
+#define find            cstl_find
+#define capacity        cstl_capacity
+#define size            cstl_size
+#define next            cstl_next
+#define prev            cstl_prev
+#define begin           cstl_begin
+#define end             cstl_end
+#define rbegin          cstl_rbegin
+#define rend            cstl_rend
+#define empty           cstl_empty
+#define clear           cstl_clear
+#define destroy         cstl_free
+
+
+#define new_deque           cstl_deque
+#define new_list            cstl_list
+#define new_stack           cstl_stack
+#define new_queue           cstl_queue
+#define new_unordered_set   cstl_unordered_set
+#define new_unordered_map   cstl_unordered_map
+#define new_deque           cstl_deque
+#define new_vector          cstl_vector
+#define new_set             cstl_set
+#define new_map             cstl_map
+#define new_priority_queue  cstl_priority_queue
+
+#define rand32              cstl_rand32
+#define rand64              cstl_rand64
+
+#define first(IT)                   (*IT)
+#define second(IT, TYPE)            cstl_value(IT, TYPE)
+#endif
 
 OPENCSTL_FUNC ptrdiff_t is_deque(void **container) {
     if (OPENCSTL_NIDX(container, -1) > INT_MAX)
         return 1;
     return 0;
+}
+
+OPENCSTL_FUNC bool is_hashtable_iter(void *it) {
+    for (int i = 0; i < htm_length; i++) {
+        if (htm[i].p1 <= it && it < htm[i].p2) {
+            return true;
+        }
+    }
+    return false;
 }
 
 OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
@@ -277,6 +338,43 @@ OPENCSTL_FUNC size_t _cstl_size(void *container) {
             sz = __cstl_deque_size((void **) container);
         }
         break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_size((void **) container);
+        }
+        break;
+        default: cstl_error("Invalid operation");
+            break;
+    }
+    return sz;
+}
+
+OPENCSTL_FUNC size_t _cstl_capacity(void *container) {
+    size_t container_type;
+    if (is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    size_t sz = 0;
+    switch (container_type) {
+        case OPENCSTL_STACK:
+        case OPENCSTL_QUEUE:
+        case OPENCSTL_PRIORITY_QUEUE:
+        case OPENCSTL_VECTOR: {
+            sz = __cstl_vector_capacity((void **) container);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            sz = __cstl_deque_capacity((void **) container);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_capacity((void **) container);
+        }
+        break;
         default: cstl_error("Invalid operation");
             break;
     }
@@ -284,6 +382,9 @@ OPENCSTL_FUNC size_t _cstl_size(void *container) {
 }
 
 OPENCSTL_FUNC void *_cstl_next(void *it) {
+    if (is_hashtable_iter(it)) {
+        return __cstl_hashtable_next_prev(it, -1);
+    }
     size_t node_type = OPENCSTL_NIDX(&it, -3);
     switch (node_type) {
         case OPENCSTL_LIST: {
@@ -295,13 +396,23 @@ OPENCSTL_FUNC void *_cstl_next(void *it) {
             return __cstl_tree_next_prev(it, -1, -2, __cstl_tree_toleft);
         }
         break;
-        default: cstl_error("Invalid operation");
-            break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_next_prev(it, -1);
+        }
+        break;
+        default: {
+            cstl_error("Invalid operation");
+        }
+        break;
     }
     return NULL;
 }
 
 OPENCSTL_FUNC void *_cstl_prev(void *it) {
+    if (is_hashtable_iter(it)) {
+        return __cstl_hashtable_next_prev(it, -2);
+    }
     size_t node_type = OPENCSTL_NIDX(&it, -3);
     switch (node_type) {
         case OPENCSTL_LIST: {
@@ -313,8 +424,15 @@ OPENCSTL_FUNC void *_cstl_prev(void *it) {
             return __cstl_tree_next_prev(it, -2, -1, __cstl_tree_toright);
         }
         break;
-        default: cstl_error("Invalid operation");
-            break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_next_prev(it, -2);
+        }
+        break;
+
+        default: {
+            cstl_error("Invalid operation");
+        }
     }
     return NULL;
 }
@@ -366,6 +484,19 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
         case OPENCSTL_SET: {
             if (argc == 1) __cstl_tree_insert((void **) container, param1,NULL);
             else
+                cstl_error("Invalid operation");
+        }
+        break;
+        case OPENCSTL_UNORDERED_MAP: {
+            if (argc == 2)__cstl_hashtable_insert((void **) container, param1, param2);
+            else
+                cstl_error("Invalid operation");
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET: {
+            if (argc == 1) {
+                __cstl_hashtable_insert((void **) container, param1,NULL);
+            } else
                 cstl_error("Invalid operation");
         }
         break;
@@ -422,6 +553,11 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
         case OPENCSTL_MAP:
         case OPENCSTL_SET: {
             __cstl_tree_erase((void **) container, *(void **) param1);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            __cstl_hashtable_erase((void **) container, *(void **) param1);
         }
         break;
         default: cstl_error("Invalid operation");
@@ -497,6 +633,11 @@ OPENCSTL_FUNC void *_cstl_begin(void *container) {
             return __cstl_tree_begin((void **) container);
         }
         break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_begin((void **) container);
+        }
+        break;
         default: cstl_error("Invalid operation");
             break;
     }
@@ -527,6 +668,11 @@ OPENCSTL_FUNC void *_cstl_rbegin(void *container) {
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             return __cstl_tree_rbegin((void **) container);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_rbegin((void **) container);
         }
         break;
         default: cstl_error("Invalid operation");
@@ -561,6 +707,11 @@ OPENCSTL_FUNC void *_cstl_end(void *container) {
             return __cstl_tree_end_rend((void **) container);
         }
         break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_end((void **) container);
+        }
+        break;
         default: cstl_error("Invalid operation");
             break;
     }
@@ -591,6 +742,11 @@ OPENCSTL_FUNC void *_cstl_rend(void *container) {
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             return __cstl_tree_end_rend((void **) container);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_rend((void **) container);
         }
         break;
         default: cstl_error("Invalid operation");
@@ -627,8 +783,15 @@ OPENCSTL_FUNC void _cstl_clear(void *container) {
             __cstl_tree_clear((void **) container);
         }
         break;
-        default: cstl_error("Invalid operation");
-            break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            __cstl_hashtable_clear((void **) container);
+        }
+        break;
+        default: {
+            cstl_error("Invalid operation");
+        }
+        break;
     }
 }
 
@@ -662,6 +825,14 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
             sz = __cstl_deque_size((void **) container);
         }
         break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            sz = __cstl_hashtable_size((void **) container);
+        }
+        break;
+        default: {
+            cstl_error("Invalid operation");
+        };
     }
     return sz ? false : true;
 }
@@ -696,6 +867,11 @@ OPENCSTL_FUNC void _cstl_free(void *container) {
         break;
         case OPENCSTL_PRIORITY_QUEUE: {
             __cstl_vector_free((void **) container);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            __cstl_hashtable_free((void **) container);
         }
         break;
         default: cstl_error("Invalid operation");
@@ -746,6 +922,11 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
             return __cstl_tree_find((void **) container, param1);
         }
         break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_find((void **) container, param1);
+        }
+        break;
         default: cstl_error("Invalid operator");
             break;
     }
@@ -753,7 +934,7 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     return NULL;
 }
 #if defined(__linux__) || defined(__APPLE__)
-
+#if !defined(__8cc__ )
 #pragma GCC pop_options
-
+#endif
 #endif

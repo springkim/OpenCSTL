@@ -78,9 +78,9 @@
 #define OPENCSTL_NIDX(container,nidx) (((size_t*)*container)[(nidx)])
 
 #define OPENCSTL_HEADER	(12)
-#define NIDX_CTYPE	(-12)	//container type
-#define NIDX_HSIZE	(-11)	//header size
-#define NIDX_TSIZE	(-10)	//type size
+#define NIDX_CTYPE	    (-12)	//container type
+#define NIDX_HSIZE	    (-11)	//header size
+#define NIDX_TSIZE	    (-10)	//type size
 
 #define NIDX_LIST_NODE_SIZE	(3)
 #define NIDX_TREE_NODE_SIZE	(5)
@@ -89,7 +89,7 @@
 #define HEAP_LEFT(I)		(((I)<<1)+1)
 #define HEAP_RIGHT(I)	(((I)<<1)+2)
 
-#ifdef _MSC_VER // Microsoft compilers
+#if defined(_MSC_VER)
 #   define ARGN(...)  INTERNAL_EXPAND_ARGS_PRIVATE(INTERNAL_ARGS_AUGMENTER(__VA_ARGS__))
 #   define INTERNAL_ARGS_AUGMENTER(...) unused, __VA_ARGS__
 #   define INTERNAL_EXPAND(x) x
@@ -135,6 +135,7 @@
 #define cstl_pop_back(container)	_cstl_pop_back(&(container))
 #define cstl_pop_front(container)	_cstl_pop_front(&(container))
 #define cstl_size(container)	_cstl_size(&(container))
+#define cstl_capacity(container)	_cstl_capacity(&(container))
 #define cstl_next(iterator)	_cstl_next(iterator)
 #define cstl_prev(iterator)	_cstl_prev(iterator)
 #define cstl_begin(container)	_cstl_begin(&(container))
@@ -313,4 +314,4 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #elif defined(__linux__) || defined(__APPLE__)
 #define SELECT_ANY	__attribute__((weak))
 #endif
-#define OPENCSTL_FUNC	static inline
+#define OPENCSTL_FUNC	static

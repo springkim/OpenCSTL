@@ -41,7 +41,7 @@
 #include"types.h"
 #include"defines.h"
 #include"error.h"
-#include"c_alloca.h"
+#include"cstl_alloca.h"
 
 #define cstl_queue(TYPE)	__cstl_queue(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_queue(size_t type_size, char *type) {

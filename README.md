@@ -1,23 +1,148 @@
-### <img src="img/OpenCSTL.png" width="256">
 
-## Open source C container library like C++ STL
+<p align="center">
+  <img width="256" height="256" src="img/OpenCSTL.png">
+</p>
+
+
+# Open source C container library like C++ STL
+
+
+## Why OpenCSTL?
+
+- **Single-header** — just `#include "opencstl.h"` and you're done. No build steps, no linking.
+- **Bracket access** — `vector` and `deque` support `v[i]` subscript access, exactly like C++ and plain C arrays.
+- **Identical C++ STL interface** — same function names, same semantics, zero new API to learn.
+  - Auto-dispatch: one function name routes to the correct implementation based on the container type.
+  - Variadic API: different parameter counts invoke different behaviors, just like C++ overloading.
+- **Cross-platform** — works on Windows, macOS, and Linux.
+  - Compiler support: MSVC, MinGW64, GCC, and Clang.
+- **Zero boilerplate** — no forward declarations, no type registration macros, no initialization ceremony.
+- **stdlib compatible** — use standard C functions like `qsort` and `bsearch` directly on container data.
+- **Full iterator support** — every container exposes `begin`, `end`, `rbegin`, and `rend` iterators.
+- **Simpler than any alternative** — far easier to use than other C container libraries, without breaking idiomatic C style.
+
 
 
 
 ## Supported C compilers
 
-- [x] Windows
-  - [x] MSVC(cl.exe)
-  - [x] MinGW64(gcc.exe)
-  - [x] LLVM(clang.exe)
-  - [x] TCC(tcc.exe)
-- [x] Linux
-  - [x] GNU C Compiler(gcc)
-  - [x] LLVM(clang)
-  - [ ] TCC(tcc)
-- [x] MacOS
-  - [x] GNU C Compiler(gcc)
-  - [x] LLVM(clang)
+
+<p>
+    <img width="128" height="128" src="img/windows11.png" >
+    <img width="128" height="128" src="img/macos.png" >
+    <img width="128" height="128" src="img/ubuntu.png" >
+</p>
+
+<p>
+    <img width="96" height="96" src="img/MSVC2026.png" >
+    <img width="96" height="96" src="img/MinGW64.png" >
+    <img width="96" height="96" src="img/LLVM.png" >
+    <img width="96" height="96" src="img/GNU.png" >
+    <img width="96" height="96" src="img/tcc.png" >
+</p>
+
+
+|C Compiler|Windows|MacOS|Linux|
+|-|-|-|-|
+|MSVC(cl)|✅||||
+|GNU(gcc)|✅|✅|✅|
+|LLVM(clang)|✅|✅|✅|
+|TCC|✅|❌|❌|
+
+
+
+## Examples
+
+
+
+```c
+#define USE_CSTL_FUNC
+// Defining USE_CSTL_FUNC ensures that short, concise names are used.
+// USE_CSTL_FUNC을 정의하면 짧고 간결한 이름들을 사용합니다.
+// USE_CSTL_FUNCを定義すると、短く簡潔な名前を使用します。
+// 定义 USE_CSTL_FUNC 可确保使用简短、精炼的名称。
+#include "opencstl/opencstl.h"
+
+#include <stdlib.h>
+
+// Comparison function for sorting integers in ascending order.
+// 정수를 오름차순으로 정렬하기 위한 비교 함수입니다.
+// 整数を昇順にソートするための比較関数です。
+// 用于将整数按升序排序的比较函数。
+int cmp_int(const void *a, const void *b) {
+    return *((int *) a) - *((int *) b);
+}
+
+void example_deque() {
+    DEQUE(int) q = new_deque(int);
+
+    for (int i = 0; i < 10; i++) {
+        int val = rand32() % 100;
+        // It uses the same names as the C++ STL.
+        // C++의 STL과 동일한 이름을 사용합니다.
+        // C++のSTLと同じ名前を使用します。
+        // 名称与C++的STL相同。
+        push_back(q, val);
+    }
+
+    // You can use `insert` in a similar way to overloading in STL.
+    // STL의 오버로딩과 비슷하게 insert를 사용할 수 있습니다.
+    // STLのオーバーロードと同様に、insertを使用できます。
+    // 您可以像使用STL的重载一样使用insert。
+
+    // Inserts 777 at the 5th position.
+    // 5번째 자리에 777을 삽입합니다.
+    // 5番目の位置に777を挿入します。
+    // 在第5个位置插入777。
+    insert(q, q + 5, 777);
+
+    // Inserts three 999s at the 8th position.
+    // 8번째 자리에 3개의 999를 삽입합니다.
+    // 8番目の位置に999を3つ挿入します。
+    // 在第8个位置插入3个999。
+    insert(q, q + 8, 3, 999);
+
+    for (int i = 0; i < size(q); i++) {
+        // You can access elements in a deque or vector using [].
+        // deque, vector에서 []로 접근이 가능합니다.
+        // dequeやvectorでは[]でアクセスできます。
+        // 可以使用[]访问deque或vector中的元素。
+        printf("[%3d]", q[i]);
+    }
+    puts("");
+
+    // You can use existing C functions.
+    // 기존 C의 함수를 사용할 수 있습니다.
+    // 既存のC関数を使用できます。
+    // 可以使用现有的C函数。
+    qsort(q, size(q), sizeof(int), cmp_int);
+
+    for (int i = 0; i < size(q); i++) {
+        printf("[%3d]", q[i]);
+    }
+
+    // Use `destroy` to free up memory.
+    // destroy를 이용해서 메모리를 해제합니다.
+    // destroyを使用してメモリを解放します。
+    // 使用destroy释放内存。
+    destroy(q);
+}
+
+int main() {
+    example_deque();
+    return 0;
+}
+```
+
+`````
+[ 38][ 26][ 13][ 83][ 19][777][ 95][ 78][999][999][999][ 87][ 80][ 86]
+[ 13][ 19][ 26][ 38][ 78][ 80][ 83][ 86][ 87][ 95][777][999][999][999]
+`````
+
+
+
+
+
 
 
 
@@ -387,9 +512,9 @@ void cstl_free(<queue>);
 
 ### TODO
 
-- [ ] unorded set/map(hash)
+- [x] unorded set/map(hash)
 
-- [ ] algorithm
+- [x] algorithm
 
 ## Links
 

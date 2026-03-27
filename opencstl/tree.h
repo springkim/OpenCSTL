@@ -9,7 +9,7 @@
 //                               License Agreement
 //                Open Source C Container Library like STL in C++
 //
-//               Copyright (C) 2018-2026S, Kim Bomm, all rights reserved.
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
 //
 // Third party copyrights are property of their respective owners.
 //
@@ -37,15 +37,16 @@
 #pragma once
 #if !defined(_OPENCSTL_TREE_H)
 #define _OPENCSTL_TREE_H
+
+
 #include"types.h"
 #include"error.h"
 #include"defines.h"
-#include"queue.h"
-#define P	-4
-#define R -1
-#define L -2
-#define RED  ((size_t)1)
-#define BLACK ((size_t)0)
+#define P	    -4
+#define R       -1
+#define L       -2
+#define RED     ((size_t)1)
+#define BLACK   ((size_t)0)
 // _(N,V): raw size_t lvalue, no cast, works on all compilers including Windows Clang.
 // Write sites: _(N,V) = (size_t)val
 // Read sites:  (void*)_(N,V)
@@ -54,13 +55,14 @@
 
 
 #define CSTL_ARENA_CHUNK_SIZE 256
+typedef struct cstl_arena_chunk cstl_arena_chunk;
 
-typedef struct cstl_arena_chunk {
-    struct cstl_arena_chunk *next;
+struct cstl_arena_chunk {
+    cstl_arena_chunk *next;
     size_t used;
     size_t capacity;
     size_t node_size;
-} cstl_arena_chunk;
+};
 
 OPENCSTL_FUNC cstl_arena_chunk *__cstl_arena_new_chunk(size_t node_size, size_t capacity) {
     cstl_arena_chunk *chunk = (cstl_arena_chunk *) malloc(
@@ -115,6 +117,7 @@ SELECT_ANY void *nil = NULL;
 OPENCSTL_FUNC void *__cstl_tree_node(size_t type_size, size_t node_type) {
     //[color][parent][node type][left][right] -> [data]
     size_t node_sz = type_size + sizeof(void *) * NIDX_TREE_NODE_SIZE;
+    node_sz = (node_sz + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
     void *ptr = (char *) calloc(node_sz, 1) + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     OPENCSTL_NIDX(&ptr, -3) = node_type;
     COLOR(ptr) = BLACK;
@@ -124,16 +127,26 @@ OPENCSTL_FUNC void *__cstl_tree_node(size_t type_size, size_t node_type) {
 OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_t type_size, size_t node_type) {
     // [color][parent][node type][left][right] -> [data]
     size_t raw_node_sz = type_size + sizeof(void *) * NIDX_TREE_NODE_SIZE;
+    raw_node_sz = (raw_node_sz + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
+
 
     cstl_arena_chunk **arena = (cstl_arena_chunk **) &OPENCSTL_NIDX(container, -7);
     void **freelist = (void **) &OPENCSTL_NIDX(container, -6);
 
     char *raw = (char *) __cstl_arena_alloc(arena, freelist, raw_node_sz);
     void *ptr = raw + sizeof(void *) * NIDX_TREE_NODE_SIZE;
-    OPENCSTL_NIDX(&ptr, -3) = node_type;
+    OPENCSTL_NIDX(&ptr, -3) = (size_t) node_type;
     COLOR(ptr) = BLACK;
     return ptr;
 }
+
+// ░██████╗███████╗████████╗
+// ██╔════╝██╔════╝╚══██╔══╝
+// ╚█████╗░█████╗░░░░░██║░░░
+// ░╚═══██╗██╔══╝░░░░░██║░░░
+// ██████╔╝███████╗░░░██║░░░
+// ╚═════╝░╚══════╝░░░╚═╝░░░
+
 
 #define cstl_set(KEY,...)	__cstl_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),__VA_ARGS__)
 OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
@@ -165,6 +178,13 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
     va_end(vl);
     return ptr;
 }
+
+// ███╗░░░███╗░█████╗░██████╗░
+// ████╗░████║██╔══██╗██╔══██╗
+// ██╔████╔██║███████║██████╔╝
+// ██║╚██╔╝██║██╔══██║██╔═══╝░
+// ██║░╚═╝░██║██║░░██║██║░░░░░
+// ╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░
 
 #define cstl_map(KEY,VALUE,...)	__cstl_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,ARGN(__VA_ARGS__),__VA_ARGS__)
 OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_key, char *type_value, int argc, ...) {
@@ -561,7 +581,6 @@ OPENCSTL_FUNC void *__cstl_tree_next_prev(void *it, int r, int l, void *(todeep)
 OPENCSTL_FUNC size_t ___cstl_tree_size(void *n) {
     if (n == nil)return 0;
     return ___cstl_tree_size((void *) _(n, L)) + ___cstl_tree_size((void *) _(n, R)) + 1;
-
 }
 
 OPENCSTL_FUNC size_t __cstl_tree_size(void **container) {

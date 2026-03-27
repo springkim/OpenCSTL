@@ -84,15 +84,18 @@ void cstl_vector_test2() {
 
 void cstl_vector_test3() {
     Decorate("opencstl{vector/qsort} test begin");
-    VECTOR(float) vec = cstl_vector(float);
+    VECTOR(long long) vec = cstl_vector(long long);
     for (int i = 0; i < 100; i++) {
-        float val = (float) (rand() % RAND_MAX);
+        //long long val = (long long)rand() % RAND_MAX;
+        long long val = cstl_rand64();
         cstl_push_back(vec, val);
     }
-    qsort(vec,cstl_size(vec), sizeof(float), COMPARE(float));
+    stable_sort(vec,cstl_size(vec), sizeof(long long), COMPARE(long long));
     for (int i = 0; i < cstl_size(vec); i++) {
-        printf("Sorted: [%f]\n", vec[i]);
+        printf("Sorted: [%lld]\n", vec[i]);
     }
+
+
     cstl_free(vec);
     Decorate("opencstl{vector/qsort} test end");
 }
@@ -140,7 +143,7 @@ void cstl_set_test() {
     }
     /// [0] [1] ... [98] [99]
     for (float i = 50; i < 70; i++) {
-        int *it = cstl_find(tree, i);
+        float *it = cstl_find(tree, i);
         cstl_erase(tree, it);
     }
     /// [0] [1] ... [48] [49] [70] [71] ... [98] [99]
@@ -330,7 +333,7 @@ void cstl_priority_queue_test2() {
     Decorate("opencstl{priority_queue/dijkstra} test end");
 }
 
-int main() {
+void test01() {
     cstl_vector_test();
     cstl_vector_test2();
     cstl_list_test02();
@@ -343,5 +346,39 @@ int main() {
     cstl_priority_queue_test2();
 
     cstl_vector_test3();
+}
+
+void test02() {
+    Decorate("opencstl{unordered_set} test begin");
+    UNORDERED_SET(int) h = cstl_unordered_set(int);
+
+    for (int i = 1; i < 100; i++) {
+        cstl_insert(h, i);
+    }
+
+    size_t capacity = cstl_capacity(h);
+    for (int i = 0; i < (int) capacity; i++) {
+        int k = h[i];
+        if (k == 0) {
+            printf("[---]");
+        } else {
+            printf("[%3d]", k);
+        }
+    }
+
+    printf("\n=============================================\n");
+    for (int *it = cstl_rbegin(h); it != cstl_rend(h); it = (int *) cstl_prev(it)) {
+        printf("[%3d]", *it);
+    }
+    printf("\n");
+    cstl_free(h);
+    Decorate("opencstl{unordered_set} test end");
+}
+
+int main() {
+    test01();
+
+    test02();
+
     return 0;
 }
