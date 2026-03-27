@@ -29,7 +29,7 @@
 <p>
     <img width="128" height="128" src="assets/windows11.png" >
     <img width="128" height="128" src="assets/macos.png" >
-    <img width="128" height="128" src="assets/ubuntu.png" >
+    <img width="128" height="128" src="assets/ubuntu_logo.png" >
 </p>
 
 <p>
