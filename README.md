@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img width="256" height="256" src="img/OpenCSTL.png">
+  <img width="256" height="256" src="assets/OpenCSTL.png">
 </p>
 
 
@@ -23,22 +23,21 @@
 
 
 
-
 ## Supported C compilers
 
 
 <p>
-    <img width="128" height="128" src="img/windows11.png" >
-    <img width="128" height="128" src="img/macos.png" >
-    <img width="128" height="128" src="img/ubuntu.png" >
+    <img width="128" height="128" src="assets/windows11.png" >
+    <img width="128" height="128" src="assets/macos.png" >
+    <img width="128" height="128" src="assets/ubuntu.png" >
 </p>
 
 <p>
-    <img width="96" height="96" src="img/MSVC2026.png" >
-    <img width="96" height="96" src="img/MinGW64.png" >
-    <img width="96" height="96" src="img/LLVM.png" >
-    <img width="96" height="96" src="img/GNU.png" >
-    <img width="96" height="96" src="img/tcc.png" >
+    <img width="96" height="96" src="assets/MSVC2026.png" >
+    <img width="96" height="96" src="assets/MinGW64.png" >
+    <img width="96" height="96" src="assets/LLVM.png" >
+    <img width="96" height="96" src="assets/GNU.png" >
+    <img width="96" height="96" src="assets/tcc.png" >
 </p>
 
 
