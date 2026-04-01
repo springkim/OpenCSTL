@@ -26,7 +26,7 @@ void example_list() {
 }
 
 void example_set() {
-    SET(int) set = new_set(int, COMPARE(int));
+    SET(int) set = new_set(int);
     for (int i = 0; i < 10; i++) {
         insert(set, rand()%100);
     }

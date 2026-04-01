@@ -17,21 +17,22 @@ import re
 import sys
 import argparse
 from pathlib import Path
+import shutil
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Regex helpers
 # ──────────────────────────────────────────────────────────────────────────────
 
-RE_LOCAL_INCLUDE  = re.compile(r'^\s*#\s*include\s*"([^"]+)"')
+RE_LOCAL_INCLUDE = re.compile(r'^\s*#\s*include\s*"([^"]+)"')
 RE_SYSTEM_INCLUDE = re.compile(r'^\s*#\s*include\s*<([^>]+)>')
-RE_PRAGMA_ONCE    = re.compile(r'^\s*#\s*pragma\s+once\s*$')
+RE_PRAGMA_ONCE = re.compile(r'^\s*#\s*pragma\s+once\s*$')
 
-RE_GUARD_IFNDEF   = re.compile(r'^\s*#\s*ifndef\s+(\w+)\s*$')
-RE_GUARD_IF_DEF   = re.compile(r'^\s*#\s*if\s+!defined\s*\(\s*(\w+)\s*\)\s*$')
-RE_GUARD_DEFINE   = re.compile(r'^\s*#\s*define\s+(\w+)\s*$')
+RE_GUARD_IFNDEF = re.compile(r'^\s*#\s*ifndef\s+(\w+)\s*$')
+RE_GUARD_IF_DEF = re.compile(r'^\s*#\s*if\s+!defined\s*\(\s*(\w+)\s*\)\s*$')
+RE_GUARD_DEFINE = re.compile(r'^\s*#\s*define\s+(\w+)\s*$')
 
-RE_IF_OPEN        = re.compile(r'^\s*#\s*(if|ifdef|ifndef)\b')
-RE_IF_CLOSE       = re.compile(r'^\s*#\s*endif\b')
+RE_IF_OPEN = re.compile(r'^\s*#\s*(if|ifdef|ifndef)\b')
+RE_IF_CLOSE = re.compile(r'^\s*#\s*endif\b')
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -97,8 +98,8 @@ def strip_include_guard(lines):
 class Amalgamator:
     def __init__(self, src_dir):
         self.src_dir = src_dir
-        self.visited = set()          # basenames already inlined
-        self.top_sys_includes = []    # unconditional system includes (hoisted)
+        self.visited = set()  # basenames already inlined
+        self.top_sys_includes = []  # unconditional system includes (hoisted)
         self._top_sys_seen = set()
 
     def _hoist_system_include(self, line):
@@ -223,7 +224,7 @@ def main():
                         help='Entry-point header (default: opencstl.h)')
     args = parser.parse_args()
 
-    src_dir  = Path(args.src_dir).resolve()
+    src_dir = Path(args.src_dir).resolve()
     out_path = Path(args.out).resolve()
 
     if not src_dir.is_dir():
@@ -238,8 +239,10 @@ def main():
     print(f'[amalgamate] output  : {out_path}')
 
     amalg = Amalgamator(src_dir)
-    body  = amalg.process_file(args.entry)
+    body = amalg.process_file(args.entry)
     write_output(out_path, amalg, body)
+
+    shutil.copy(out_path, "examples/opencstl.h");
 
     total = out_path.read_text(encoding='utf-8').count('\n')
     print(f'[amalgamate] done    : {len(amalg.visited)} file(s) inlined, '

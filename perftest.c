@@ -1,10 +1,12 @@
 //
 // Created by spring on 3/24/2026.
 //
-#include"opencstl/opencstl.h"
-#include<stdio.h>
-#include<stdlib.h>
+#include"opencstl.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <locale.h>
+
+
 #if defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__)
 #include <stdio.h>
 #include <sys/time.h>

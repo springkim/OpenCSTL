@@ -6,7 +6,9 @@ int main() {
     };
     size_t len = sizeof(containers) / sizeof(containers[0]);
     printf("Number of elements: %d\n", len);
-    MAP(int) d = new_map(int, char*, COMPARE(int));
+
+    // MAP Example
+    MAP(int) d = new_map(int, char*, NULL);
     for (int i = 0; i < len; i++) {
         insert(d, i, containers[i]);
     }

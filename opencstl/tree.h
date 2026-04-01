@@ -147,8 +147,8 @@ OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_t type_size, 
 // ██████╔╝███████╗░░░██║░░░
 // ╚═════╝░╚══════╝░░░╚═╝░░░
 
-
-#define cstl_set(KEY,...)	__cstl_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_set(KEY)   _cstl_set(KEY,NULL)
+#define _cstl_set(KEY,...)	__cstl_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),__VA_ARGS__)
 OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * NIDX_TREE_NODE_SIZE;

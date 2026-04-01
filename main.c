@@ -3,83 +3,82 @@
 #include <string.h>
 #include <time.h>
 #include "opencstl/opencstl.h"
-#define Decorate(STR) for (int i = 0; i < 30; i++) { putchar('='); } printf(STR); for (int i = 0; i < 30; i++) { putchar('='); } putchar('\n');
+#define Decorate(STR) for (int i = 0; i < 40; i++) { putchar('#');  } printf(STR); for (int i = 0; i < 40; i++) { putchar('#'); } putchar('\n');
 
 
 void cstl_vector_test() {
     Decorate("opencstl{vector} test begin");
-    VECTOR(int) arr = cstl_vector(int);
+    VECTOR(int) arr = new_vector(int);
 
     for (int i = 0; i < 10; i++) {
-        cstl_push_back(arr, i);
+        push_back(arr, i);
     }
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
-    cstl_pop_back(arr);
+    pop_back(arr);
 
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8]
 
-    cstl_insert(arr, arr + 0, 777);
+    insert(arr, arr + 0, 777);
 
     ///[777] [0] [1] [2] [3] [4] [5] [6] [7] [8]
-    cstl_insert(arr, arr + 5, 5, 999);
+    insert(arr, arr + 5, 5, 999);
     ///[777] [0] [1] [2] [3] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
-    cstl_erase(arr, arr + 3, arr + 5);
+    erase(arr, arr + 3, arr + 5);
 
     ///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
-    cstl_resize(arr, 15, -1);
+    resize(arr, 15, -1);
 
     ///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8] [-1] [-1]
-    for (int *it = cstl_begin(arr); it != cstl_end(arr); it++) {
+    for (int *it = begin(arr); it != end(arr); it++) {
         printf("[%d] ", *it);
     }
     puts("");
 
-    int *pos = cstl_find(arr, 7);
+    int *pos = find(arr, 7);
     if (pos != NULL) {
         printf("find : [%3d]\n", *pos);
     }
-    cstl_assign(arr, 5);
+    assign(arr, 5);
     ///[0] [0] [0] [0] [0]
-    for (int i = 0; i < cstl_size(arr); i++) {
+    for (int i = 0; i < size(arr); i++) {
         printf("[%d] ", arr[i]);
     }
     puts("");
-    cstl_assign(arr, 5, 7);
+    assign(arr, 5, 7);
     ///[7] [7] [7] [7] [7]
-    for (int i = 0; i < cstl_size(arr); i++) {
+    for (int i = 0; i < size(arr); i++) {
         printf("[%d] ", arr[i]);
     }
     puts("");
-    cstl_free(arr);
-    Decorate("opencstl{vector} test end");
+    destroy(arr);
 }
 
 void cstl_vector_test2() {
     Decorate("opencstl{vector 2d} test begin");
-    VECTOR(int*) matrix = cstl_vector(int*);
-    cstl_assign(matrix, 5);
-    for (int i = 0; i < cstl_size(matrix); i++) {
-        matrix[i] = cstl_vector(int);
-        cstl_assign(matrix[i], 5);
+    VECTOR(int*) matrix = new_vector(int*);
+    const size_t sz = 7;
+    assign(matrix, sz);
+    for (int i = 0; i < size(matrix); i++) {
+        matrix[i] = new_vector(int);
+        assign(matrix[i], sz);
     }
 
-    for (int i = 0; i < cstl_size(matrix); i++) {
-        for (int j = 0; j < cstl_size(matrix[i]); j++) {
+    for (int i = 0; i < size(matrix); i++) {
+        for (int j = 0; j < size(matrix[i]); j++) {
             matrix[i][j] = i * j;
         }
     }
-    for (int i = 0; i < cstl_size(matrix); i++) {
-        for (int j = 0; j < cstl_size(matrix[i]); j++) {
+    for (int i = 0; i < size(matrix); i++) {
+        for (int j = 0; j < size(matrix[i]); j++) {
             printf("[%3d]", matrix[i][j]);
         }
         puts("");
     }
 
-    for (int i = 0; i < cstl_size(matrix); i++) {
-        cstl_free(matrix[i]);
+    for (int i = 0; i < size(matrix); i++) {
+        destroy(matrix[i]);
     }
-    cstl_free(matrix);
-    Decorate("opencstl{vector 2d} test end");
+    destroy(matrix);
 }
 
 void cstl_vector_test3() {
@@ -137,7 +136,7 @@ void cstl_list_test02() {
 
 void cstl_set_test() {
     Decorate("opencstl{set} test begin");
-    SET(float) tree = cstl_set(float, FloatCmp);
+    SET(float) tree = cstl_set(float);
     for (float i = 0; i < 100; i++) {
         cstl_insert(tree, i);
     }
