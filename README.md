@@ -58,6 +58,7 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
     <img width="96" height="96" src="assets/LLVM.png" >
     <img width="96" height="96" src="assets/GNU.png" >
     <img width="96" height="96" src="assets/tcc.png" >
+     <img width="96" height="96" src="assets/intel_c_compiler.png" >
 </p>
 
 
@@ -67,8 +68,7 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
 |GNU(gcc)|✅|✅|✅|
 |LLVM(clang)|✅|✅|✅|
 |TCC|✅|❌|❌|
-
-
+|Intel oneAPI DPC++/C++ Compiler||❌|✅|
 
 ## Examples
 
