@@ -102,6 +102,6 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
     }
 }
 
-#define sort qsort
+#define sort        qsort
 #define stable_sort msort
 #endif //_OPENCSTL_SORT_H

@@ -9,21 +9,40 @@
 
 ## Why OpenCSTL?
 
-- **Single-header** — just `#include "opencstl.h"` and you're done. No build steps, no linking.
-- **Bracket access** — `vector` and `deque` support `v[i]` subscript access, exactly like C++ and plain C arrays.
-- **Identical C++ STL interface** — same function names, same semantics, zero new API to learn.
+- **Single-header** 
+	 - Just `#include "opencstl.h"` and you're done. No build steps, no linking.
+	
+- **Bracket access**
+   -  `vector` and `deque` support `v[i]` subscript access, exactly like C++ and plain C arrays.
+
+- **Identical C++ STL interface**
+  — same function names, same semantics, zero new API to learn.
   - Auto-dispatch: one function name routes to the correct implementation based on the container type.
   - Variadic API: different parameter counts invoke different behaviors, just like C++ overloading.
-- **Cross-platform** — works on Windows, macOS, and Linux.
+- **Cross-platform** 
+  - Works on Windows, macOS, and Linux.
   - Compiler support: MSVC, MinGW64, GCC, and Clang.
-- **Zero boilerplate** — no forward declarations, no type registration macros, no initialization ceremony.
-- **stdlib compatible** — use standard C functions like `qsort` and `bsearch` directly on container data.
-- **Full iterator support** — every container exposes `begin`, `end`, `rbegin`, and `rend` iterators.
-- **Simpler than any alternative** — far easier to use than other C container libraries, without breaking idiomatic C style.
+
+- **Zero boilerplate** 
+  - No forward declarations, no type registration macros, no initialization ceremony.
+
+- **stdlib compatible** 
+  - Use standard C functions like `qsort` and `bsearch` directly on container data.
+
+- **Full iterator support** 
+   - Every container exposes `begin`, `end`, `rbegin`, and `rend` iterators.
+
+- **Simpler than any alternative** 
+   - Far easier to use than other C container libraries, without breaking idiomatic C style.
+
+## Usage
+
+```bash
+curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master/opencstl.h"
+```
 
 
-
-## Supported C compilers
+## Supported OS / C compilers
 
 
 <p>
@@ -139,27 +158,19 @@ int main() {
 `````
 
 
+### Sort
+
+```
+void qsort(
+    void *__base, 
+    size_t __nel, 
+    size_t __width, 
+    int(*__compar)(const void *, const void *)) 
+```
 
 
 
 
-
-
-### Features
-
-* Support [ ] operator  
-  * `cstl_vector` and `cstl_deque` can use [ ] to access element.
-* Same interface with C++ STL.
-  * OpenCSTL has a function name and parameters such as C++ STL.
-  * You just need passing `container` to first parameter.
-* Overloading in C
-  * We implement overloading function using variadic grammar.
-* Fast performance
-  * OpenCSTL doesn't have bootleneck.
-* Crossplatform
-  * OpenCSTL support `MSVC`, `MinGW64`, `Linux gcc`.
-* Header only library
-  * You just need include `opencstl/opencstl.h`.
 
 ### Usage
 

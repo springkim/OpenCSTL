@@ -3564,7 +3564,7 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
     }
 }
 
-#define sort qsort
+#define sort        qsort
 #define stable_sort msort
 #endif //_OPENCSTL_SORT_H
 
@@ -3572,15 +3572,15 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
 /* END    cstl_msort.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
-#define VECTOR(TYPE)    TYPE*
-#define LIST(TYPE)      TYPE**
-#define SET(TYPE)       TYPE**
-#define MAP(TYPE)       TYPE**
-#define DEQUE(TYPE)     TYPE*
-#define STACK(TYPE)     TYPE*
-#define QUEUE(TYPE)     TYPE*
-#define UNORDERED_SET(TYPE) TYPE*
-#define UNORDERED_MAP(TYPE) TYPE*
+#define VECTOR(TYPE)            TYPE*
+#define LIST(TYPE)              TYPE**
+#define SET(TYPE)               TYPE**
+#define MAP(TYPE)               TYPE**
+#define DEQUE(TYPE)             TYPE*
+#define STACK(TYPE)             TYPE*
+#define QUEUE(TYPE)             TYPE*
+#define UNORDERED_SET(TYPE)     TYPE*
+#define UNORDERED_MAP(TYPE)     TYPE*
 
 #if defined(USE_CSTL_FUNC)
 
@@ -3606,6 +3606,11 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
 #define empty           cstl_empty
 #define clear           cstl_clear
 #define destroy         cstl_free
+#define top             cstl_top
+#define front           cstl_front
+#define back            cstl_back
+
+
 
 
 #define new_deque           cstl_deque

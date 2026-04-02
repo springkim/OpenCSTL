@@ -61,15 +61,15 @@
 
 #include "cstl_msort.h"
 
-#define VECTOR(TYPE)    TYPE*
-#define LIST(TYPE)      TYPE**
-#define SET(TYPE)       TYPE**
-#define MAP(TYPE)       TYPE**
-#define DEQUE(TYPE)     TYPE*
-#define STACK(TYPE)     TYPE*
-#define QUEUE(TYPE)     TYPE*
-#define UNORDERED_SET(TYPE) TYPE*
-#define UNORDERED_MAP(TYPE) TYPE*
+#define VECTOR(TYPE)            TYPE*
+#define LIST(TYPE)              TYPE**
+#define SET(TYPE)               TYPE**
+#define MAP(TYPE)               TYPE**
+#define DEQUE(TYPE)             TYPE*
+#define STACK(TYPE)             TYPE*
+#define QUEUE(TYPE)             TYPE*
+#define UNORDERED_SET(TYPE)     TYPE*
+#define UNORDERED_MAP(TYPE)     TYPE*
 
 #if defined(USE_CSTL_FUNC)
 
@@ -95,6 +95,11 @@
 #define empty           cstl_empty
 #define clear           cstl_clear
 #define destroy         cstl_free
+#define top             cstl_top
+#define front           cstl_front
+#define back            cstl_back
+
+
 
 
 #define new_deque           cstl_deque
