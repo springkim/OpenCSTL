@@ -2560,7 +2560,7 @@ static unsigned long long cstl_rand64() {
 #define _OPENCSTL_CSTL_TIME_H
 
 
-#if defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__)
+#if defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
@@ -2586,7 +2586,7 @@ static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
     struct tm tm_now;
 #if defined(__MINGW32__) || defined(__MINGW64__)
     localtime_s(&tm_now, &now);
-#elif defined(__clang__) || (defined(__GNUC__) && defined(__APPLE__)) || defined(__GNUC__)
+#elif defined(__clang__) || (defined(__GNUC__) && defined(__APPLE__)) || defined(__GNUC__) | defined(__TINYC__)
     localtime_r(&now, &tm_now);
 #else
     localtime_s(&tm_now, &now);
@@ -2603,7 +2603,7 @@ static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
              ms);
 }
 
-#elif defined(_MSC_VER) || defined(__TINYC__)  // MSVC, clang-cl
+#elif defined(_MSC_VER)   // MSVC, clang-cl
 
 #include <windows.h>
 #include <stdio.h>
