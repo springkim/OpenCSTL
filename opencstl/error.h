@@ -56,7 +56,7 @@
 #endif
 
 
-#if defined(__OPENCSTL_FUNCTION__)
+#if defined(__GNUC__)
 #define cstl_error(msg)		__cstl_error(msg,__FILE__,__FUNCTION__,__LINE__)
 OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, const char *function, int line) {
     char err_msg[1024] = {0};
@@ -74,6 +74,7 @@ exit(EXIT_FAILURE);
 #define cstl_error(msg)		__cstl_error(msg,__FILE__,__LINE__)
 OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, int line) {
     char err_msg[1024] = {0};
+
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
     sprintf_s(err_msg, 1024, "[%s] in %s , %d\n", msg, file, line);
     MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);

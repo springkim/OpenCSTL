@@ -207,7 +207,7 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_t n, voi
         *container = (char *) b + header_sz - distance;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) += n;
     }
-    memmove((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
+    memcpy((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
             (length - pos) * type_size);
     for (size_t i = 0; i < n; i++) {
         memcpy((char *) *container + (pos + i) * type_size, value, type_size);

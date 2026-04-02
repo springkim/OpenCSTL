@@ -164,7 +164,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) *= 2;
     }
-    memmove((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
+    memcpy((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
             (length - pos + 1) * type_size);
     for (size_t i = 0; i < N; i++) {
         memcpy((char *) *container + type_size * (pos + i), value, type_size);
@@ -179,7 +179,7 @@ OPENCSTL_FUNC void __cstl_vector_erase(void **container, void *iter_begin, void 
     size_t capacity = OPENCSTL_NIDX(container, -2);
     size_t pos_begin = (*(char **) iter_begin - *(char **) container) / type_size;
     size_t pos_end = (*(char **) iter_end - *(char **) container) / type_size;
-    memmove((char *) *container + type_size * (pos_begin), (char *) *container + type_size * (pos_end),
+    memcpy((char *) *container + type_size * (pos_begin), (char *) *container + type_size * (pos_end),
             (length - pos_begin + 1) * type_size);
     OPENCSTL_NIDX(container, -1) -= (pos_end - pos_begin);
 }

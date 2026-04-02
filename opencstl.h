@@ -1993,29 +1993,6 @@ OPENCSTL_FUNC void *__cstl_tree_end_rend(void **container) {
     return nil;
 }
 
-// OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
-//     size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-//     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-//     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-//     size_t value_size = OPENCSTL_NIDX(container, -4);
-//     size_t type_size = key_size + value_size;
-//     cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
-//     void ***root = (void ***) *container;
-//
-//     void *c = *root;
-//     while (c != nil) {
-//         if ((void *) _(c, R) != nil) {
-//             void *m = __cstl_tree_toleft(c);
-//             _(m, L) = _(c, R);
-//             _(_(c, R), P) = _(m, L);
-//         }
-//         void *t = c;
-//         c = (void *) _(c, L);
-//         free(&OPENCSTL_NIDX(&t, -5));
-//
-//     }
-//     *root = nil;
-// }
 
 OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
     cstl_arena_chunk **arena = (cstl_arena_chunk **) &OPENCSTL_NIDX(container, -7);

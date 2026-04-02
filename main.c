@@ -86,7 +86,7 @@ void cstl_vector_test3() {
     VECTOR(long long) vec = new_vector(long long);
     for (int i = 0; i < 100; i++) {
         //long long val = (long long)rand() % RAND_MAX;
-        long long val = cstl_rand64();
+        long long val = cstl_rand32();
         push_back(vec, val);
     }
     stable_sort(vec,size(vec), sizeof(long long), COMPARE(long long));

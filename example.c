@@ -12,7 +12,9 @@
 // 整数を昇順にソートするための比較関数です。
 // 用于将整数按升序排序的比较函数。
 int cmp_int(const void *a, const void *b) {
-    return *((int *) a) - *((int *) b);
+    int x = *((const int *) a);
+    int y = *((const int *) b);
+    return (x > y) - (x < y); // -1, 0, 1 반환
 }
 
 void example_deque() {
@@ -62,7 +64,7 @@ void example_deque() {
     for (int i = 0; i < size(q); i++) {
         printf("[%3d]", q[i]);
     }
-
+    puts("");
     // Use `destroy` to free up memory.
     // destroy를 이용해서 메모리를 해제합니다.
     // destroyを使用してメモリを解放します。
