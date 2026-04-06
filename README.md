@@ -21,8 +21,7 @@
   - Variadic API: different parameter counts invoke different behaviors, just like C++ overloading.
 - **Cross-platform** 
   - Works on Windows, macOS, and Linux.
-  - Compiler support: MSVC, MinGW64, GCC, and Clang.
-  - icx-cc
+  - Compiler support: MSVC, MinGW64, GCC, Clang and icx-cc.
 
 - **Zero boilerplate** 
   - No forward declarations, no type registration macros, no initialization ceremony.

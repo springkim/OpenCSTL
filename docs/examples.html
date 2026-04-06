@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Examples — OpenCSTL</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="topbar-logo" href="index.html"><span class="bracket">{</span>OpenCSTL<span class="bracket">}</span></a>
+  <nav class="topbar-nav">
+    <a href="index.html">Home</a>
+    <a href="reference/vector.html">Reference</a>
+    <a href="examples.html" class="active">Examples</a>
+    <a href="other-libraries.html">Compare</a>
+  </nav>
+  <a href="https://github.com/opencstl/opencstl" class="topbar-gh" target="_blank">
+    <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    GitHub
+  </a>
+</header>
+
+<div style="padding:52px 0 88px">
+<div class="container" style="max-width:860px">
+
+  <div style="margin-bottom:44px">
+    <span class="section-label">Code Examples</span>
+    <h1 class="page-h1">OpenCSTL in Action</h1>
+    <p class="page-sub">
+      Real-world usage with <code>#define USE_CSTL_FUNC</code> for clean, short names.<br>
+      Compile with: <code>gcc -std=c99 example.c -o example</code>
+    </p>
+  </div>
+
+  <nav class="ex-nav">
+    <a href="#use-cstl-func">USE_CSTL_FUNC</a>
+    <a href="#vector">Vector</a>
+    <a href="#list">List</a>
+    <a href="#set">Set</a>
+    <a href="#map">Map</a>
+    <a href="#deque">Deque</a>
+    <a href="#combined">Full Example</a>
+  </nav>
+
+  <!-- USE_CSTL_FUNC -->
+  <div class="ex-block" id="use-cstl-func">
+    <h2>USE_CSTL_FUNC — Short Names</h2>
+    <p class="ex-desc">Define <code>USE_CSTL_FUNC</code> before the include to enable short names identical to C++ STL. Without it, use the full <code>cstl_</code> prefixed names.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="lang">c</span><button class="copy-btn">Copy</button></div>
+<pre><code><span class="cm">// ─── without USE_CSTL_FUNC ───────────────────────────────────────────</span>
+<span class="kw">#include</span> <span class="str">"opencstl.h"</span>
+
+<span class="ty">VECTOR</span>(<span class="ty">int</span>) v = <span class="mac">cstl_vector</span>(<span class="ty">int</span>);
+<span class="mac">cstl_push_back</span>(v, <span class="num">42</span>);
+<span class="mac">cstl_free</span>(v);
+
+<span class="cm">// ─── with USE_CSTL_FUNC ──────────────────────────────────────────────</span>
+<span class="kw">#define</span> <span class="pp">USE_CSTL_FUNC</span>
+<span class="kw">#include</span> <span class="str">"opencstl.h"</span>
+
+<span class="ty">VECTOR</span>(<span class="ty">int</span>) v = <span class="mac">new_vector</span>(<span class="ty">int</span>);
+<span class="mac">push_back</span>(v, <span class="num">42</span>);
+<span class="mac">destroy</span>(v);</code></pre>
+    </div>
+    <div class="note">
+      <span class="icon">ℹ</span>
+      <p>Short name mappings: <code>new_vector</code>&#8594;<code>cstl_vector</code> &nbsp;|&nbsp; <code>push_back</code>&#8594;<code>cstl_push_back</code> &nbsp;|&nbsp; <code>destroy</code>&#8594;<code>cstl_free</code> &nbsp;|&nbsp; <code>size</code>&#8594;<code>cstl_size</code> &nbsp;|&nbsp; <code>begin</code>&#8594;<code>cstl_begin</code> &nbsp;|&nbsp; <code>next</code>&#8594;<code>cstl_next</code> &nbsp; and so on.</p>
+    </div>
+  </div>
+
+  <!-- Vector -->
+  <div class="ex-block" id="vector">
+    <h2>Vector</h2>
+    <p class="ex-desc">Dynamic array with O(1) amortized append and iterator loop. <code>v[i]</code> subscript access works just like a plain C array.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="lang">c</span><button class="copy-btn">Copy</button></div>
+<pre><code><span class="kw">#define</span> <span class="pp">USE_CSTL_FUNC</span>
+<span class="kw">#include</span> <span class="str">"opencstl.h"</span>
+
+<span class="kw">void</span> <span class="fn">example_vector</span>(<span class="kw">void</span>) {
+    <span class="ty">VECTOR</span>(<span class="ty">int</span>) arr = <span class="mac">new_vector</span>(<span class="ty">int</span>);
+
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; <span class="num">10</span>; i++) {
+        <span class="mac">push_back</span>(arr, i);
+    }
+    <span class="kw">for</span> (<span class="ty">int</span> *it = <span class="mac">begin</span>(arr); it != <span class="mac">end</span>(arr); it++) {
+        printf(<span class="str">"[%3d]"</span>, *it);
+    }
+    puts(<span class="str">""</span>);
+    <span class="mac">destroy</span>(arr);
+}</code></pre>
+    </div>
+    <div class="info"><span class="icon">✓</span><p>Iterator arithmetic (<code>it++</code>) works on vector — elements are contiguous in memory, just like a raw array.</p></div>
+  </div>
+
+  <!-- List -->
+  <div class="ex-block" id="list">
+    <h2>List</h2>
+    <p class="ex-desc">Doubly-linked list with O(1) insert and erase at any position. Must use <code>next(it)</code> to advance.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="lang">c</span><button class="copy-btn">Copy</button></div>
+<pre><code><span class="kw">void</span> <span class="fn">example_list</span>(<span class="kw">void</span>) {
+    <span class="ty">LIST</span>(<span class="ty">int</span>) arr = <span class="mac">new_list</span>(<span class="ty">int</span>);
+
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">10</span>; i &gt;= <span class="num">0</span>; i--) {
+        <span class="mac">push_back</span>(arr, i);
+    }
+    <span class="kw">for</span> (<span class="ty">int</span> *it = <span class="mac">begin</span>(arr); it != <span class="mac">end</span>(arr); it = <span class="mac">next</span>(it)) {
+        printf(<span class="str">"[%3d]"</span>, *it);
+    }
+    puts(<span class="str">""</span>);
+    <span class="mac">destroy</span>(arr);
+}</code></pre>
+    </div>
+    <div class="warn"><span class="icon">⚠</span><p>List iterators are <strong>node pointers</strong>. Always use <code>next(it)</code> / <code>prev(it)</code> to traverse — never <code>it++</code>.</p></div>
+  </div>
+
+  <!-- Set -->
+  <div class="ex-block" id="set">
+    <h2>Set</h2>
+    <p class="ex-desc">Sorted set backed by a Red-Black tree. Duplicates are silently discarded. <code>COMPARE(TYPE)</code> auto-selects the built-in comparator for the given type.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="lang">c</span><button class="copy-btn">Copy</button></div>
+<pre><code><span class="kw">void</span> <span class="fn">example_set</span>(<span class="kw">void</span>) {
+    <span class="ty">SET</span>(<span class="ty">int</span>) set = <span class="mac">new_set</span>(<span class="ty">int</span>, COMPARE(<span class="ty">int</span>));
+
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; <span class="num">10</span>; i++) {
+        <span class="mac">insert</span>(set, rand() % <span class="num">100</span>);
+    }
+    <span class="kw">for</span> (<span class="ty">int</span> *it = <span class="mac">begin</span>(set); it != <span class="mac">end</span>(set); it = <span class="mac">next</span>(it)) {
+        printf(<span class="str">"[%3d]"</span>, *it);
+    }
+    puts(<span class="str">""</span>);
+    <span class="mac">destroy</span>(set);
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div class="ex-block" id="map">
+    <h2>Map</h2>
+    <p class="ex-desc">Sorted key-value store. The iterator <code>*it</code> gives the <strong>key</strong>. Use <code>cstl_value(it, VALUE_TYPE)</code> to access the value.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="lang">c</span><button class="copy-btn">Copy</button></div>
+<pre><code><span class="kw">void</span> <span class="fn">example_map</span>(<span class="kw">void</span>) {
+    <span class="kw">char</span> *containers[] = {
+        <span class="str">"vector"</span>, <span class="str">"list"</span>, <span class="str">"set"</span>, <span class="str">"map"</span>, <span class="str">"stack"</span>,
+        <span class="str">"queue"</span>, <span class="str">"priority_queue"</span>, <span class="str">"unordered_map"</span>, <span class="str">"unordered_set"</span>
+    };
+    <span class="ty">size_t</span> len = <span class="kw">sizeof</span>(containers) / <span class="kw">sizeof</span>(containers[<span class="num">0</span>]);
+    printf(<span class="str">"Number of elements: %zu\n"</span>, len);
+
+    <span class="cm">// new_map(KEY, VALUE, comparator)</span>
+    <span class="ty">MAP</span>(<span class="ty">int</span>) d = <span class="mac">new_map</span>(<span class="ty">int</span>, <span class="kw">char</span>*, COMPARE(<span class="ty">int</span>));
+
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; len; i++) {
+        <span class="mac">insert</span>(d, i, containers[i]);
+    }
+    <span class="cm">// reverse iteration: *it = key, cstl_value(it, char*) = value</span>
+    <span class="kw">for</span> (<span class="ty">int</span> *it = <span class="mac">rbegin</span>(d); it != <span class="mac">rend</span>(d); it = <span class="mac">prev</span>(it)) {
+        printf(<span class="str">"[%3d : %s]\n"</span>, *it, <span class="mac">cstl_value</span>(it, <span class="kw">char</span>*));
+    }
+    puts(<span class="str">""</span>);
+    <span class="mac">destroy</span>(d);
+}</code></pre>
+    </div>
+    <div class="tip"><span class="icon">💡</span><p><code>cstl_value(it, TYPE)</code> is an O(1) macro that also works as an lvalue — you can write <code>cstl_value(it, int) = 99</code> to update the value in-place without a re-insert.</p></div>
+  </div>
+
+  <!-- Deque -->
+  <div class="ex-block" id="deque">
+    <h2>Deque</h2>
+    <p class="ex-desc">Subscript access, variadic <code>insert</code> (single or N copies), and direct compatibility with standard C <code>qsort</code>.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="lang">c</span><button class="copy-btn">Copy</button></div>
+<pre><code><span class="kw">#define</span> <span class="pp">USE_CSTL_FUNC</span>
+<span class="cm">// Defining USE_CSTL_FUNC ensures that short, concise names are used.</span>
+<span class="kw">#include</span> <span class="str">"opencstl.h"</span>
+<span class="kw">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="cm">// Comparison function for sorting integers in ascending order.</span>
+<span class="kw">int</span> <span class="fn">cmp_int</span>(<span class="kw">const void</span> *a, <span class="kw">const void</span> *b) {
+    <span class="kw">return</span> *((<span class="ty">int</span> *) a) - *((<span class="ty">int</span> *) b);
+}
+
+<span class="kw">void</span> <span class="fn">example_deque</span>(<span class="kw">void</span>) {
+    <span class="ty">DEQUE</span>(<span class="ty">int</span>) q = <span class="mac">new_deque</span>(<span class="ty">int</span>);
+
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; <span class="num">10</span>; i++) {
+        <span class="ty">int</span> val = <span class="mac">rand32</span>() % <span class="num">100</span>;
+        <span class="cm">// It uses the same names as the C++ STL.</span>
+        <span class="mac">push_back</span>(q, val);
+    }
+
+    <span class="cm">// You can use `insert` in a similar way to overloading in STL.</span>
+
+    <span class="cm">// Inserts 777 at the 5th position.</span>
+    <span class="mac">insert</span>(q, q + <span class="num">5</span>, <span class="num">777</span>);
+
+    <span class="cm">// Inserts three 999s at the 8th position.</span>
+    <span class="mac">insert</span>(q, q + <span class="num">8</span>, <span class="num">3</span>, <span class="num">999</span>);
+
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; <span class="mac">size</span>(q); i++) {
+        <span class="cm">// You can access elements in a deque or vector using [].</span>
+        printf(<span class="str">"[%3d]"</span>, q[i]);
+    }
+    puts(<span class="str">""</span>);
+
+    <span class="cm">// You can use existing C functions.</span>
+    <span class="fn">qsort</span>(q, <span class="mac">size</span>(q), <span class="kw">sizeof</span>(<span class="ty">int</span>), cmp_int);
+
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; <span class="mac">size</span>(q); i++) {
+        printf(<span class="str">"[%3d]"</span>, q[i]);
+    }
+    puts(<span class="str">""</span>);
+
+    <span class="cm">// Use `destroy` to free up memory.</span>
+    <span class="mac">destroy</span>(q);
+}
+
+<span class="kw">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">example_deque</span>();
+    <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+    </div>
+    <div class="info"><span class="icon">✓</span><p><code>insert(q, q+5, 777)</code> inserts one value; <code>insert(q, q+8, 3, 999)</code> inserts N copies — same function name, different parameter count, just like C++ STL overloading.</p></div>
+  </div>
+
+  <!-- Combined -->
+  <div class="ex-block" id="combined">
+    <h2>Full Example — <code>example_basic_01.c</code></h2>
+    <p class="ex-desc">All four containers in one complete program. Drop this file into your project and compile directly.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="lang">c</span><button class="copy-btn">Copy</button></div>
+<pre><code><span class="kw">#define</span> <span class="pp">USE_CSTL_FUNC</span>
+<span class="kw">#include</span> <span class="str">"opencstl.h"</span>
+
+<span class="kw">void</span> <span class="fn">example_vector</span>(<span class="kw">void</span>) {
+    <span class="ty">VECTOR</span>(<span class="ty">int</span>) arr = <span class="mac">new_vector</span>(<span class="ty">int</span>);
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; <span class="num">10</span>; i++) { <span class="mac">push_back</span>(arr, i); }
+    <span class="kw">for</span> (<span class="ty">int</span> *it = <span class="mac">begin</span>(arr); it != <span class="mac">end</span>(arr); it++) { printf(<span class="str">"[%3d]"</span>, *it); }
+    puts(<span class="str">""</span>);
+    <span class="mac">destroy</span>(arr);
+}
+
+<span class="kw">void</span> <span class="fn">example_list</span>(<span class="kw">void</span>) {
+    <span class="ty">LIST</span>(<span class="ty">int</span>) arr = <span class="mac">new_list</span>(<span class="ty">int</span>);
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">10</span>; i &gt;= <span class="num">0</span>; i--) { <span class="mac">push_back</span>(arr, i); }
+    <span class="kw">for</span> (<span class="ty">int</span> *it = <span class="mac">begin</span>(arr); it != <span class="mac">end</span>(arr); it = <span class="mac">next</span>(it)) { printf(<span class="str">"[%3d]"</span>, *it); }
+    puts(<span class="str">""</span>);
+    <span class="mac">destroy</span>(arr);
+}
+
+<span class="kw">void</span> <span class="fn">example_set</span>(<span class="kw">void</span>) {
+    <span class="ty">SET</span>(<span class="ty">int</span>) set = <span class="mac">new_set</span>(<span class="ty">int</span>, COMPARE(<span class="ty">int</span>));
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; <span class="num">10</span>; i++) { <span class="mac">insert</span>(set, rand() % <span class="num">100</span>); }
+    <span class="kw">for</span> (<span class="ty">int</span> *it = <span class="mac">begin</span>(set); it != <span class="mac">end</span>(set); it = <span class="mac">next</span>(it)) { printf(<span class="str">"[%3d]"</span>, *it); }
+    puts(<span class="str">""</span>);
+    <span class="mac">destroy</span>(set);
+}
+
+<span class="kw">void</span> <span class="fn">example_map</span>(<span class="kw">void</span>) {
+    <span class="kw">char</span> *containers[] = {
+        <span class="str">"vector"</span>, <span class="str">"list"</span>, <span class="str">"set"</span>, <span class="str">"map"</span>, <span class="str">"stack"</span>,
+        <span class="str">"queue"</span>, <span class="str">"priority_queue"</span>, <span class="str">"unordered_map"</span>, <span class="str">"unordered_set"</span>
+    };
+    <span class="ty">size_t</span> len = <span class="kw">sizeof</span>(containers) / <span class="kw">sizeof</span>(containers[<span class="num">0</span>]);
+    printf(<span class="str">"Number of elements: %zu\n"</span>, len);
+    <span class="ty">MAP</span>(<span class="ty">int</span>) d = <span class="mac">new_map</span>(<span class="ty">int</span>, <span class="kw">char</span>*, COMPARE(<span class="ty">int</span>));
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; len; i++) { <span class="mac">insert</span>(d, i, containers[i]); }
+    <span class="kw">for</span> (<span class="ty">int</span> *it = <span class="mac">rbegin</span>(d); it != <span class="mac">rend</span>(d); it = <span class="mac">prev</span>(it)) {
+        printf(<span class="str">"[%3d : %s]\n"</span>, *it, <span class="mac">cstl_value</span>(it, <span class="kw">char</span>*));
+    }
+    puts(<span class="str">""</span>);
+    <span class="mac">destroy</span>(d);
+}
+
+<span class="kw">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">example_vector</span>();
+    <span class="fn">example_list</span>();
+    <span class="fn">example_set</span>();
+    <span class="fn">example_map</span>();
+    <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<footer><p>OpenCSTL &copy; 2018&#8211;2026 Kim Bomm &nbsp;&middot;&nbsp; <a href="https://github.com/opencstl/opencstl" target="_blank">GitHub</a></p></footer>
+<script>
+document.querySelectorAll('.copy-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    navigator.clipboard.writeText(b.closest('.code-block').querySelector('pre').innerText);
+    b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',2000);
+  });
+});
+</script>
+</body>
+</html>
