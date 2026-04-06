@@ -6,7 +6,7 @@
 #define _OPENCSTL_CSTL_TIME_H
 
 
-#if defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
+#if defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__)
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
@@ -49,7 +49,7 @@ static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
              ms);
 }
 
-#elif defined(_MSC_VER)   // MSVC, clang-cl
+#elif defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)   // MSVC, clang-cl
 
 #include <windows.h>
 #include <stdio.h>

@@ -78,16 +78,16 @@
 #define OPENCSTL_NIDX(container,nidx) (((size_t*)*container)[(nidx)])
 
 #define OPENCSTL_HEADER	(12)
-#define NIDX_CTYPE	    (-12)	//container type
-#define NIDX_HSIZE	    (-11)	//header size
-#define NIDX_TSIZE	    (-10)	//type size
+#define NIDX_CTYPE	    (-12)	// container type
+#define NIDX_HSIZE	    (-11)	// header size
+#define NIDX_TSIZE	    (-10)	// type size
 
 #define NIDX_LIST_NODE_SIZE	(3)
 #define NIDX_TREE_NODE_SIZE	(5)
 //OPENCSTL_HEAP_MACROS
-#define HEAP_PARENT(I)	(((I)-1)>>1)
+#define HEAP_PARENT(I)	    (((I)-1)>>1)
 #define HEAP_LEFT(I)		(((I)<<1)+1)
-#define HEAP_RIGHT(I)	(((I)<<1)+2)
+#define HEAP_RIGHT(I)	    (((I)<<1)+2)
 
 #if defined(_MSC_VER)
 #   define ARGN(...)  INTERNAL_EXPAND_ARGS_PRIVATE(INTERNAL_ARGS_AUGMENTER(__VA_ARGS__))
@@ -131,20 +131,20 @@
 #endif
 
 //Unary Functions
-#define cstl_pop(container)	_cstl_pop(&(container))
+#define cstl_pop(container)	        _cstl_pop(&(container))
 #define cstl_pop_back(container)	_cstl_pop_back(&(container))
 #define cstl_pop_front(container)	_cstl_pop_front(&(container))
-#define cstl_size(container)	_cstl_size(&(container))
+#define cstl_size(container)	    _cstl_size(&(container))
 #define cstl_capacity(container)	_cstl_capacity(&(container))
-#define cstl_next(iterator)	_cstl_next(iterator)
-#define cstl_prev(iterator)	_cstl_prev(iterator)
-#define cstl_begin(container)	_cstl_begin(&(container))
-#define cstl_rbegin(container)	_cstl_rbegin(&(container))
-#define cstl_end(container)	_cstl_end(&(container))
-#define cstl_rend(container)	_cstl_rend(&(container))
-#define cstl_clear(container)	_cstl_clear(&(container))
-#define cstl_empty(container)	_cstl_empty(&(container))
-#define cstl_free(container)	_cstl_free(&(container))
+#define cstl_next(iterator)	        _cstl_next(iterator)
+#define cstl_prev(iterator)	        _cstl_prev(iterator)
+#define cstl_begin(container)	    _cstl_begin(&(container))
+#define cstl_rbegin(container)	    _cstl_rbegin(&(container))
+#define cstl_end(container)	        _cstl_end(&(container))
+#define cstl_rend(container)	    _cstl_rend(&(container))
+#define cstl_clear(container)	    _cstl_clear(&(container))
+#define cstl_empty(container)	    _cstl_empty(&(container))
+#define cstl_free(container)	    _cstl_free(&(container))
 //Macro only functions
 
 #define _cstl_deque_type(container) (*(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
@@ -164,12 +164,12 @@
 #define _cstl_deref(P) (*(P))
 #define _cstl_err_ptr (void*)(size_t)cstl_error("Invalid Operation")
 
-#define cstl_front(C)	_cstl_deref((void**)(is_deque((void**)&C)?\
+#define cstl_front(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
 _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C):_cstl_err_ptr) :\
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C):\
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)(*(void**)C):_cstl_err_ptr)))
 
-#define cstl_back(C)	_cstl_deref((void**)(is_deque((void**)&C)?\
+#define cstl_back(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
 _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C+cstl_size(C)-1):_cstl_err_ptr) :\
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C+cstl_size(C)-1):\
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)((void**)C)[-2]:_cstl_err_ptr)))
@@ -181,7 +181,7 @@ _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type
 #define OPENCSTL_DEQUE_NIDX(container, nidx) (*(size_t*)((char*)*(void**)container + nidx * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
 #define _cstl_stack_top(container)   *container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
 // cstl_top: (void**)&container explicit cast for strict compilers (MinGW64, Windows Clang).
-#define cstl_top(container)   is_deque((void**)&container)?\
+#define cstl_top(container)   __is_deque((void**)&container)?\
 OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) : (container[cstl_error("Invalid Operation")]):\
 (OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[cstl_error("Invalid Operation")]))   //priority queue
 

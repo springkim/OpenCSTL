@@ -61,7 +61,7 @@ OPENCSTL_FUNC void *__cstl_queue(size_t type_size, char *type) {
     return ptr;
 }
 
-#define cstl_priority_queue(TYPE,...)	__cstl_priority_queue(sizeof(TYPE),#TYPE,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_priority_queue(TYPE,...)	__cstl_priority_queue(sizeof(TYPE),#TYPE,ARGN(__VA_ARGS__),##__VA_ARGS__)
 OPENCSTL_FUNC void *__cstl_priority_queue(size_t type_size, char *type, int argc, ...) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + type_size * 1) + header_sz;

@@ -3,13 +3,12 @@
 #include <string.h>
 #include <time.h>
 #include "opencstl/opencstl.h"
-#define DECORATE(STR) for (int i = 0; i < 35; i++) { putchar('#');  } printf(STR); for (int i = 0; i < 35; i++) { putchar('#'); } putchar('\n');
+#define DECORATE(STR) {int padding = 70 - strlen(STR);int margin=0;if(padding%2==1)margin=1;else margin=0;for (int i = 0; i < padding/2; i++) { putchar('#');  } printf(STR); for (int i = 0; i < padding/2+margin; i++) { putchar('#'); } putchar('\n');}
 
 
 void cstl_vector_test() {
-    DECORATE("opencstl{vector} test begin");
+    DECORATE("OPENCSTL{vector} test begin");
     VECTOR(int) arr = new_vector(int);
-
 
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
     for (int i = 0; i < 10; i++) {
@@ -86,13 +85,16 @@ void cstl_vector_test2() {
 
 void cstl_vector_test3() {
     DECORATE("opencstl{vector/qsort} test begin");
-    VECTOR(long long) vec = new_vector(long long);
+    VECTOR(int) vec = new_vector(int);
     for (int i = 0; i < 100; i++) {
-        //long long val = (long long)rand() % RAND_MAX;
-        long long val = cstl_rand32();
+        int val = rand32();
         push_back(vec, val);
     }
-    stable_sort(vec,size(vec), sizeof(long long), COMPARE(long long));
+
+
+
+
+    stable_sort(vec,size(vec), sizeof(int), COMPARE(int));
     for (int i = 0; i < size(vec); i++) {
         printf("Sorted: [%lld]\n", vec[i]);
     }
@@ -157,10 +159,10 @@ void cstl_set_test() {
 
 void cstl_map_test() {
     DECORATE("opencstl{map} test begin");
-    MAP(int) tree = new_map(int, float, IntCmp);
+    MAP(int) tree = new_map(int, double);
     for (int i = 0; i < 10; i++) {
-        float d = (float) i;
-        insert(tree, i, d * d);
+        double d = (double) i * i;
+        insert(tree, i, d);
     }
     ///[0]{0} [1]{1} [2]{4} [3]{9} [4]{16} [5]{25} [6]{36} [7]{49} [8]{64} [9]{81}
     for (int i = 0; i < 10; i += 2) {
@@ -169,7 +171,7 @@ void cstl_map_test() {
     }
     ///[1]{1} [3]{9} [5]{25} [7]{49} [9]{81}
     for (int *it = begin(tree); it != end(tree); it = next(it)) {
-        printf("[%3d]{%.3f} ", first(it), second(it, float));
+        printf("[%1d]{%.1f} ", first(it), second(it, double));
     }
     puts("");
     printf("size : %d\n", size(tree));
@@ -246,7 +248,7 @@ void cstl_queue_test() {
 
 void cstl_priority_queue_test() {
     DECORATE("opencstl{priority_queue} test begin");
-    QUEUE(int) queue = new_priority_queue(int, IntCmp);
+    QUEUE(int) queue = new_priority_queue(int);
     for (int i = 0; i < 10; i++) {
         push(queue, i);
     }
@@ -326,7 +328,7 @@ void cstl_priority_queue_test2() {
     destroy(vec);
 }
 
-void cdtl_hash_test() {
+void cstl_hash_test() {
     DECORATE("opencstl{unordered_set} test begin");
     UNORDERED_SET(int) h = new_unordered_set(int);
 
@@ -364,12 +366,12 @@ void test01() {
     cstl_priority_queue_test();
     cstl_priority_queue_test2();
     cstl_vector_test3();
-    cdtl_hash_test();
+    cstl_hash_test();
 }
 
 
 int main() {
     test01();
-
+    //cstl_priority_queue_test();
     return 0;
 }

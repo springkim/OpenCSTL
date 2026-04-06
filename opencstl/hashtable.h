@@ -41,7 +41,7 @@
 #include"error.h"
 #include"defines.h"
 
-static bool is_prime(const unsigned int x) {
+static bool __is_prime(const unsigned int x) {
     if (x == 2 || x == 3 || x == 5 || x == 7 || x == 11) return true;
     if (x % 2 == 0 || x % 3 == 0 || x % 5 == 0 || x % 7 == 0 || x % 11 == 0) return false;
     if (x < 121) return (x > 1);
@@ -96,10 +96,10 @@ static bool is_prime(const unsigned int x) {
     return false;
 }
 
-#define VACANT   0  // Empty
-#define OCCUPIED 1  // Inserted
-#define TOMBSTONE 2 // Deleted
-#define LN2 0.69314718055994530941723212145817 //log(2)
+#define VACANT      0   // Empty
+#define OCCUPIED    1   // Inserted
+#define TOMBSTONE   2   // Deleted
+#define LN2         0.69314718055994530941723212145817 //log(2)
 
 
 // MurmurHash3 mixer
@@ -242,8 +242,8 @@ void __htm_append(void *ptr, size_t sz, char *tombstone, int type_size) {
 // ╚██████╔╝██║░╚███║╚█████╔╝██║░░██║██████╔╝███████╗██║░░██║███████╗██████╔╝█████╗██████╔╝███████╗░░░██║░░░
 // ░╚═════╝░╚═╝░░╚══╝░╚════╝░╚═╝░░╚═╝╚═════╝░╚══════╝╚═╝░░╚═╝╚══════╝╚═════╝░╚════╝╚═════╝░╚══════╝░░░╚═╝░░░
 
-#define cstl_unordered_set(KEY) _cstl_unordered_set(KEY,NULL)
-#define _cstl_unordered_set(KEY,...) __cstl_unordered_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_unordered_set _cstl_unordered_set
+#define _cstl_unordered_set(KEY,...) __cstl_unordered_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),##__VA_ARGS__)
 OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, char *type_key, int argc, ...) {
     va_list vl;
     va_start(vl, argc);
@@ -283,7 +283,7 @@ OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, char *type_key, int ar
 // ░╚═════╝░╚═╝░░╚══╝░╚════╝░╚═╝░░╚═╝╚═════╝░╚══════╝╚═╝░░╚═╝╚══════╝╚═════╝░╚════╝╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░
 
 
-#define _cstl_unordered_map(KEY,VALUE,...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _cstl_unordered_map(KEY,VALUE,...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,ARGN(__VA_ARGS__),##__VA_ARGS__)
 OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size, char *type_key, char *type_value, int argc,
                                          ...) {
     va_list vl;
@@ -378,7 +378,7 @@ OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *va
             cstl_error("Unregistered hashtable");
         }
         size_t new__capacity = _capacity * 2;
-        while (!is_prime(new__capacity))new__capacity++;
+        while (!__is_prime(new__capacity))new__capacity++;
         void *new_base_raw = calloc(header_sz + new__capacity * type_size, sizeof(char));
         if (new_base_raw == NULL) {
             cstl_error("Allocation failed at hashtable insert");

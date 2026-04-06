@@ -40,6 +40,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stddef.h>
+#include "cstl_alloca.h"
 
 
 static void merge(const char *left, const char *mid, const char *right, const char *end, char *dest, size_t size,
@@ -78,9 +79,17 @@ static void merge(const char *left, const char *mid, const char *right, const ch
 }
 
 static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *)) {
-    if (nmemb < 2)return;
+    if (nmemb < 2) {
+        return;
+    }
     char *src = base;
-    char *buf = malloc(nmemb * size);
+    char *buf = stack_alloc(nmemb * size);
+    bool use_heap = false;
+    if (buf == NULL) {
+        buf = malloc(nmemb * size);
+        use_heap = true;
+    }
+
     if (!buf) return;
     for (size_t width = 1; width < nmemb; width *= 2) {
         for (size_t i = 0; i < nmemb; i += 2 * width) {
@@ -94,11 +103,14 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
         src = buf;
         buf = tmp;
     }
+
     if (src != base) {
         memcpy(base, src, nmemb * size);
-        free(src);
     } else {
-        free(buf);
+        src = buf;
+    }
+    if (use_heap) {
+        free(src);
     }
 }
 

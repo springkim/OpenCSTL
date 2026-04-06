@@ -42,16 +42,16 @@
 #include"types.h"
 #include"error.h"
 #include"defines.h"
-#define P	    -4
-#define R       -1
-#define L       -2
+#define P	    (-4)
+#define R       (-1)
+#define L       (-2)
 #define RED     ((size_t)1)
 #define BLACK   ((size_t)0)
 // _(N,V): raw size_t lvalue, no cast, works on all compilers including Windows Clang.
 // Write sites: _(N,V) = (size_t)val
 // Read sites:  (void*)_(N,V)
-#define _(N,V)	OPENCSTL_NIDX(&N,V)
-#define COLOR(N)	_(N,-5)
+#define _(N,V)	OPENCSTL_NIDX(&N, V)
+#define COLOR(N)	_(N, -5)
 
 
 #define CSTL_ARENA_CHUNK_SIZE 256
@@ -115,7 +115,7 @@ OPENCSTL_FUNC void __cstl_arena_free_all(cstl_arena_chunk **arena, void **freeli
 SELECT_ANY char nil_buffer[sizeof(void *) * NIDX_TREE_NODE_SIZE] = {0};
 SELECT_ANY void *nil = NULL;
 OPENCSTL_FUNC void *__cstl_tree_node(size_t type_size, size_t node_type) {
-    //[color][parent][node type][left][right] -> [data]
+    // [color][parent][node type][left][right] -> [data]
     size_t node_sz = type_size + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     node_sz = (node_sz + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
     void *ptr = (char *) calloc(node_sz, 1) + sizeof(void *) * NIDX_TREE_NODE_SIZE;
@@ -147,8 +147,10 @@ OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_t type_size, 
 // ██████╔╝███████╗░░░██║░░░
 // ╚═════╝░╚══════╝░░░╚═╝░░░
 
-#define cstl_set(KEY)   _cstl_set(KEY,NULL)
-#define _cstl_set(KEY,...)	__cstl_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_set         _cstl_set
+#define _cstl_set(KEY, ...)	    __cstl_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),##__VA_ARGS__)
+
+
 OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * NIDX_TREE_NODE_SIZE;
@@ -185,8 +187,8 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
 // ██║╚██╔╝██║██╔══██║██╔═══╝░
 // ██║░╚═╝░██║██║░░██║██║░░░░░
 // ╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░
-
-#define cstl_map(KEY,VALUE,...)	__cstl_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_map         _cstl_map
+#define _cstl_map(KEY, VALUE, ...)	__cstl_map(sizeof(KEY), sizeof(VALUE), #KEY, #VALUE, ARGN(__VA_ARGS__), ##__VA_ARGS__)
 OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_key, char *type_value, int argc, ...) {
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * 5;

@@ -3,7 +3,11 @@
 </p>
 
 # OpenCSTL
-## STL for C — Single-header container library in pure C
+
+## Open Source C Container Library like STL in C++
+
+
+
 
 ## Why OpenCSTL?
 
@@ -286,4 +290,9 @@ void   destroy(<priority_queue>);
 [![Hypercommit](https://img.shields.io/badge/Hypercommit-DB2475)](https://hypercommit.com/opencstl)
 
 
+- [ ] Pair
+- [ ] Bitset
+- [ ] String
+- [ ] Strings
+- [ ] String Hash
 
