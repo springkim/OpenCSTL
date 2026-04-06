@@ -3,32 +3,35 @@
 #include <string.h>
 #include <time.h>
 #include "opencstl/opencstl.h"
-#define Decorate(STR) for (int i = 0; i < 40; i++) { putchar('#');  } printf(STR); for (int i = 0; i < 40; i++) { putchar('#'); } putchar('\n');
+#define DECORATE(STR) for (int i = 0; i < 35; i++) { putchar('#');  } printf(STR); for (int i = 0; i < 35; i++) { putchar('#'); } putchar('\n');
 
 
 void cstl_vector_test() {
-    Decorate("opencstl{vector} test begin");
+    DECORATE("opencstl{vector} test begin");
     VECTOR(int) arr = new_vector(int);
 
+
+    ///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
     for (int i = 0; i < 10; i++) {
         push_back(arr, i);
     }
-    ///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
-    pop_back(arr);
 
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8]
+    pop_back(arr);
 
-    insert(arr, arr + 0, 777);
 
     ///[777] [0] [1] [2] [3] [4] [5] [6] [7] [8]
-    insert(arr, arr + 5, 5, 999);
+    insert(arr, arr + 0, 777);
+
     ///[777] [0] [1] [2] [3] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
-    erase(arr, arr + 3, arr + 5);
+    insert(arr, arr + 5, 5, 999);
 
     ///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
-    resize(arr, 15, -1);
+    erase(arr, arr + 3, arr + 5);
 
     ///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8] [-1] [-1]
+    resize(arr, 15, -1);
+
     for (int *it = begin(arr); it != end(arr); it++) {
         printf("[%d] ", *it);
     }
@@ -54,7 +57,7 @@ void cstl_vector_test() {
 }
 
 void cstl_vector_test2() {
-    Decorate("opencstl{vector 2d} test begin");
+    DECORATE("opencstl{vector 2d} test begin");
     VECTOR(int*) matrix = new_vector(int*);
     const size_t sz = 7;
     assign(matrix, sz);
@@ -82,7 +85,7 @@ void cstl_vector_test2() {
 }
 
 void cstl_vector_test3() {
-    Decorate("opencstl{vector/qsort} test begin");
+    DECORATE("opencstl{vector/qsort} test begin");
     VECTOR(long long) vec = new_vector(long long);
     for (int i = 0; i < 100; i++) {
         //long long val = (long long)rand() % RAND_MAX;
@@ -100,7 +103,7 @@ void cstl_vector_test3() {
 
 
 void cstl_list_test02() {
-    Decorate("opencstl{list} test begin");
+    DECORATE("opencstl{list} test begin");
     LIST(int) list = new_list(int);
     for (int i = 0; i < 10; i++) {
         push_back(list, i);
@@ -133,7 +136,7 @@ void cstl_list_test02() {
 
 
 void cstl_set_test() {
-    Decorate("opencstl{set} test begin");
+    DECORATE("opencstl{set} test begin");
     SET(float) tree = new_set(float);
     for (float i = 0; i < 100; i++) {
         insert(tree, i);
@@ -153,7 +156,7 @@ void cstl_set_test() {
 }
 
 void cstl_map_test() {
-    Decorate("opencstl{map} test begin");
+    DECORATE("opencstl{map} test begin");
     MAP(int) tree = new_map(int, float, IntCmp);
     for (int i = 0; i < 10; i++) {
         float d = (float) i;
@@ -174,7 +177,7 @@ void cstl_map_test() {
 }
 
 void cstl_deque_test() {
-    Decorate("opencstl{deque} test begin");
+    DECORATE("opencstl{deque} test begin");
     DEQUE(int) deque = new_deque(int);
     for (int i = 0; i < 10; i++) {
         push_back(deque, i);
@@ -214,7 +217,7 @@ void cstl_deque_test() {
 }
 
 void cstl_stack_test() {
-    Decorate("opencstl{stack} test begin");
+    DECORATE("opencstl{stack} test begin");
     STACK(int) stack = new_stack(int);
     for (int i = 0; i < 10; i++) {
         push(stack, i);
@@ -228,7 +231,7 @@ void cstl_stack_test() {
 }
 
 void cstl_queue_test() {
-    Decorate("opencstl{queue} test begin");
+    DECORATE("opencstl{queue} test begin");
     QUEUE(int) queue = new_queue(int);
     for (int i = 0; i < 100; i++) {
         push(queue, i);
@@ -242,7 +245,7 @@ void cstl_queue_test() {
 }
 
 void cstl_priority_queue_test() {
-    Decorate("opencstl{priority_queue} test begin");
+    DECORATE("opencstl{priority_queue} test begin");
     QUEUE(int) queue = new_priority_queue(int, IntCmp);
     for (int i = 0; i < 10; i++) {
         push(queue, i);
@@ -296,7 +299,7 @@ int *dijkstra(Edge **vec, int beg) {
 }
 
 void cstl_priority_queue_test2() {
-    Decorate("opencstl{priority_queue/dijkstra} test begin");
+    DECORATE("opencstl{priority_queue/dijkstra} test begin");
     Edge **vec = new_vector(Edge*);
     cstl_assign(vec, 7);
     for (int i = 0; i < cstl_size(vec); i++) {
@@ -324,7 +327,7 @@ void cstl_priority_queue_test2() {
 }
 
 void cdtl_hash_test() {
-    Decorate("opencstl{unordered_set} test begin");
+    DECORATE("opencstl{unordered_set} test begin");
     UNORDERED_SET(int) h = new_unordered_set(int);
 
     for (int i = 1; i < 100; i++) {

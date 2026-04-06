@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>cstl_list — OpenCSTL</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="topbar-logo" href="../index.html">
+    <img src="../assets/logo.png" alt="OpenCSTL">
+  </a>
+  <nav class="topbar-nav">
+    <a href="../index.html">Home</a>
+    <a href="../reference/vector.html" class="active">Reference</a>
+    <a href="../examples.html">Examples</a>
+    <a href="../other-libraries.html">Compare</a>
+  </nav>
+  <a href="https://github.com/springkim/opencstl" class="topbar-gh" target="_blank">
+    <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    GitHub
+  </a>
+</header>
+<div class="page-layout">
+<div class="sidebar">
+  <div class="sidebar-section">Sequence</div>
+  <nav class="sidebar-nav">
+    <a href="../reference/vector.html">cstl_vector</a>
+    <a href="../reference/list.html" class="active">cstl_list</a>
+    <a href="../reference/deque.html">cstl_deque</a>
+  </nav>
+  <div class="sidebar-section">Adapters</div>
+  <nav class="sidebar-nav">
+    <a href="../reference/stack.html">cstl_stack</a>
+    <a href="../reference/queue.html">cstl_queue</a>
+  </nav>
+  <div class="sidebar-section">Associative</div>
+  <nav class="sidebar-nav">
+    <a href="../reference/set.html">cstl_set</a>
+    <a href="../reference/map.html">cstl_map</a>
+  </nav>
+  <div class="sidebar-section">Unordered</div>
+  <nav class="sidebar-nav">
+    <a href="../reference/unordered_set.html">cstl_unordered_set</a>
+    <a href="../reference/unordered_map.html">cstl_unordered_map</a>
+  </nav>
+</div>
+<main class="main-content">
+
+<div class="page-header">
+<div class="breadcrumb"><a href="../index.html">OpenCSTL</a><span class="sep">/</span>Reference<span class="sep">/</span>cstl_list</div>
+<h1>cstl_list</h1>
+<p class="subtitle">Doubly linked list supporting constant time insertion and removal from anywhere. Equivalent to <code>std::list&lt;T&gt;</code>.</p>
+<div class="tags"><span class="tag green">Sequence</span><span class="tag blue">Bidirectional Iterator</span><span class="tag">list.h</span></div>
+</div>
+
+<div class="section"><h2>Declaration</h2>
+<div class="decl-split">
+<div class="col"><div class="col-header">without USE_CSTL_FUNC</div><pre><span class="ty">LIST</span>(<span class="ty">int</span>) l = <span class="mac">cstl_list</span>(<span class="ty">int</span>);</pre></div>
+<div class="col"><div class="col-header">with USE_CSTL_FUNC</div><pre><span class="kw">#define</span> <span class="pp">USE_CSTL_FUNC</span>
+<span class="ty">LIST</span>(<span class="ty">int</span>) l = <span class="mac">new_list</span>(<span class="ty">int</span>);</pre></div>
+</div>
+<div class="note"><span class="icon">ℹ</span><p>Iterators in <code>cstl_list</code> are pointers to the data (<code>TYPE*</code>). Unlike <code>vector</code>, elements are not contiguous in memory, but the library manages the node pointers internally so you can use <code>cstl_next()</code> and <code>cstl_prev()</code> to traverse.</p></div>
+</div>
+
+<div class="section"><h2>Member Functions</h2>
+<table class="ref-table">
+<thead><tr><th>Function</th><th>Description</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr class="table-section"><td colspan="3">Construction &amp; Destruction</td></tr>
+<tr><td class="fn-cell">cstl_list(<i>TYPE</i>)<br><small class='op'>new_list(<i>TYPE</i>)</small></td><td class="desc-cell">Create a new empty doubly linked list</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_free(l)<br><small class='op'>destroy(l)</small></td><td class="desc-cell">Release all nodes and memory</td><td class="cx-cell">O(n)</td></tr>
+<tr class="table-section"><td colspan="3">Element Access</td></tr>
+<tr><td class="fn-cell">cstl_front(l) / front(l)</td><td class="desc-cell">Access first element</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_back(l) / back(l)</td><td class="desc-cell">Access last element</td><td class="cx-cell">O(1)</td></tr>
+<tr class="table-section"><td colspan="3">Iterators</td></tr>
+<tr><td class="fn-cell">cstl_begin(l) / begin(l)</td><td class="desc-cell">Iterator to first element</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_end(l) / end(l)</td><td class="desc-cell">Iterator one past last element (<code>NULL</code>)</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_rbegin(l) / rbegin(l)</td><td class="desc-cell">Iterator to last element</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_rend(l) / rend(l)</td><td class="desc-cell">Iterator one before first element (<code>NULL</code>)</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_next(it) / next(it)</td><td class="desc-cell">Move to next element</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_prev(it) / prev(it)</td><td class="desc-cell">Move to previous element</td><td class="cx-cell">O(1)</td></tr>
+<tr class="table-section"><td colspan="3">Capacity</td></tr>
+<tr><td class="fn-cell">cstl_size(l) / size(l)</td><td class="desc-cell">Number of elements</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_empty(l) / empty(l)</td><td class="desc-cell">Returns <code>true</code> if empty</td><td class="cx-cell">O(1)</td></tr>
+<tr class="table-section"><td colspan="3">Modifiers</td></tr>
+<tr><td class="fn-cell">cstl_push_back(l, val)<br><small class='op'>push_back(l, val)</small></td><td class="desc-cell">Insert element at end</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_push_front(l, val)<br><small class='op'>push_front(l, val)</small></td><td class="desc-cell">Insert element at beginning</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_pop_back(l) / pop_back(l)</td><td class="desc-cell">Remove last element</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_pop_front(l) / pop_front(l)</td><td class="desc-cell">Remove first element</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_insert(l, it, val)<br><small class='op'>insert(l, it, val)</small></td><td class="desc-cell">Insert <code>val</code> before iterator <code>it</code></td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_erase(l, it)<br><small class='op'>erase(l, it)</small></td><td class="desc-cell">Remove element at iterator</td><td class="cx-cell">O(1)</td></tr>
+<tr><td class="fn-cell">cstl_clear(l) / clear(l)</td><td class="desc-cell">Remove all elements</td><td class="cx-cell">O(n)</td></tr>
+<tr class="table-section"><td colspan="3">Lookup</td></tr>
+<tr><td class="fn-cell">cstl_find(l, val)<br><small class='op'>find(l, val)</small></td><td class="desc-cell">Linear search; returns iterator or NULL</td><td class="cx-cell">O(n)</td></tr>
+</tbody></table></div>
+
+<div class="section"><h2>Example</h2>
+<div class="code-block">
+<div class="code-header"><span class="lang">c</span><button class="copy-btn">Copy</button></div>
+<pre><code><span class="kw">#define</span> <span class="pp">USE_CSTL_FUNC</span>
+<span class="kw">#include</span> <span class="str">"opencstl.h"</span>
+
+<span class="kw">void</span> <span class="fn">example_list</span>(<span class="kw">void</span>) {
+    <span class="ty">LIST</span>(<span class="ty">int</span>) l = <span class="mac">new_list</span>(<span class="ty">int</span>);
+
+    <span class="mac">push_back</span>(l, <span class="num">10</span>);
+    <span class="mac">push_front</span>(l, <span class="num">20</span>);
+    <span class="mac">push_back</span>(l, <span class="num">30</span>); <span class="cm">// 20, 10, 30</span>
+
+    <span class="cm">// traversal</span>
+    <span class="kw">for</span> (<span class="ty">int</span> *it = <span class="mac">begin</span>(l); it != <span class="mac">end</span>(l); it = <span class="mac">next</span>(it)) {
+        printf(<span class="str">"%d "</span>, *it);
+    }
+
+    <span class="mac">destroy</span>(l);
+}</code></pre>
+</div>
+</div>
+
+<div class="section"><h2>Notes</h2>
+<div class="info"><span class="icon">✓</span><p>Iterators in <code>cstl_list</code> remain valid even after other elements are inserted or removed, as long as the element itself is not deleted.</p></div>
+<div class="warn"><span class="icon">⚠</span><p><code>cstl_list</code> does not support subscript access (<code>l[i]</code>). Use <code>vector</code> or <code>deque</code> if you need random access.</p></div>
+</div>
+
+</main>
+</div>
+
+<footer><p>OpenCSTL &copy; 2018–2026 Kim Bomm &nbsp;&middot;&nbsp; <a href="https://github.com/opencstl/opencstl" target="_blank">GitHub</a></p></footer>
+<script>
+document.querySelectorAll('.copy-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const pre=b.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText);
+    b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',2000);
+  });
+});
+</script>
+</body></html>
