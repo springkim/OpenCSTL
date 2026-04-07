@@ -1,75 +1,48 @@
 <p align="center">
-  <img width="256" height="256" src="assets/OpenCSTL.png">
+  <img width="160" height="160" src="assets/OpenCSTL.png">
 </p>
 
-# OpenCSTL
+<h1 align="center">OpenCSTL</h1>
+<p align="center">Open Source C Container Library like STL in C++</p>
+<p align="center">C99 &nbsp;·&nbsp; C11 &nbsp;·&nbsp; C17 &nbsp;·&nbsp; C23</p>
 
-## Open Source C Container Library like STL in C++
+<p align="center">
+  <a href="README.md">English</a> &nbsp;|&nbsp;
+  <a href="README.ko.md">한국어</a> &nbsp;|&nbsp;
+  <a href="README.zh.md">中文</a>
+</p>
 
-
-
+---
 
 ## Why OpenCSTL?
 
-- **Single-header**
-  - Just `#include "opencstl.h"` and you're done. No build steps, no linking.
-
-- **Identical C++ STL interface**
-  - Same function names, same semantics, zero new API to learn.
-  - Auto-dispatch: one function name routes to the correct implementation based on the container type.
-  - Variadic API: different parameter counts invoke different behaviors, just like C++ overloading.
-
-- **Bracket access**
-  - `vector` and `deque` support `v[i]` subscript access, just like C++ and plain C arrays.
-
-- **Full iterator support**
-  - Every container exposes `begin`, `end`, `rbegin`, and `rend` iterators.
-
-- **stdlib compatible**
-  - Use standard C functions like `qsort` and `bsearch` directly on container data.
-
-- **Zero boilerplate**
-  - No forward declarations, no type registration macros, no initialization ceremony.
-
-- **Cross-platform**
-  - Works on Windows, macOS, and Linux.
-  - Compiler support: MSVC, MinGW64, GCC, Clang, and icx-cc.
-
-- **Simpler than any alternative**
-  - Far easier to use than other C container libraries, without breaking idiomatic C style.
+- **Single-header** — Just `#include "opencstl.h"` and you're done. No build steps, no linking.
+- **Identical C++ STL interface** — Same function names, same semantics, zero new API to learn. Auto-dispatch routes one function name to the correct implementation based on the container type. Variadic API: different parameter counts invoke different behaviors, just like C++ overloading.
+- **Bracket access** — `VECTOR` and `DEQUE` support `v[i]` subscript access, just like C++ and plain C arrays.
+- **Full iterator support** — Every container exposes `begin`, `end`, `rbegin`, and `rend` iterators — including unordered containers.
+- **stdlib compatible** — Use standard C functions like `qsort` and `bsearch` directly on `VECTOR` and `DEQUE` data.
+- **Zero boilerplate** — No forward declarations, no type registration macros, no initialization ceremony.
+- **Cross-platform** — Works on Windows, macOS, and Linux. Compiler support: MSVC, MinGW64, GCC, Clang, and icx-cc.
+- **Simpler than any alternative** — Far easier to use than other C container libraries, without breaking idiomatic C style.
 
 ## Installation
+
 ```bash
 curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master/opencstl.h"
 ```
 
 ## Supported Platforms
 
-<p align="center">
-    <img width="128" height="128" src="assets/windows11.png">
-    <img width="128" height="128" src="assets/macos.png">
-    <img width="128" height="128" src="assets/ubuntu_logo.png">
-</p>
-
-<p align="center">
-    <img width="96" height="96" src="assets/MSVC2026.png">
-    <img width="96" height="96" src="assets/MinGW64.png">
-    <img width="96" height="96" src="assets/LLVM.png">
-    <img width="96" height="96" src="assets/GNU.png">
-    <img width="96" height="96" src="assets/tcc.png">
-    <img width="96" height="96" src="assets/intel_c_compiler.png">
-</p>
-
-
-| C Compiler                      | Windows | macOS | Linux |
-|---------------------------------|:-------:|:-----:|:-----:|
-| MSVC (cl)                       | ✅      |       |       |
-| GNU (gcc)                       | ✅      | ✅    | ✅    |
-| LLVM (clang)                    | ✅      | ✅    | ✅    |
-| TCC                             | ✅      | ❌    | ❌    |
-| Intel oneAPI DPC++/C++ Compiler |         | ❌    | ✅    |
+| Compiler | Windows | macOS | Linux |
+|----------|:-------:|:-----:|:-----:|
+| MSVC (cl) | ✅ | | |
+| GNU (gcc) | ✅ | ✅ | ✅ |
+| LLVM (clang) | ✅ | ✅ | ✅ |
+| MinGW64 | ✅ | | |
+| Intel (icx-cc) | ✅ | ✅ | ✅ |
 
 ## Example
+
 ```c
 #include "opencstl.h"
 #include <stdlib.h>
@@ -117,182 +90,195 @@ int main() {
 
 ## Reference
 
-### `vector`
+> Optional parameters are shown in brackets `[...]`.
+> Comparator and hash function arguments are always optional — omitting them uses the built-in default for the type.
+
+### `VECTOR`
 ```
 VECTOR(<type>) v = new_vector(<type>);
-<type*> begin(<vector>);
-<type*> end(<vector>);
-<type*> rbegin(<vector>);
-<type*> rend(<vector>);
-size_t  size(<vector>);
-bool    empty(<vector>);
-<type>  front(<vector>);
-<type>  back(<vector>);
-void    push_back(<vector>, <value>);
-void    pop_back(<vector>);
-void    insert(<vector>, <iter>, <value>);
-void    insert(<vector>, <iter>, <N>, <value>);
-void    erase(<vector>, <iter>);
-void    erase(<vector>, <iter_begin>, <iter_end>);
-<type*> find(<vector>, <value>);
-<type*> find(<vector>, <iter>, <value>);
-void    resize(<vector>, <N>);
-void    resize(<vector>, <N>, <value>);
-void    assign(<vector>, <N>);
-void    assign(<vector>, <N>, <value>);
-void    clear(<vector>);
-void    destroy(<vector>);
+
+<type*> begin(v);          <type*> end(v);
+<type*> rbegin(v);         <type*> rend(v);
+size_t  size(v);           bool    empty(v);        size_t capacity(v);
+<type>  front(v);          <type>  back(v);
+
+void    push_back(v, value);
+void    pop_back(v);
+void    insert(v, iter, value);
+void    insert(v, iter, N, value);
+void    erase(v, iter);
+void    erase(v, iter_begin, iter_end);
+<type*> find(v, value);
+<type*> find(v, iter, value);
+void    resize(v, N [, value]);
+void    assign(v, N [, value]);
+void    clear(v);
+void    destroy(v);
 ```
 
-### `list`
+### `LIST`
 ```
 LIST(<type>) l = new_list(<type>);
-<type*> begin(<list>);
-<type*> end(<list>);
-<type*> rbegin(<list>);
-<type*> rend(<list>);
-<type*> next(<iter>);
-<type*> prev(<iter>);
-size_t  size(<list>);
-bool    empty(<list>);
-<type>  front(<list>);
-<type>  back(<list>);
-void    push_back(<list>, <value>);
-void    pop_back(<list>);
-void    push_front(<list>, <value>);
-void    pop_front(<list>);
-void    insert(<list>, <iter>, <value>);
-void    insert(<list>, <iter>, <N>, <value>);
-void    erase(<list>, <iter>);
-void    erase(<list>, <iter_begin>, <iter_end>);
-<type*> find(<list>, <value>);
-<type*> find(<list>, <iter>, <value>);
-void    resize(<list>, <N>);
-void    resize(<list>, <N>, <value>);
-void    assign(<list>, <N>);
-void    assign(<list>, <N>, <value>);
-void    clear(<list>);
-void    destroy(<list>);
+
+<type*> begin(l);          <type*> end(l);
+<type*> rbegin(l);         <type*> rend(l);
+<type*> next(iter);        <type*> prev(iter);    // use instead of it++/it--
+size_t  size(l);           bool    empty(l);
+<type>  front(l);          <type>  back(l);
+
+void    push_back(l, value);      void    pop_back(l);
+void    push_front(l, value);     void    pop_front(l);
+void    insert(l, iter, value);
+void    insert(l, iter, N, value);
+void    erase(l, iter);
+void    erase(l, iter_begin, iter_end);
+<type*> find(l, value);
+<type*> find(l, iter, value);
+void    resize(l, N [, value]);
+void    assign(l, N [, value]);
+void    clear(l);
+void    destroy(l);
 ```
 
-### `deque`
+### `DEQUE`
 ```
 DEQUE(<type>) q = new_deque(<type>);
-<type*> begin(<deque>);
-<type*> end(<deque>);
-<type*> rbegin(<deque>);
-<type*> rend(<deque>);
-size_t  size(<deque>);
-bool    empty(<deque>);
-<type>  front(<deque>);
-<type>  back(<deque>);
-void    push_back(<deque>, <value>);
-void    pop_back(<deque>);
-void    push_front(<deque>, <value>);
-void    pop_front(<deque>);
-void    insert(<deque>, <iter>, <value>);
-void    insert(<deque>, <iter>, <N>, <value>);
-void    erase(<deque>, <iter>);
-void    erase(<deque>, <iter_begin>, <iter_end>);
-<type*> find(<deque>, <value>);
-<type*> find(<deque>, <iter>, <value>);
-void    resize(<deque>, <N>);
-void    resize(<deque>, <N>, <value>);
-void    assign(<deque>, <N>);
-void    assign(<deque>, <N>, <value>);
-void    clear(<deque>);
-void    destroy(<deque>);
+
+<type*> begin(q);          <type*> end(q);
+<type*> rbegin(q);         <type*> rend(q);
+size_t  size(q);           bool    empty(q);        size_t capacity(q);
+<type>  front(q);          <type>  back(q);
+
+void    push_back(q, value);      void    pop_back(q);
+void    push_front(q, value);     void    pop_front(q);
+void    insert(q, iter, value);
+void    insert(q, iter, N, value);
+void    erase(q, iter);
+void    erase(q, iter_begin, iter_end);
+<type*> find(q, value);
+<type*> find(q, iter, value);
+void    resize(q, N [, value]);
+void    assign(q, N [, value]);
+void    clear(q);
+void    destroy(q);
 ```
 
-### `set`
+### `SET`
 ```
-SET(<type>) s = new_set(<type>, <comparator>);
-<type*> begin(<set>);
-<type*> end(<set>);
-<type*> rbegin(<set>);
-<type*> rend(<set>);
-<type*> next(<iter>);
-<type*> prev(<iter>);
-size_t  size(<set>);
-bool    empty(<set>);
-void    insert(<set>, <value>);
-void    erase(<set>, <iter>);
-<type*> find(<set>, <value>);
-void    clear(<set>);
-void    destroy(<set>);
+SET(<type>) s = new_set(<type> [, comparator]);
+
+<type*> begin(s);          <type*> end(s);
+<type*> rbegin(s);         <type*> rend(s);
+<type*> next(iter);        <type*> prev(iter);
+size_t  size(s);           bool    empty(s);
+
+void    insert(s, value);
+void    erase(s, iter);
+<type*> find(s, value);
+void    clear(s);
+void    destroy(s);
 ```
 
-### `map`
+### `MAP`
 ```
-MAP(<key_type>, <value_type>) m = new_map(<key_type>, <value_type>, <comparator>);
-<key_type*> begin(<map>);
-<key_type*> end(<map>);
-<key_type*> rbegin(<map>);
-<key_type*> rend(<map>);
-<key_type*> next(<iter>);
-<key_type*> prev(<iter>);
-size_t      size(<map>);
-bool        empty(<map>);
-void        insert(<map>, <key>, <value>);
-void        erase(<map>, <iter>);
-<key_type*> find(<map>, <key>);
-<value_type> value(<iter>, <value_type>);
-void        clear(<map>);
-void        destroy(<map>);
+MAP(<key_type>) m = new_map(<key_type>, <value_type> [, comparator]);
+
+<key_type*>  begin(m);         <key_type*>  end(m);
+<key_type*>  rbegin(m);        <key_type*>  rend(m);
+<key_type*>  next(iter);       <key_type*>  prev(iter);
+size_t       size(m);          bool         empty(m);
+
+<key_type>   first(iter);                          // get key from iterator
+<value_type> second(iter, <value_type>);           // get value from iterator
+
+void         insert(m, key, value);
+void         erase(m, iter);
+<key_type*>  find(m, key);
+void         clear(m);
+void         destroy(m);
 ```
 
-### `stack`
+### `UNORDERED_SET`
+```
+UNORDERED_SET(<type>) h = new_unordered_set(<type> [, hash_fn]);
+
+<type*> begin(h);          <type*> end(h);
+<type*> rbegin(h);         <type*> rend(h);        // reverse bucket order
+<type*> next(iter);        <type*> prev(iter);
+size_t  size(h);           bool    empty(h);        size_t capacity(h);
+h[i]                                               // direct bucket slot access (0 = empty)
+
+void    insert(h, value);
+void    erase(h, iter);
+<type*> find(h, value);
+void    clear(h);
+void    destroy(h);
+```
+
+### `UNORDERED_MAP`
+```
+UNORDERED_MAP(<key_type>) m = new_unordered_map(<key_type>, <value_type> [, hash_fn]);
+
+<key_type*>  begin(m);         <key_type*>  end(m);
+<key_type*>  rbegin(m);        <key_type*>  rend(m);
+<key_type*>  next(iter);       <key_type*>  prev(iter);
+size_t       size(m);          bool         empty(m);        size_t capacity(m);
+
+<key_type>   first(iter);
+<value_type> second(iter, <value_type>);
+
+void         insert(m, key, value);
+void         erase(m, iter);
+<key_type*>  find(m, key);
+void         clear(m);
+void         destroy(m);
+```
+
+### `STACK`
 ```
 STACK(<type>) s = new_stack(<type>);
-size_t size(<stack>);
-bool   empty(<stack>);
-<type> top(<stack>);
-void   push(<stack>, <value>);
-void   pop(<stack>);
-void   clear(<stack>);
-void   destroy(<stack>);
+
+size_t size(s);    bool   empty(s);
+<type> top(s);
+void   push(s, value);
+void   pop(s);
+void   clear(s);
+void   destroy(s);
 ```
 
-### `queue`
+### `QUEUE`
 ```
 QUEUE(<type>) q = new_queue(<type>);
-size_t size(<queue>);
-bool   empty(<queue>);
-<type> front(<queue>);
-<type> back(<queue>);
-void   push(<queue>, <value>);
-void   pop(<queue>);
-void   clear(<queue>);
-void   destroy(<queue>);
+
+size_t size(q);    bool   empty(q);
+<type> front(q);   <type> back(q);
+void   push(q, value);
+void   pop(q);
+void   clear(q);
+void   destroy(q);
 ```
 
-### `priority_queue`
+### `PRIORITY_QUEUE`
 ```
-PRIORITY_QUEUE(<type>) pq = new_priority_queue(<type>, <comparator>);
-size_t size(<priority_queue>);
-bool   empty(<priority_queue>);
-<type> top(<priority_queue>);
-void   push(<priority_queue>, <value>);
-void   pop(<priority_queue>);
-void   clear(<priority_queue>);
-void   destroy(<priority_queue>);
+PRIORITY_QUEUE(<type>) pq = new_priority_queue(<type> [, comparator]);
+
+size_t size(pq);   bool   empty(pq);
+<type> top(pq);
+void   push(pq, value);   // O(log n)
+void   pop(pq);           // O(log n)
+void   clear(pq);
+void   destroy(pq);
 ```
 
 ## Notes
 
-- `float` is supported, but `typedef`-aliased float types are not recognized.
-  Stick to the `float` keyword directly.
-- Sequence containers (`vector`, `deque`) use `<type*>` as the handle type.
-  Node-based containers (`list`, `set`, `map`) use `<type**>`.
+- `float` is supported, but `typedef`-aliased float types are not recognized. Use the `float` keyword directly.
+- Sequence containers (`VECTOR`, `DEQUE`) use `<type*>` as the handle type. Node-based containers (`LIST`, `SET`, `MAP`, `UNORDERED_SET`, `UNORDERED_MAP`) use `<type**>`.
+- For node-based containers, always use `next(it)` and `prev(it)` to advance iterators — never `it++` or `it--`.
+- `UNORDERED_SET` and `UNORDERED_MAP` support `rbegin`, `rend`, and `prev`, visiting elements in reverse bucket traversal order (not reverse sorted order).
+- Comparator and hash function arguments are **optional**. Omitting them uses the built-in default for the type: `new_set(int)`, `new_map(int, double)`, `new_priority_queue(int)`, `new_unordered_set(int)`.
 
 ## Links
 
 [![Hypercommit](https://img.shields.io/badge/Hypercommit-DB2475)](https://hypercommit.com/opencstl)
-
-
-- [ ] Pair
-- [ ] Bitset
-- [ ] String
-- [ ] Strings
-- [ ] String Hash
 

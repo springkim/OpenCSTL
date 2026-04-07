@@ -48,10 +48,10 @@
 #include "error.h"
 #include "types.h"
 
-
+#include "deque.h"
 #include "vector.h"
 #include "list.h"
-#include "deque.h"
+
 #include "tree.h"
 #include "stack.h"
 #include "queue.h"

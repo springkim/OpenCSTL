@@ -92,8 +92,6 @@ void cstl_vector_test3() {
     }
 
 
-
-
     stable_sort(vec,size(vec), sizeof(int), COMPARE(int));
     for (int i = 0; i < size(vec); i++) {
         printf("Sorted: [%lld]\n", vec[i]);
@@ -138,12 +136,12 @@ void cstl_list_test02() {
 
 
 void cstl_set_test() {
-    DECORATE("opencstl{set} test begin");
+    DECORATE("OPENCSTL{set} test begin");
     SET(float) tree = new_set(float);
     for (float i = 0; i < 100; i++) {
         insert(tree, i);
     }
-    /// [0] [1] ... [98] [99]
+    /// [0.0] [1.0] ... [98.0] [99.0]
     for (float i = 50; i < 70; i++) {
         float *it = find(tree, i);
         erase(tree, it);
@@ -158,7 +156,7 @@ void cstl_set_test() {
 }
 
 void cstl_map_test() {
-    DECORATE("opencstl{map} test begin");
+    DECORATE("OPENCSTL{map} test begin");
     MAP(int) tree = new_map(int, double);
     for (int i = 0; i < 10; i++) {
         double d = (double) i * i;
@@ -179,7 +177,7 @@ void cstl_map_test() {
 }
 
 void cstl_deque_test() {
-    DECORATE("opencstl{deque} test begin");
+    DECORATE("OPENCSTL{deque} test begin");
     DEQUE(int) deque = new_deque(int);
     for (int i = 0; i < 10; i++) {
         push_back(deque, i);
@@ -190,7 +188,7 @@ void cstl_deque_test() {
     }
     printf("deque pf size: %lld\n", size(deque));
     for (int i = 0; i < size(deque); i++) {
-        printf("[%3d] ", deque[i]);
+        printf("[%3d]", deque[i]);
     }
     puts("");
 
@@ -219,7 +217,7 @@ void cstl_deque_test() {
 }
 
 void cstl_stack_test() {
-    DECORATE("opencstl{stack} test begin");
+    DECORATE("OPENCSTL{stack} test begin");
     STACK(int) stack = new_stack(int);
     for (int i = 0; i < 10; i++) {
         push(stack, i);
@@ -233,7 +231,7 @@ void cstl_stack_test() {
 }
 
 void cstl_queue_test() {
-    DECORATE("opencstl{queue} test begin");
+    DECORATE("OPENCSTL{queue} test begin");
     QUEUE(int) queue = new_queue(int);
     for (int i = 0; i < 100; i++) {
         push(queue, i);
@@ -247,7 +245,7 @@ void cstl_queue_test() {
 }
 
 void cstl_priority_queue_test() {
-    DECORATE("opencstl{priority_queue} test begin");
+    DECORATE("OPENCSTL{priority_queue} test begin");
     QUEUE(int) queue = new_priority_queue(int);
     for (int i = 0; i < 10; i++) {
         push(queue, i);
@@ -301,7 +299,7 @@ int *dijkstra(Edge **vec, int beg) {
 }
 
 void cstl_priority_queue_test2() {
-    DECORATE("opencstl{priority_queue/dijkstra} test begin");
+    DECORATE("OPENCSTL{priority_queue/dijkstra} test begin");
     Edge **vec = new_vector(Edge*);
     cstl_assign(vec, 7);
     for (int i = 0; i < cstl_size(vec); i++) {
@@ -329,7 +327,7 @@ void cstl_priority_queue_test2() {
 }
 
 void cstl_hash_test() {
-    DECORATE("opencstl{unordered_set} test begin");
+    DECORATE("OPENCSTL{unordered_set} test begin");
     UNORDERED_SET(int) h = new_unordered_set(int);
 
     for (int i = 1; i < 100; i++) {
@@ -369,8 +367,61 @@ void test01() {
     cstl_hash_test();
 }
 
+#include <stdio.h>
+
+const char *get_c_version(void) {
+#if defined(__STDC_VERSION__)
+#   if __STDC_VERSION__ >= 202311L
+    return "C23";
+#   elif __STDC_VERSION__ >= 201710L
+    return "C17 (C18)";
+#   elif __STDC_VERSION__ >= 201112L
+    return "C11";
+#   elif __STDC_VERSION__ >= 199901L
+    return "C99";
+#   else
+    return "C94 (AMD1)";
+#   endif
+#elif defined(__STDC__)
+    return "C89 (C90)";
+#else
+    return "pre-ANSI C (K&R)";
+#endif
+}
+
+void print_c_version(void) {
+    printf("C Standard : %s\n", get_c_version());
+
+#if defined(__STDC_VERSION__)
+    printf("__STDC_VERSION__ : %ldL\n", (long) __STDC_VERSION__);
+#endif
+
+    // compiler
+#if defined(_MSC_VER)
+    printf("Compiler   : MSVC %d\n", _MSC_VER);
+#elif defined(__clang__)
+    printf("Compiler   : Clang %d.%d.%d\n", __clang_major__, __clang_minor__, __clang_patchlevel__);
+#elif defined(__GNUC__)
+    printf("Compiler   : GCC %d.%d.%d\n", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+#else
+    printf("Compiler   : Unknown\n");
+#endif
+
+    // platform
+#if defined(_WIN32)
+    printf("Platform   : Windows\n");
+#elif defined(__APPLE__)
+    printf("Platform   : macOS\n");
+#elif defined(__linux__)
+    printf("Platform   : Linux\n");
+#else
+    printf("Platform   : Unknown\n");
+#endif
+}
+
 
 int main() {
+    print_c_version();
     test01();
     //cstl_priority_queue_test();
     return 0;
