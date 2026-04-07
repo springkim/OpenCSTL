@@ -14,7 +14,7 @@
 
 bool cstl_fopen(FILE **fp, const char *filename, const char *mode) {
 #if defined(_WIN32) || defined(_WIN64) ||defined(__TINYC__)
-    *fp = fopen(filename, mode);
+    fopen_s(fp, filename, mode);
 #elif defined(__linux__) && defined(__GNUC__)
     *fp = fopen(filename, mode);
 #elif defined(__APPLE__)
