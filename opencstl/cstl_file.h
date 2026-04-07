@@ -6,11 +6,7 @@
 #define _OPENCSTL_CSTL_FILE_H
 #include "defines.h"
 #include <stdio.h>
-// typedef struct fstream fstream;
-//
-// struct fstream {
-//     FILE *fp;
-// };
+
 
 bool cstl_fopen(FILE **fp, const char *filename, const char *mode) {
 #if defined(_WIN32) || defined(_WIN64) ||defined(__TINYC__)
