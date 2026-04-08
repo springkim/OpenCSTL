@@ -2850,7 +2850,7 @@ OPENCSTL_FUNC void __cstl_hashtable_erase(void **container, void *key) {
     //     return;
     // }
     if (memcmp(((char *) *container) + (pos * type_size), key, key_size) != 0) {
-        return;  // 키 없음, 아무것도 안 함
+        return; // 키 없음, 아무것도 안 함
     }
     size_t sw = pos;
     size_t mv = pos;
@@ -3331,7 +3331,7 @@ CompareFunc CSTL_GREATER(const char *type_str) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  cstl_random.h                  (depth 1) */
+/* BEGIN  random.h                       (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -3375,11 +3375,11 @@ CompareFunc CSTL_GREATER(const char *type_str) {
 #include <limits.h>
 #define CSTL_RAND64_MAX ULLONG_MAX
 #define CSTL_RAND32_MAX UINT_MAX
-static unsigned __int128 _seed64 = 1;
-static unsigned long long _seed32 = 1;
+// static unsigned __int128 _seed64 = 1;
+// static unsigned long long _seed32 = 1;
 
-//static unsigned long long _seed64 = 1;
-//static unsigned int _seed32 = 1;
+static unsigned long long _seed64 = 1;
+static unsigned int _seed32 = 1;
 
 static void cstl_rand_seed32(unsigned int seed) {
     _seed32 = seed;
@@ -3399,11 +3399,13 @@ static unsigned long long cstl_rand64() {
     return (unsigned long long) _seed64;
 }
 
+#define rand32              cstl_rand32
+#define rand64              cstl_rand64
 
 #endif //_OPENCSTL_C_RANDOM_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* END    cstl_random.h */
+/* END    random.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -3805,8 +3807,7 @@ static char *opencstl_version() {
 #define new_map             cstl_map
 #define new_priority_queue  cstl_priority_queue
 
-#define rand32              cstl_rand32
-#define rand64              cstl_rand64
+
 
 #define first(IT)                   (*IT)
 #define second(IT, TYPE)            cstl_value(IT, TYPE)
@@ -4046,7 +4047,7 @@ OPENCSTL_FUNC void _cstl_pop_front(void *container) {
     }
 }
 
-OPENCSTL_FUNC size_t _cstl_size(void *container) {
+OPENCSTL_FUNC size_type _cstl_size(void *container) {
     size_t container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -4054,7 +4055,7 @@ OPENCSTL_FUNC size_t _cstl_size(void *container) {
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
-    size_t sz = 0;
+    size_type sz = 0;
     switch (container_type) {
         case OPENCSTL_PRIORITY_QUEUE:
         case OPENCSTL_VECTOR: {
@@ -4093,7 +4094,7 @@ OPENCSTL_FUNC size_t _cstl_capacity(void *container) {
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
-    size_t sz = 0;
+    size_type sz = 0;
     switch (container_type) {
         case OPENCSTL_STACK:
         case OPENCSTL_QUEUE:
