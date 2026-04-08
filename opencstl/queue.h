@@ -43,6 +43,8 @@
 #include"error.h"
 #include"cstl_alloca.h"
 
+
+
 #define cstl_queue(TYPE)	__cstl_queue(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_queue(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
@@ -75,7 +77,7 @@ OPENCSTL_FUNC void *__cstl_priority_queue(size_t type_size, char *type, int argc
     va_list vl;
     va_start(vl, argc);
     void *compare = va_arg(vl, void*);
-    if (argc == 0) {
+    if (argc == NO_ARGC) {
         compare = NULL; //use default compare function(memcmp)
     }
     OPENCSTL_NIDX(container, -3) = (size_t) compare; //compare function

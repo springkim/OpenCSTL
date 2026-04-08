@@ -86,7 +86,7 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
     char *buf = stack_alloc(nmemb * size);
     bool use_heap = false;
     if (buf == NULL) {
-        buf = malloc(nmemb * size);
+        buf = (char *) malloc(nmemb * size);
         use_heap = true;
     }
 
@@ -113,7 +113,6 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
         free(src);
     }
 }
-
 
 
 #define sort        qsort

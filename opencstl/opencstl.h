@@ -38,12 +38,12 @@
 
 #define USE_CSTL_FUNC
 
-#if defined(__linux__) || defined(__APPLE__)
-#if !defined(__8cc__ )
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-#endif
-#endif
+// #if defined(__linux__) || defined(__APPLE__)
+// #if !defined(__8cc__ )
+// #pragma GCC push_options
+// #pragma GCC optimize("O0")
+// #endif
+// #endif
 #include "defines.h"
 #include "error.h"
 #include "types.h"
@@ -65,6 +65,8 @@
 
 
 #include "cstl_msort.h"
+
+#include "cstl_version.h"
 
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**
@@ -986,7 +988,7 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     return NULL;
 }
 #if defined(__linux__) || defined(__APPLE__)
-#if !defined(__8cc__ )
-#pragma GCC pop_options
-#endif
+// #if !defined(__8cc__ )
+// #pragma GCC pop_options
+// #endif
 #endif

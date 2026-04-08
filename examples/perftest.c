@@ -34,7 +34,7 @@ int main() {
 
     const int LINE_SIZE = 256;
     char *strings = (char *) calloc(lines, sizeof(char) * LINE_SIZE);
-    memset(strings, 0, sizeof(char) * LINE_SIZE);
+
     watch t_beg = tick();
     int index = 0;
     char *line = strings;
@@ -50,7 +50,7 @@ int main() {
 
     //printf("max size: %lld\n", max_size);
     double push_back_ms = lap(t_beg, tick());
-    printf("size: %lu\telapsed_time: %lf\n",size(arr), push_back_ms);
+    printf("size: %llu\telapsed_time: %lf\n",size(arr), push_back_ms);
 
 
     t_beg = tick();
@@ -63,7 +63,7 @@ int main() {
         //puts(line);
     }
     double insert_time = lap(t_beg, tick());
-    printf("size: %lu\telapsed_time: %lf\n",size(tree), insert_time);
+    printf("size: %llu\telapsed_time: %lf\n",size(tree), insert_time);
 
 
     // for (char **it = cstl_begin(tree); it != cstl_end(tree); it = cstl_next(it)) {

@@ -153,9 +153,9 @@
 #pragma warning(disable:4477)
 #pragma warning(disable:4313)
 #elif defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
-#pragma GCC diagnostic ignored "-Wint-conversion"
+// #pragma GCC diagnostic push
+// #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
+// #pragma GCC diagnostic ignored "-Wint-conversion"
 #if !defined(__clang__)
 //#pragma GCC diagnostic ignored "-Wno-lto-type-mismatch"
 #endif
@@ -175,7 +175,7 @@ _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)((void**)C)[-2]:_cstl_err_ptr)))
 
 #if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
+// #pragma GCC diagnostic pop
 #endif
 
 #define OPENCSTL_DEQUE_NIDX(container, nidx) (*(size_t*)((char*)*(void**)container + nidx * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
@@ -315,3 +315,10 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define SELECT_ANY	__attribute__((weak))
 #endif
 #define OPENCSTL_FUNC	static
+
+
+#if defined(__TINYC__)
+#define NO_ARGC 1
+#else
+#define NO_ARGC 0
+#endif

@@ -42,6 +42,7 @@
 #include"types.h"
 #include"error.h"
 #include"defines.h"
+
 #define P	    (-4)
 #define R       (-1)
 #define L       (-2)
@@ -52,6 +53,8 @@
 // Read sites:  (void*)_(N,V)
 #define _(N,V)	OPENCSTL_NIDX(&N, V)
 #define COLOR(N)	_(N, -5)
+
+
 
 
 #define CSTL_ARENA_CHUNK_SIZE 256
@@ -159,7 +162,7 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
     va_list vl;
     va_start(vl, argc);
     void *compare = va_arg(vl, void*);
-    if (argc == 0) {
+    if (argc == NO_ARGC) {
         compare = NULL; //use default compare function(memcmp)
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
@@ -197,7 +200,7 @@ OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_ke
     va_list vl;
     va_start(vl, argc);
     void *compare = va_arg(vl, void*);
-    if (argc == 0) {
+    if (argc == NO_ARGC) {
         compare = NULL; //use default compare function(memcmp)
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
@@ -335,6 +338,7 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
     }
     void *p = nil;
     while (*root != nil) {
+
         p = *root;
         int r = compare ? compare(*root, n) : memcmp(*root, n, type_size);
         if (r == 0) {

@@ -56,12 +56,12 @@
 
 #define USE_CSTL_FUNC
 
-#if defined(__linux__) || defined(__APPLE__)
-#if !defined(__8cc__ )
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-#endif
-#endif
+// #if defined(__linux__) || defined(__APPLE__)
+// #if !defined(__8cc__ )
+// #pragma GCC push_options
+// #pragma GCC optimize("O0")
+// #endif
+// #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  defines.h                      (depth 1) */
@@ -221,9 +221,9 @@
 #pragma warning(disable:4477)
 #pragma warning(disable:4313)
 #elif defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
-#pragma GCC diagnostic ignored "-Wint-conversion"
+// #pragma GCC diagnostic push
+// #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
+// #pragma GCC diagnostic ignored "-Wint-conversion"
 #if !defined(__clang__)
 //#pragma GCC diagnostic ignored "-Wno-lto-type-mismatch"
 #endif
@@ -243,7 +243,7 @@ _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)((void**)C)[-2]:_cstl_err_ptr)))
 
 #if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
+// #pragma GCC diagnostic pop
 #endif
 
 #define OPENCSTL_DEQUE_NIDX(container, nidx) (*(size_t*)((char*)*(void**)container + nidx * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
@@ -384,6 +384,12 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #endif
 #define OPENCSTL_FUNC	static
 
+
+#if defined(__TINYC__)
+#define NO_ARGC 1
+#else
+#define NO_ARGC 0
+#endif
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    defines.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -1520,6 +1526,7 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
 /* [already included: types.h] */
 /* [already included: error.h] */
 /* [already included: defines.h] */
+
 #define P	    (-4)
 #define R       (-1)
 #define L       (-2)
@@ -1530,6 +1537,8 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
 // Read sites:  (void*)_(N,V)
 #define _(N,V)	OPENCSTL_NIDX(&N, V)
 #define COLOR(N)	_(N, -5)
+
+
 
 
 #define CSTL_ARENA_CHUNK_SIZE 256
@@ -1637,7 +1646,7 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
     va_list vl;
     va_start(vl, argc);
     void *compare = va_arg(vl, void*);
-    if (argc == 0) {
+    if (argc == NO_ARGC) {
         compare = NULL; //use default compare function(memcmp)
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
@@ -1675,7 +1684,7 @@ OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_ke
     va_list vl;
     va_start(vl, argc);
     void *compare = va_arg(vl, void*);
-    if (argc == 0) {
+    if (argc == NO_ARGC) {
         compare = NULL; //use default compare function(memcmp)
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
@@ -1813,6 +1822,7 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
     }
     void *p = nil;
     while (*root != nil) {
+
         p = *root;
         int r = compare ? compare(*root, n) : memcmp(*root, n, type_size);
         if (r == 0) {
@@ -2262,6 +2272,8 @@ OPENCSTL_FUNC void *__cstl_stack(size_t type_size, char *type) {
 /* END    cstl_alloca.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
+
+
 #define cstl_queue(TYPE)	__cstl_queue(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_queue(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
@@ -2294,7 +2306,7 @@ OPENCSTL_FUNC void *__cstl_priority_queue(size_t type_size, char *type, int argc
     va_list vl;
     va_start(vl, argc);
     void *compare = va_arg(vl, void*);
-    if (argc == 0) {
+    if (argc == NO_ARGC) {
         compare = NULL; //use default compare function(memcmp)
     }
     OPENCSTL_NIDX(container, -3) = (size_t) compare; //compare function
@@ -3477,7 +3489,7 @@ static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
 
 
 bool cstl_fopen(FILE **fp, const char *filename, const char *mode) {
-#if defined(_WIN32) || defined(_WIN64) ||defined(__TINYC__)
+#if defined(_WIN32) || defined(_WIN64)
     fopen_s(fp, filename, mode);
 #elif defined(__linux__) && defined(__GNUC__)
     *fp = fopen(filename, mode);
@@ -3614,7 +3626,7 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
     char *buf = stack_alloc(nmemb * size);
     bool use_heap = false;
     if (buf == NULL) {
-        buf = malloc(nmemb * size);
+        buf = (char *) malloc(nmemb * size);
         use_heap = true;
     }
 
@@ -3641,7 +3653,6 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
         free(src);
     }
 }
-
 
 
 #define sort        qsort
@@ -3674,6 +3685,61 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
 
 
 /* [already included: cstl_msort.h] */
+
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  cstl_version.h                 (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_VERSION_H)
+#define _OPENCSTL_VERSION_H
+
+static char *VERSION = "1.0.0";
+
+static char *get_version() {
+    return VERSION;
+}
+#endif //_OPENCSTL_VERSION_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    cstl_version.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**
@@ -4595,9 +4661,9 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     return NULL;
 }
 #if defined(__linux__) || defined(__APPLE__)
-#if !defined(__8cc__ )
-#pragma GCC pop_options
-#endif
+// #if !defined(__8cc__ )
+// #pragma GCC pop_options
+// #endif
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */

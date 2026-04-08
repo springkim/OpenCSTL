@@ -439,9 +439,10 @@ void print_c_version(void) {
 
 
 int main() {
-    test02();
-    print_c_version();
-    test01();
+    //test02();
+    //cstl_set_test();
+    //print_c_version();
+     test01();
     //cstl_priority_queue_test();
     return 0;
 }
