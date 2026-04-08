@@ -4,7 +4,7 @@
 
 #ifndef OPENCSTL_CSTL_H
 #define OPENCSTL_CSTL_H
-#include "cstl_msort.h"
+#include "stable_sort.h"
 
 
 // typedef void (*sort_func)(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *));

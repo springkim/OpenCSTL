@@ -37,7 +37,7 @@
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 
-static char *OPENCSTL_VERSION = "1.0.0";
+static char *OPENCSTL_VERSION = "1.1.0";
 
 static char *opencstl_version() {
     return OPENCSTL_VERSION;

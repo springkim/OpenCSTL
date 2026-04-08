@@ -132,12 +132,12 @@ OPENCSTL_FUNC void __cstl_vector_pop_back(void **container) {
     OPENCSTL_NIDX(container, -1)--;
 }
 
-OPENCSTL_FUNC size_t __cstl_vector_size(void **container) {
-    return OPENCSTL_NIDX(container, -1);
+OPENCSTL_FUNC size_type __cstl_vector_size(void **container) {
+    return (size_type)OPENCSTL_NIDX(container, -1);
 }
 
-OPENCSTL_FUNC size_t __cstl_vector_capacity(void **container) {
-    return OPENCSTL_NIDX(container, -2);
+OPENCSTL_FUNC size_type __cstl_vector_capacity(void **container) {
+    return (size_type)OPENCSTL_NIDX(container, -2);
 }
 
 OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, void *value) {

@@ -584,12 +584,12 @@ OPENCSTL_FUNC void *__cstl_tree_next_prev(void *it, int r, int l, void *(todeep)
     return it;
 }
 
-OPENCSTL_FUNC size_t ___cstl_tree_size(void *n) {
-    if (n == nil)return 0;
-    return ___cstl_tree_size((void *) _(n, L)) + ___cstl_tree_size((void *) _(n, R)) + 1;
-}
+// OPENCSTL_FUNC size_type ___cstl_tree_size(void *n) {
+//     if (n == nil)return 0;
+//     return ___cstl_tree_size((void *) _(n, L)) + ___cstl_tree_size((void *) _(n, R)) + 1;
+// }
 
-OPENCSTL_FUNC size_t __cstl_tree_size(void **container) {
+OPENCSTL_FUNC size_type __cstl_tree_size(void **container) {
     size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -600,7 +600,7 @@ OPENCSTL_FUNC size_t __cstl_tree_size(void **container) {
     void *c = *root;
     size_t length = OPENCSTL_NIDX(container, -1);
     //return ___cstl_tree_size(c);
-    return length;
+    return (size_type)length;
 }
 #undef P
 #undef L

@@ -83,12 +83,8 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
         return;
     }
     char *src = base;
-    char *buf = stack_alloc(nmemb * size);
-    bool use_heap = false;
-    if (buf == NULL) {
-        buf = (char *) malloc(nmemb * size);
-        use_heap = true;
-    }
+    char *buf = (char *) malloc(nmemb * size);
+
 
     if (!buf) return;
     for (size_t width = 1; width < nmemb; width *= 2) {
@@ -106,11 +102,9 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
 
     if (src != base) {
         memcpy(base, src, nmemb * size);
-    } else {
-        src = buf;
-    }
-    if (use_heap) {
         free(src);
+    } else {
+        free(buf);
     }
 }
 

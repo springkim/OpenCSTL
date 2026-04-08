@@ -456,13 +456,16 @@ OPENCSTL_FUNC void __cstl_hashtable_erase(void **container, void *key) {
     while (tombstone[pos] != VACANT && memcmp(((char *) *container) + (pos * type_size), key, key_size) != 0) {
         pos = (pos + h2) % _capacity;
     }
-    if (memcmp(((char *) *container) + (pos * type_size), key, key_size) == 0) {
-        return;
+    // if (memcmp(((char *) *container) + (pos * type_size), key, key_size) == 0) {
+    //     return;
+    // }
+    if (memcmp(((char *) *container) + (pos * type_size), key, key_size) != 0) {
+        return;  // 키 없음, 아무것도 안 함
     }
     size_t sw = pos;
     size_t mv = pos;
     while (tombstone[mv] != VACANT) {
-        if (tombstone[mv] != TOMBSTONE && H1(((char *) *container) + (pos * type_size), _capacity, key_size) == h1) {
+        if (tombstone[mv] != TOMBSTONE && H1(((char *) *container) + (mv * type_size), _capacity, key_size) == h1) {
             sw = mv;
         }
         mv = (mv + h2) % _capacity;
@@ -502,7 +505,7 @@ OPENCSTL_FUNC void *__cstl_hashtable_find(void **container, void *key) {
     size_t h2 = H2(key, _capacity, key_size);
     size_t pos = h1;
     while (tombstone[pos] != VACANT) {
-        if (tombstone[pos] != OCCUPIED && memcmp(((char *) *container) + (pos * type_size), key, key_size) == 0) {
+        if (tombstone[pos] == OCCUPIED && memcmp(((char *) *container) + (pos * type_size), key, key_size) == 0) {
             return ((char *) *container) + (pos * type_size);
         }
         pos = (pos + h2) % _capacity;

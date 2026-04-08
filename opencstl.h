@@ -494,6 +494,9 @@ typedef size_t cstl_ptr;
 
 typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
 
+
+typedef unsigned int size_type;
+
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -794,16 +797,16 @@ OPENCSTL_FUNC void __cstl_deque_erase(void **container, void *begin, void *end) 
     *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) -= pos;
 }
 
-OPENCSTL_FUNC size_t __cstl_deque_size(void **container) {
+OPENCSTL_FUNC size_type __cstl_deque_size(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
 
-    return *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+    return (size_type)(*(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance));
 }
 
-OPENCSTL_FUNC size_t __cstl_deque_capacity(void **container) {
+OPENCSTL_FUNC size_type __cstl_deque_capacity(void **container) {
     size_t capacity = OPENCSTL_NIDX(container, -3);
 
-    return capacity;
+    return (size_type)capacity;
 }
 
 OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) {
@@ -1050,12 +1053,12 @@ OPENCSTL_FUNC void __cstl_vector_pop_back(void **container) {
     OPENCSTL_NIDX(container, -1)--;
 }
 
-OPENCSTL_FUNC size_t __cstl_vector_size(void **container) {
-    return OPENCSTL_NIDX(container, -1);
+OPENCSTL_FUNC size_type __cstl_vector_size(void **container) {
+    return (size_type)OPENCSTL_NIDX(container, -1);
 }
 
-OPENCSTL_FUNC size_t __cstl_vector_capacity(void **container) {
-    return OPENCSTL_NIDX(container, -2);
+OPENCSTL_FUNC size_type __cstl_vector_capacity(void **container) {
+    return (size_type)OPENCSTL_NIDX(container, -2);
 }
 
 OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, void *value) {
@@ -1320,8 +1323,8 @@ OPENCSTL_FUNC void *__cstl_list_next_prev(void *it, int n) {
     return (void *) OPENCSTL_NIDX(&it, n);
 }
 
-OPENCSTL_FUNC size_t __cstl_list_size(void **container) {
-    return OPENCSTL_NIDX(container, -1);
+OPENCSTL_FUNC size_type __cstl_list_size(void **container) {
+    return (size_type)OPENCSTL_NIDX(container, -1);
 }
 
 OPENCSTL_FUNC void __cstl_list_resize(void **container, size_t n, void *value) {
@@ -2068,12 +2071,12 @@ OPENCSTL_FUNC void *__cstl_tree_next_prev(void *it, int r, int l, void *(todeep)
     return it;
 }
 
-OPENCSTL_FUNC size_t ___cstl_tree_size(void *n) {
-    if (n == nil)return 0;
-    return ___cstl_tree_size((void *) _(n, L)) + ___cstl_tree_size((void *) _(n, R)) + 1;
-}
+// OPENCSTL_FUNC size_type ___cstl_tree_size(void *n) {
+//     if (n == nil)return 0;
+//     return ___cstl_tree_size((void *) _(n, L)) + ___cstl_tree_size((void *) _(n, R)) + 1;
+// }
 
-OPENCSTL_FUNC size_t __cstl_tree_size(void **container) {
+OPENCSTL_FUNC size_type __cstl_tree_size(void **container) {
     size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -2084,7 +2087,7 @@ OPENCSTL_FUNC size_t __cstl_tree_size(void **container) {
     void *c = *root;
     size_t length = OPENCSTL_NIDX(container, -1);
     //return ___cstl_tree_size(c);
-    return length;
+    return (size_type)length;
 }
 #undef P
 #undef L
@@ -2843,13 +2846,16 @@ OPENCSTL_FUNC void __cstl_hashtable_erase(void **container, void *key) {
     while (tombstone[pos] != VACANT && memcmp(((char *) *container) + (pos * type_size), key, key_size) != 0) {
         pos = (pos + h2) % _capacity;
     }
-    if (memcmp(((char *) *container) + (pos * type_size), key, key_size) == 0) {
-        return;
+    // if (memcmp(((char *) *container) + (pos * type_size), key, key_size) == 0) {
+    //     return;
+    // }
+    if (memcmp(((char *) *container) + (pos * type_size), key, key_size) != 0) {
+        return;  // 키 없음, 아무것도 안 함
     }
     size_t sw = pos;
     size_t mv = pos;
     while (tombstone[mv] != VACANT) {
-        if (tombstone[mv] != TOMBSTONE && H1(((char *) *container) + (pos * type_size), _capacity, key_size) == h1) {
+        if (tombstone[mv] != TOMBSTONE && H1(((char *) *container) + (mv * type_size), _capacity, key_size) == h1) {
             sw = mv;
         }
         mv = (mv + h2) % _capacity;
@@ -2889,7 +2895,7 @@ OPENCSTL_FUNC void *__cstl_hashtable_find(void **container, void *key) {
     size_t h2 = H2(key, _capacity, key_size);
     size_t pos = h1;
     while (tombstone[pos] != VACANT) {
-        if (tombstone[pos] != OCCUPIED && memcmp(((char *) *container) + (pos * type_size), key, key_size) == 0) {
+        if (tombstone[pos] == OCCUPIED && memcmp(((char *) *container) + (pos * type_size), key, key_size) == 0) {
             return ((char *) *container) + (pos * type_size);
         }
         pos = (pos + h2) % _capacity;
@@ -3544,7 +3550,7 @@ bool cstl_getline(FILE *fp, char *line, size_t size) {
 #define OPENCSTL_CSTL_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  cstl_msort.h                   (depth 2) */
+/* BEGIN  stable_sort.h                  (depth 2) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -3632,12 +3638,8 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
         return;
     }
     char *src = base;
-    char *buf = stack_alloc(nmemb * size);
-    bool use_heap = false;
-    if (buf == NULL) {
-        buf = (char *) malloc(nmemb * size);
-        use_heap = true;
-    }
+    char *buf = (char *) malloc(nmemb * size);
+
 
     if (!buf) return;
     for (size_t width = 1; width < nmemb; width *= 2) {
@@ -3655,11 +3657,9 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
 
     if (src != base) {
         memcpy(base, src, nmemb * size);
-    } else {
-        src = buf;
-    }
-    if (use_heap) {
         free(src);
+    } else {
+        free(buf);
     }
 }
 
@@ -3669,7 +3669,7 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
 #endif //_OPENCSTL_SORT_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* END    cstl_msort.h */
+/* END    stable_sort.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 
@@ -3693,11 +3693,11 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 
-/* [already included: cstl_msort.h] */
+/* [already included: stable_sort.h] */
 
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  cstl_version.h                 (depth 1) */
+/* BEGIN  version.h                      (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -3739,7 +3739,7 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 
-static char *OPENCSTL_VERSION = "1.0.0";
+static char *OPENCSTL_VERSION = "1.1.0";
 
 static char *opencstl_version() {
     return OPENCSTL_VERSION;
@@ -3747,7 +3747,7 @@ static char *opencstl_version() {
 #endif //_OPENCSTL_VERSION_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* END    cstl_version.h */
+/* END    version.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 #define VECTOR(TYPE)            TYPE*

@@ -225,16 +225,16 @@ OPENCSTL_FUNC void __cstl_deque_erase(void **container, void *begin, void *end) 
     *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) -= pos;
 }
 
-OPENCSTL_FUNC size_t __cstl_deque_size(void **container) {
+OPENCSTL_FUNC size_type __cstl_deque_size(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
 
-    return *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+    return (size_type)(*(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance));
 }
 
-OPENCSTL_FUNC size_t __cstl_deque_capacity(void **container) {
+OPENCSTL_FUNC size_type __cstl_deque_capacity(void **container) {
     size_t capacity = OPENCSTL_NIDX(container, -3);
 
-    return capacity;
+    return (size_type)capacity;
 }
 
 OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) {

@@ -60,15 +60,15 @@
 #include "algorithm.h"
 
 #include "cstl_compare.h"
-#include "cstl_random.h"
+#include "random.h"
 #include "cstl_time.h"
 #include "cstl_file.h"
 #include "cstl.h"
 
 
-#include "cstl_msort.h"
+#include "stable_sort.h"
 
-#include "cstl_version.h"
+#include "version.h"
 
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**
@@ -125,8 +125,7 @@
 #define new_map             cstl_map
 #define new_priority_queue  cstl_priority_queue
 
-#define rand32              cstl_rand32
-#define rand64              cstl_rand64
+
 
 #define first(IT)                   (*IT)
 #define second(IT, TYPE)            cstl_value(IT, TYPE)

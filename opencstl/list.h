@@ -118,8 +118,8 @@ OPENCSTL_FUNC void *__cstl_list_next_prev(void *it, int n) {
     return (void *) OPENCSTL_NIDX(&it, n);
 }
 
-OPENCSTL_FUNC size_t __cstl_list_size(void **container) {
-    return OPENCSTL_NIDX(container, -1);
+OPENCSTL_FUNC size_type __cstl_list_size(void **container) {
+    return (size_type)OPENCSTL_NIDX(container, -1);
 }
 
 OPENCSTL_FUNC void __cstl_list_resize(void **container, size_t n, void *value) {

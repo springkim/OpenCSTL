@@ -389,7 +389,7 @@ void test02() {
 
 
 int main() {
-    test02();
+    //test02();
     test01();
     //cstl_priority_queue_test();
     return 0;
