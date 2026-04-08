@@ -15,6 +15,8 @@ bool cstl_fopen(FILE **fp, const char *filename, const char *mode) {
     *fp = fopen(filename, mode);
 #elif defined(__APPLE__)
     *fp = fopen(filename, mode);
+#elif defined(__TINYC__)
+    *fp  = fopen(filename, mode);
 #else
     fopen_s(fp, filename, mode);
 #endif
