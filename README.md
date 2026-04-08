@@ -31,7 +31,23 @@
 curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master/opencstl.h"
 ```
 
+
+
 ## Supported Platforms
+
+<p align="center">
+    <img width="128" height="128" src="assets/windows11.png" >
+    <img width="128" height="128" src="assets/macos.png" >
+    <img width="128" height="128" src="assets/ubuntu_logo.png" >
+</p>
+
+<p align="center">
+    <img width="96" height="96" src="assets/MSVC2026.png" >
+    <img width="96" height="96" src="assets/MinGW64.png" >
+    <img width="96" height="96" src="assets/LLVM.png" >
+    <img width="96" height="96" src="assets/GNU.png" >
+    <img width="96" height="96" src="assets/tcc.png" >
+</p>
 
 | Compiler | Windows | macOS | Linux |
 |----------|:-------:|:-----:|:-----:|
@@ -40,6 +56,7 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
 | LLVM (clang) | ✅ | ✅ | ✅ |
 | MinGW64 | ✅ | | |
 | Intel (icx-cc) | ✅ | ✅ | ✅ |
+|  Tiny C Compiler (tcc) | ✅ |  |  |
 
 ## Document
 

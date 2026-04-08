@@ -11,16 +11,10 @@
 bool cstl_fopen(FILE **fp, const char *filename, const char *mode) {
 #if defined(_WIN32) || defined(_WIN64)
     fopen_s(fp, filename, mode);
-#elif defined(__linux__) && defined(__GNUC__)
-    *fp = fopen(filename, mode);
-#elif defined(__APPLE__)
-    *fp = fopen(filename, mode);
-#elif defined(__TINYC__)
-    *fp  = fopen(filename, mode);
 #else
-    fopen_s(fp, filename, mode);
+    *fp = fopen(filename, mode);
 #endif
-    return fp != NULL;
+    return *fp != NULL;
 }
 
 bool cstl_getline(FILE *fp, char *line, size_t size) {
