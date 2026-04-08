@@ -6,7 +6,7 @@
 #define _OPENCSTL_CSTL_TIME_H
 
 
-#if defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__)
+#if defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || (defined(CSTL_OS_LINUX) && defined(__TINYC__))
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
