@@ -41,6 +41,12 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
 | MinGW64 | ✅ | | |
 | Intel (icx-cc) | ✅ | ✅ | ✅ |
 
+## 文档
+
+[文档](./docs/README.md)
+
+
+
 ## 示例
 
 ```c

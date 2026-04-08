@@ -6,7 +6,7 @@ int main() {
     FILE *fp = NULL;
     FOPEN(&fp, "words_random.txt", "rt");
     char line[1024] = {0};
-    while (GETLINE(fp, line, 1024)) {
+    while (FGETLINE(fp, line, 1024)) {
         int length = strlen(line);
         char *word = (char *) calloc(length + 1, sizeof(char));
         strncpy(word, line, length);
@@ -15,7 +15,7 @@ int main() {
     FCLOSE(fp);
 
     // qsort example
-    qsort(v,size(v), sizeof(char *), StringCmp);
+    qsort(v,size(v), sizeof(char *), LESS(char*));
 
 
     for (int i = 0; i < size(v); i++) {
@@ -24,7 +24,7 @@ int main() {
 
     // bsearch example
     char *key = "spring";
-    void *iter = bsearch(&key, v,size(v), sizeof(char *), StringCmp);
+    void *iter = bsearch(&key, v,size(v), sizeof(char *), LESS(char*));
 
     int idx = (char **) iter - (char **) v;
     printf("bsearch: %s(%d)\n", *(char **) iter, idx);

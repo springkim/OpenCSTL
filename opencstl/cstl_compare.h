@@ -44,36 +44,63 @@ typedef int (*CompareFunc)(CVP a, CVP b);
 
 #define _SAFE_COMPARE(TYPE,X,Y)  (*(TYPE *) (X) > *(TYPE *) (Y)) - (*(TYPE *) (X) < *(TYPE *) (Y))
 
-int IntCmp(CVP a, CVP b) {
+int less_int32(CVP a, CVP b) {
     return _SAFE_COMPARE(int, a, b);
 }
 
-int UIntCmp(CVP a, CVP b) {
+int less_uint32(CVP a, CVP b) {
     return _SAFE_COMPARE(unsigned int, a, b);
 }
 
-int Int64Cmp(CVP a, CVP b) {
+int less_int64(CVP a, CVP b) {
     return _SAFE_COMPARE(long long, a, b);
 }
 
-int UInt64Cmp(CVP a, CVP b) {
+int less_uint64(CVP a, CVP b) {
     return _SAFE_COMPARE(unsigned long long, a, b);
 }
 
-int FloatCmp(CVP a, CVP b) {
+int less_float(CVP a, CVP b) {
     return (*(float *) a > *(float *) b) - (*(float *) a < *(float *) b);
 }
 
-int DoubleCmp(CVP a, CVP b) {
+int less_double(CVP a, CVP b) {
     return (*(double *) a > *(double *) b) - (*(double *) a < *(double *) b);
 }
 
-int StringCmp(CVP a, CVP b) {
+int less_string(CVP a, CVP b) {
     return strcmp(*(char **) a, *(char **) b);
 }
 
+int greater_int32(CVP a, CVP b) {
+    return less_int32(b, a);
+}
 
-CompareFunc CSTL_Compare(const char *type_str) {
+int greater_uint32(CVP a, CVP b) {
+    return less_uint32(b, a);
+}
+
+int greater_int64(CVP a, CVP b) {
+    return less_int64(b, a);
+}
+
+int greater_uint64(CVP a, CVP b) {
+    return less_uint64(b, a);
+}
+
+int greater_float(CVP a, CVP b) {
+    return less_float(b, a);
+}
+
+int greater_double(CVP a, CVP b) {
+    return less_double(b, a);
+}
+
+int greater_string(CVP a, CVP b) {
+    return less_string(b, a);
+}
+
+CompareFunc CSTL_LESS(const char *type_str) {
     while (*type_str == ' ') type_str++;
 
     const char *end = type_str + strlen(type_str);
@@ -86,17 +113,43 @@ CompareFunc CSTL_Compare(const char *type_str) {
     memcpy(buf, type_str, len);
     buf[len] = '\0';
 
-    if (strcmp(buf, "float") == 0) return FloatCmp;
-    if (strcmp(buf, "double") == 0) return DoubleCmp;
-    if (strcmp(buf, "int") == 0) return IntCmp;
-    if (strcmp(buf, "long long") == 0) return Int64Cmp;
-    if (strcmp(buf, "unsigned long long") == 0) return UInt64Cmp;
-    if (strcmp(buf, "unsigned int") == 0)return UIntCmp;
-    if (strcmp(buf, "char*") == 0)return StringCmp;
-    if (strcmp(buf, "char *") == 0)return StringCmp;
+    if (strcmp(buf, "float") == 0) return less_float;
+    if (strcmp(buf, "double") == 0) return less_double;
+    if (strcmp(buf, "int") == 0) return less_int32;
+    if (strcmp(buf, "long long") == 0) return less_int64;
+    if (strcmp(buf, "unsigned long long") == 0) return less_uint64;
+    if (strcmp(buf, "unsigned int") == 0) return less_uint32;
+    if (strcmp(buf, "char*") == 0) return less_string;
+    if (strcmp(buf, "char *") == 0) return less_string;
 
     return NULL;
 }
 
-#define COMPARE(TYPE) CSTL_Compare(#TYPE)
+CompareFunc CSTL_GREATER(const char *type_str) {
+    while (*type_str == ' ') type_str++;
+
+    const char *end = type_str + strlen(type_str);
+    while (end > type_str && *(end - 1) == ' ') end--;
+
+    char buf[256];
+    size_t len = end - type_str;
+    if (len >= sizeof(buf)) return NULL;
+
+    memcpy(buf, type_str, len);
+    buf[len] = '\0';
+
+    if (strcmp(buf, "float") == 0) return greater_float;
+    if (strcmp(buf, "double") == 0) return greater_double;
+    if (strcmp(buf, "int") == 0) return greater_int32;
+    if (strcmp(buf, "long long") == 0) return greater_int64;
+    if (strcmp(buf, "unsigned long long") == 0) return greater_uint64;
+    if (strcmp(buf, "unsigned int") == 0) return greater_uint32;
+    if (strcmp(buf, "char*") == 0) return greater_string;
+    if (strcmp(buf, "char *") == 0) return greater_string;
+
+    return NULL;
+}
+
+#define LESS(TYPE)    CSTL_LESS(#TYPE)
+#define GREATER(TYPE) CSTL_GREATER(#TYPE)
 #endif //OPENCSTL_COMPARE_H

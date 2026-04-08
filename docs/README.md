@@ -6,6 +6,12 @@ C99 · C11 · C17 · C23
 
 ---
 
+
+
+[container document](./_containers.md)
+
+
+
 ## Why OpenCSTL?
 
 - **Single-header** — Just `#include "opencstl.h"` and you're done. No build steps, no linking.
@@ -131,7 +137,7 @@ int main() {
 | [`DEQUE`](__deque.md) | Sequence | `T*` | ✅ | `it++` |
 | [`SET`](__set.md) | Associative | `T**` | ❌ | `next(it)` |
 | [`MAP`](__map.md) | Associative | `K**` | ❌ | `next(it)` |
-| [`UNORDERED_SET`](__unordered_set.md) | Unordered | `T**` | ✅ (bucket) | `next(it)` |
+| [`UNORDERED_SET`](__unordered_set.md) | Unordered | `T**` | ❌ | `next(it)` |
 | [`UNORDERED_MAP`](__unordered_map.md) | Unordered | `K**` | ❌ | `next(it)` |
 | [`STACK`](__stack.md) | Adaptor | `T*` | ❌ | — |
 | [`QUEUE`](__queue.md) | Adaptor | `T*` | ❌ | — |

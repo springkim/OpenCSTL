@@ -1,7 +1,7 @@
 #include"opencstl.h"
 
 int main() {
-    QUEUE(int) q = new_priority_queue(int, IntCmp);
+    QUEUE(int) q = new_priority_queue(int);
     for (int i = 0; i < 10; i++) {
         push(q, i);
     }
@@ -12,5 +12,4 @@ int main() {
     puts("");
     destroy(q);
     return 0;
-    qsort
 }

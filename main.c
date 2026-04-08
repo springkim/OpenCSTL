@@ -92,7 +92,7 @@ void cstl_vector_test3() {
     }
 
 
-    stable_sort(vec,size(vec), sizeof(int), COMPARE(int));
+    stable_sort(vec,size(vec), sizeof(int), LESS(int));
     for (int i = 0; i < size(vec); i++) {
         printf("Sorted: [%lld]\n", vec[i]);
     }
@@ -369,6 +369,22 @@ void test01() {
     cstl_hash_test();
 }
 
+void test02() {
+    VECTOR(int) v = new_vector(int);
+    for (int i = 0; i < 1000; i++) {
+        push_back(v, rand32()%10000);
+    }
+
+    sort(v,size(v), sizeof(int),GREATER(int));
+
+
+    for (int i = 0; i < size(v); i++) {
+        printf("%d\n", v[i]);
+    }
+
+    exit(0);
+}
+
 #include <stdio.h>
 
 const char *get_c_version(void) {
@@ -423,6 +439,7 @@ void print_c_version(void) {
 
 
 int main() {
+    test02();
     print_c_version();
     test01();
     //cstl_priority_queue_test();

@@ -42,8 +42,8 @@ void example_map() {
         "vector", "list", "set", "map", "stack", "queue", "priority_queue", "unordered_map", "unordered_set"
     };
     size_t len = sizeof(containers) / sizeof(containers[0]);
-    printf("Number of elements: %d\n", len);
-    MAP(int) d = new_map(int, char*, COMPARE(int));
+    printf("Number of elements: %llu\n", len);
+    MAP(int) d = new_map(int, char*);
     for (int i = 0; i < len; i++) {
         insert(d, i, containers[i]);
     }
