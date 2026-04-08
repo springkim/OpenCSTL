@@ -116,7 +116,7 @@
 #if defined(_WIN32) || defined(_WIN64) || defined(__TINYC__)
 // On Windows the dispatch macros pass values directly (not pointer-to-value).
 // va_arg(vl,void*) would read the value itself, so use PTR arithmetic instead.
-#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=V;
+#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=(void*)V;
 #define __cstl_va_arg(PTR)	(PTR)
 // Windows: __cstl_va_arg_next is unused (Windows uses PTR-based path),
 // but define it to avoid compile errors if referenced.

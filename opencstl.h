@@ -184,7 +184,7 @@
 #if defined(_WIN32) || defined(_WIN64) || defined(__TINYC__)
 // On Windows the dispatch macros pass values directly (not pointer-to-value).
 // va_arg(vl,void*) would read the value itself, so use PTR arithmetic instead.
-#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=V;
+#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=(void*)V;
 #define __cstl_va_arg(PTR)	(PTR)
 // Windows: __cstl_va_arg_next is unused (Windows uses PTR-based path),
 // but define it to avoid compile errors if referenced.
@@ -3136,6 +3136,31 @@ OPENCSTL_FUNC void __cstl_hashtable_free(void **container) {
 
 
 /* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  algorithm.h                    (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 2026. 4. 9..
+//
+
+#if !defined(_OPENCSTL_C_ALGORITHM_H)
+#define _OPENCSTL_C_ALGORITHM_H
+#ifndef MAX
+#define MAX(a,b) ((a)>(b)?(a):(b))
+#endif
+#ifndef MIN
+#define MIN(a,b) ((a)<(b)?(a):(b))
+#endif
+
+
+#endif //_OPENCSTL_C_ALGORITHM_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    algorithm.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+
+/* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  cstl_compare.h                 (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
@@ -3344,8 +3369,11 @@ CompareFunc CSTL_GREATER(const char *type_str) {
 #include <limits.h>
 #define CSTL_RAND64_MAX ULLONG_MAX
 #define CSTL_RAND32_MAX UINT_MAX
-static unsigned long long _seed64 = 1;
-static unsigned long _seed32 = 1;
+static unsigned __int128 _seed64 = 1;
+static unsigned long long _seed32 = 1;
+
+//static unsigned long long _seed64 = 1;
+//static unsigned int _seed32 = 1;
 
 static void cstl_rand_seed32(unsigned int seed) {
     _seed32 = seed;
@@ -3362,7 +3390,7 @@ static void cstl_rand_seed64(unsigned long long seed) {
 
 static unsigned long long cstl_rand64() {
     _seed64 = (_seed64 * 6364136223846793005ULL) + 1442695040888963407ULL;
-    return _seed64;
+    return (unsigned long long) _seed64;
 }
 
 
@@ -3383,8 +3411,36 @@ static unsigned long long cstl_rand64() {
 #if !defined(_OPENCSTL_CSTL_TIME_H)
 #define _OPENCSTL_CSTL_TIME_H
 
+#if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
 
-#if defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__)
+#include <windows.h>
+#include <stdio.h>
+
+typedef LARGE_INTEGER watch;
+
+static watch tick() {
+    watch t;
+    QueryPerformanceCounter(&t);
+    return t;
+}
+
+static double lap(const watch t_beg, const watch t_end) {
+    LARGE_INTEGER freq;
+    QueryPerformanceFrequency(&freq);
+    return (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
+}
+
+static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    snprintf(timestr, 32, "%04d_%02d_%02d_%02d_%02d_%02d_%03d",
+             (int) st.wYear, (int) st.wMonth, (int) st.wDay,
+             (int) st.wHour, (int) st.wMinute, (int) st.wSecond,
+             (int) st.wMilliseconds);
+}
+
+#elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
+
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
@@ -3409,66 +3465,23 @@ static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
     time_t now = tv.tv_sec;
     struct tm tm_now;
 #if defined(__MINGW32__) || defined(__MINGW64__)
-    localtime_s(&tm_now, &now);
-#elif defined(__clang__) || (defined(__GNUC__) && defined(__APPLE__)) || defined(__GNUC__) | defined(__TINYC__)
-    localtime_r(&now, &tm_now);
+localtime_s(&tm_now, &now);
 #else
-    localtime_s(&tm_now, &now);
+localtime_r(&now, &tm_now);
 #endif
-    int ms = (int) (tv.tv_usec / 1000);
 
-    snprintf(timestr, 32, "%04d_%02d_%02d_%02d_%02d_%02d_%03d",
-             tm_now.tm_year + 1900,
-             tm_now.tm_mon + 1,
-             tm_now.tm_mday,
-             tm_now.tm_hour,
-             tm_now.tm_min,
-             tm_now.tm_sec,
-             ms);
-}
-
-#elif defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)   // MSVC, clang-cl
-
-#include <windows.h>
-#include <stdio.h>
-
-typedef LARGE_INTEGER watch;
-
-static watch tick() {
-    watch t;
-    QueryPerformanceCounter(&t);
-    return t;
-}
-
-static double lap(const watch t_beg, const watch t_end) {
-    LARGE_INTEGER freq;
-    QueryPerformanceFrequency(&freq);
-
-    return (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
-}
-
-static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-
-    snprintf(timestr, 32, "%04d_%02d_%02d_%02d_%02d_%02d_%03d",
-             (int) st.wYear,
-             (int) st.wMonth,
-             (int) st.wDay,
-             (int) st.wHour,
-             (int) st.wMinute,
-             (int) st.wSecond,
-             (int) st.wMilliseconds);
+int ms = (int) (tv.tv_usec / 1000);
+snprintf(timestr, 32, "%04d_%02d_%02d_%02d_%02d_%02d_%03d",
+         tm_now.tm_year+ 1900, tm_now.tm_mon+ 1, tm_now.tm_mday,
+         tm_now.tm_hour, tm_now.tm_min, tm_now.tm_sec,
+         ms);
 }
 
 #else
-
 #error Unsupported compiler/platform
-
 #endif
 
-
-#endif //_OPENCSTL_CSTL_TIME_H
+#endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    cstl_time.h */
@@ -3491,14 +3504,10 @@ static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
 bool cstl_fopen(FILE **fp, const char *filename, const char *mode) {
 #if defined(_WIN32) || defined(_WIN64)
     fopen_s(fp, filename, mode);
-#elif defined(__linux__) && defined(__GNUC__)
-    *fp = fopen(filename, mode);
-#elif defined(__APPLE__)
-    *fp = fopen(filename, mode);
 #else
-    fopen_s(fp, filename, mode);
+    *fp = fopen(filename, mode);
 #endif
-    return fp != NULL;
+    return *fp != NULL;
 }
 
 bool cstl_getline(FILE *fp, char *line, size_t size) {
@@ -3730,10 +3739,10 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 
-static char *VERSION = "1.0.0";
+static char *OPENCSTL_VERSION = "1.0.0";
 
-static char *get_version() {
-    return VERSION;
+static char *opencstl_version() {
+    return OPENCSTL_VERSION;
 }
 #endif //_OPENCSTL_VERSION_H
 

@@ -18,6 +18,7 @@ import sys
 import argparse
 from pathlib import Path
 import shutil
+import os
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Regex helpers
@@ -247,6 +248,8 @@ def main():
     total = out_path.read_text(encoding='utf-8').count('\n')
     print(f'[amalgamate] done    : {len(amalg.visited)} file(s) inlined, '
           f'{total} lines → {out_path.name}')
+
+    shutil.copy("opencstl.h", "examples/opencstl.h")
 
 
 if __name__ == '__main__':

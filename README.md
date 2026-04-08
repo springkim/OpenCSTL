@@ -12,7 +12,11 @@
   <a href="README.zh.md">中文</a>
 </p>
 
+
+
 ---
+
+
 
 ## Why OpenCSTL?
 
@@ -51,12 +55,11 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
 
 | Compiler | Windows | macOS | Linux |
 |----------|:-------:|:-----:|:-----:|
-| MSVC (cl) | ✅ | | |
-| GNU (gcc) | ✅ | ✅ | ✅ |
+| MSVC (cl) | ✅ | ❌ | ❌ |
+| GNU / MinGW64 (gcc) | ✅ | ✅ | ✅ |
 | LLVM (clang) | ✅ | ✅ | ✅ |
-| MinGW64 | ✅ | | |
-| Intel (icx-cc) | ✅ | ✅ | ✅ |
-|  Tiny C Compiler (tcc) | ✅ |  |  |
+| Intel (icx-cc) | ✅ | ❌ | ✅ |
+|  Tiny C Compiler (tcc) | ✅ | ❌ | ❌ |
 
 ## Document
 
@@ -144,6 +147,7 @@ int main() {
 ```
 
 **Output:**
+
 ```
 [ 38][ 26][ 13][ 83][ 19][777][ 95][ 78][999][999][999][ 87][ 80][ 86]
 [ 13][ 19][ 26][ 38][ 78][ 80][ 83][ 86][ 87][ 95][777][999][999][999]

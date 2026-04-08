@@ -57,6 +57,8 @@
 #include "queue.h"
 #include "hashtable.h"
 
+#include "algorithm.h"
+
 #include "cstl_compare.h"
 #include "cstl_random.h"
 #include "cstl_time.h"

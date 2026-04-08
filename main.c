@@ -87,14 +87,14 @@ void cstl_vector_test3() {
     DECORATE("opencstl{vector/qsort} test begin");
     VECTOR(int) vec = new_vector(int);
     for (int i = 0; i < 100; i++) {
-        int val = rand32();
+        int val = rand32() % 1000;
         push_back(vec, val);
     }
 
 
     stable_sort(vec,size(vec), sizeof(int), LESS(int));
     for (int i = 0; i < size(vec); i++) {
-        printf("Sorted: [%lld]\n", vec[i]);
+        printf("Sorted: [%d]\n", vec[i]);
     }
 
 
@@ -371,78 +371,26 @@ void test01() {
 
 void test02() {
     VECTOR(int) v = new_vector(int);
-    for (int i = 0; i < 1000; i++) {
-        push_back(v, rand32()%10000);
+    for (int i = 0; i < 100; i++) {
+        push_back(v, rand32() % 1000);
     }
 
     sort(v,size(v), sizeof(int),GREATER(int));
 
 
     for (int i = 0; i < size(v); i++) {
-        printf("%d\n", v[i]);
+        printf("[%4d]\n", v[i]);
     }
+
+    printf("%s\n", opencstl_version());
 
     exit(0);
 }
 
-#include <stdio.h>
-
-const char *get_c_version(void) {
-#if defined(__STDC_VERSION__)
-#   if __STDC_VERSION__ >= 202311L
-    return "C23";
-#   elif __STDC_VERSION__ >= 201710L
-    return "C17 (C18)";
-#   elif __STDC_VERSION__ >= 201112L
-    return "C11";
-#   elif __STDC_VERSION__ >= 199901L
-    return "C99";
-#   else
-    return "C94 (AMD1)";
-#   endif
-#elif defined(__STDC__)
-    return "C89 (C90)";
-#else
-    return "pre-ANSI C (K&R)";
-#endif
-}
-
-void print_c_version(void) {
-    printf("C Standard : %s\n", get_c_version());
-
-#if defined(__STDC_VERSION__)
-    printf("__STDC_VERSION__ : %ldL\n", (long) __STDC_VERSION__);
-#endif
-
-    // compiler
-#if defined(_MSC_VER)
-    printf("Compiler   : MSVC %d\n", _MSC_VER);
-#elif defined(__clang__)
-    printf("Compiler   : Clang %d.%d.%d\n", __clang_major__, __clang_minor__, __clang_patchlevel__);
-#elif defined(__GNUC__)
-    printf("Compiler   : GCC %d.%d.%d\n", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
-#else
-    printf("Compiler   : Unknown\n");
-#endif
-
-    // platform
-#if defined(_WIN32)
-    printf("Platform   : Windows\n");
-#elif defined(__APPLE__)
-    printf("Platform   : macOS\n");
-#elif defined(__linux__)
-    printf("Platform   : Linux\n");
-#else
-    printf("Platform   : Unknown\n");
-#endif
-}
-
 
 int main() {
-    //test02();
-    //cstl_set_test();
-    //print_c_version();
-     test01();
+    test02();
+    test01();
     //cstl_priority_queue_test();
     return 0;
 }

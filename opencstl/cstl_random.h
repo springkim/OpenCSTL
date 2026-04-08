@@ -40,8 +40,11 @@
 #include <limits.h>
 #define CSTL_RAND64_MAX ULLONG_MAX
 #define CSTL_RAND32_MAX UINT_MAX
-static unsigned long long _seed64 = 1;
-static unsigned long _seed32 = 1;
+static unsigned __int128 _seed64 = 1;
+static unsigned long long _seed32 = 1;
+
+//static unsigned long long _seed64 = 1;
+//static unsigned int _seed32 = 1;
 
 static void cstl_rand_seed32(unsigned int seed) {
     _seed32 = seed;
@@ -58,7 +61,7 @@ static void cstl_rand_seed64(unsigned long long seed) {
 
 static unsigned long long cstl_rand64() {
     _seed64 = (_seed64 * 6364136223846793005ULL) + 1442695040888963407ULL;
-    return _seed64;
+    return (unsigned long long) _seed64;
 }
 
 
