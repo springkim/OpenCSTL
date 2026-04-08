@@ -61,7 +61,7 @@
 
 #include "cstl_compare.h"
 #include "random.h"
-#include "cstl_time.h"
+#include "ticktock.h"
 #include "cstl_file.h"
 #include "cstl.h"
 
@@ -124,7 +124,6 @@
 #define new_set             cstl_set
 #define new_map             cstl_map
 #define new_priority_queue  cstl_priority_queue
-
 
 
 #define first(IT)                   (*IT)

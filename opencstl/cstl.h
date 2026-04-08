@@ -5,19 +5,26 @@
 #ifndef OPENCSTL_CSTL_H
 #define OPENCSTL_CSTL_H
 #include "stable_sort.h"
+#include "cstl_file.h"
 
+typedef void (*sort_func)(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *));
+typedef bool (*fopen_func)(const char *filename, const char *mode);
 
-// typedef void (*sort_func)(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *));
+// typedef struct __cstl_fstream_namespace {
+//     fopen_func open;
+// }cstl_fstream_namespace;
 //
 // typedef struct __cstl_namespace {
 //     sort_func sort;
 //     sort_func stable_sort;
+//
 // } cstl_namespace;
 //
 //
 // cstl_namespace cstl = {
 //     qsort,
-//     msort
+//     msort,
+//
 // };
 
 #endif //OPENCSTL_CSTL_H

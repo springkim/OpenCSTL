@@ -42,4 +42,48 @@ static char *OPENCSTL_VERSION = "1.1.0";
 static char *opencstl_version() {
     return OPENCSTL_VERSION;
 }
+
+#if defined(_WIN32) || defined(_WIN64)
+#define OPENCSTL_OS "Windows"
+#elif defined(__linux__)
+#define OPENCSTL_OS "Linux"
+#elif defined(__APPLE__)
+#define OPENCSTL_OS "MacOS"
+#endif
+
+#if defined(__clang__)
+#define OPENCSTL_CC "Clang"
+#elif defined(__TINYC__)
+#define OPENCSTL_CC "TCC"
+#elif defined(_MSC_VER)
+#define OPENCSTL_CC "MSVC"
+#elif defined(__GNUC__)
+#define OPENCSTL_CC "GCC"
+#endif
+
+
+#if defined(__STDC_VERSION__)
+#   if __STDC_VERSION__ >= 202311L
+#define OPENCSTL_CV "C23"
+#   elif __STDC_VERSION__ >= 201710L
+#define OPENCSTL_CV "C17 (C18)"
+#   elif __STDC_VERSION__ >= 201112L
+#define OPENCSTL_CV "C11"
+#   elif __STDC_VERSION__ >= 199901L
+#define OPENCSTL_CV "C99"
+#   else
+#define OPENCSTL_CV "C94 (AMD1)"
+#   endif
+#elif defined(__STDC__)
+#define OPENCSTL_CV "C89 (C90)"
+#else
+#define OPENCSTL_CV "pre-ANSI C (K&R)"
+#endif
+
+static char __opencstl_env_str[512] = {0};
+
+char *opencstl_env() {
+    sprintf(__opencstl_env_str, "%s, %s, %s",OPENCSTL_OS,OPENCSTL_CC,OPENCSTL_CV);
+    return __opencstl_env_str;
+}
 #endif //_OPENCSTL_VERSION_H

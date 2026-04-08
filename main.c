@@ -388,10 +388,12 @@ void test02() {
 }
 
 
-
 int main() {
+    puts(opencstl_env());
     //test02();
     test01();
     //cstl_priority_queue_test();
+
+
     return 0;
 }

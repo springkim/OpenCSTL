@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #if defined(_WIN32) || defined(_WIN64)
 #define OPENCSTL_OS "Windows"
@@ -45,8 +44,7 @@ void print_c_version(void) {
 }
 
 int main() {
-    puts(OPENCSTL_CV
-    );
+    puts(OPENCSTL_CV);
     puts(OPENCSTL_OS);
     puts(OPENCSTL_CC);
     print_c_version();
