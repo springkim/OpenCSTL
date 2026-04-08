@@ -6,11 +6,6 @@
 <p align="center">Open Source C Container Library like STL in C++</p>
 <p align="center">C99 &nbsp;·&nbsp; C11 &nbsp;·&nbsp; C17 &nbsp;·&nbsp; C23</p>
 
-<p align="center">
-  <a href="README.md">English</a> &nbsp;|&nbsp;
-  <a href="README.ko.md">한국어</a> &nbsp;|&nbsp;
-  <a href="README.zh.md">中文</a>
-</p>
 
 
 

@@ -109,7 +109,7 @@ void cstl_list_test02() {
         push_back(list, i);
     }
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
-    printf("list size: %lld\n", size(list));
+    printf("list size: %d\n", size(list));
 
     pop_back(list);
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8]
@@ -123,14 +123,14 @@ void cstl_list_test02() {
         printf("[%d] ", *it);
     }
     puts("");
-    printf("list size: %lld\n", size(list));
+    printf("list size: %d\n", size(list));
     printf("front : %d\n", front(list));
     printf("back : %d\n", back(list));
 
     resize(list, 20);
-    printf("list size: %lld\n", size(list));
+    printf("list size: %d\n", size(list));
     resize(list, 3);
-    printf("list size: %lld\n", size(list));
+    printf("list size: %d\n", size(list));
     destroy(list);
 }
 
@@ -184,11 +184,11 @@ void cstl_deque_test() {
     for (int i = 0; i < 10; i++) {
         push_back(deque, i);
     }
-    printf("deque pb size: %lld\n", size(deque));
+    printf("deque pb size: %d\n", size(deque));
     for (int i = 0; i < 10; i++) {
         push_front(deque, i);
     }
-    printf("deque pf size: %lld\n", size(deque));
+    printf("deque pf size: %d\n", size(deque));
     for (int i = 0; i < size(deque); i++) {
         printf("[%3d]", deque[i]);
     }
@@ -201,7 +201,7 @@ void cstl_deque_test() {
 
     assign(deque, 5);
     ///[0] [0] [0] [0] [0]
-    printf("size: %lld\n", size(deque));
+    printf("size: %d\n", size(deque));
     for (int i = 0; i < size(deque); i++) {
         printf("[%d] ", deque[i]);
     }
@@ -386,6 +386,7 @@ void test02() {
 
     exit(0);
 }
+
 
 
 int main() {

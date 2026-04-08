@@ -365,7 +365,7 @@ OPENCSTL_FUNC void _cstl_pop_front(void *container) {
     }
 }
 
-OPENCSTL_FUNC size_t _cstl_size(void *container) {
+OPENCSTL_FUNC size_type _cstl_size(void *container) {
     size_t container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -373,7 +373,7 @@ OPENCSTL_FUNC size_t _cstl_size(void *container) {
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
-    size_t sz = 0;
+    size_type sz = 0;
     switch (container_type) {
         case OPENCSTL_PRIORITY_QUEUE:
         case OPENCSTL_VECTOR: {
@@ -412,7 +412,7 @@ OPENCSTL_FUNC size_t _cstl_capacity(void *container) {
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
-    size_t sz = 0;
+    size_type sz = 0;
     switch (container_type) {
         case OPENCSTL_STACK:
         case OPENCSTL_QUEUE:

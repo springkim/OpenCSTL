@@ -460,7 +460,7 @@ OPENCSTL_FUNC void __cstl_hashtable_erase(void **container, void *key) {
     //     return;
     // }
     if (memcmp(((char *) *container) + (pos * type_size), key, key_size) != 0) {
-        return;  // 키 없음, 아무것도 안 함
+        return; // 키 없음, 아무것도 안 함
     }
     size_t sw = pos;
     size_t mv = pos;
