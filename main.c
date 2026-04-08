@@ -141,11 +141,13 @@ void cstl_set_test() {
     for (float i = 0; i < 100; i++) {
         insert(tree, i);
     }
+
     /// [0.0] [1.0] ... [98.0] [99.0]
     for (float i = 50; i < 70; i++) {
         float *it = find(tree, i);
         erase(tree, it);
     }
+
     /// [0] [1] ... [48] [49] [70] [71] ... [98] [99]
     for (float *it = begin(tree); it != end(tree); it = next(it)) {
         printf("[%f]", *it);

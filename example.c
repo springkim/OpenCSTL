@@ -1,8 +1,3 @@
-#define USE_CSTL_FUNC
-// Defining USE_CSTL_FUNC ensures that short, concise names are used.
-// USE_CSTL_FUNC을 정의하면 짧고 간결한 이름들을 사용합니다.
-// USE_CSTL_FUNCを定義すると、短く簡潔な名前を使用します。
-// 定义 USE_CSTL_FUNC 可确保使用简短、精炼的名称。
 #include "opencstl.h"
 
 #include <stdlib.h>

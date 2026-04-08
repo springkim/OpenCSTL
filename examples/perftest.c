@@ -13,7 +13,7 @@ int count_lines(const char *filename) {
     while ((c = fgetc(fp)) != EOF) {
         if (c == '\n') lines++;
     }
-    fclose(fp);
+    FCLOSE(fp);
     return lines;
 }
 
@@ -39,15 +39,18 @@ int main() {
     int index = 0;
     char *line = strings;
     //int max_size = 0;
-    while (GETLINE(fp, line, LINE_SIZE)) {
+    while (FGETLINE(fp, line, LINE_SIZE)) {
         size_t len = strlen(line);
         push_back(arr, line);
         line += LINE_SIZE;
         index++;
     }
+    FCLOSE(fp);
+
+
     //printf("max size: %lld\n", max_size);
     double push_back_ms = lap(t_beg, tick());
-    printf("size: %lu\telapsed_time: %lf\n",cstl_size(arr), push_back_ms);
+    printf("size: %lu\telapsed_time: %lf\n",size(arr), push_back_ms);
 
 
     t_beg = tick();

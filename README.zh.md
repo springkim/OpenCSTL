@@ -45,34 +45,47 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
 
 ```c
 #include "opencstl.h"
+
 #include <stdlib.h>
 
+// 用于将整数按升序排序的比较函数。
 int cmp_int(const void *a, const void *b) {
-    return *((int *) a) - *((int *) b);
+    int x = *((const int *) a);
+    int y = *((const int *) b);
+    return (x > y) - (x < y); // -1, 0, 1 반환
 }
 
 void example_deque() {
     DEQUE(int) q = new_deque(int);
 
     for (int i = 0; i < 10; i++) {
-        push_back(q, rand32() % 100);
+        int val = rand32() % 100;
+        // 名称与C++的STL相同。
+        push_back(q, val);
     }
 
-    insert(q, q + 5, 777);    // 在位置 5 插入 777
-    insert(q, q + 8, 3, 999); // 在位置 8 插入三个 999
+    // 您可以像使用STL的重载一样使用insert。
+
+    // 在第5个位置插入777。
+    insert(q, q + 5, 777);
+
+    // 在第8个位置插入3个999。
+    insert(q, q + 8, 3, 999);
 
     for (int i = 0; i < size(q); i++) {
-        printf("[%3d]", q[i]); // [] 访问，与普通 C 数组完全一致
+        // 可以使用[]访问deque或vector中的元素。
+        printf("[%3d]", q[i]);
     }
     puts("");
 
-    qsort(q, size(q), sizeof(int), cmp_int); // 直接使用标准 C 函数
+    // 可以使用现有的C函数。
+    qsort(q, size(q), sizeof(int), cmp_int);
 
     for (int i = 0; i < size(q); i++) {
         printf("[%3d]", q[i]);
     }
     puts("");
-
+    // 使用destroy释放内存。
     destroy(q);
 }
 
@@ -80,6 +93,7 @@ int main() {
     example_deque();
     return 0;
 }
+
 ```
 
 **输出：**

@@ -3421,15 +3421,11 @@ static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
 #define _OPENCSTL_CSTL_FILE_H
 /* [already included: defines.h] */
 #include <stdio.h>
-// typedef struct fstream fstream;
-//
-// struct fstream {
-//     FILE *fp;
-// };
+
 
 bool cstl_fopen(FILE **fp, const char *filename, const char *mode) {
 #if defined(_WIN32) || defined(_WIN64) ||defined(__TINYC__)
-    *fp = fopen(filename, mode);
+    fopen_s(fp, filename, mode);
 #elif defined(__linux__) && defined(__GNUC__)
     *fp = fopen(filename, mode);
 #elif defined(__APPLE__)
@@ -3455,7 +3451,7 @@ bool cstl_getline(FILE *fp, char *line, size_t size) {
 
 #define FOPEN cstl_fopen
 #define FCLOSE fclose
-#define GETLINE cstl_getline
+#define FGETLINE cstl_getline
 #endif //_OPENCSTL_CSTL_FILE_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */

@@ -36,5 +36,5 @@ bool cstl_getline(FILE *fp, char *line, size_t size) {
 
 #define FOPEN cstl_fopen
 #define FCLOSE fclose
-#define GETLINE cstl_getline
+#define FGETLINE cstl_getline
 #endif //_OPENCSTL_CSTL_FILE_H
