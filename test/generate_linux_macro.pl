@@ -36,10 +36,10 @@ for(my $t=0;$t<=$#arr;$t++){
 		
 		print ")    {";
 		
-		print "__auto_type __0=&C;";
+		print "_CSTL_TYPEOF(&C) __0=&C;";
 
 		for(my $j=1;$j<=$i;$j++){
-			print "__auto_type __$j=_$j;";
+			print "_CSTL_TYPEOF(_$j) __$j=_$j;";
 		}
 		if($ret[$t]==1){
 			print "return ";

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tcc -v)",
+      "Bash(cc -std=c99 -Wall -Wextra -o /tmp/test_opencstl example.c)",
+      "Bash(/tmp/test_opencstl)"
+    ]
+  }
+}
