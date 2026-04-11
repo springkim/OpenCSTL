@@ -45,6 +45,7 @@
 #include<limits.h>
 #include<stddef.h>
 #include<stdbool.h>
+#include<assert.h>
 
 typedef int (*cstl_compare)(const void *, const void *);
 

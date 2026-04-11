@@ -540,8 +540,7 @@ OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
     cstl_arena_chunk **arena = (cstl_arena_chunk **) &OPENCSTL_NIDX(container, -7);
     void **freelist = (void **) &OPENCSTL_NIDX(container, -6);
     void ***root = (void ***) *container;
-
-    // 노드 순회 없이 청크만 해제 — O(chunk_count)
+    
     __cstl_arena_free_all(arena, freelist);
     OPENCSTL_NIDX(container, -1) = 0;
     *root = nil;

@@ -43,7 +43,11 @@
 #define NTAIL(N)	(N==-1?-2:N)
 OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = (char *) malloc(header_sz + sizeof(size_t)) + header_sz;
+    void *block = malloc(header_sz + sizeof(size_t));
+    if (block == NULL) {
+        cstl_error("Failed to allocate memory for list");
+    }
+    void *ptr = ((char *) block) + header_sz;
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_LIST;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
@@ -81,7 +85,8 @@ OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, in
         value = &valuef;
     }
 #endif
-    if (value)memcpy(n, value, type_size);
+    if (value)
+        memcpy(n, value, type_size);
     if (*head == NULL && *tail == NULL) {
         *head = *tail = n;
     } else {
@@ -119,7 +124,7 @@ OPENCSTL_FUNC void *__cstl_list_next_prev(void *it, int n) {
 }
 
 OPENCSTL_FUNC size_type __cstl_list_size(void **container) {
-    return (size_type)OPENCSTL_NIDX(container, -1);
+    return (size_type) OPENCSTL_NIDX(container, -1);
 }
 
 OPENCSTL_FUNC void __cstl_list_resize(void **container, size_t n, void *value) {

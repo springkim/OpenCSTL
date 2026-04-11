@@ -40,7 +40,6 @@
 #include <string.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "cstl_alloca.h"
 
 
 static void merge(const char *left, const char *mid, const char *right, const char *end, char *dest, size_t size,

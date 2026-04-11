@@ -3879,7 +3879,7 @@ OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
     return 0;
 }
 
-OPENCSTL_FUNC bool is_hashtable_iter(void *it) {
+OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
     for (int i = 0; i < htm_length; i++) {
         if (htm[i].p1 <= it && it < htm[i].p2) {
             return true;
@@ -4179,7 +4179,7 @@ OPENCSTL_FUNC size_t _cstl_capacity(void *container) {
 }
 
 OPENCSTL_FUNC void *_cstl_next(void *it) {
-    if (is_hashtable_iter(it)) {
+    if (__is_hashtable_iter(it)) {
         return __cstl_hashtable_next_prev(it, -1);
     }
     size_t node_type = OPENCSTL_NIDX(&it, -3);
@@ -4207,7 +4207,7 @@ OPENCSTL_FUNC void *_cstl_next(void *it) {
 }
 
 OPENCSTL_FUNC void *_cstl_prev(void *it) {
-    if (is_hashtable_iter(it)) {
+    if (__is_hashtable_iter(it)) {
         return __cstl_hashtable_next_prev(it, -2);
     }
     size_t node_type = OPENCSTL_NIDX(&it, -3);

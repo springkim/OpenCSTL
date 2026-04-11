@@ -303,7 +303,7 @@ int *dijkstra(Edge **vec, int beg) {
 void cstl_priority_queue_test2() {
     DECORATE("OPENCSTL{priority_queue/dijkstra} test begin");
     Edge **vec = new_vector(Edge*);
-    cstl_assign(vec, 7);
+    assign(vec, 7);
     for (int i = 0; i < cstl_size(vec); i++) {
         vec[i] = new_vector(Edge);
     }

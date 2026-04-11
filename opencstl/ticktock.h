@@ -58,14 +58,6 @@ static double tock(const watch t_beg) {
     return (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
 }
 
-static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-    snprintf(timestr, 32, "%04d_%02d_%02d_%02d_%02d_%02d_%03d",
-             (int) st.wYear, (int) st.wMonth, (int) st.wDay,
-             (int) st.wHour, (int) st.wMinute, (int) st.wSecond,
-             (int) st.wMilliseconds);
-}
 
 #elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
 
@@ -87,24 +79,6 @@ static double tock(const watch t_beg) {
            (t_end.tv_usec - t_beg.tv_usec) / 1000.0;
 }
 
-static void yyyy_mm_dd_hh_mm_ss_ms(char *timestr) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-
-    time_t now = tv.tv_sec;
-    struct tm tm_now;
-#if defined(__MINGW32__) || defined(__MINGW64__)
-localtime_s(&tm_now, &now);
-#else
-localtime_r(&now, &tm_now);
-#endif
-
-int ms = (int) (tv.tv_usec / 1000);
-snprintf(timestr, 32, "%04d_%02d_%02d_%02d_%02d_%02d_%03d",
-         tm_now.tm_year+ 1900, tm_now.tm_mon+ 1, tm_now.tm_mday,
-         tm_now.tm_hour, tm_now.tm_min, tm_now.tm_sec,
-         ms);
-}
 
 #else
 #error Unsupported compiler/platform

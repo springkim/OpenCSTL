@@ -51,7 +51,11 @@
 #define cstl_vector(TYPE)	__cstl_vector(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = ((char *) malloc(header_sz + type_size * 1)) + header_sz;
+    void *block = malloc(header_sz + type_size);
+    if (block == NULL) {
+        cstl_error("Failed to allocate memory for vector");
+    }
+    void *ptr = ((char *) block) + header_sz;
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_VECTOR;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
@@ -133,11 +137,11 @@ OPENCSTL_FUNC void __cstl_vector_pop_back(void **container) {
 }
 
 OPENCSTL_FUNC size_type __cstl_vector_size(void **container) {
-    return (size_type)OPENCSTL_NIDX(container, -1);
+    return (size_type) OPENCSTL_NIDX(container, -1);
 }
 
 OPENCSTL_FUNC size_type __cstl_vector_capacity(void **container) {
-    return (size_type)OPENCSTL_NIDX(container, -2);
+    return (size_type) OPENCSTL_NIDX(container, -2);
 }
 
 OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, void *value) {
