@@ -66,7 +66,7 @@
 ### sample04 stack, queue
 ![](./assets/codes/sample04_stack_queue.jpg)
 ### sample05 deque
-![](./assets/codes/sample05_dequejpg)
+![](./assets/codes/sample05_deque.jpg)
 ### sample06 map
 ![](./assets/codes/sample06_map.jpg)
 ### sample07 priority queue
