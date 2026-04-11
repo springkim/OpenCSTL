@@ -36,6 +36,9 @@
 //
 #pragma once
 
+
+#pragma clang diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wformat"
 #define USE_CSTL_FUNC
 
 // #if defined(__linux__) || defined(__APPLE__)

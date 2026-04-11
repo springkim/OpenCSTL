@@ -54,6 +54,9 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 
+
+#pragma clang diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wformat"
 #define USE_CSTL_FUNC
 
 // #if defined(__linux__) || defined(__APPLE__)
@@ -172,7 +175,7 @@
 
 
 #define cstl_value(iter,TYPE)	(*(TYPE*)(iter+1))
-
+ 
 // CSTL_USE_VAARG=0: Windows only (values passed directly on stack)
 // CSTL_USE_VAARG=1: Linux/macOS (macros pass pointers via &__1; standard va_arg is correct)
 #if defined(_WIN32) || defined(_WIN64)
@@ -393,11 +396,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define OPENCSTL_FUNC	static
 
 
-#if defined(__TINYC__)
-#define NO_ARGC 1
-#else
-#define NO_ARGC 0
-#endif
+
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    defines.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -1093,8 +1092,8 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) *= 2;
     }
-    memcpy((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
-           (length - pos + 1) * type_size);
+    memmove((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
+            (length - pos) * type_size);
     for (size_t i = 0; i < N; i++) {
         memcpy((char *) *container + type_size * (pos + i), value, type_size);
     }
@@ -1108,8 +1107,8 @@ OPENCSTL_FUNC void __cstl_vector_erase(void **container, void *iter_begin, void 
     size_t capacity = OPENCSTL_NIDX(container, -2);
     size_t pos_begin = (*(char **) iter_begin - *(char **) container) / type_size;
     size_t pos_end = (*(char **) iter_end - *(char **) container) / type_size;
-    memcpy((char *) *container + type_size * (pos_begin), (char *) *container + type_size * (pos_end),
-           (length - pos_begin + 1) * type_size);
+    memmove((char *) *container + type_size * (pos_begin), (char *) *container + type_size * (pos_end),
+            (length - pos_end) * type_size);
     OPENCSTL_NIDX(container, -1) -= (pos_end - pos_begin);
 }
 
@@ -1646,19 +1645,14 @@ OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_t type_size, 
 // ╚═════╝░╚══════╝░░░╚═╝░░░
 
 #define cstl_set         _cstl_set
-#define _cstl_set(KEY, ...)	    __cstl_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),##__VA_ARGS__)
+#define _cstl_set(KEY, ...)	    _CSTL_SET_DISPATCH(KEY, ##__VA_ARGS__, NULL)
+#define _CSTL_SET_DISPATCH(KEY, COMP, ...) __cstl_set(sizeof(KEY),#KEY,(void*)(COMP))
 
 
-OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
+OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, void *compare) {
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * NIDX_TREE_NODE_SIZE;
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
-    }
-    va_list vl;
-    va_start(vl, argc);
-    void *compare = va_arg(vl, void*);
-    if (argc == NO_ARGC) {
-        compare = NULL; //use default compare function(memcmp)
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + sizeof(size_t)) + header_sz;
@@ -1675,7 +1669,6 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
     OPENCSTL_NIDX(container, -2) = (size_t) compare; //compare function
     OPENCSTL_NIDX(container, -1) = 0;
     OPENCSTL_NIDX(container, 0) = (size_t) nil; //root
-    va_end(vl);
     return ptr;
 }
 
@@ -1686,17 +1679,12 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
 // ██║░╚═╝░██║██║░░██║██║░░░░░
 // ╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░
 #define cstl_map         _cstl_map
-#define _cstl_map(KEY, VALUE, ...)	__cstl_map(sizeof(KEY), sizeof(VALUE), #KEY, #VALUE, ARGN(__VA_ARGS__), ##__VA_ARGS__)
-OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_key, char *type_value, int argc, ...) {
+#define _cstl_map(KEY, VALUE, ...)	_CSTL_MAP_DISPATCH(KEY, VALUE, ##__VA_ARGS__, NULL)
+#define _CSTL_MAP_DISPATCH(KEY, VALUE, COMP, ...) __cstl_map(sizeof(KEY), sizeof(VALUE), #KEY, #VALUE, (void*)(COMP))
+OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_key, char *type_value, void *compare) {
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * 5;
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
-    }
-    va_list vl;
-    va_start(vl, argc);
-    void *compare = va_arg(vl, void*);
-    if (argc == NO_ARGC) {
-        compare = NULL; //use default compare function(memcmp)
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + sizeof(size_t)) + header_sz;
@@ -1714,7 +1702,6 @@ OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_ke
     OPENCSTL_NIDX(container, -2) = (size_t) compare; //compare function
     OPENCSTL_NIDX(container, -1) = 0;
     OPENCSTL_NIDX(container, 0) = (size_t) nil; //root
-    va_end(vl);
     return ptr;
 }
 
@@ -2303,8 +2290,9 @@ OPENCSTL_FUNC void *__cstl_queue(size_t type_size, char *type) {
     return ptr;
 }
 
-#define cstl_priority_queue(TYPE,...)	__cstl_priority_queue(sizeof(TYPE),#TYPE,ARGN(__VA_ARGS__),##__VA_ARGS__)
-OPENCSTL_FUNC void *__cstl_priority_queue(size_t type_size, char *type, int argc, ...) {
+#define cstl_priority_queue(TYPE,...)	_CSTL_PQ_DISPATCH(TYPE, ##__VA_ARGS__, NULL)
+#define _CSTL_PQ_DISPATCH(TYPE, COMP, ...) __cstl_priority_queue(sizeof(TYPE),#TYPE,(void*)(COMP))
+OPENCSTL_FUNC void *__cstl_priority_queue(size_t type_size, char *type, void *compare) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + type_size * 1) + header_sz;
     void **container = &ptr;
@@ -2313,17 +2301,9 @@ OPENCSTL_FUNC void *__cstl_priority_queue(size_t type_size, char *type, int argc
     OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
     OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
     OPENCSTL_NIDX(container, -4) = (size_t) type;
-
-    va_list vl;
-    va_start(vl, argc);
-    void *compare = va_arg(vl, void*);
-    if (argc == NO_ARGC) {
-        compare = NULL; //use default compare function(memcmp)
-    }
     OPENCSTL_NIDX(container, -3) = (size_t) compare; //compare function
     OPENCSTL_NIDX(container, -2) = 1; //capacity
     OPENCSTL_NIDX(container, -1) = 0; //length
-    va_end(vl);
     return ptr;
 }
 
@@ -2641,14 +2621,9 @@ void __htm_append(void *ptr, size_t sz, char *tombstone, int type_size) {
 // ░╚═════╝░╚═╝░░╚══╝░╚════╝░╚═╝░░╚═╝╚═════╝░╚══════╝╚═╝░░╚═╝╚══════╝╚═════╝░╚════╝╚═════╝░╚══════╝░░░╚═╝░░░
 
 #define cstl_unordered_set _cstl_unordered_set
-#define _cstl_unordered_set(KEY,...) __cstl_unordered_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),##__VA_ARGS__)
-OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, char *type_key, int argc, ...) {
-    va_list vl;
-    va_start(vl, argc);
-    void *hash_func = va_arg(vl, void*);
-    if (argc == 0) {
-        hash_func = NULL; //use default hash function
-    }
+#define _cstl_unordered_set(KEY,...) _CSTL_USET_DISPATCH(KEY, ##__VA_ARGS__, NULL)
+#define _CSTL_USET_DISPATCH(KEY, FUNC, ...) __cstl_unordered_set(sizeof(KEY),#KEY,(void*)(FUNC))
+OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, char *type_key, void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *ptr = (char *) calloc(header_sz + (key_size * __HASHTABLE_DEFAULT_SIZE__),
                                 sizeof(char)) + header_sz;
@@ -2665,7 +2640,6 @@ OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, char *type_key, int ar
     OPENCSTL_NIDX(container, -2) = (size_t) hash_func; //hash function
     OPENCSTL_NIDX(container, -1) = 0; // length
     OPENCSTL_NIDX(container, 0) = 0; // base
-    va_end(vl);
 
     __htm_append(ptr, key_size * __HASHTABLE_DEFAULT_SIZE__, (char *) OPENCSTL_NIDX(container, -6), key_size);
     return ptr;
@@ -2681,15 +2655,10 @@ OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, char *type_key, int ar
 // ░╚═════╝░╚═╝░░╚══╝░╚════╝░╚═╝░░╚═╝╚═════╝░╚══════╝╚═╝░░╚═╝╚══════╝╚═════╝░╚════╝╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░
 
 
-#define _cstl_unordered_map(KEY,VALUE,...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,ARGN(__VA_ARGS__),##__VA_ARGS__)
-OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size, char *type_key, char *type_value, int argc,
-                                         ...) {
-    va_list vl;
-    va_start(vl, argc);
-    void *hash_func = va_arg(vl, void*);
-    if (argc == 0) {
-        hash_func = NULL; //use default hash function
-    }
+#define _cstl_unordered_map(KEY,VALUE,...) _CSTL_UMAP_DISPATCH(KEY, VALUE, ##__VA_ARGS__, NULL)
+#define _CSTL_UMAP_DISPATCH(KEY, VALUE, FUNC, ...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,(void*)(FUNC))
+OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size, char *type_key, char *type_value,
+                                         void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *ptr = (char *) calloc(header_sz + ((key_size + value_size) * __HASHTABLE_DEFAULT_SIZE__), sizeof(char)) +
                 header_sz;
@@ -2706,7 +2675,6 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size, cha
     OPENCSTL_NIDX(container, -2) = (size_t) hash_func; //hash function
     OPENCSTL_NIDX(container, -1) = 0; // length
     OPENCSTL_NIDX(container, 0) = 0; // base
-    va_end(vl);
     __htm_append(ptr, ((key_size + value_size) * __HASHTABLE_DEFAULT_SIZE__), (char *) OPENCSTL_NIDX(container, -6),
                  (key_size + value_size));
     return ptr;

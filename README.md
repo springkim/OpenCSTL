@@ -54,7 +54,7 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
 | GNU / MinGW64 (gcc) | ✅ | ✅ | ✅ |
 | LLVM (clang) | ✅ | ✅ | ✅ |
 | Intel (icx-cc) | ✅ | ❌ | ✅ |
-|  Tiny C Compiler (tcc) | ✅ | ❌ | ❌ |
+|  Tiny C Compiler (tcc) | ✅ | ✅ | ✅ |
 
 ## Document
 
