@@ -389,11 +389,18 @@ void test02() {
 
 
 int main() {
-    puts(opencstl_env());
+    logging.info(opencstl_env());
     //test02();
     test01();
     //cstl_priority_queue_test();
 
+    logging.debug("debug message");
+    logging.info("info message");
+    logging.warning("warning message");
+    logging.error("error message");
+    logging.critical("critical message");
+    logging.fatal("fatal message");
+    logging.message("message");
 
     return 0;
 }

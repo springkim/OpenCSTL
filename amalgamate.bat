@@ -1,3 +1,0 @@
-python amalgamate.py
-
-pause

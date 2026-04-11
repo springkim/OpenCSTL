@@ -36,9 +36,16 @@
 //
 #pragma once
 
-
+#include "crossplatform.h"
+#if defined(OCSTL_CC_CLANG)
 #pragma clang diagnostic ignored "-Wformat"
+#endif
+
+#if defined(OCSTL_CC_GCC)
 #pragma GCC diagnostic ignored "-Wformat"
+#endif
+
+
 #define USE_CSTL_FUNC
 
 // #if defined(__linux__) || defined(__APPLE__)
@@ -70,7 +77,7 @@
 
 
 #include "stable_sort.h"
-
+#include "logging.h"
 #include "version.h"
 
 #define VECTOR(TYPE)            TYPE*

@@ -7,3 +7,9 @@ set(CMAKE_C_STANDARD 11)
 
 set(EXE_NAME OpenCSTL)
 add_executable(${EXE_NAME} main.c)
+
+if(MSVC)
+    target_compile_options(${EXE_NAME} PRIVATE /W4)
+else()
+    target_compile_options(${EXE_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+endif()
