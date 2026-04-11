@@ -65,6 +65,7 @@ OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, const char *fu
     MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
 #else
     sprintf(err_msg, "[%s] in %s , %s , %d\n", msg, file, function, line);
+    puts(err_msg);
     //Other platform msg box...
 #endif
     exit(EXIT_FAILURE);

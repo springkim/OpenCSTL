@@ -371,35 +371,39 @@ void test01() {
 
 void test02() {
     VECTOR(int) v = new_vector(int);
+
+    watch t_beg = now();
     for (int i = 0; i < 100; i++) {
         push_back(v, rand32() % 1000);
     }
 
     sort(v,size(v), sizeof(int),GREATER(int));
 
+    watch t_end = now();
 
+    double ms = duration(t_beg, t_end);
     for (int i = 0; i < size(v); i++) {
         printf("[%4d]\n", v[i]);
     }
-
+    printf("duration : %f ms\n", ms);
     printf("%s\n", opencstl_version());
-
-    exit(0);
 }
 
 
 int main() {
     logging.info(opencstl_env());
-    //test02();
+
+    //cstl_error("Error message");
+
     test01();
     //cstl_priority_queue_test();
-
+    test02();
     logging.debug("debug message");
     logging.info("info message");
     logging.warning("warning message");
     logging.error("error message");
-    logging.critical("critical message");
-    logging.fatal("fatal message");
+    //logging.critical("critical message");
+    //logging.fatal("fatal message");
     logging.message("message");
 
     return 0;

@@ -37,46 +37,44 @@
 #pragma once
 #if !defined(_OPENCSTL_CSTL_TICKTOCK_H)
 #define _OPENCSTL_CSTL_TICKTOCK_H
+#include <stdio.h>
 
 #if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
 
 #include <windows.h>
-#include <stdio.h>
 
 typedef LARGE_INTEGER watch;
 
-static watch tick() {
+static watch now() {
     watch t;
     QueryPerformanceCounter(&t);
     return t;
 }
 
-static double tock(const watch t_beg) {
-    const watch t_end = tick();
-    LARGE_INTEGER freq;
-    QueryPerformanceFrequency(&freq);
-    return (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
+static double duration(const watch t_beg, const watch t_end) {
+    double ms = (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
+    return ms > 0 ? ms : -ms;
 }
 
 
 #elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
 
-#include <stdio.h>
+
 #include <sys/time.h>
 #include <time.h>
 
 typedef struct timeval watch;
 
-static watch tick() {
+static watch now() {
     watch tv;
     gettimeofday(&tv, NULL);
     return tv;
 }
 
-static double tock(const watch t_beg) {
-    const watch t_end = tick();
-    return (t_end.tv_sec - t_beg.tv_sec) * 1000.0 +
-           (t_end.tv_usec - t_beg.tv_usec) / 1000.0;
+static double duration(const watch t_beg, const watch t_end) {
+    double ms = (t_end.tv_sec - t_beg.tv_sec) * 1000.0 +
+                (t_end.tv_usec - t_beg.tv_usec) / 1000.0;
+    return ms > 0 ? ms : -ms;
 }
 
 

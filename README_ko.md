@@ -12,6 +12,16 @@
 ---
 
 
+1. [Overview](#overview)
+2. [Components](#components)
+3. [Build & Installation](#build--installation)
+4. [How to use](#how-to-use)
+5. [Performance](#performance)
+
+
+
+## Overview
+
 
 * OpenCSTL은 다른 C-STL라이브러리와 다릅니다.
   * 단일 헤더 파일.
@@ -24,6 +34,49 @@
     * 오버로딩을 지원합니다. STL의 오버로딩과 동일합니다.
     * `vector`, `list`, `queue`, `stack`, `deque`, `priority_queue`, `set`, `map`, `unordered_set`, `unordered_map` 이 구현되어 있습니다.
     * Iterator를 지원합니다.
+  * 매크로 / `void*` 방식이 아닌 컨테이너 자료형 타입을 사용합니다.
+    * 매크로 기반 라이브러리와 같은 전방 선언이 필요하지 않습니다.
+      * 자료형마다 매번 새롭게 컨테이너 전체를 만들 필요가 없습니다.
+      * 새로운 타입의 자료형이나 구조체도 바로 사용할 수 있습니다.
+    * `void*`기반 라이브러리와 다르게 값을 직접 전달합니다.
+      * 캐시 효율이 더 높고 빠른 속도와 적은 메모리 사용량이 OpenCSTL의 장점입니다.
+      * 코드 가독성이 높으며 타입 안전성이 더 높습니다.
+    * `_Generic` 기반 라이브러리는 새로운 타입을 사용하기 어렵습니다.
+      * 전방 선언이 매번 필요하며 컴파일 속도가 느린 단점이 있습니다.
+      * C11 이상에서만 동작합니다.
+    * 컨테이너 Header를 사용하고 가변 인자 함수로 제네릭 컨테이너를 구현하였으며 매크로를 통한 Wrapping 방식을 사용합니다.
+      * 매크로 기반 라이브러리와 같이 타입을 지정해서 사용하지만 전방 선언이나 init 작업이 필요하지 않습니다.
+      * 내부적으로 `void*`를 사용하지만 OpenCSTL은 값 자체를 저장합니다. 따라서 캐시 히트율이 높고 빠른 속도를 보장합니다. 
+  * 크로스플랫폼
+    * C99, C11, C14, C17, C23을 모두 지원합니다.
+    * `Windows`: `MSVC`, `MinGW64(gcc)`, `clang`, `tcc`를 지원합니다.
+    * `Linux`: `gcc`, `clang`, `tcc`를 지원합니다.
+    * `MacOS`: `gcc`, `clang`, `tcc`를 지원합니다.
+  * 직관적이고 깔끔한 인터페이스.
+    * 
+
+* * *
+
+### sample01 vector
+![](./assets/codes/sample01_vector.jpg)
+### sample02 vector
+![](./assets/codes/sample02_vector.jpg)
+### sample03 list
+![](./assets/codes/sample03_list.jpg)
+### sample04 stack, queue
+![](./assets/codes/sample04_stack_queue.jpg)
+### sample05 deque
+![](./assets/codes/sample05_dequejpg)
+### sample06 map
+![](./assets/codes/sample06_map.jpg)
+### sample07 priority queue
+![](./assets/codes/sample07_priority_queue.jpg)
+
+| -    | -    |
+| ---- | ---- |
+| [STC](https://github.com/stclib/STC)     |      |
+| [mlib](https://github.com/P-p-H-d/mlib)| |
+
 
 
 

@@ -29,6 +29,15 @@ bool cstl_getline(FILE *fp, char *line, size_t size) {
     return i > 0 || c != EOF;
 }
 
+char *cstl_fread_all(FILE *fp) {
+    fseek(fp, 0, SEEK_END);
+    size_t size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    char *buf = (char *) malloc(size);
+    fread(buf, 1, size, fp);
+    return buf;
+}
+
 
 #define FOPEN cstl_fopen
 #define FCLOSE fclose

@@ -47,7 +47,11 @@
 #define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = (char *) malloc(header_sz + type_size * 2) + header_sz; // 2 = capacity
+    void *block = malloc(header_sz + type_size * 2);
+    if (block == NULL) {
+        cstl_error("Failed to allocate memory for deque");
+    }
+    void *ptr = (char *) block + header_sz; // 2 = capacity
     void **container = &ptr;
 
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_DEQUE;
@@ -104,7 +108,7 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    
+
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
@@ -138,7 +142,7 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    
+
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
@@ -210,7 +214,7 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_t n, voi
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) += n;
     }
     memcpy((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
-            (length - pos) * type_size);
+           (length - pos) * type_size);
     for (size_t i = 0; i < n; i++) {
         memcpy((char *) *container + (pos + i) * type_size, value, type_size);
     }
@@ -230,13 +234,13 @@ OPENCSTL_FUNC void __cstl_deque_erase(void **container, void *begin, void *end) 
 OPENCSTL_FUNC size_type __cstl_deque_size(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
 
-    return (size_type)(*(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance));
+    return (size_type) (*(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance));
 }
 
 OPENCSTL_FUNC size_type __cstl_deque_capacity(void **container) {
     size_t capacity = OPENCSTL_NIDX(container, -3);
 
-    return (size_type)capacity;
+    return (size_type) capacity;
 }
 
 OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) {

@@ -172,6 +172,8 @@ static int _logging_critical(const char *format, ...) {
     va_start(args, format);
     ret = __vcprintln(__magenta, format, args);
     va_end(args);
+    exit(EXIT_FAILURE);
+    
     return ret;
 }
 

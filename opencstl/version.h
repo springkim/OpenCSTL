@@ -46,7 +46,7 @@ static char *opencstl_version() {
 static char __opencstl_env_str[512] = {0};
 
 char *opencstl_env() {
-    sprintf(__opencstl_env_str, "%s, %s, %s",OCSTL_OS_STR,OCSTL_CC_STR,OCSTL_C_VERSION_STR);
+    sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
     return __opencstl_env_str;
 }
 #endif //_OPENCSTL_VERSION_H

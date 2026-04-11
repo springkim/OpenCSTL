@@ -40,6 +40,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stddef.h>
+#include "logging.h"
 
 
 static void merge(const char *left, const char *mid, const char *right, const char *end, char *dest, size_t size,
@@ -83,6 +84,9 @@ static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const voi
     }
     char *src = base;
     char *buf = (char *) malloc(nmemb * size);
+    if (buf == NULL) {
+        cstl_error("malloc failed");
+    }
 
 
     if (!buf) return;

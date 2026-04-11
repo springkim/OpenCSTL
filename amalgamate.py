@@ -250,7 +250,7 @@ def main():
           f'{total} lines → {out_path.name}')
 
     shutil.copy("opencstl.h", "examples/opencstl.h")
-
+    shutil.copy("opencstl.h", "assets/opencstl.h")
 
 if __name__ == '__main__':
     main()
