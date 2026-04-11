@@ -100,6 +100,21 @@ void __fatal_message_box(const char *msg) {
              msg);
     system(cmd);
 }
+#elif defined(OCSTL_OS_WINDOWS)
+void __fatal_message_box(const char *msg) {
+    MessageBoxA(NULL, msg, "FATAL", MB_OK| MB_ICONERROR);
+}
+#elif defined(OCSTL_OS_LINUX)
+void __fatal_message_box(const char *msg) {
+    char cmd[512];
+    // zenity 없으면 kdialog, 둘 다 없으면 stderr
+    snprintf(cmd, sizeof(cmd),
+             "zenity --error --title=\"FATAL\" --text=\"%s\" 2>/dev/null"
+             " || kdialog --error \"%s\" --title \"FATAL\" 2>/dev/null",
+             msg, msg);
+    if (system(cmd) != 0)
+        fprintf(stderr, "[FATAL] %s\n", msg);
+}
 #endif
 
 int __clogging(const char *color, const char *format, ...) {
