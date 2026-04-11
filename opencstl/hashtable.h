@@ -243,14 +243,9 @@ void __htm_append(void *ptr, size_t sz, char *tombstone, int type_size) {
 // ░╚═════╝░╚═╝░░╚══╝░╚════╝░╚═╝░░╚═╝╚═════╝░╚══════╝╚═╝░░╚═╝╚══════╝╚═════╝░╚════╝╚═════╝░╚══════╝░░░╚═╝░░░
 
 #define cstl_unordered_set _cstl_unordered_set
-#define _cstl_unordered_set(KEY,...) __cstl_unordered_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),##__VA_ARGS__)
-OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, char *type_key, int argc, ...) {
-    va_list vl;
-    va_start(vl, argc);
-    void *hash_func = va_arg(vl, void*);
-    if (argc == 0) {
-        hash_func = NULL; //use default hash function
-    }
+#define _cstl_unordered_set(KEY,...) _CSTL_USET_DISPATCH(KEY, ##__VA_ARGS__, NULL)
+#define _CSTL_USET_DISPATCH(KEY, FUNC, ...) __cstl_unordered_set(sizeof(KEY),#KEY,(void*)(FUNC))
+OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, char *type_key, void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *ptr = (char *) calloc(header_sz + (key_size * __HASHTABLE_DEFAULT_SIZE__),
                                 sizeof(char)) + header_sz;
@@ -267,7 +262,6 @@ OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, char *type_key, int ar
     OPENCSTL_NIDX(container, -2) = (size_t) hash_func; //hash function
     OPENCSTL_NIDX(container, -1) = 0; // length
     OPENCSTL_NIDX(container, 0) = 0; // base
-    va_end(vl);
 
     __htm_append(ptr, key_size * __HASHTABLE_DEFAULT_SIZE__, (char *) OPENCSTL_NIDX(container, -6), key_size);
     return ptr;
@@ -283,15 +277,10 @@ OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, char *type_key, int ar
 // ░╚═════╝░╚═╝░░╚══╝░╚════╝░╚═╝░░╚═╝╚═════╝░╚══════╝╚═╝░░╚═╝╚══════╝╚═════╝░╚════╝╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░
 
 
-#define _cstl_unordered_map(KEY,VALUE,...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,ARGN(__VA_ARGS__),##__VA_ARGS__)
-OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size, char *type_key, char *type_value, int argc,
-                                         ...) {
-    va_list vl;
-    va_start(vl, argc);
-    void *hash_func = va_arg(vl, void*);
-    if (argc == 0) {
-        hash_func = NULL; //use default hash function
-    }
+#define _cstl_unordered_map(KEY,VALUE,...) _CSTL_UMAP_DISPATCH(KEY, VALUE, ##__VA_ARGS__, NULL)
+#define _CSTL_UMAP_DISPATCH(KEY, VALUE, FUNC, ...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,(void*)(FUNC))
+OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size, char *type_key, char *type_value,
+                                         void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *ptr = (char *) calloc(header_sz + ((key_size + value_size) * __HASHTABLE_DEFAULT_SIZE__), sizeof(char)) +
                 header_sz;
@@ -308,7 +297,6 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size, cha
     OPENCSTL_NIDX(container, -2) = (size_t) hash_func; //hash function
     OPENCSTL_NIDX(container, -1) = 0; // length
     OPENCSTL_NIDX(container, 0) = 0; // base
-    va_end(vl);
     __htm_append(ptr, ((key_size + value_size) * __HASHTABLE_DEFAULT_SIZE__), (char *) OPENCSTL_NIDX(container, -6),
                  (key_size + value_size));
     return ptr;

@@ -151,19 +151,14 @@ OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_t type_size, 
 // ╚═════╝░╚══════╝░░░╚═╝░░░
 
 #define cstl_set         _cstl_set
-#define _cstl_set(KEY, ...)	    __cstl_set(sizeof(KEY),#KEY,ARGN(__VA_ARGS__),##__VA_ARGS__)
+#define _cstl_set(KEY, ...)	    _CSTL_SET_DISPATCH(KEY, ##__VA_ARGS__, NULL)
+#define _CSTL_SET_DISPATCH(KEY, COMP, ...) __cstl_set(sizeof(KEY),#KEY,(void*)(COMP))
 
 
-OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
+OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, void *compare) {
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * NIDX_TREE_NODE_SIZE;
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
-    }
-    va_list vl;
-    va_start(vl, argc);
-    void *compare = va_arg(vl, void*);
-    if (argc == NO_ARGC) {
-        compare = NULL; //use default compare function(memcmp)
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + sizeof(size_t)) + header_sz;
@@ -180,7 +175,6 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
     OPENCSTL_NIDX(container, -2) = (size_t) compare; //compare function
     OPENCSTL_NIDX(container, -1) = 0;
     OPENCSTL_NIDX(container, 0) = (size_t) nil; //root
-    va_end(vl);
     return ptr;
 }
 
@@ -191,17 +185,12 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, int argc, ...) {
 // ██║░╚═╝░██║██║░░██║██║░░░░░
 // ╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░
 #define cstl_map         _cstl_map
-#define _cstl_map(KEY, VALUE, ...)	__cstl_map(sizeof(KEY), sizeof(VALUE), #KEY, #VALUE, ARGN(__VA_ARGS__), ##__VA_ARGS__)
-OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_key, char *type_value, int argc, ...) {
+#define _cstl_map(KEY, VALUE, ...)	_CSTL_MAP_DISPATCH(KEY, VALUE, ##__VA_ARGS__, NULL)
+#define _CSTL_MAP_DISPATCH(KEY, VALUE, COMP, ...) __cstl_map(sizeof(KEY), sizeof(VALUE), #KEY, #VALUE, (void*)(COMP))
+OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_key, char *type_value, void *compare) {
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * 5;
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
-    }
-    va_list vl;
-    va_start(vl, argc);
-    void *compare = va_arg(vl, void*);
-    if (argc == NO_ARGC) {
-        compare = NULL; //use default compare function(memcmp)
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + sizeof(size_t)) + header_sz;
@@ -219,7 +208,6 @@ OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_ke
     OPENCSTL_NIDX(container, -2) = (size_t) compare; //compare function
     OPENCSTL_NIDX(container, -1) = 0;
     OPENCSTL_NIDX(container, 0) = (size_t) nil; //root
-    va_end(vl);
     return ptr;
 }
 

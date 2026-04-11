@@ -63,8 +63,9 @@ OPENCSTL_FUNC void *__cstl_queue(size_t type_size, char *type) {
     return ptr;
 }
 
-#define cstl_priority_queue(TYPE,...)	__cstl_priority_queue(sizeof(TYPE),#TYPE,ARGN(__VA_ARGS__),##__VA_ARGS__)
-OPENCSTL_FUNC void *__cstl_priority_queue(size_t type_size, char *type, int argc, ...) {
+#define cstl_priority_queue(TYPE,...)	_CSTL_PQ_DISPATCH(TYPE, ##__VA_ARGS__, NULL)
+#define _CSTL_PQ_DISPATCH(TYPE, COMP, ...) __cstl_priority_queue(sizeof(TYPE),#TYPE,(void*)(COMP))
+OPENCSTL_FUNC void *__cstl_priority_queue(size_t type_size, char *type, void *compare) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + type_size * 1) + header_sz;
     void **container = &ptr;
@@ -73,17 +74,9 @@ OPENCSTL_FUNC void *__cstl_priority_queue(size_t type_size, char *type, int argc
     OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
     OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
     OPENCSTL_NIDX(container, -4) = (size_t) type;
-
-    va_list vl;
-    va_start(vl, argc);
-    void *compare = va_arg(vl, void*);
-    if (argc == NO_ARGC) {
-        compare = NULL; //use default compare function(memcmp)
-    }
     OPENCSTL_NIDX(container, -3) = (size_t) compare; //compare function
     OPENCSTL_NIDX(container, -2) = 1; //capacity
     OPENCSTL_NIDX(container, -1) = 0; //length
-    va_end(vl);
     return ptr;
 }
 
