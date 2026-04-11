@@ -1,10 +1,10 @@
-<p align="center">
-  <img width="160" height="160" src="assets/OpenCSTL.png">
-</p>
 
-<h1 align="center">OpenCSTL</h1>
-<p align="center">Open Source C Container Library like STL in C++</p>
-<p align="center">C99 &nbsp;·&nbsp; C11 &nbsp;·&nbsp; C17 &nbsp;·&nbsp; C23</p>
+
+
+
+<p align="center">
+  <img width="1024" src="assets/blogo.png">
+</p>
 
 
 
@@ -53,7 +53,8 @@
     * `Linux`: `gcc`, `clang`, `tcc`를 지원합니다.
     * `MacOS`: `gcc`, `clang`, `tcc`를 지원합니다.
   * 직관적이고 깔끔한 인터페이스.
-    * 
+    * `SET`, `MAP`,`UNORDERED_SET`,`UNORDERED_MAP`,`PRIORITY_QUEUE` 사용시 오버로딩으로 비교 함수를 지정하지 않아도 기본 비교함수인 `memcpy`로 동작합니다.
+    * 완전히 새로운 방식의 구현체로 타 라이브러리에 비해 압도적으로 쉽고 깔끔한 인테피이스를 보장합니다.
 
 * * *
 
@@ -79,7 +80,59 @@
 
 
 
+## Components
 
+```markdown
+## Containers
+- `VECTOR(T)` — dynamic array
+- `LIST(T)` — doubly linked list
+- `DEQUE(T)` — double-ended queue
+- `SET(T)` — sorted set (red-black tree)
+- `MAP(K)` — sorted map (red-black tree)
+- `UNORDERED_SET(T)` — hash set
+- `STACK(T)` — stack
+- `QUEUE(T)` — queue
+- `QUEUE(T)` / `new_priority_queue` — priority queue (min/max heap)
+
+## Algorithms
+- `sort` — unstable sort
+- `stable_sort` — stable sort
+- `find` — linear search
+- `LESS(T)` / `GREATER(T)` — built-in comparators
+
+## Iterator
+- `begin` / `end` — range iterator
+- `rbegin` / `rend` — reverse iterator
+- `next` / `prev` — iterator traversal
+- `cstl_begin` / `cstl_find` — list iterator helpers
+
+## Container Operations
+- `push_back` / `pop_back` — back insert/remove
+- `push_front` / `pop_front` — front insert/remove
+- `push` / `pop` / `top` — stack/queue/priority_queue ops
+- `insert` — single or range insert (overloaded)
+- `erase` — single or range erase
+- `assign` — fill assign (overloaded)
+- `resize` — resize with optional fill value (overloaded)
+- `size` / `capacity` — size queries
+- `empty` — empty check
+- `front` / `back` — element access
+- `first` / `second` — map key/value access
+- `destroy` — memory free
+
+## Map Operations
+- `first(it)` — key access
+- `second(it, T)` — value access
+
+## Utilities
+- `rand32` — random number generator
+- `watch` / `now` / `duration` — timer
+- `logging.debug` / `.info` / `.warning` / `.error` / `.critical` / `.fatal` / `.message` — 
+## logging
+- `opencstl_version` — version string
+- `opencstl_env` — environment info
+- `cstl_error` — error reporting
+```
 
 
 ## Why OpenCSTL?
