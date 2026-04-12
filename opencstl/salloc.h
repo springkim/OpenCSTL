@@ -1,4 +1,3 @@
-//
 //  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
 //  By downloading, copying, installing or using the software you agree to this license.
@@ -9,7 +8,7 @@
 //                               License Agreement
 //                Open Source C Container Library like STL in C++
 //
-//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//               Copyright (C) 2026, Kim Bomm, Woo Cheol, all rights reserved.
 //
 // Third party copyrights are property of their respective owners.
 //
@@ -34,19 +33,19 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#if !defined(_OPENCSTL_VERSION_H)
-#define _OPENCSTL_VERSION_H
-#include "crossplatform.h"
-static char *OPENCSTL_VERSION = "1.2.1";
+#pragma once
+#if !defined(_OPENCSTL_C_ALLOCA_H)
+#define _OPENCSTL_C_ALLOCA_H
 
-static char *opencstl_version() {
-    return OPENCSTL_VERSION;
-}
+#if defined(__linux__) || defined(__APPLE__)
+#include <alloca.h>
+#define salloc(size) (void*)alloca(size)
+#elif defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#define salloc(size) _alloca(size)
+#else
+#error "No Alloca Function"
+#endif
 
-static char __opencstl_env_str[512] = {0};
 
-char *opencstl_env() {
-    sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
-    return __opencstl_env_str;
-}
-#endif //_OPENCSTL_VERSION_H
+#endif //_OPENCSTL_C_ALLOCA_H

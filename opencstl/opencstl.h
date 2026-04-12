@@ -54,9 +54,7 @@
 // #pragma GCC optimize("O0")
 // #endif
 // #endif
-#include "defines.h"
 #include "error.h"
-#include "types.h"
 
 #include "deque.h"
 #include "vector.h"
@@ -72,11 +70,10 @@
 #include "cstl_compare.h"
 #include "random.h"
 #include "watch.h"
-#include "cstl_file.h"
-#include "cstl.h"
+#include "fstream.h"
 
 
-#include "stable_sort.h"
+#include "sort.h"
 #include "logging.h"
 #include "version.h"
 
@@ -121,7 +118,7 @@
 #define top             cstl_top
 #define front           cstl_front
 #define back            cstl_back
-
+#define reserve         cstl_reserve
 
 #define new_deque           cstl_deque
 #define new_list            cstl_list
@@ -996,6 +993,45 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     }
     __cstl_va_end(vl);
     return NULL;
+}
+
+OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
+    va_list vl;
+    void *va_ptr = NULL;
+    __cstl_va_start(vl, argc, va_ptr);
+#if CSTL_USE_VAARG
+    void *param1 = __cstl_va_arg_next(vl);
+    void *param2 = __cstl_va_arg_next(vl);
+#else
+    void *param1 = __cstl_va_arg(va_ptr);
+    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
+#endif
+
+    size_t container_type;
+    if (__is_deque((void **) container)) {
+        cstl_error("Invalid operation");
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            if (argc == 1) {
+                __cstl_vector_reserve((void **) container, *(size_t *) param1);
+            }
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            if (argc == 1) {
+                __cstl_hashtable_reserve((void **) container, *(size_t *) param1);
+            }
+        }
+        break;
+
+        default: cstl_error("Invalid operation");
+            break;
+    }
+    __cstl_va_end(vl);
 }
 #if defined(__linux__) || defined(__APPLE__)
 // #if !defined(__8cc__ )

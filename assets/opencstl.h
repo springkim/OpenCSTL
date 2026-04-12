@@ -179,7 +179,117 @@
 // #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  defines.h                      (depth 1) */
+/* BEGIN  error.h                        (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_ERROR_H)
+#define _OPENCSTL_ERROR_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  types.h                        (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_TYPES_H)
+#define _OPENCSTL_TYPES_H
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<stdarg.h>
+#include<stdint.h>
+#include<limits.h>
+#include<stddef.h>
+#include<stdbool.h>
+#include<assert.h>
+
+typedef int (*cstl_compare)(const void *, const void *);
+
+typedef size_t cstl_ptr;
+
+typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
+
+
+typedef unsigned int size_type;
+
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    types.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  defines.h                      (depth 2) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -287,7 +397,7 @@
 
 
 #define cstl_value(iter,TYPE)	(*(TYPE*)(iter+1))
- 
+
 // CSTL_USE_VAARG=0: Windows only (values passed directly on stack)
 // CSTL_USE_VAARG=1: Linux/macOS (macros pass pointers via &__1; standard va_arg is correct)
 #if defined(_WIN32) || defined(_WIN64)
@@ -370,6 +480,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 (OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[cstl_error("Invalid Operation")]))   //priority queue
 
 
+#define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -507,122 +618,9 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #endif
 #define OPENCSTL_FUNC	static
 
-
-
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    defines.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  error.h                        (depth 1) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_ERROR_H)
-#define _OPENCSTL_ERROR_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  types.h                        (depth 2) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_TYPES_H)
-#define _OPENCSTL_TYPES_H
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<stdarg.h>
-#include<stdint.h>
-#include<limits.h>
-#include<stddef.h>
-#include<stdbool.h>
-#include<assert.h>
-
-typedef int (*cstl_compare)(const void *, const void *);
-
-typedef size_t cstl_ptr;
-
-typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
-
-
-typedef unsigned int size_type;
-
-#endif
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    types.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* [already included: defines.h] */
 
 
 // ██████╗░██╗░░░██╗███╗░░██╗████████╗██╗███╗░░░███╗███████╗░░░░░░███████╗██████╗░██████╗░░█████╗░██████╗░
@@ -685,7 +683,6 @@ exit(EXIT_FAILURE);
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    error.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* [already included: types.h] */
 
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -729,8 +726,6 @@ exit(EXIT_FAILURE);
 //
 #if !defined(_OPENCSTL_DEQUE_H)
 #define _OPENCSTL_DEQUE_H
-/* [already included: types.h] */
-/* [already included: defines.h] */
 /* [already included: error.h] */
 #ifdef _MSC_VER
 #pragma warning(disable:4146)
@@ -1085,8 +1080,6 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
 //
 #if !defined(_OPENCSTL_VECTOR_H)
 #define _OPENCSTL_VECTOR_H
-/* [already included: types.h] */
-/* [already included: defines.h] */
 /* [already included: error.h] */
 
 // ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
@@ -1324,6 +1317,20 @@ OPENCSTL_FUNC void __cstl_vector_free(void **container) {
     *container = NULL;
 }
 
+OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    size_t capacity = OPENCSTL_NIDX(container, -2);
+    if (capacity < n) {
+        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
+        if (b == NULL) {
+            cstl_error("Reallocation failed at vector reserve");
+        }
+        *container = ((char *) b + header_sz);
+    }
+}
+
 
 #endif
 
@@ -1373,7 +1380,6 @@ OPENCSTL_FUNC void __cstl_vector_free(void **container) {
 //
 #if !defined(_OPENCSTL_LIST_H)
 #define _OPENCSTL_LIST_H
-/* [already included: types.h] */
 /* [already included: error.h] */
 #define cstl_list(TYPE)		__cstl_list(sizeof(TYPE),#TYPE)
 #define NTAIL(N)	(N==-1?-2:N)
@@ -1662,9 +1668,7 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
 #define _OPENCSTL_TREE_H
 
 
-/* [already included: types.h] */
 /* [already included: error.h] */
-/* [already included: defines.h] */
 
 #define P	    (-4)
 #define R       (-1)
@@ -2267,8 +2271,6 @@ OPENCSTL_FUNC size_type __cstl_tree_size(void **container) {
 //
 #if !defined(_OPENCSTL_STACK_H)
 #define _OPENCSTL_STACK_H
-/* [already included: types.h] */
-/* [already included: defines.h] */
 /* [already included: error.h] */
 
 #define cstl_stack(TYPE)	__cstl_stack(sizeof(TYPE),#TYPE)
@@ -2335,12 +2337,10 @@ OPENCSTL_FUNC void *__cstl_stack(size_t type_size, char *type) {
 #define _OPENCSTL_QUEUE_H
 
 /* [already included: vector.h] */
-/* [already included: types.h] */
-/* [already included: defines.h] */
 /* [already included: error.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  cstl_alloca.h                  (depth 2) */
+/* BEGIN  salloc.h                       (depth 2) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
@@ -2383,10 +2383,10 @@ OPENCSTL_FUNC void *__cstl_stack(size_t type_size, char *type) {
 
 #if defined(__linux__) || defined(__APPLE__)
 #include <alloca.h>
-#define stack_alloc(size) (void*)alloca(size)
+#define salloc(size) (void*)alloca(size)
 #elif defined(_WIN32) || defined(_WIN64)
 #include <malloc.h>
-#define stack_alloc(size) _alloca(size)
+#define salloc(size) _alloca(size)
 #else
 #error "No Alloca Function"
 #endif
@@ -2395,9 +2395,8 @@ OPENCSTL_FUNC void *__cstl_stack(size_t type_size, char *type) {
 #endif //_OPENCSTL_C_ALLOCA_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* END    cstl_alloca.h */
+/* END    salloc.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
-
 
 
 #define cstl_queue(TYPE)	__cstl_queue(sizeof(TYPE),#TYPE)
@@ -2441,7 +2440,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
     size_t length = OPENCSTL_NIDX(container, -1);
     cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -3);
 
-    void *tmp = stack_alloc(type_size);
+    void *tmp = salloc(type_size);
     size_t idx = length - 1;
     memcpy(tmp, ((char *) *container) + type_size * idx, type_size);
     while (idx > 0) {
@@ -2466,7 +2465,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
     OPENCSTL_NIDX(container, -1)--;
     length--;
     size_t idx = 0;
-    void *tmp = stack_alloc(type_size);
+    void *tmp = salloc(type_size);
     size_t L, R, C;
     memcpy(tmp, *container, type_size);
     void *ptr = tmp;
@@ -2505,110 +2504,40 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
 /* BEGIN  hashtable.h                    (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_HASHTABLE_H)
-#define _OPENCSTL_HASHTABLE_H
-/* [already included: types.h] */
 /* [already included: error.h] */
-/* [already included: defines.h] */
+#define HT_EMPTY     0x0000U
+#define HT_FRAG_MASK 0xF000U
+#define HT_IN_HOME   0x0800U
+#define HT_DISP_MASK 0x07FFU
+#define HT_DISP_END  0x07FFU
+#define HT_LOAD      0.9
+#define HT_MIN_CAP   8U
 
-static bool __is_prime(const unsigned int x) {
-    if (x == 2 || x == 3 || x == 5 || x == 7 || x == 11) return true;
-    if (x % 2 == 0 || x % 3 == 0 || x % 5 == 0 || x % 7 == 0 || x % 11 == 0) return false;
-    if (x < 121) return (x > 1);
 
-    static const unsigned int bases[] = {
-        15591, 2018, 166, 7429, 8064, 16045, 10503, 4399, 1949, 1295, 2776, 3620, 560, 3128, 5212, 2657,
-        2300, 2021, 4652, 1471, 9336, 4018, 2398, 20462, 10277, 8028, 2213, 6219, 620, 3763, 4852, 5012,
-        3185, 1333, 6227, 5298, 1074, 2391, 5113, 7061, 803, 1269, 3875, 422, 751, 580, 4729, 10239,
-        746, 2951, 556, 2206, 3778, 481, 1522, 3476, 481, 2487, 3266, 5633, 488, 3373, 6441, 3344,
-        17, 15105, 1490, 4154, 2036, 1882, 1813, 467, 3307, 14042, 6371, 658, 1005, 903, 737, 1887,
-        7447, 1888, 2848, 1784, 7559, 3400, 951, 13969, 4304, 177, 41, 19875, 3110, 13221, 8726, 571,
-        7043, 6943, 1199, 352, 6435, 165, 1169, 3315, 978, 233, 3003, 2562, 2994, 10587, 10030, 2377,
-        1902, 5354, 4447, 1555, 263, 27027, 2283, 305, 669, 1912, 601, 6186, 429, 1930, 14873, 1784,
-        1661, 524, 3577, 236, 2360, 6146, 2850, 55637, 1753, 4178, 8466, 222, 2579, 2743, 2031, 2226,
-        2276, 374, 2132, 813, 23788, 1610, 4422, 5159, 1725, 3597, 3366, 14336, 579, 165, 1375, 10018,
-        12616, 9816, 1371, 536, 1867, 10864, 857, 2206, 5788, 434, 8085, 17618, 727, 3639, 1595, 4944,
-        2129, 2029, 8195, 8344, 6232, 9183, 8126, 1870, 3296, 7455, 8947, 25017, 541, 19115, 368, 566,
-        5674, 411, 522, 1027, 8215, 2050, 6544, 10049, 614, 774, 2333, 3007, 35201, 4706, 1152, 1785,
-        1028, 1540, 3743, 493, 4474, 2521, 26845, 8354, 864, 18915, 5465, 2447, 42, 4511, 1660, 166,
-        1249, 6259, 2553, 304, 272, 7286, 73, 6554, 899, 2816, 5197, 13330, 7054, 2818, 3199, 811,
-        922, 350, 7514, 4452, 3449, 2663, 4708, 418, 1621, 1171, 3471, 88, 11345, 412, 1559, 194,
-    };
-
-    unsigned long long h = x;
-    h = ((h >> 16) ^ h) * 73244475;
-    h = ((h >> 16) ^ h) * 73244475;
-    h = ((h >> 16) ^ h) & 255;
-
-    unsigned int a = bases[h];
-
-    unsigned int d = x - 1, s = 0;
-    while ((d & 1) == 0) {
-        ++s;
-        d >>= 1;
-    }
-
-    unsigned long long cur = 1, pw = d;
-    unsigned long long base = a % x;
-    while (pw) {
-        if (pw & 1) cur = (cur * base) % x;
-        base = (base * base) % x;
-        pw >>= 1;
-    }
-
-    if (cur == 1 || cur == (unsigned long long) x - 1) return true;
-
-    for (unsigned int r = 1; r < s; r++) {
-        cur = (cur * cur) % x;
-        if (cur == (unsigned long long) x - 1) return true;
-    }
-
-    return false;
+static inline size_t __ht_next_pow2(size_t n) {
+    size_t p = HT_MIN_CAP;
+    while (p < n) p <<= 1;
+    return p;
 }
 
-#define VACANT      0   // Empty
-#define OCCUPIED    1   // Inserted
-#define TOMBSTONE   2   // Deleted
-#define LN2         0.69314718055994530941723212145817 //log(2)
+static inline bool __ht_key_eq(const void *a, const void *b, size_t ks) {
+    switch (ks) {
+        case 1: return *(const uint8_t *) a == *(const uint8_t *) b;
+        case 2: return *(const uint16_t *) a == *(const uint16_t *) b;
+        case 4: return *(const uint32_t *) a == *(const uint32_t *) b;
+        case 8: return *(const uint64_t *) a == *(const uint64_t *) b;
+        default: return memcmp(a, b, ks) == 0;
+    }
+}
 
+static inline uint16_t __ht_frag(size_t h) {
+    return (uint16_t) ((h >> ((sizeof(size_t) - sizeof(uint16_t)) * 8)) & HT_FRAG_MASK);
+}
 
-// MurmurHash3 mixer
+static inline size_t __ht_quad(uint16_t d) {
+    return ((size_t) d * d + d) / 2;
+}
+
 OPENCSTL_FUNC size_t hash32(void *_key) {
     unsigned int h = *(unsigned int *) _key;
     h ^= h >> 16;
@@ -2619,115 +2548,171 @@ OPENCSTL_FUNC size_t hash32(void *_key) {
     return (size_t) h;
 }
 
-// SplitMix64 mixer
 OPENCSTL_FUNC size_t hash64(void *_key) {
     unsigned long long x = *(unsigned long long *) _key;
     x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
     x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
-    x = x ^ (x >> 31);
-    return (size_t) x;
+    return (size_t) (x ^ (x >> 31));
 }
 
-// Hash for General-Purpose Data Blocks
 OPENCSTL_FUNC size_t hash(void *_key, size_t n) {
     unsigned char *key = (unsigned char *) _key;
-    size_t ret = 0xCBF29CE484222325ULL; // FNV offset basis
-
-    // Process in 4-byte or 8-byte chunks
+    size_t ret = 0xCBF29CE484222325ULL;
     while (n >= sizeof(size_t)) {
         ret ^= (sizeof(size_t) == 8) ? hash64(key) : hash32(key);
-        ret *= 0x100000001b3ULL; // Mixing via prime factorization
+        ret *= 0x100000001b3ULL;
         key += sizeof(size_t);
         n -= sizeof(size_t);
     }
     return ret;
 }
 
+static inline uint64_t __ht_mum(uint64_t a, uint64_t b) {
+#ifdef __SIZEOF_INT128__
+    __uint128_t r = (__uint128_t) a * b;
+    return (uint64_t) r ^ (uint64_t) (r >> 64);
+#else
+    uint64_t ha = a >> 32, la = (uint32_t) a;
+    uint64_t hb = b >> 32, lb = (uint32_t) b;
+    return ha * hb ^ ((ha * lb + hb * la) >> 32) ^ (la * lb >> 32);
+#endif
+}
+
 OPENCSTL_FUNC size_t hash_mixer(void *key, size_t n) {
-    unsigned char *data = (unsigned char *) key;
-
-    size_t h = 0x9e3779b97f4a7c15ULL; // seed (golden ratio)
-
-    // Processed in size_t units (8 or 4 bytes)
-    while (n >= sizeof(size_t)) {
-        size_t k;
-        memcpy(&k, data, sizeof(size_t)); // unaligned-safe
-
-        // mix (SplitMix64 스타일)
-        k ^= k >> 30;
-        k *= 0xbf58476d1ce4e5b9ULL;
-        k ^= k >> 27;
-        k *= 0x94d049bb133111ebULL;
-        k ^= k >> 31;
-
-        h ^= k;
-        h *= 0x9e3779b97f4a7c15ULL;
-
-        data += sizeof(size_t);
-        n -= sizeof(size_t);
+    static const uint64_t s0 = 0xa0761d6478bd642fULL;
+    static const uint64_t s1 = 0xe7037ed1a0b428dbULL;
+    if (n == 4) {
+        uint32_t v;
+        memcpy(&v, key, 4);
+        return (size_t) __ht_mum((uint64_t) v ^ s1, s0);
     }
-
-    // tail
-    size_t _tail = 0;
-    for (size_t i = 0; i < n; i++) {
-        _tail |= ((size_t) data[i]) << (i * 8);
+    if (n == 8) {
+        uint64_t v;
+        memcpy(&v, key, 8);
+        return (size_t) __ht_mum(v ^ s1, s0);
     }
-
-    if (n > 0) {
-        _tail ^= _tail >> 30;
-        _tail *= 0xbf58476d1ce4e5b9ULL;
-        _tail ^= _tail >> 27;
-        _tail *= 0x94d049bb133111ebULL;
-        _tail ^= _tail >> 31;
-
-        h ^= _tail;
-        h *= 0x9e3779b97f4a7c15ULL;
+    const uint8_t *p = (const uint8_t *) key;
+    uint64_t a, b;
+    if (n <= 16 && n >= 4) {
+        uint32_t v0, v1, v2, v3;
+        memcpy(&v0, p, 4);
+        memcpy(&v1, p + ((n>>3)<<2), 4);
+        memcpy(&v2, p + n - 4, 4);
+        memcpy(&v3, p + n - 4 - ((n>>3)<<2), 4);
+        a = ((uint64_t) v0 << 32) | v1;
+        b = ((uint64_t) v2 << 32) | v3;
+    } else if (n < 4 && n > 0) {
+        a = ((uint64_t) p[0] << 16) | ((uint64_t) p[n >> 1] << 8) | p[n - 1];
+        b = 0;
+    } else {
+        uint64_t h = s0;
+        while (n >= 8) {
+            uint64_t k;
+            memcpy(&k, p, 8);
+            k ^= k >> 30;
+            k *= 0xbf58476d1ce4e5b9ULL;
+            k ^= k >> 27;
+            k *= 0x94d049bb133111ebULL;
+            k ^= k >> 31;
+            h ^= k;
+            h *= s0;
+            p += 8;
+            n -= 8;
+        }
+        return (size_t) h;
     }
-
-    // final avalanche
-    h ^= h >> 30;
-    h *= 0xbf58476d1ce4e5b9ULL;
-    h ^= h >> 27;
-    h *= 0x94d049bb133111ebULL;
-    h ^= h >> 31;
-
-    return h;
+    return (size_t) __ht_mum(s1 ^ (uint64_t) n, __ht_mum(a ^ s1, b ^ s0));
 }
 
-
-OPENCSTL_FUNC size_t H1(void *key, size_t _capacity, size_t key_size) {
-    if (_capacity == 0) return 0;
-    return hash_mixer(key, key_size) % _capacity;
+static inline bool __ht_find_empty(
+    uint16_t *meta, size_t cap_mask, size_t home,
+    size_t *empty, uint16_t *disp
+) {
+    *disp = 1;
+    size_t linear = 1;
+    while (true) {
+        *empty = (home + linear) & cap_mask;
+        if (meta[*empty] == HT_EMPTY) return true;
+        if (++(*disp) == HT_DISP_END) return false;
+        linear += *disp;
+    }
 }
 
-// Determine the jump interval in case of a collision (for double hashing)
-// This value must be independent of h1 and must be either an odd number or coprime with _capacity.
-OPENCSTL_FUNC size_t H2(void *key, size_t _capacity, size_t key_size) {
-    if (_capacity <= 1) return 1;
-    size_t h = hash_mixer(key, key_size);
-    size_t step = (h % (_capacity - 1)) + 1;
-    return step;
+static inline size_t __ht_find_chain_pos(
+    uint16_t *meta, size_t cap_mask, size_t home, uint16_t disp_to_empty
+) {
+    size_t candidate = home;
+    while (true) {
+        uint16_t d = meta[candidate] & HT_DISP_MASK;
+        if (d > disp_to_empty) return candidate;
+        candidate = (home + __ht_quad(d)) & cap_mask;
+    }
 }
 
-// ██╗░░██╗░█████╗░░██████╗██╗░░██╗░░░░░░████████╗░█████╗░██████╗░██╗░░░░░███████╗░░░░░░███╗░░░███╗░█████╗░███╗░░██╗░█████╗░░██████╗░███████╗██████╗░
-// ██║░░██║██╔══██╗██╔════╝██║░░██║░░░░░░╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██╔════╝░░░░░░████╗░████║██╔══██╗████╗░██║██╔══██╗██╔════╝░██╔════╝██╔══██╗
-// ███████║███████║╚█████╗░███████║█████╗░░░██║░░░███████║██████╦╝██║░░░░░█████╗░░█████╗██╔████╔██║███████║██╔██╗██║███████║██║░░██╗░█████╗░░██████╔╝
-// ██╔══██║██╔══██║░╚═══██╗██╔══██║╚════╝░░░██║░░░██╔══██║██╔══██╗██║░░░░░██╔══╝░░╚════╝██║╚██╔╝██║██╔══██║██║╚████║██╔══██║██║░░╚██╗██╔══╝░░██╔══██╗
-// ██║░░██║██║░░██║██████╔╝██║░░██║░░░░░░░░░██║░░░██║░░██║██████╦╝███████╗███████╗░░░░░░██║░╚═╝░██║██║░░██║██║░╚███║██║░░██║╚██████╔╝███████╗██║░░██║
-// ╚═╝░░╚═╝╚═╝░░╚═╝╚═════╝░╚═╝░░╚═╝░░░░░░░░░╚═╝░░░╚═╝░░╚═╝╚═════╝░╚══════╝╚══════╝░░░░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝░╚═════╝░╚══════╝╚═╝░░╚═╝
+static inline bool __ht_evict(
+    void *base, uint16_t *meta, size_t cap_mask,
+    size_t bucket, size_t type_size, size_t key_size
+) {
+    size_t h = hash_mixer((char *) base + bucket * type_size, key_size);
+    size_t home = h & cap_mask;
+    size_t prev = home;
+    while (true) {
+        uint16_t d = meta[prev] & HT_DISP_MASK;
+        size_t nx = (home + __ht_quad(d)) & cap_mask;
+        if (nx == bucket) break;
+        prev = nx;
+    }
+    meta[prev] = (uint16_t) ((meta[prev] & ~HT_DISP_MASK) | (meta[bucket] & HT_DISP_MASK));
+    size_t empty;
+    uint16_t new_disp;
+    if (!__ht_find_empty(meta, cap_mask, home, &empty, &new_disp)) return false;
+    size_t ins_prev = __ht_find_chain_pos(meta, cap_mask, home, new_disp);
+    memcpy((char *)base + empty * type_size,
+           (char *)base + bucket * type_size, type_size);
+    meta[empty] = (uint16_t) ((meta[bucket] & HT_FRAG_MASK) | (meta[ins_prev] & HT_DISP_MASK));
+    meta[ins_prev] = (uint16_t) ((meta[ins_prev] & ~HT_DISP_MASK) | new_disp);
+    return true;
+}
+
+static inline bool __ht_reinsert(
+    void *base, uint16_t *meta, size_t cap_mask,
+    void *key, void *value, size_t key_size, size_t value_size, size_t key_hash
+) {
+    size_t type_size = key_size + value_size;
+    uint16_t frag = __ht_frag(key_hash);
+    size_t home = key_hash & cap_mask;
+    if (!(meta[home] & HT_IN_HOME)) {
+        if (meta[home] != HT_EMPTY &&
+            !__ht_evict(base, meta, cap_mask, home, type_size, key_size))
+            return false;
+        memcpy((char *)base + home * type_size, key, key_size);
+        if (value)
+            memcpy((char *)base + home * type_size + key_size, value, value_size);
+        meta[home] = frag | HT_IN_HOME | HT_DISP_END;
+        return true;
+    }
+    size_t empty;
+    uint16_t disp;
+    if (!__ht_find_empty(meta, cap_mask, home, &empty, &disp)) return false;
+    size_t prev = __ht_find_chain_pos(meta, cap_mask, home, disp);
+    memcpy((char *)base + empty * type_size, key, key_size);
+    if (value)
+        memcpy((char *)base + empty * type_size + key_size, value, value_size);
+    meta[empty] = (uint16_t) (frag | (meta[prev] & HT_DISP_MASK));
+    meta[prev] = (uint16_t) ((meta[prev] & ~HT_DISP_MASK) | disp);
+    return true;
+}
 
 #define HTM_SIZE 1024
-typedef struct HashtableManager HashtableManager;
 
-struct HashtableManager {
-    void *p1;
-    void *p2;
+typedef struct {
+    void *p1, *p2;
     char *tombstone;
     int type_size;
     bool used;
-};
+} HashtableManager;
 
-static HashtableManager htm[1024] = {0};
+static HashtableManager htm[HTM_SIZE] = {0};
 static size_t htm_length = 0;
 
 void __htm_append(void *ptr, size_t sz, char *tombstone, int type_size) {
@@ -2739,7 +2724,323 @@ void __htm_append(void *ptr, size_t sz, char *tombstone, int type_size) {
     htm_length++;
 }
 
-#define __HASHTABLE_DEFAULT_SIZE__ 7
+#define __HASHTABLE_DEFAULT_SIZE__ HT_MIN_CAP
+
+static uint16_t *__ht_alloc_meta(size_t cap) {
+    uint16_t *m = (uint16_t *) calloc(cap + 4, sizeof(uint16_t));
+    if (!m)
+        cstl_error("Allocation failed (metadata)");
+    m[cap] = 0x0001;
+    return m;
+}
+
+static void __ht_do_rehash(
+    void **container, size_t header_sz,
+    size_t key_size, size_t value_size, size_t type_size,
+    size_t length, size_t old_cap_mask,
+    uint16_t *old_meta, int htm_index
+) {
+    size_t new_cap = (old_cap_mask + 1) * 2;
+    while (true) {
+        void *new_raw = calloc(header_sz + new_cap * type_size, 1);
+        if (!new_raw)
+            cstl_error("Allocation failed (rehash)");
+        memcpy(new_raw, (char *)*container - header_sz, header_sz);
+        uint16_t *new_meta = __ht_alloc_meta(new_cap);
+        void *nb = (char *) new_raw + header_sz;
+        size_t new_mask = new_cap - 1;
+        size_t done = 0;
+        for (size_t i = 0; i <= old_cap_mask; i++) {
+            if (old_meta[i] != HT_EMPTY) {
+                void *ok = (char *) *container + i * type_size;
+                void *ov = value_size > 0 ? (char *) ok + key_size : NULL;
+                size_t h = hash_mixer(ok, key_size);
+                if (__ht_reinsert(nb, new_meta, new_mask, ok, ov, key_size, value_size, h))
+                    done++;
+            }
+        }
+        if (done < length) {
+            free(new_raw);
+            free(new_meta);
+            new_cap *= 2;
+            continue;
+        }
+        free((char *) *container - header_sz);
+        free(old_meta);
+        *container = nb;
+        OPENCSTL_NIDX(container, -7) = new_mask;
+        OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
+        htm[htm_index].p1 = *container;
+        htm[htm_index].p2 = (char *) *container + type_size * new_cap;
+        htm[htm_index].tombstone = (char *) new_meta;
+        htm[htm_index].type_size = (int) type_size;
+        break;
+    }
+}
+
+OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *value) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t value_size = OPENCSTL_NIDX(container, -4);
+    size_t type_size = key_size + value_size;
+    size_t length = OPENCSTL_NIDX(container, -1);
+    size_t cap_mask = OPENCSTL_NIDX(container, -7);
+    uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float_key = OPENCSTL_NIDX(container, -8);
+    size_t is_float_value = OPENCSTL_NIDX(container, -9);
+    float kf = 0.f, vf = 0.f;
+    if (is_float_key) {
+        kf = (float) *(double *) key;
+        key = &kf;
+    }
+    if (is_float_value) {
+        vf = (float) *(double *) value;
+        value = &vf;
+    }
+#endif
+    size_t key_hash = hash_mixer(key, key_size);
+    uint16_t frag = __ht_frag(key_hash);
+    size_t home0 = key_hash & cap_mask;
+    if (meta[home0] & HT_IN_HOME) {
+        size_t b = home0;
+        while (true) {
+            if ((meta[b] & HT_FRAG_MASK) == frag &&
+                __ht_key_eq((char *) *container + b * type_size, key, key_size))
+                return;
+            uint16_t d = meta[b] & HT_DISP_MASK;
+            if (d == HT_DISP_END) break;
+            b = (home0 + __ht_quad(d)) & cap_mask;
+        }
+    }
+    while (true) {
+        size_t cap = cap_mask + 1;
+        size_t home = key_hash & cap_mask;
+        if (length + 1 > (size_t) (HT_LOAD * (double) cap)) goto do_rehash;
+        if (!(meta[home] & HT_IN_HOME)) {
+            if (meta[home] != HT_EMPTY &&
+                !__ht_evict(*container, meta, cap_mask, home, type_size, key_size))
+                goto do_rehash;
+            memcpy((char *)*container + home * type_size, key, key_size);
+            if (value)
+                memcpy((char *)*container + home * type_size + key_size, value, value_size);
+            meta[home] = frag | HT_IN_HOME | HT_DISP_END;
+            OPENCSTL_NIDX(container, -1) = length + 1;
+            return;
+        }
+        {
+            size_t empty;
+            uint16_t disp;
+            if (!__ht_find_empty(meta, cap_mask, home, &empty, &disp))
+                goto do_rehash;
+            size_t prev = __ht_find_chain_pos(meta, cap_mask, home, disp);
+            memcpy((char *)*container + empty * type_size, key, key_size);
+            if (value)
+                memcpy((char *)*container + empty * type_size + key_size, value, value_size);
+            meta[empty] = (uint16_t) (frag | (meta[prev] & HT_DISP_MASK));
+            meta[prev] = (uint16_t) ((meta[prev] & ~HT_DISP_MASK) | disp);
+            OPENCSTL_NIDX(container, -1) = length + 1;
+            return;
+        }
+    do_rehash:;
+        int htm_index = -1;
+        for (int i = 0; i < (int) htm_length; i++)
+            if (htm[i].p1 == *container) {
+                htm_index = i;
+                break;
+            }
+        if (htm_index == -1)
+            cstl_error("Unregistered hashtable");
+        __ht_do_rehash(container, header_sz, key_size, value_size, type_size,
+                       length, cap_mask, meta, htm_index);
+        cap_mask = OPENCSTL_NIDX(container, -7);
+        meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
+    }
+}
+
+OPENCSTL_FUNC void __cstl_hashtable_erase(void **container, void *key) {
+    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t cap_mask = OPENCSTL_NIDX(container, -7);
+    uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
+    size_t value_size = OPENCSTL_NIDX(container, -4);
+    size_t type_size = key_size + value_size;
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float_key = OPENCSTL_NIDX(container, -8);
+    float kf = 0.f;
+    if (is_float_key) {
+        kf = (float) *(double *) key;
+        key = &kf;
+    }
+#endif
+    size_t h = hash_mixer(key, key_size);
+    uint16_t frag = __ht_frag(h);
+    size_t home = h & cap_mask;
+    if (!(meta[home] & HT_IN_HOME)) return;
+    size_t prev = home;
+    size_t bucket = home;
+    bool at_home = true;
+    while (true) {
+        if ((meta[bucket] & HT_FRAG_MASK) == frag &&
+            __ht_key_eq((char *) *container + bucket * type_size, key, key_size))
+            goto found;
+        uint16_t d = meta[bucket] & HT_DISP_MASK;
+        if (d == HT_DISP_END) return;
+        prev = bucket;
+        bucket = (home + __ht_quad(d)) & cap_mask;
+        at_home = false;
+    }
+found:;
+    uint16_t d_next = meta[bucket] & HT_DISP_MASK;
+    if (d_next == HT_DISP_END) {
+        meta[bucket] = HT_EMPTY;
+        if (!at_home)
+            meta[prev] = (uint16_t) ((meta[prev] & ~HT_DISP_MASK) | HT_DISP_END);
+    } else {
+        size_t next = (home + __ht_quad(d_next)) & cap_mask;
+        uint16_t d_nn = meta[next] & HT_DISP_MASK;
+        uint16_t f_next = meta[next] & HT_FRAG_MASK;
+        uint16_t home_flag = meta[bucket] & HT_IN_HOME;
+        memcpy((char *)*container + bucket * type_size,
+               (char *)*container + next * type_size, type_size);
+        meta[bucket] = (uint16_t) (f_next | home_flag | d_nn);
+        meta[next] = HT_EMPTY;
+    }
+    OPENCSTL_NIDX(container, -1)--;
+}
+
+OPENCSTL_FUNC void *__cstl_hashtable_find(void **container, void *key) {
+    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t cap_mask = OPENCSTL_NIDX(container, -7);
+    uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
+    size_t value_size = OPENCSTL_NIDX(container, -4);
+    size_t type_size = key_size + value_size;
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float_key = OPENCSTL_NIDX(container, -8);
+    float kf = 0.f;
+    if (is_float_key) {
+        kf = (float) *(double *) key;
+        key = &kf;
+    }
+#endif
+    size_t h = hash_mixer(key, key_size);
+    uint16_t frag = __ht_frag(h);
+    size_t home = h & cap_mask;
+    if (!(meta[home] & HT_IN_HOME)) return NULL;
+    size_t bucket = home;
+    while (true) {
+        if ((meta[bucket] & HT_FRAG_MASK) == frag &&
+            __ht_key_eq((char *) *container + bucket * type_size, key, key_size))
+            return (char *) *container + bucket * type_size;
+        uint16_t d = meta[bucket] & HT_DISP_MASK;
+        if (d == HT_DISP_END) return NULL;
+        bucket = (home + __ht_quad(d)) & cap_mask;
+    }
+}
+
+OPENCSTL_FUNC void __cstl_hashtable_clear(void **container) {
+    size_t cap_mask = OPENCSTL_NIDX(container, -7);
+    uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
+    memset(meta, 0, (cap_mask + 1 + 4) * sizeof(uint16_t));
+    meta[cap_mask + 1] = 0x0001;
+    OPENCSTL_NIDX(container, -1) = 0;
+}
+
+OPENCSTL_FUNC void *__cstl_hashtable_begin(void **container) {
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
+    size_t cap_mask = OPENCSTL_NIDX(container, -7);
+    uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
+    for (size_t i = 0; i <= cap_mask; i++)
+        if (meta[i] != HT_EMPTY)
+            return (char *) *container + i * type_size;
+    return NULL;
+}
+
+OPENCSTL_FUNC void *__cstl_hashtable_end(void **container) { return NULL; }
+OPENCSTL_FUNC void *__cstl_hashtable_rbegin(void **container) {
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
+    size_t cap_mask = OPENCSTL_NIDX(container, -7);
+    uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
+    for (int i = (int) cap_mask; i >= 0; i--)
+        if (meta[i] != HT_EMPTY)
+            return (char *) *container + i * type_size;
+    return NULL;
+}
+
+OPENCSTL_FUNC void *__cstl_hashtable_rend(void **container) {
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
+    return (char *) *container - type_size;
+}
+
+OPENCSTL_FUNC void *__cstl_hashtable_empty(void **container) {
+    return __cstl_hashtable_rend(container);
+}
+
+OPENCSTL_FUNC size_t __cstl_hashtable_size(void **container) {
+    return OPENCSTL_NIDX(container, -1);
+}
+
+OPENCSTL_FUNC size_t __cstl_hashtable_capacity(void **container) {
+    return OPENCSTL_NIDX(container, -7) + 1;
+}
+
+OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
+    int idx = -1;
+    for (int i = 0; i < (int) htm_length; i++)
+        if (htm[i].p1 <= it && it < htm[i].p2) {
+            idx = i;
+            break;
+        }
+    if (idx == -1)
+        cstl_error("Unregistered hashtable");
+    size_t ts = (size_t) htm[idx].type_size;
+    size_t cap = ((char *) htm[idx].p2 - (char *) htm[idx].p1) / ts;
+    uint16_t *meta = (uint16_t *) htm[idx].tombstone;
+    if (n == -1) {
+        size_t pos = ((char *) it - (char *) htm[idx].p1) / ts + 1;
+        for (; pos < cap; pos++)
+            if (meta[pos] != HT_EMPTY)
+                return (char *) htm[idx].p1 + pos * ts;
+        return NULL;
+    }
+    if (n == -2) {
+        size_t pos = ((char *) it - (char *) htm[idx].p1) / ts;
+        if (pos == 0) return (char *) htm[idx].p1 - ts;
+        for (size_t i = pos - 1; ; i--) {
+            if (meta[i] != HT_EMPTY)
+                return (char *) htm[idx].p1 + i * ts;
+            if (i == 0) break;
+        }
+        return (char *) htm[idx].p1 - ts;
+    }
+    return NULL;
+}
+
+OPENCSTL_FUNC void __cstl_hashtable_free(void **container) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
+    int fi = -1;
+    for (int i = 0; i < (int) htm_length; i++)
+        if (htm[i].p1 == *container) {
+            fi = i;
+            break;
+        }
+    if (fi != -1) {
+        memmove(&htm[fi], &htm[fi + 1], (htm_length - fi) * sizeof(HashtableManager));
+        htm_length--;
+    }
+    free(meta);
+    free((char *) (*container) - header_sz);
+    *container = NULL;
+}
+
+OPENCSTL_FUNC void __cstl_hashtable_reserve(void **container, size_t n) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t cap = __HASHTABLE_DEFAULT_SIZE__;
+    if (n > cap) cap = n;
+    uint16_t *meta = __ht_alloc_meta(cap);
+    OPENCSTL_NIDX(container, -7) = cap - 1;
+    OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) meta;
+}
 
 // ██╗░░░██╗███╗░░██╗░█████╗░██████╗░██████╗░███████╗██████╗░███████╗██████╗░░░░░░░░██████╗███████╗████████╗
 // ██║░░░██║████╗░██║██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██╔══██╗░░░░░░██╔════╝██╔════╝╚══██╔══╝
@@ -2751,29 +3052,27 @@ void __htm_append(void *ptr, size_t sz, char *tombstone, int type_size) {
 #define cstl_unordered_set _cstl_unordered_set
 #define _cstl_unordered_set(KEY,...) _CSTL_USET_DISPATCH(KEY, ##__VA_ARGS__, NULL)
 #define _CSTL_USET_DISPATCH(KEY, FUNC, ...) __cstl_unordered_set(sizeof(KEY),#KEY,(void*)(FUNC))
-OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, char *type_key, void *hash_func) {
+OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = (char *) calloc(header_sz + (key_size * __HASHTABLE_DEFAULT_SIZE__),
-                                sizeof(char)) + header_sz;
-    void **container = &ptr;
-    OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_UNORDERED_SET;
-    OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
-    OPENCSTL_NIDX(container, NIDX_TSIZE) = key_size;
-    OPENCSTL_NIDX(container, -9) = 0;
-    OPENCSTL_NIDX(container, -8) = !strcmp(type_key, "float");
-    OPENCSTL_NIDX(container, -7) = __HASHTABLE_DEFAULT_SIZE__; // _capacity
-    OPENCSTL_NIDX(container, -6) = (size_t) calloc(__HASHTABLE_DEFAULT_SIZE__, sizeof(char)); // tombstone
-    OPENCSTL_NIDX(container, -4) = 0; //value_size, but set does not have value_size.
-    OPENCSTL_NIDX(container, -3) = (size_t) type_key; //type
-    OPENCSTL_NIDX(container, -2) = (size_t) hash_func; //hash function
-    OPENCSTL_NIDX(container, -1) = 0; // length
-    OPENCSTL_NIDX(container, 0) = 0; // base
-
-    __htm_append(ptr, key_size * __HASHTABLE_DEFAULT_SIZE__, (char *) OPENCSTL_NIDX(container, -6), key_size);
+    size_t cap = __HASHTABLE_DEFAULT_SIZE__;
+    void *ptr = (char *) calloc(header_sz + key_size * cap, 1) + header_sz;
+    void **c = &ptr;
+    uint16_t *meta = __ht_alloc_meta(cap);
+    OPENCSTL_NIDX(c, NIDX_CTYPE) = OPENCSTL_UNORDERED_SET;
+    OPENCSTL_NIDX(c, NIDX_HSIZE) = header_sz;
+    OPENCSTL_NIDX(c, NIDX_TSIZE) = key_size;
+    OPENCSTL_NIDX(c, -9) = 0;
+    OPENCSTL_NIDX(c, -8) = !strcmp(type_key, "float");
+    OPENCSTL_NIDX(c, -7) = cap - 1;
+    OPENCSTL_NIDX(c, -6) = (size_t) (uintptr_t) meta;
+    OPENCSTL_NIDX(c, -4) = 0;
+    OPENCSTL_NIDX(c, -3) = (size_t) type_key;
+    OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
+    OPENCSTL_NIDX(c, -1) = 0;
+    OPENCSTL_NIDX(c, 0) = 0;
+    __htm_append(ptr, key_size * cap, (char *) meta, (int) key_size);
     return ptr;
 }
-
-#define cstl_unordered_map(KEY, VALUE) _cstl_unordered_map(KEY,VALUE)
 
 // ██╗░░░██╗███╗░░██╗░█████╗░██████╗░██████╗░███████╗██████╗░███████╗██████╗░░░░░░░███╗░░░███╗░█████╗░██████╗░
 // ██║░░░██║████╗░██║██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██╔══██╗░░░░░░████╗░████║██╔══██╗██╔══██╗
@@ -2781,464 +3080,33 @@ OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, char *type_key, void *
 // ██║░░░██║██║╚████║██║░░██║██╔══██╗██║░░██║██╔══╝░░██╔══██╗██╔══╝░░██║░░██║░░░░░░██║╚██╔╝██║██╔══██║██╔═══╝░
 // ╚██████╔╝██║░╚███║╚█████╔╝██║░░██║██████╔╝███████╗██║░░██║███████╗██████╔╝█████╗██║░╚═╝░██║██║░░██║██║░░░░░
 // ░╚═════╝░╚═╝░░╚══╝░╚════╝░╚═╝░░╚═╝╚═════╝░╚══════╝╚═╝░░╚═╝╚══════╝╚═════╝░╚════╝╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░
-
-
-#define _cstl_unordered_map(KEY,VALUE,...) _CSTL_UMAP_DISPATCH(KEY, VALUE, ##__VA_ARGS__, NULL)
-#define _CSTL_UMAP_DISPATCH(KEY, VALUE, FUNC, ...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,(void*)(FUNC))
-OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size, char *type_key, char *type_value,
+#define cstl_unordered_map(KEY, VALUE) _cstl_unordered_map(KEY, VALUE)
+#define _cstl_unordered_map(KEY,VALUE,...) _CSTL_UMAP_DISPATCH(KEY,VALUE,##__VA_ARGS__,NULL)
+#define _CSTL_UMAP_DISPATCH(KEY,VALUE,FUNC,...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,(void*)(FUNC))
+OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
+                                         const char *type_key, const char *type_value,
                                          void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = (char *) calloc(header_sz + ((key_size + value_size) * __HASHTABLE_DEFAULT_SIZE__), sizeof(char)) +
-                header_sz;
-    void **container = &ptr;
-    OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_UNORDERED_MAP;
-    OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
-    OPENCSTL_NIDX(container, NIDX_TSIZE) = key_size;
-    OPENCSTL_NIDX(container, -9) = !strcmp(type_value, "float");
-    OPENCSTL_NIDX(container, -8) = !strcmp(type_key, "float");
-    OPENCSTL_NIDX(container, -7) = __HASHTABLE_DEFAULT_SIZE__; // _capacity
-    OPENCSTL_NIDX(container, -6) = (size_t) calloc(__HASHTABLE_DEFAULT_SIZE__, sizeof(char)); // tombstone
-    OPENCSTL_NIDX(container, -4) = value_size; //value_size, but set does not have value_size.
-    OPENCSTL_NIDX(container, -3) = (size_t) type_key; //type
-    OPENCSTL_NIDX(container, -2) = (size_t) hash_func; //hash function
-    OPENCSTL_NIDX(container, -1) = 0; // length
-    OPENCSTL_NIDX(container, 0) = 0; // base
-    __htm_append(ptr, ((key_size + value_size) * __HASHTABLE_DEFAULT_SIZE__), (char *) OPENCSTL_NIDX(container, -6),
-                 (key_size + value_size));
+    size_t type_size = key_size + value_size;
+    size_t cap = __HASHTABLE_DEFAULT_SIZE__;
+    void *ptr = (char *) calloc(header_sz + type_size * cap, 1) + header_sz;
+    void **c = &ptr;
+    uint16_t *meta = __ht_alloc_meta(cap);
+    OPENCSTL_NIDX(c, NIDX_CTYPE) = OPENCSTL_UNORDERED_MAP;
+    OPENCSTL_NIDX(c, NIDX_HSIZE) = header_sz;
+    OPENCSTL_NIDX(c, NIDX_TSIZE) = key_size;
+    OPENCSTL_NIDX(c, -9) = !strcmp(type_value, "float");
+    OPENCSTL_NIDX(c, -8) = !strcmp(type_key, "float");
+    OPENCSTL_NIDX(c, -7) = cap - 1;
+    OPENCSTL_NIDX(c, -6) = (size_t) (uintptr_t) meta;
+    OPENCSTL_NIDX(c, -4) = value_size;
+    OPENCSTL_NIDX(c, -3) = (size_t) type_key;
+    OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
+    OPENCSTL_NIDX(c, -1) = 0;
+    OPENCSTL_NIDX(c, 0) = 0;
+    __htm_append(ptr, type_size * cap, (char *) meta, (int) type_size);
     return ptr;
 }
-
-OPENCSTL_FUNC bool ___cstl_hashtable_insert(void *base, char *c, void *key, void *value, size_t key_size,
-                                            size_t value_size, size_t new__capacity) {
-    size_t h1 = H1(key, new__capacity, key_size);
-    size_t h2 = H2(key, new__capacity, key_size);
-    size_t pos = h1;
-    size_t type_size = key_size + value_size;
-    while (c[pos] == OCCUPIED) {
-        if (memcmp(((char *) base) + (pos * type_size), key, key_size) == 0) {
-            return false;
-        }
-        pos = (pos + h2) % new__capacity;
-    }
-    c[pos] = OCCUPIED;
-    memcpy(((char *) base) + (pos * type_size), key, key_size);
-    if (value) {
-        memcpy(((char *) base) + (pos * type_size) + key_size, value, value_size);
-    }
-    return true;
-}
-
-
-OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *value) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    size_t type_size = key_size + value_size;
-    size_t length = OPENCSTL_NIDX(container, -1);
-    size_t _capacity = OPENCSTL_NIDX(container, -7);
-    cstl_hash hash_func = (cstl_hash) OPENCSTL_NIDX(container, -2);
-    char *tombstone = (char *) OPENCSTL_NIDX(container, -6);
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
-
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
-
-#if !defined(__linux__) && !defined(__APPLE__)
-    float keyf = 0.0F;
-    if (is_float_key) {
-        keyf = (float) *(double *) key;
-        key = &keyf;
-    }
-
-    float valuef = 0.0F;
-    if (is_float_value) {
-        valuef = (float) *(double *) value;
-        value = &valuef;
-    }
-#endif
-
-    if (length > _capacity * LN2) {
-        void *ptr = *container;
-        int htm_index = -1;
-        for (int i = 0; i < (int) htm_length; i++) {
-            if (htm[i].p1 == ptr) {
-                htm_index = i;
-                break;
-            }
-        }
-        if (htm_index == -1) {
-            cstl_error("Unregistered hashtable");
-        }
-        size_t new__capacity = _capacity * 2;
-        while (!__is_prime(new__capacity))new__capacity++;
-        void *new_base_raw = calloc(header_sz + new__capacity * type_size, sizeof(char));
-        if (new_base_raw == NULL) {
-            cstl_error("Allocation failed at hashtable insert");
-        }
-        // Copy header
-        memcpy(new_base_raw, (char *) *container - header_sz, header_sz);
-
-        char *new_tombstone = calloc(new__capacity, sizeof(char));
-        if (new_tombstone == NULL) {
-            cstl_error("Allocation failed at hashtable insert");
-        }
-
-        void *old_base = *container;
-        char *old_tombstone = tombstone;
-
-        void *nb = (char *) new_base_raw + header_sz;
-
-        for (int i = 0; i < (int) _capacity; i++) {
-            if (old_tombstone[i] == OCCUPIED) {
-                void *old_key = (char *) old_base + (i * type_size);
-                void *old_val = value_size > 0 ? (char *) old_key + key_size : NULL;
-                ___cstl_hashtable_insert(nb, new_tombstone, old_key, old_val, key_size, value_size,
-                                         new__capacity);
-            }
-        }
-
-        free((char *) old_base - header_sz);
-        free(old_tombstone);
-
-        *container = nb;
-        OPENCSTL_NIDX(container, -6) = (size_t) new_tombstone; // tombstone
-        OPENCSTL_NIDX(container, -7) = new__capacity;
-        tombstone = new_tombstone;
-        _capacity = new__capacity;
-
-
-        htm[htm_index].p1 = *container;
-        htm[htm_index].p2 = ((char *) *container) + (type_size * new__capacity);
-        htm[htm_index].tombstone = tombstone;
-        htm[htm_index].type_size = type_size;
-    }
-    if (___cstl_hashtable_insert(*container, tombstone, key, value, key_size, value_size, _capacity)) {
-        OPENCSTL_NIDX(container, -1)++;
-    }
-}
-
-OPENCSTL_FUNC void __cstl_hashtable_erase(void **container, void *key) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t _capacity = OPENCSTL_NIDX(container, -7);
-    char *tombstone = (char *) OPENCSTL_NIDX(container, -6);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    cstl_hash hash_func = (cstl_hash) OPENCSTL_NIDX(container, -2);
-    size_t length = OPENCSTL_NIDX(container, -1);
-
-    size_t type_size = key_size + value_size;
-
-
-#if !defined(__linux__) && !defined(__APPLE__)
-    float keyf = 0.0F;
-    if (is_float_key) {
-        keyf = (float) *(double *) key;
-        key = &keyf;
-    }
-#endif
-    size_t h1 = H1(key, _capacity, key_size);
-    size_t h2 = H2(key, _capacity, key_size);
-    size_t pos = h1;
-    while (tombstone[pos] != VACANT && memcmp(((char *) *container) + (pos * type_size), key, key_size) != 0) {
-        pos = (pos + h2) % _capacity;
-    }
-    // if (memcmp(((char *) *container) + (pos * type_size), key, key_size) == 0) {
-    //     return;
-    // }
-    if (memcmp(((char *) *container) + (pos * type_size), key, key_size) != 0) {
-        return; // 키 없음, 아무것도 안 함
-    }
-    size_t sw = pos;
-    size_t mv = pos;
-    while (tombstone[mv] != VACANT) {
-        if (tombstone[mv] != TOMBSTONE && H1(((char *) *container) + (mv * type_size), _capacity, key_size) == h1) {
-            sw = mv;
-        }
-        mv = (mv + h2) % _capacity;
-    }
-    memcpy(((char *) *container) + (pos * type_size), ((char *) *container) + (sw * type_size), type_size);
-    tombstone[pos] = tombstone[sw];
-    tombstone[sw] = TOMBSTONE;
-    OPENCSTL_NIDX(container, -1)--;
-}
-
-OPENCSTL_FUNC void *__cstl_hashtable_find(void **container, void *key) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t _capacity = OPENCSTL_NIDX(container, -7);
-    char *tombstone = (char *) OPENCSTL_NIDX(container, -6);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    cstl_hash hash_func = (cstl_hash) OPENCSTL_NIDX(container, -2);
-    size_t length = OPENCSTL_NIDX(container, -1);
-
-    size_t type_size = key_size + value_size;
-
-#if !defined(__linux__) && !defined(__APPLE__)
-    float keyf = 0.0F;
-    if (is_float_key) {
-        keyf = (float) *(double *) key;
-        key = &keyf;
-    }
-#endif
-
-    size_t h1 = H1(key, _capacity, key_size);
-    size_t h2 = H2(key, _capacity, key_size);
-    size_t pos = h1;
-    while (tombstone[pos] != VACANT) {
-        if (tombstone[pos] == OCCUPIED && memcmp(((char *) *container) + (pos * type_size), key, key_size) == 0) {
-            return ((char *) *container) + (pos * type_size);
-        }
-        pos = (pos + h2) % _capacity;
-    }
-    return NULL;
-}
-
-OPENCSTL_FUNC void __cstl_hashtable_clear(void **container) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t _capacity = OPENCSTL_NIDX(container, -7);
-    char *tombstone = (char *) OPENCSTL_NIDX(container, -6);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    cstl_hash hash_func = (cstl_hash) OPENCSTL_NIDX(container, -2);
-    size_t length = OPENCSTL_NIDX(container, -1);
-
-    size_t type_size = key_size + value_size;
-
-    memset(tombstone, 0, _capacity * sizeof(char));
-    OPENCSTL_NIDX(container, -1) = 0;
-}
-
-OPENCSTL_FUNC void *__cstl_hashtable_begin(void **container) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t _capacity = OPENCSTL_NIDX(container, -7);
-    char *tombstone = (char *) OPENCSTL_NIDX(container, -6);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    cstl_hash hash_func = (cstl_hash) OPENCSTL_NIDX(container, -2);
-    size_t length = OPENCSTL_NIDX(container, -1);
-
-    size_t type_size = key_size + value_size;
-
-    for (int i = 0; i < _capacity; i++) {
-        if (tombstone[i] == OCCUPIED) {
-            return ((char *) *container) + (i * type_size);
-        }
-    }
-    return NULL;
-}
-
-OPENCSTL_FUNC void *__cstl_hashtable_end(void **container) {
-    return NULL;
-}
-
-OPENCSTL_FUNC void *__cstl_hashtable_rbegin(void **container) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t _capacity = OPENCSTL_NIDX(container, -7);
-    char *tombstone = (char *) OPENCSTL_NIDX(container, -6);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    cstl_hash hash_func = (cstl_hash) OPENCSTL_NIDX(container, -2);
-    size_t length = OPENCSTL_NIDX(container, -1);
-
-    size_t type_size = key_size + value_size;
-
-    for (int i = _capacity - 1; i >= 0; i--) {
-        if (tombstone[i] == OCCUPIED) {
-            return ((char *) *container) + (i * type_size);
-        }
-    }
-    return (void *) ((char *) *container + (type_size * (length - 1)));
-}
-
-OPENCSTL_FUNC void *__cstl_hashtable_rend(void **container) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t _capacity = OPENCSTL_NIDX(container, -7);
-    char *tombstone = (char *) OPENCSTL_NIDX(container, -6);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    cstl_hash hash_func = (cstl_hash) OPENCSTL_NIDX(container, -2);
-    size_t length = OPENCSTL_NIDX(container, -1);
-
-    size_t type_size = key_size + value_size;
-    return (void *) ((char *) *container - (type_size));
-}
-
-OPENCSTL_FUNC void *__cstl_hashtable_empty(void **container) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t _capacity = OPENCSTL_NIDX(container, -7);
-    char *tombstone = (char *) OPENCSTL_NIDX(container, -6);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    cstl_hash hash_func = (cstl_hash) OPENCSTL_NIDX(container, -2);
-    size_t length = OPENCSTL_NIDX(container, -1);
-
-    size_t type_size = key_size + value_size;
-    return (void *) ((char *) *container - (type_size));
-}
-
-OPENCSTL_FUNC size_t __cstl_hashtable_size(void **container) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t _capacity = OPENCSTL_NIDX(container, -7);
-    char *tombstone = (char *) OPENCSTL_NIDX(container, -6);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    cstl_hash hash_func = (cstl_hash) OPENCSTL_NIDX(container, -2);
-    size_t length = OPENCSTL_NIDX(container, -1);
-
-    size_t type_size = key_size + value_size;
-    return length;
-}
-
-OPENCSTL_FUNC size_t __cstl_hashtable_capacity(void **container) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t _capacity = OPENCSTL_NIDX(container, -7);
-    char *tombstone = (char *) OPENCSTL_NIDX(container, -6);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    cstl_hash hash_func = (cstl_hash) OPENCSTL_NIDX(container, -2);
-    size_t length = OPENCSTL_NIDX(container, -1);
-
-    size_t type_size = key_size + value_size;
-    return _capacity;
-}
-
-
-OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
-    // next(-1), prev(-2)
-    int htm_index = -1;
-    for (int i = 0; i < htm_length; i++) {
-        if (htm[i].p1 <= it && it < htm[i].p2) {
-            htm_index = i;
-            break;
-        }
-    }
-    if (htm_index == -1) {
-        cstl_error("Unregistered hashtable");
-    }
-    if (n == -1) {
-        size_t pos = ((char *) it - (char *) htm[htm_index].p1) / htm[htm_index].type_size;
-        void *iter = (char *) it + htm[htm_index].type_size;
-        pos++;
-        size_t _capacity = ((char *) htm[htm_index].p2 - (char *) htm[htm_index].p1) / htm[htm_index].type_size;
-        while (pos < _capacity) {
-            if (htm[htm_index].tombstone[pos] == OCCUPIED) {
-                return iter;
-            }
-            pos++;
-            iter = (char *) iter + htm[htm_index].type_size;
-        }
-        return NULL;
-    }
-    if (n == -2) {
-        size_t pos = ((char *) it - (char *) htm[htm_index].p1) / htm[htm_index].type_size;
-        void *iter = (char *) it - htm[htm_index].type_size;
-        if (pos == 0) return (char *) htm[htm_index].p1 - htm[htm_index].type_size;
-        pos--;
-        while (iter != (char *) htm[htm_index].p1 - htm[htm_index].type_size) {
-            if (htm[htm_index].tombstone[pos] == OCCUPIED) {
-                return iter;
-            }
-            if (pos == 0) break;
-            pos--;
-            iter = (char *) iter - htm[htm_index].type_size;
-        }
-        return (char *) htm[htm_index].p1 - htm[htm_index].type_size;
-    }
-    return NULL;
-}
-
-OPENCSTL_FUNC void __cstl_hashtable_free(void **container) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t _capacity = OPENCSTL_NIDX(container, -7);
-    char *tombstone = (char *) OPENCSTL_NIDX(container, -6);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    cstl_hash hash_func = (cstl_hash) OPENCSTL_NIDX(container, -2);
-    size_t length = OPENCSTL_NIDX(container, -1);
-
-    size_t type_size = key_size + value_size;
-
-    int free_idx = -1;
-    for (int i = 0; i < htm_length; i++) {
-        if (htm[i].p1 == *container) {
-            free_idx = i;
-            break;
-        }
-    }
-    if (free_idx != -1) {
-        memmove(&htm[free_idx], &htm[free_idx + 1], (htm_length - free_idx) * sizeof(HashtableManager));
-        htm_length--;
-        free(tombstone);
-        free((char *) (*container) - header_sz);
-        *container = NULL;
-    }
-}
-#undef VACANT
-#undef OCCUPIED
-#undef TOMBSTONE
-#endif //_OPENCSTL_HASHTABLE_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    hashtable.h */
@@ -3607,7 +3475,7 @@ static double duration(const watch t_beg, const watch t_end) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  cstl_file.h                    (depth 1) */
+/* BEGIN  fstream.h                      (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -3616,63 +3484,99 @@ static double duration(const watch t_beg, const watch t_end) {
 
 #if !defined(_OPENCSTL_CSTL_FILE_H)
 #define _OPENCSTL_CSTL_FILE_H
-/* [already included: defines.h] */
 #include <stdio.h>
 
 
-bool cstl_fopen(FILE **fp, const char *filename, const char *mode) {
+FILE *__cstl_fopen(const char *filename, const char *mode) {
+    FILE *fp = NULL;
 #if defined(_WIN32) || defined(_WIN64)
-    fopen_s(fp, filename, mode);
+    fopen_s(&fp, filename, mode);
 #else
-    *fp = fopen(filename, mode);
+    fp = fopen(filename, mode);
 #endif
-    return *fp != NULL;
+    return fp;
 }
 
-bool cstl_getline(FILE *fp, char *line, size_t size) {
-    int c;
+void __cstl_fclose(FILE *fp) {
+    fclose(fp);
+}
+
+char *__cstl_get_line(FILE *fp) {
+#define _MAX_LINE_SIZE 65536*2*2 // 256KB
+    char line[_MAX_LINE_SIZE] = {0};
+    int c = 0;
     size_t i = 0;
     while ((c = fgetc(fp)) != EOF) {
         if (c == '\n') break;
-        if (i + 1 < size)
+        if (i + 1 < _MAX_LINE_SIZE) {
             line[i++] = (char) c;
+        }
+    }
+    if (i == 0) {
+        return NULL;
     }
     line[i] = '\0';
-    return i > 0 || c != EOF;
+    char *ret = (char *) calloc(i + 1, sizeof(char));
+    memcpy(ret, line, i);
+    return ret;
 }
 
-char *cstl_fread_all(FILE *fp) {
+char *__cstl_fread_all(FILE *fp) {
     fseek(fp, 0, SEEK_END);
-    size_t size = ftell(fp);
+    size_t total_size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
-    char *buf = (char *) malloc(size);
-    fread(buf, 1, size, fp);
+    char *buf = (char *) calloc(total_size, sizeof(char));
+    fread(buf, 1, total_size, fp);
     return buf;
 }
 
+typedef FILE *(*cstl_fopen_fn)(const char *filename, const char *mode);
 
-#define FOPEN cstl_fopen
-#define FCLOSE fclose
-#define FGETLINE cstl_getline
+typedef void (*cstl_fclose_fn)(FILE *fp);
+
+typedef char *(*cstl_getline_fn)(FILE *fp);
+
+typedef char *(*cstl_fread_all_fn)(FILE *fp);
+
+typedef struct FSTREAM {
+    cstl_fopen_fn open;
+    cstl_fclose_fn close;
+    cstl_getline_fn getline;
+    cstl_fread_all_fn read;
+} FSTREAM;
+
+FSTREAM fstream = {
+    __cstl_fopen,
+    __cstl_fclose,
+    __cstl_get_line,
+    __cstl_fread_all,
+};
+
+
 #endif //_OPENCSTL_CSTL_FILE_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* END    cstl_file.h */
+/* END    fstream.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
+
+
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  cstl.h                         (depth 1) */
+/* BEGIN  sort.h                         (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 4/8/2026.
+// Created by spring on 2026. 4. 12..
 //
 
-#ifndef OPENCSTL_CSTL_H
-#define OPENCSTL_CSTL_H
+#if !defined(_OPENCSTL_SORT_H)
+#define _OPENCSTL_SORT_H
+#include <stdlib.h>
+#include <string.h>
+/* [already included: crossplatform.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  stable_sort.h                  (depth 2) */
+/* BEGIN  msort.h                        (depth 2) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -3711,15 +3615,483 @@ char *cstl_fread_all(FILE *fp) {
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#if !defined(_OPENCSTL_SORT_H)
-#define _OPENCSTL_SORT_H
+#if !defined(_OPENCSTL_MSORT_H)
+#define _OPENCSTL_MSORT_H
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
-#include <stddef.h>
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  logging.h                      (depth 3) */
+/* BEGIN  isort.h                        (depth 3) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_ISORT_H)
+#define _OPENCSTL_ISORT_H
+#include <stdlib.h>
+#include <string.h>
+
+static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const void *)) {
+    char sbuf[256];
+    char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
+    for (size_t i = 1; i < n; i++) {
+        memcpy(tmp, arr + i * sz, sz);
+        size_t lo = 0, hi = i;
+        while (lo < hi) {
+            size_t mid = lo + ((hi - lo) >> 1);
+            if (cmp(tmp, arr + mid * sz) < 0) hi = mid;
+            else lo = mid + 1;
+        }
+        if (lo < i) {
+            memmove(arr + (lo + 1) * sz, arr + lo * sz, (i - lo) * sz);
+            memcpy(arr + lo * sz, tmp, sz);
+        }
+    }
+    if (tmp != sbuf) free(tmp);
+}
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    isort.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+#define MSORT_ISORT_THRESH 32
+
+
+static void merge(char *arr, size_t len1, size_t len2, size_t sz,
+                  int (*cmp)(const void *, const void *), char *buf) {
+    if (cmp(arr + (len1 - 1) * sz, arr + len1 * sz) <= 0) return;
+    if (len1 <= len2) {
+        memcpy(buf, arr, len1 * sz);
+        char *c1 = buf, *e1 = buf + len1 * sz;
+        char *c2 = arr + len1 * sz, *e2 = c2 + len2 * sz;
+        char *d = arr;
+        while (c1 < e1 && c2 < e2) {
+            if (cmp(c2, c1) < 0) {
+                memcpy(d, c2, sz);
+                c2 += sz;
+            } else {
+                memcpy(d, c1, sz);
+                c1 += sz;
+            }
+            d += sz;
+        }
+        if (c1 < e1)
+            memcpy(d, c1, (size_t)(e1 - c1));
+    } else {
+        memcpy(buf, arr + len1 * sz, len2 * sz);
+        size_t i = len1, j = len2, k = len1 + len2;
+        while (i > 0 && j > 0) {
+            k--;
+            if (cmp(buf + (j - 1) * sz, arr + (i - 1) * sz) < 0) {
+                memcpy(arr + k * sz, arr + (i - 1) * sz, sz);
+                i--;
+            } else {
+                memcpy(arr + k * sz, buf + (j - 1) * sz, sz);
+                j--;
+            }
+        }
+        if (j > 0)
+            memcpy(arr, buf, j * sz);
+    }
+}
+
+static void msort(void *base, size_t nmemb, size_t size,
+                  int (*compar)(const void *, const void *)) {
+    if (nmemb < 2) return;
+    char *arr = (char *) base;
+    size_t sz = size;
+    for (size_t i = 0; i < nmemb; i += MSORT_ISORT_THRESH) {
+        size_t blk = nmemb - i;
+        if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
+        isort(arr + i * sz, blk, sz, compar);
+    }
+    char *buf = (char *) malloc(((nmemb + 1) / 2) * sz);
+    if (!buf) return;
+    for (size_t width = MSORT_ISORT_THRESH; width < nmemb; width *= 2) {
+        for (size_t i = 0; i + width < nmemb; i += 2 * width) {
+            size_t len1 = width;
+            size_t len2 = nmemb - i - width;
+            if (len2 > width) len2 = width;
+            merge(arr + i * sz, len1, len2, sz, compar, buf);
+        }
+    }
+    free(buf);
+}
+#undef MSORT_ISORT_THRESH
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    msort.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  tsort.h                        (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_TSORT_H)
+#define _OPENCSTL_TSORT_H
+#include <stdlib.h>
+#include <string.h>
+
+#define TS_MIN_MERGE   32
+#define TS_MIN_GALLOP   7
+#define TS_MAX_STACK   85
+
+struct ts_run {
+    size_t base;
+    size_t len;
+};
+
+static inline size_t ts_minrun(size_t n) {
+    size_t r = 0;
+    while (n >= TS_MIN_MERGE) {
+        r |= (n & 1);
+        n >>= 1;
+    }
+    return n + r;
+}
+
+static void ts_binsort(char *arr, size_t lo, size_t hi, size_t start,
+                       size_t sz, int (*cmp)(const void *, const void *)) {
+    char sbuf[256];
+    char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
+    for (size_t i = start; i < hi; i++) {
+        memcpy(tmp, arr + i * sz, sz);
+        size_t left = lo, right = i;
+        while (left < right) {
+            size_t mid = left + ((right - left) >> 1);
+            if (cmp(tmp, arr + mid * sz) < 0) right = mid;
+            else left = mid + 1;
+        }
+        if (left < i) {
+            memmove(arr + (left + 1) * sz, arr + left * sz, (i - left) * sz);
+            memcpy(arr + left * sz, tmp, sz);
+        }
+    }
+    if (tmp != sbuf) free(tmp);
+}
+
+static size_t ts_count_run(char *arr, size_t lo, size_t hi,
+                           size_t sz, int (*cmp)(const void *, const void *)) {
+    if (hi - lo < 2) return hi - lo;
+    size_t run_hi = lo + 1;
+    if (cmp(arr + run_hi * sz, arr + lo * sz) < 0) {
+        while (run_hi + 1 < hi &&
+               cmp(arr + (run_hi + 1) * sz, arr + run_hi * sz) < 0)
+            run_hi++;
+        run_hi++;
+        char rbuf[256];
+        char *t = (sz <= sizeof(rbuf)) ? rbuf : (char *) malloc(sz);
+        size_t a = lo, b = run_hi - 1;
+        while (a < b) {
+            memcpy(t, arr + a * sz, sz);
+            memcpy(arr + a * sz, arr + b * sz, sz);
+            memcpy(arr + b * sz, t, sz);
+            a++;
+            b--;
+        }
+        if (t != rbuf) free(t);
+    } else {
+        while (run_hi + 1 < hi &&
+               cmp(arr + (run_hi + 1) * sz, arr + run_hi * sz) >= 0)
+            run_hi++;
+        run_hi++;
+    }
+    return run_hi - lo;
+}
+
+static size_t ts_gallop_right(const char *key, const char *a, size_t n,
+                              size_t sz, int (*cmp)(const void *, const void *)) {
+    if (n == 0 || cmp(key, a) < 0) return 0;
+    size_t last = 0, ofs = 1;
+    while (ofs < n && cmp(key, a + ofs * sz) >= 0) {
+        last = ofs;
+        ofs = (ofs << 1) + 1;
+    }
+    if (ofs > n) ofs = n;
+    size_t lo = last + 1, hi = ofs;
+    while (lo < hi) {
+        size_t m = lo + ((hi - lo) >> 1);
+        if (cmp(key, a + m * sz) >= 0) lo = m + 1;
+        else hi = m;
+    }
+    return lo;
+}
+
+static size_t ts_gallop_left(const char *key, const char *a, size_t n,
+                             size_t sz, int (*cmp)(const void *, const void *)) {
+    if (n == 0 || cmp(key, a) <= 0) return 0;
+    size_t last = 0, ofs = 1;
+    while (ofs < n && cmp(key, a + ofs * sz) > 0) {
+        last = ofs;
+        ofs = (ofs << 1) + 1;
+    }
+    if (ofs > n) ofs = n;
+    size_t lo = last + 1, hi = ofs;
+    while (lo < hi) {
+        size_t m = lo + ((hi - lo) >> 1);
+        if (cmp(key, a + m * sz) > 0) lo = m + 1;
+        else hi = m;
+    }
+    return lo;
+}
+
+static void ts_merge_lo(char *base, size_t len1, size_t len2,
+                        size_t sz, int (*cmp)(const void *, const void *), char *buf) {
+    memcpy(buf, base, len1 * sz);
+    char *c1 = buf, *e1 = buf + len1 * sz;
+    char *c2 = base + len1 * sz, *e2 = c2 + len2 * sz;
+    char *d = base;
+    size_t mg = TS_MIN_GALLOP;
+    for (;;) {
+        size_t cnt1 = 0, cnt2 = 0;
+        do {
+            if (cmp(c2, c1) < 0) {
+                memcpy(d, c2, sz);
+                c2 += sz;
+                d += sz;
+                cnt2++;
+                cnt1 = 0;
+                if (c2 >= e2) goto tail_lo;
+            } else {
+                memcpy(d, c1, sz);
+                c1 += sz;
+                d += sz;
+                cnt1++;
+                cnt2 = 0;
+                if (c1 >= e1) return;
+            }
+        } while ((cnt1 | cnt2) < mg);
+        do {
+            cnt1 = ts_gallop_right(c2, c1, (size_t) (e1 - c1) / sz, sz, cmp);
+            if (cnt1) {
+                memcpy(d, c1, cnt1 * sz);
+                c1 += cnt1 * sz;
+                d += cnt1 * sz;
+            }
+            if (c1 >= e1) return;
+            memcpy(d, c2, sz);
+            c2 += sz;
+            d += sz;
+            if (c2 >= e2) goto tail_lo;
+            cnt2 = ts_gallop_left(c1, c2, (size_t) (e2 - c2) / sz, sz, cmp);
+            if (cnt2) {
+                memmove(d, c2, cnt2 * sz);
+                c2 += cnt2 * sz;
+                d += cnt2 * sz;
+            }
+            if (c2 >= e2) goto tail_lo;
+            memcpy(d, c1, sz);
+            c1 += sz;
+            d += sz;
+            if (c1 >= e1) return;
+            if (mg > 1) mg--;
+        } while ((cnt1 | cnt2) >= TS_MIN_GALLOP);
+        mg += 2;
+    }
+tail_lo:
+    if (c1 < e1)
+        memcpy(d, c1, (size_t)(e1 - c1));
+}
+
+static void ts_merge_hi(char *base, size_t len1, size_t len2,
+                        size_t sz, int (*cmp)(const void *, const void *), char *buf) {
+    memcpy(buf, base + len1 * sz, len2 * sz);
+    size_t i = len1, j = len2;
+    size_t k = len1 + len2;
+    while (i > 0 && j > 0) {
+        k--;
+        if (cmp(buf + (j - 1) * sz, base + (i - 1) * sz) < 0) {
+            memcpy(base + k * sz, base + (i - 1) * sz, sz);
+            i--;
+        } else {
+            memcpy(base + k * sz, buf + (j - 1) * sz, sz);
+            j--;
+        }
+    }
+    if (j > 0)
+        memcpy(base, buf, j * sz);
+}
+
+static inline void ts_do_merge(char *arr, size_t base1, size_t len1,
+                               size_t len2, size_t sz, int (*cmp)(const void *, const void *),
+                               char *buf) {
+    size_t mid = base1 + len1;
+    if (cmp(arr + (mid - 1) * sz, arr + mid * sz) <= 0) return;
+    if (len1 <= len2)
+        ts_merge_lo(arr + base1 * sz, len1, len2, sz, cmp, buf);
+    else
+        ts_merge_hi(arr + base1 * sz, len1, len2, sz, cmp, buf);
+}
+
+static void ts_merge_collapse(char *arr, struct ts_run *stk, size_t *sp,
+                              size_t sz, int (*cmp)(const void *, const void *), char *buf) {
+    while (*sp > 1) {
+        size_t n = *sp - 2;
+        int need_merge = 0;
+        if (n > 0 && stk[n - 1].len <= stk[n].len + stk[n + 1].len) {
+            if (stk[n - 1].len < stk[n + 1].len) n--;
+            need_merge = 1;
+        } else if (stk[n].len <= stk[n + 1].len) {
+            need_merge = 1;
+        }
+        if (!need_merge) break;
+        ts_do_merge(arr, stk[n].base, stk[n].len, stk[n + 1].len,
+                    sz, cmp, buf);
+        stk[n].len += stk[n + 1].len;
+        for (size_t i = n + 1; i + 1 < *sp; i++)
+            stk[i] = stk[i + 1];
+        (*sp)--;
+    }
+}
+
+static void ts_merge_force(char *arr, struct ts_run *stk, size_t *sp,
+                           size_t sz, int (*cmp)(const void *, const void *), char *buf) {
+    while (*sp > 1) {
+        size_t n = *sp - 2;
+        if (n > 0 && stk[n - 1].len < stk[n + 1].len) n--;
+        ts_do_merge(arr, stk[n].base, stk[n].len, stk[n + 1].len,
+                    sz, cmp, buf);
+        stk[n].len += stk[n + 1].len;
+        for (size_t i = n + 1; i + 1 < *sp; i++)
+            stk[i] = stk[i + 1];
+        (*sp)--;
+    }
+}
+
+void tsort(void *mem, const size_t len, const size_t size_elem,
+           int (*cmp)(const void *, const void *)) {
+    if (len < 2) return;
+    char *arr = (char *) mem;
+    size_t sz = size_elem;
+    if (len < TS_MIN_MERGE) {
+        size_t run = ts_count_run(arr, 0, len, sz, cmp);
+        ts_binsort(arr, 0, len, run, sz, cmp);
+        return;
+    }
+    char *buf = (char *) malloc(len * sz);
+    if (!buf) return;
+    struct ts_run stk[TS_MAX_STACK];
+    size_t sp = 0;
+    size_t minrun = ts_minrun(len);
+    size_t lo = 0;
+    while (lo < len) {
+        size_t run_len = ts_count_run(arr, lo, len, sz, cmp);
+        if (run_len < minrun) {
+            size_t force = len - lo;
+            if (force > minrun) force = minrun;
+            ts_binsort(arr, lo, lo + force, lo + run_len, sz, cmp);
+            run_len = force;
+        }
+        stk[sp].base = lo;
+        stk[sp].len = run_len;
+        sp++;
+        ts_merge_collapse(arr, stk, &sp, sz, cmp, buf);
+        lo += run_len;
+    }
+    ts_merge_force(arr, stk, &sp, sz, cmp, buf);
+    free(buf);
+}
+#undef TS_MIN_MERGE
+#undef TS_MIN_GALLOP
+#undef TS_MAX_STACK
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    tsort.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+
+#define sort qsort
+
+#if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_CLANG)
+#define stable_sort msort
+#elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_GCC)
+#define stable_sort tsort
+#elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
+#define stable_sort tsort
+
+#endif
+
+
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    sort.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  logging.h                      (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 
@@ -3944,115 +4316,6 @@ static LOGGING logging = {
 /* END    logging.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
-
-static void merge(const char *left, const char *mid, const char *right, const char *end, char *dest, size_t size,
-                  int (*compar)(const void *, const void *)) {
-    if (left == mid || mid == end) {
-        memcpy(dest, left, end - left);
-        return;
-    }
-    if (compar(mid - size, mid) <= 0) {
-        memcpy(dest, left, end - left);
-        return;
-    }
-    if (size == 1) {
-        while (left < mid && right < end)
-            *dest++ = (compar(left, right) < 0) ? *left++ : *right++;
-        if (left < mid)
-            memcpy(dest, left, mid - left);
-        else
-            memcpy(dest, right, end - right);
-        return;
-    }
-    while (left < mid && right < end) {
-        if (compar(left, right) < 0) {
-            memcpy(dest, left, size);
-            left += size;
-        } else {
-            memcpy(dest, right, size);
-            right += size;
-        }
-        dest += size;
-    }
-    if (left < mid)
-        memcpy(dest, left, mid - left);
-    else
-        memcpy(dest, right, end - right);
-}
-
-static void msort(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *)) {
-    if (nmemb < 2) {
-        return;
-    }
-    char *src = base;
-    char *buf = (char *) malloc(nmemb * size);
-    if (buf == NULL) {
-        cstl_error("malloc failed");
-    }
-
-
-    if (!buf) return;
-    for (size_t width = 1; width < nmemb; width *= 2) {
-        for (size_t i = 0; i < nmemb; i += 2 * width) {
-            size_t left = i;
-            size_t mid = (i + width < nmemb) ? i + width : nmemb;
-            size_t right = (i + 2 * width < nmemb) ? i + 2 * width : nmemb;
-            merge(src + left * size, src + mid * size, src + mid * size, src + right * size,
-                  buf + left * size, size, compar);
-        }
-        char *tmp = src;
-        src = buf;
-        buf = tmp;
-    }
-
-    if (src != base) {
-        memcpy(base, src, nmemb * size);
-        free(src);
-    } else {
-        free(buf);
-    }
-}
-
-
-#define sort        qsort
-#define stable_sort msort
-#endif //_OPENCSTL_SORT_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    stable_sort.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* [already included: cstl_file.h] */
-
-typedef void (*sort_func)(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *));
-typedef bool (*fopen_func)(const char *filename, const char *mode);
-
-// typedef struct __cstl_fstream_namespace {
-//     fopen_func open;
-// }cstl_fstream_namespace;
-//
-// typedef struct __cstl_namespace {
-//     sort_func sort;
-//     sort_func stable_sort;
-//
-// } cstl_namespace;
-//
-//
-// cstl_namespace cstl = {
-//     qsort,
-//     msort,
-//
-// };
-
-#endif //OPENCSTL_CSTL_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    cstl.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-
-/* [already included: stable_sort.h] */
-/* [already included: logging.h] */
-
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  version.h                      (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -4096,7 +4359,7 @@ typedef bool (*fopen_func)(const char *filename, const char *mode);
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 /* [already included: crossplatform.h] */
-static char *OPENCSTL_VERSION = "1.2.0";
+static char *OPENCSTL_VERSION = "1.2.1";
 
 static char *opencstl_version() {
     return OPENCSTL_VERSION;
@@ -4155,7 +4418,7 @@ char *opencstl_env() {
 #define top             cstl_top
 #define front           cstl_front
 #define back            cstl_back
-
+#define reserve         cstl_reserve
 
 #define new_deque           cstl_deque
 #define new_list            cstl_list
@@ -5030,6 +5293,45 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     }
     __cstl_va_end(vl);
     return NULL;
+}
+
+OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
+    va_list vl;
+    void *va_ptr = NULL;
+    __cstl_va_start(vl, argc, va_ptr);
+#if CSTL_USE_VAARG
+    void *param1 = __cstl_va_arg_next(vl);
+    void *param2 = __cstl_va_arg_next(vl);
+#else
+    void *param1 = __cstl_va_arg(va_ptr);
+    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
+#endif
+
+    size_t container_type;
+    if (__is_deque((void **) container)) {
+        cstl_error("Invalid operation");
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            if (argc == 1) {
+                __cstl_vector_reserve((void **) container, *(size_t *) param1);
+            }
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            if (argc == 1) {
+                __cstl_hashtable_reserve((void **) container, *(size_t *) param1);
+            }
+        }
+        break;
+
+        default: cstl_error("Invalid operation");
+            break;
+    }
+    __cstl_va_end(vl);
 }
 #if defined(__linux__) || defined(__APPLE__)
 // #if !defined(__8cc__ )

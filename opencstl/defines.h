@@ -104,7 +104,7 @@
 
 
 #define cstl_value(iter,TYPE)	(*(TYPE*)(iter+1))
- 
+
 // CSTL_USE_VAARG=0: Windows only (values passed directly on stack)
 // CSTL_USE_VAARG=1: Linux/macOS (macros pass pointers via &__1; standard va_arg is correct)
 #if defined(_WIN32) || defined(_WIN64)
@@ -187,6 +187,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 (OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[cstl_error("Invalid Operation")]))   //priority queue
 
 
+#define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -323,5 +324,3 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define SELECT_ANY	__attribute__((weak))
 #endif
 #define OPENCSTL_FUNC	static
-
-

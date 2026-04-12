@@ -37,8 +37,6 @@
 #pragma once
 #if !defined(_OPENCSTL_VECTOR_H)
 #define _OPENCSTL_VECTOR_H
-#include"types.h"
-#include"defines.h"
 #include"error.h"
 
 // ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
@@ -274,6 +272,20 @@ OPENCSTL_FUNC void __cstl_vector_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     free((char *) (*container) - header_sz);
     *container = NULL;
+}
+
+OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    size_t capacity = OPENCSTL_NIDX(container, -2);
+    if (capacity < n) {
+        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
+        if (b == NULL) {
+            cstl_error("Reallocation failed at vector reserve");
+        }
+        *container = ((char *) b + header_sz);
+    }
 }
 
 

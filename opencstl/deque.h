@@ -36,8 +36,6 @@
 #pragma once
 #if !defined(_OPENCSTL_DEQUE_H)
 #define _OPENCSTL_DEQUE_H
-#include "types.h"
-#include "defines.h"
 #include "error.h"
 #ifdef _MSC_VER
 #pragma warning(disable:4146)

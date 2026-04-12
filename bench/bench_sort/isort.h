@@ -34,19 +34,27 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#if !defined(_OPENCSTL_VERSION_H)
-#define _OPENCSTL_VERSION_H
-#include "crossplatform.h"
-static char *OPENCSTL_VERSION = "1.2.1";
+#if !defined(_OPENCSTL_ISORT_H)
+#define _OPENCSTL_ISORT_H
+#include <stdlib.h>
+#include <string.h>
 
-static char *opencstl_version() {
-    return OPENCSTL_VERSION;
+static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const void *)) {
+    char sbuf[256];
+    char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
+    for (size_t i = 1; i < n; i++) {
+        memcpy(tmp, arr + i * sz, sz);
+        size_t lo = 0, hi = i;
+        while (lo < hi) {
+            size_t mid = lo + ((hi - lo) >> 1);
+            if (cmp(tmp, arr + mid * sz) < 0) hi = mid;
+            else lo = mid + 1;
+        }
+        if (lo < i) {
+            memmove(arr + (lo + 1) * sz, arr + lo * sz, (i - lo) * sz);
+            memcpy(arr + lo * sz, tmp, sz);
+        }
+    }
+    if (tmp != sbuf) free(tmp);
 }
-
-static char __opencstl_env_str[512] = {0};
-
-char *opencstl_env() {
-    sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
-    return __opencstl_env_str;
-}
-#endif //_OPENCSTL_VERSION_H
+#endif

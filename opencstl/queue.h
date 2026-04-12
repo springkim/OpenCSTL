@@ -38,11 +38,8 @@
 #define _OPENCSTL_QUEUE_H
 
 #include"vector.h"
-#include"types.h"
-#include"defines.h"
 #include"error.h"
-#include"cstl_alloca.h"
-
+#include"salloc.h"
 
 
 #define cstl_queue(TYPE)	__cstl_queue(sizeof(TYPE),#TYPE)
@@ -86,7 +83,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
     size_t length = OPENCSTL_NIDX(container, -1);
     cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -3);
 
-    void *tmp = stack_alloc(type_size);
+    void *tmp = salloc(type_size);
     size_t idx = length - 1;
     memcpy(tmp, ((char *) *container) + type_size * idx, type_size);
     while (idx > 0) {
@@ -111,7 +108,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
     OPENCSTL_NIDX(container, -1)--;
     length--;
     size_t idx = 0;
-    void *tmp = stack_alloc(type_size);
+    void *tmp = salloc(type_size);
     size_t L, R, C;
     memcpy(tmp, *container, type_size);
     void *ptr = tmp;

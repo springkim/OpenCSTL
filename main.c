@@ -389,8 +389,51 @@ void test02() {
     printf("%s\n", opencstl_version());
 }
 
+void test_opencstl_unordered_set() {
+    srand(21);
+    UNORDERED_SET(int) v = new_unordered_set(int);
+    for (int i = 0; i < 50000000; ++i) {
+        insert(v, rand());
+    }
+    printf("size: %d\n", size(v));
+    destroy(v);
+}
+
+void test03() {
+    FILE *fp = fstream.open("../words_random.txt", "r");
+    VECTOR(char*) words = new_vector(char*);
+    char *line = NULL;
+    while ((line = fstream.getline(fp)) != NULL) {
+        push_back(words, line);
+    }
+    fstream.close(fp);
+
+
+    for (int i = 0; i < size(words); i++) {
+        logging.info(words[i]);
+    }
+    for (int i = 0; i < size(words); i++) {
+        free(words[i]);
+    }
+    destroy(words);
+}
+
+void test04() {
+    FILE *fp = fstream.open("../words_random.txt", "r");
+    char *file = fstream.read(fp);
+    fstream.close(fp);
+    printf("%s\n", file);
+    free(file);
+}
 
 int main() {
+    
+    // watch t_beg = now();
+    // test_opencstl_unordered_set();
+    // watch t_end = now();
+    // double ms = duration(t_beg, t_end);
+    // printf("duration : %f ms\n", ms);
+    // return 0;
     logging.info(opencstl_env());
 
     //cstl_error("Error message");

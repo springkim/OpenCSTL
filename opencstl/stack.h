@@ -36,8 +36,6 @@
 #pragma once
 #if !defined(_OPENCSTL_STACK_H)
 #define _OPENCSTL_STACK_H
-#include"types.h"
-#include"defines.h"
 #include"error.h"
 
 #define cstl_stack(TYPE)	__cstl_stack(sizeof(TYPE),#TYPE)

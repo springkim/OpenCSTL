@@ -1,3 +1,4 @@
+//
 //  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
 //  By downloading, copying, installing or using the software you agree to this license.
@@ -8,7 +9,7 @@
 //                               License Agreement
 //                Open Source C Container Library like STL in C++
 //
-//               Copyright (C) 2026, Kim Bomm, Woo Cheol, all rights reserved.
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
 //
 // Third party copyrights are property of their respective owners.
 //
@@ -33,19 +34,27 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#pragma once
-#if !defined(_OPENCSTL_C_ALLOCA_H)
-#define _OPENCSTL_C_ALLOCA_H
+#if !defined(_OPENCSTL_ISORT_H)
+#define _OPENCSTL_ISORT_H
+#include <stdlib.h>
+#include <string.h>
 
-#if defined(__linux__) || defined(__APPLE__)
-#include <alloca.h>
-#define stack_alloc(size) (void*)alloca(size)
-#elif defined(_WIN32) || defined(_WIN64)
-#include <malloc.h>
-#define stack_alloc(size) _alloca(size)
-#else
-#error "No Alloca Function"
+static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const void *)) {
+    char sbuf[256];
+    char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
+    for (size_t i = 1; i < n; i++) {
+        memcpy(tmp, arr + i * sz, sz);
+        size_t lo = 0, hi = i;
+        while (lo < hi) {
+            size_t mid = lo + ((hi - lo) >> 1);
+            if (cmp(tmp, arr + mid * sz) < 0) hi = mid;
+            else lo = mid + 1;
+        }
+        if (lo < i) {
+            memmove(arr + (lo + 1) * sz, arr + lo * sz, (i - lo) * sz);
+            memcpy(arr + lo * sz, tmp, sz);
+        }
+    }
+    if (tmp != sbuf) free(tmp);
+}
 #endif
-
-
-#endif //_OPENCSTL_C_ALLOCA_H

@@ -1,10 +1,11 @@
+
+
+
+
 <p align="center">
-  <img width="160" height="160" src="assets/OpenCSTL.png">
+  <img width="1024" src="assets/blogo.png">
 </p>
 
-<h1 align="center">OpenCSTL</h1>
-<p align="center">Open Source C Container Library like STL in C++</p>
-<p align="center">C99 &nbsp;·&nbsp; C11 &nbsp;·&nbsp; C17 &nbsp;·&nbsp; C23</p>
 
 
 
@@ -12,8 +13,20 @@
 ---
 
 
+1. [Overview](#overview)
+2. [Preview](#preview)
+3. [Comparison](#comparison)
+4. [Components](#components)
+5. [Installation](#installation)
+6. [How to use](#how-to-use)
+7. [Performance](#performance)
 
-* OpenCSTL은 다른 C-STL라이브러리와 다릅니다.
+
+
+## Overview
+
+
+* OpenCSTL은 다른 C-STL라이브러리와 비교할 수 없을 정도로 다릅니다.
   * 단일 헤더 파일.
     * 번거로운 빌드 과정 없이 즉시 사용이 가능합니다.
   * C언어 코딩 스타일 그대로 사용이 가능합니다.
@@ -24,21 +37,126 @@
     * 오버로딩을 지원합니다. STL의 오버로딩과 동일합니다.
     * `vector`, `list`, `queue`, `stack`, `deque`, `priority_queue`, `set`, `map`, `unordered_set`, `unordered_map` 이 구현되어 있습니다.
     * Iterator를 지원합니다.
+  * 매크로 / `void*` 방식이 아닌 컨테이너 자료형 타입을 사용합니다.
+    * 매크로 기반 라이브러리와 같은 전방 선언이 필요하지 않습니다.
+      * 자료형마다 매번 새롭게 컨테이너 전체를 만들 필요가 없습니다.
+      * 새로운 타입의 자료형이나 구조체도 바로 사용할 수 있습니다.
+    * `void*`기반 라이브러리와 다르게 값을 직접 전달합니다.
+      * 캐시 효율이 더 높고 빠른 속도와 적은 메모리 사용량이 OpenCSTL의 장점입니다.
+      * 코드 가독성이 높으며 타입 안전성이 더 높습니다.
+    * `_Generic` 기반 라이브러리는 새로운 타입을 사용하기 어렵습니다.
+      * 전방 선언이 매번 필요하며 컴파일 속도가 느린 단점이 있습니다.
+      * C11 이상에서만 동작합니다.
+    * 컨테이너 Header를 사용하고 가변 인자 함수로 제네릭 컨테이너를 구현하였으며 매크로를 통한 Wrapping 방식을 사용합니다.
+      * 매크로 기반 라이브러리와 같이 타입을 지정해서 사용하지만 전방 선언이나 init 작업이 필요하지 않습니다.
+      * 내부적으로 `void*`를 사용하지만 OpenCSTL은 값 자체를 저장합니다. 따라서 캐시 히트율이 높고 빠른 속도를 보장합니다. 
+  * 크로스플랫폼
+    * C99, C11, C14, C17, C23을 모두 지원합니다.
+    * `Windows`: `MSVC(2015,2017,2019,2022,2026)`, `MinGW64(gcc)`, `clang`, `tcc`를 지원합니다.
+    * `Linux`: `gcc`, `clang`, `tcc`를 지원합니다.
+    * `MacOS`: `gcc`, `clang`, `tcc`를 지원합니다.
+  * 직관적이고 깔끔한 인터페이스.
+    * `SET`, `MAP`,`UNORDERED_SET`,`UNORDERED_MAP`,`PRIORITY_QUEUE` 사용시 오버로딩으로 비교 함수를 지정하지 않아도 기본 비교함수인 `memcmp`로 동작합니다.
+    * 완전히 새로운 방식의 구현체로 타 라이브러리에 비해 압도적으로 쉽고 깔끔한 인테피이스를 보장합니다.
+
+* * *
+
+## Preview
+
+OpenCSTL과 대응하는 C++ STL 코드입니다.
+
+| OpenCSTL을 사용한 C 코드                                | C++ STL 코드  |
+| ----------------------------------------- | ---- |
+| ![](./assets/codes/sample01_vector.c.webp) |  ![](./assets/codes/sample01_vector.cpp.webp)     |
+| ![](./assets/codes/sample02_vector.c.webp) |  ![](./assets/codes/sample02_vector.cpp.webp)     |
+| ![](./assets/codes/sample03_list.c.webp) |  ![](./assets/codes/sample03_list.cpp.webp)     |
+| ![](./assets/codes/sample04_stack_queue.c.webp) |  ![](./assets/codes/sample04_stack_queue.cpp.webp)     |
+| ![](./assets/codes/sample05_deque.c.webp) |  ![](./assets/codes/sample05_deque.cpp.webp)     |
+| ![](./assets/codes/sample06_map.c.webp) |  ![](./assets/codes/sample06_map.cpp.webp)     |
+| ![](./assets/codes/sample07_priority_queue.c.webp) |  ![](./assets/codes/sample07_priority_queue.cpp.webp)     |
 
 
 
 
 
-## Why OpenCSTL?
+## Comparison
 
-- **Single-header** — Just `#include "opencstl.h"` and you're done. No build steps, no linking.
-- **Identical C++ STL interface** — Same function names, same semantics, zero new API to learn. Auto-dispatch routes one function name to the correct implementation based on the container type. Variadic API: different parameter counts invoke different behaviors, just like C++ overloading.
-- **Bracket access** — `VECTOR` and `DEQUE` support `v[i]` subscript access, just like C++ and plain C arrays.
-- **Full iterator support** — Every container exposes `begin`, `end`, `rbegin`, and `rend` iterators — including unordered containers.
-- **stdlib compatible** — Use standard C functions like `qsort` and `bsearch` directly on `VECTOR` and `DEQUE` data.
-- **Zero boilerplate** — No forward declarations, no type registration macros, no initialization ceremony.
-- **Cross-platform** — Works on Windows, macOS, and Linux. Compiler support: MSVC, MinGW64, GCC, Clang, and icx-cc.
-- **Simpler than any alternative** — Far easier to use than other C container libraries, without breaking idiomatic C style.
+|-|[OpenCSTL](https://github.com/springkim/OpenCSTL)|[STC](https://github.com/stclib/STC)|[mlib](https://github.com/P-p-H-d/mlib)|[CC](https://github.com/JacksonAllan/CC)|
+|-|-|-|-|-|
+|`[i]` 인덱스 접근|✅|❌|❌|❌|
+|전방 선언 없이 사용|✅|❌|❌|✅|
+|C99지원|✅|✅|✅|❌|
+|Header Only|✅|✅|✅|✅|
+|Single Header File|✅|❌|❌|✅|
+|컨테이너별 동일한 인터페이스|✅|❌|❌|✅|
+
+
+
+## Components
+
+
+
+### Containers library
+
+컨테이너 라이브러리는 C++ STL의 컨테이너와 동일합니다.
+
+
+
+
+
+```markdown
+## Containers
+- `VECTOR(T)` — dynamic array
+- `LIST(T)` — doubly linked list
+- `DEQUE(T)` — double-ended queue
+- `SET(T)` — sorted set (red-black tree)
+- `MAP(K)` — sorted map (red-black tree)
+- `UNORDERED_SET(T)` — hash set
+- `STACK(T)` — stack
+- `QUEUE(T)` — queue
+- `QUEUE(T)` / `new_priority_queue` — priority queue (min/max heap)
+
+## Algorithms
+- `sort` — qsort
+- `stable_sort` — stable sort
+- `find` — linear search
+- `LESS(T)` / `GREATER(T)` — built-in comparators
+
+## Iterator
+- `begin` / `end` — range iterator
+- `rbegin` / `rend` — reverse iterator
+- `next` / `prev` — iterator traversal
+
+## Container Operations
+- `push_back` / `pop_back` — back insert/remove
+- `push_front` / `pop_front` — front insert/remove
+- `push` / `pop` / `top` — stack/queue/priority_queue ops
+- `insert` — single or range insert (overloaded)
+- `erase` — single or range erase
+- `assign` — fill assign (overloaded)
+- `resize` — resize with optional fill value (overloaded)
+- `size` — size queries
+- `capacity` — capacity queries
+- `empty` — empty check
+- `front` / `back` — element access
+- `first` / `second` — map key/value access
+- `destroy` — memory free
+
+## Map Operations
+- `first(it)` — key access
+- `second(it, T)` — value access
+
+## Utilities
+- `rand32` — random number generator (32bit unsigned)
+- `rand64` - random number generator (64bit unsigned)
+- `watch` / `now` / `duration` — timer
+- `logging.debug` / `.info` / `.warning` / `.error` / `.critical` / `.fatal` / `.message` — 
+## logging
+- `opencstl_version` — version string
+- `opencstl_env` — environment info
+```
+
+
 
 ## Installation
 

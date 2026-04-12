@@ -34,19 +34,75 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#if !defined(_OPENCSTL_VERSION_H)
-#define _OPENCSTL_VERSION_H
-#include "crossplatform.h"
-static char *OPENCSTL_VERSION = "1.2.1";
+#if !defined(_OPENCSTL_CSTL_FILE_H)
+#define _OPENCSTL_CSTL_FILE_H
+#include <stdio.h>
 
-static char *opencstl_version() {
-    return OPENCSTL_VERSION;
+
+FILE *__cstl_fopen(const char *filename, const char *mode) {
+    FILE *fp = NULL;
+#if defined(_WIN32) || defined(_WIN64)
+    fopen_s(&fp, filename, mode);
+#else
+    fp = fopen(filename, mode);
+#endif
+    return fp;
 }
 
-static char __opencstl_env_str[512] = {0};
-
-char *opencstl_env() {
-    sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
-    return __opencstl_env_str;
+void __cstl_fclose(FILE *fp) {
+    fclose(fp);
 }
-#endif //_OPENCSTL_VERSION_H
+
+char *__cstl_get_line(FILE *fp) {
+#define _MAX_LINE_SIZE 65536*2*2 // 256KB
+    char line[_MAX_LINE_SIZE] = {0};
+    int c = 0;
+    size_t i = 0;
+    while ((c = fgetc(fp)) != EOF) {
+        if (c == '\n') break;
+        if (i + 1 < _MAX_LINE_SIZE) {
+            line[i++] = (char) c;
+        }
+    }
+    if (i == 0) {
+        return NULL;
+    }
+    line[i] = '\0';
+    char *ret = (char *) calloc(i + 1, sizeof(char));
+    memcpy(ret, line, i);
+    return ret;
+}
+
+char *__cstl_fread_all(FILE *fp) {
+    fseek(fp, 0, SEEK_END);
+    size_t total_size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    char *buf = (char *) calloc(total_size, sizeof(char));
+    fread(buf, 1, total_size, fp);
+    return buf;
+}
+
+typedef FILE *(*cstl_fopen_fn)(const char *filename, const char *mode);
+
+typedef void (*cstl_fclose_fn)(FILE *fp);
+
+typedef char *(*cstl_getline_fn)(FILE *fp);
+
+typedef char *(*cstl_fread_all_fn)(FILE *fp);
+
+typedef struct FSTREAM {
+    cstl_fopen_fn open;
+    cstl_fclose_fn close;
+    cstl_getline_fn getline;
+    cstl_fread_all_fn read;
+} FSTREAM;
+
+FSTREAM fstream = {
+    __cstl_fopen,
+    __cstl_fclose,
+    __cstl_get_line,
+    __cstl_fread_all,
+};
+
+
+#endif //_OPENCSTL_CSTL_FILE_H

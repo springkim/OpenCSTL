@@ -39,9 +39,7 @@
 #define _OPENCSTL_TREE_H
 
 
-#include"types.h"
 #include"error.h"
-#include"defines.h"
 
 #define P	    (-4)
 #define R       (-1)

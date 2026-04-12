@@ -37,7 +37,6 @@
 #pragma once
 #if !defined(_OPENCSTL_LIST_H)
 #define _OPENCSTL_LIST_H
-#include"types.h"
 #include"error.h"
 #define cstl_list(TYPE)		__cstl_list(sizeof(TYPE),#TYPE)
 #define NTAIL(N)	(N==-1?-2:N)

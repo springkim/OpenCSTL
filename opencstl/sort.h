@@ -34,19 +34,26 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#if !defined(_OPENCSTL_VERSION_H)
-#define _OPENCSTL_VERSION_H
+
+#if !defined(_OPENCSTL_SORT_H)
+#define _OPENCSTL_SORT_H
+#include <stdlib.h>
+#include <string.h>
 #include "crossplatform.h"
-static char *OPENCSTL_VERSION = "1.2.1";
+#include "msort.h"
+#include "tsort.h"
 
-static char *opencstl_version() {
-    return OPENCSTL_VERSION;
-}
 
-static char __opencstl_env_str[512] = {0};
+#define sort qsort
 
-char *opencstl_env() {
-    sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
-    return __opencstl_env_str;
-}
-#endif //_OPENCSTL_VERSION_H
+#if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_CLANG)
+#define stable_sort msort
+#elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_GCC)
+#define stable_sort tsort
+#elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
+#define stable_sort tsort
+
+#endif
+
+
+#endif
