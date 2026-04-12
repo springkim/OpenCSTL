@@ -67,7 +67,7 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
 
 | OpenCSTL을 사용한 C 코드                                | C++ STL 코드  |
 | ----------------------------------------- | ---- |
-| ![./assets/sample01_vector.c](./assets/codes/sample01_vector.c.webp) |  ![](./assets/codes/sample01_vector.cpp.webp)     |
+| ![https://github.com/springkim/OpenCSTL/blob/master/assets/sample01_vector.c](./assets/codes/sample01_vector.c.webp) |  ![](./assets/codes/sample01_vector.cpp.webp)     |
 | ![](./assets/codes/sample02_vector.c.webp) |  ![](./assets/codes/sample02_vector.cpp.webp)     |
 | ![](./assets/codes/sample03_list.c.webp) |  ![](./assets/codes/sample03_list.cpp.webp)     |
 | ![](./assets/codes/sample04_stack_queue.c.webp) |  ![](./assets/codes/sample04_stack_queue.cpp.webp)     |
