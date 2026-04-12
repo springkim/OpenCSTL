@@ -112,7 +112,7 @@ int sort_test() {
     }
     printf("qsort: %f\n", q_diff);
     printf("msort: %f\n", m_diff);
-    
+
     printf("tsort: %f\n", t_diff);
     printf("pdqsort: %f\n", p_diff);
     printf("rsort: %f\n", r_diff);

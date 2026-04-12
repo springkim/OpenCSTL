@@ -42,24 +42,28 @@
 #include "crossplatform.h"
 #include "msort.h"
 #include "tsort.h"
+#include "pdqsort.h"
 
-
-#define sort qsort
 
 #if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_CLANG)
 #define stable_sort msort
+#define sort pdqsort
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_GCC)
 #define stable_sort tsort
+#define sort pdqsort
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
 #define stable_sort tsort
-
+#define sort qsort
 
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_CLANG)
 #define stable_sort msort
+#define sort pdqsort
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_GCC)
 #define stable_sort tsort
+#define sort pdqsort
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_TCC)
 #define stable_sort tsort
+#define sort qsort
 #endif
 
 
