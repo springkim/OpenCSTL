@@ -16,9 +16,8 @@ int is_sorted(void *base, size_t nmemb, size_t size, int (*compar)(const void *,
     return 1;
 }
 
-typedef long long int64_t;
+typedef long long DTYPE;
 
-typedef int64_t DTYPE;
 //typedef double DTYPE;
 
 #define COMPARE(TYPE) int cmp(const void* a, const void* b) {return *(TYPE *) a < *(TYPE *) b ? -1 : *(TYPE *) a > *(TYPE *) b;}
