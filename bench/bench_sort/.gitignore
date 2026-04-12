@@ -347,3 +347,4 @@ perftest/
 .idea/
 .claude/
 a.out
+*.exe

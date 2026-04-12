@@ -11,13 +11,21 @@
 #define PDQ_MAX_STACK         64
 
 
+#if defined(_MSC_VER)
+    #define PDQ_LIKELY(x)   (x)
+    #define PDQ_UNLIKELY(x) (x)
+#else
+    #define PDQ_LIKELY(x)   __builtin_expect(!!(x), 1)
+    #define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
+#endif
+
 static inline void pdq__swap(unsigned char *a, unsigned char *b, size_t n) {
-    if (__builtin_expect(n == 8, 1)) {
+    if (PDQ_LIKELY(n == 8)) {
         uint64_t t;
         memcpy(&t, a, 8);
         memcpy(a, b, 8);
         memcpy(b, &t, 8);
-    } else if (__builtin_expect(n == 4, 0)) {
+    } else if (PDQ_UNLIKELY(n == 4)) {
         uint32_t t;
         memcpy(&t, a, 4);
         memcpy(a, b, 4);

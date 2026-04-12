@@ -52,6 +52,8 @@ static watch now() {
 }
 
 static double duration(const watch t_beg, const watch t_end) {
+    LARGE_INTEGER freq;
+    QueryPerformanceFrequency(&freq);
     double ms = (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
     return ms > 0 ? ms : -ms;
 }

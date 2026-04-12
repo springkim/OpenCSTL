@@ -3,7 +3,53 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdio.h>
+
+#if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
+
+#include <windows.h>
+
+typedef LARGE_INTEGER watch;
+
+static watch now() {
+    watch t;
+    QueryPerformanceCounter(&t);
+    return t;
+}
+
+static double duration(const watch t_beg, const watch t_end) {
+    LARGE_INTEGER freq;
+    QueryPerformanceFrequency(&freq);
+    double ms = (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
+    return ms > 0 ? ms : -ms;
+}
+
+
+#elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
+
+
 #include <sys/time.h>
+#include <time.h>
+
+typedef struct timeval watch;
+
+static watch now() {
+    watch tv;
+    gettimeofday(&tv, NULL);
+    return tv;
+}
+
+static double duration(const watch t_beg, const watch t_end) {
+    double ms = (t_end.tv_sec - t_beg.tv_sec) * 1000.0 +
+                (t_end.tv_usec - t_beg.tv_usec) / 1000.0;
+    return ms > 0 ? ms : -ms;
+}
+
+
+#else
+#error Unsupported compiler/platform
+#endif
+
 #include "tsort.h"
 #include "msort.h"
 #include "pdqsort.h"
@@ -60,8 +106,8 @@ int sort_test() {
     DTYPE *target = (DTYPE *) calloc(N, sizeof(DTYPE));
 
 
-    struct timeval bgn;
-    struct timeval end;
+    watch bgn;
+    watch end;
     double m_diff = 0;
     double q_diff = 0;
     double t_diff = 0;
@@ -69,36 +115,36 @@ int sort_test() {
     double r_diff = 0;
     for (int i = 0; i < ALGORITHMS * REPEAT; i++) {
         memcpy(target, arr, N * sizeof(int));
-        gettimeofday(&bgn, NULL);
+        bgn = now();
         switch (i % ALGORITHMS) {
             case 0: {
                 qsort(target, N, sizeof(DTYPE), compare);
-                gettimeofday(&end, NULL);
-                q_diff += end.tv_sec + end.tv_usec / 1000000.0 - bgn.tv_sec - bgn.tv_usec / 1000000.0;
+                end = now();
+                q_diff += duration(bgn, end);
             };
                 break;
             case 1: {
                 msort(target, N, sizeof(DTYPE), compare);
-                gettimeofday(&end, NULL);
-                m_diff += end.tv_sec + end.tv_usec / 1000000.0 - bgn.tv_sec - bgn.tv_usec / 1000000.0;
+                end = now();
+                m_diff += duration(bgn, end);
             };
                 break;
             case 2: {
                 tsort(target, N, sizeof(DTYPE), compare);
-                gettimeofday(&end, NULL);
-                t_diff += end.tv_sec + end.tv_usec / 1000000.0 - bgn.tv_sec - bgn.tv_usec / 1000000.0;
+                end = now();
+                t_diff += duration(bgn, end);
             };
                 break;
             case 3: {
                 pdqsort(target, N, sizeof(DTYPE), compare);
-                gettimeofday(&end, NULL);
-                p_diff += end.tv_sec + end.tv_usec / 1000000.0 - bgn.tv_sec - bgn.tv_usec / 1000000.0;
+                end = now();
+                p_diff += duration(bgn, end);
             }
             break;
             case 4: {
                 rsort64(target, N);
-                gettimeofday(&end, NULL);
-                r_diff += end.tv_sec + end.tv_usec / 1000000.0 - bgn.tv_sec - bgn.tv_usec / 1000000.0;
+                end = now();
+                r_diff += duration(bgn, end);
             }
             break;
             default: {
@@ -110,12 +156,14 @@ int sort_test() {
             puts("Not sorted");
         }
     }
-    printf("qsort: %f\n", q_diff);
-    printf("msort: %f\n", m_diff);
+    printf("qsort: %.2fms\n", q_diff);
+    printf("msort: %.2fms\n", m_diff);
 
-    printf("tsort: %f\n", t_diff);
-    printf("pdqsort: %f\n", p_diff);
-    printf("rsort: %f\n", r_diff);
+    printf("tsort: %.2fms\n", t_diff);
+    printf("pdqsort: %.2fms\n", p_diff);
+    printf("rsort: %.2fms\n", r_diff);
+
+    printf("|%.2f|%.2f|%.2f|%.2f|\n",q_diff,m_diff,t_diff,p_diff);
     return 0;
 }
 
