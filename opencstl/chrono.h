@@ -67,18 +67,31 @@ static double duration(const watch t_beg, const watch t_end) {
 
 typedef struct timeval watch;
 
-static watch now(void) {
+static watch _now(void) {
     watch tv;
     gettimeofday(&tv, NULL);
     return tv;
 }
 
-static double duration(const watch t_beg, const watch t_end) {
+static double _duration(const watch t_beg, const watch t_end) {
     double ms = (t_end.tv_sec - t_beg.tv_sec) * 1000.0 +
                 (t_end.tv_usec - t_beg.tv_usec) / 1000.0;
     return ms > 0 ? ms : -ms;
 }
 
+typedef watch (*now_fn)(void);
+
+typedef double (*duration_fn)(const watch, const watch);
+
+typedef struct {
+    now_fn now;
+    duration_fn duration;
+} CHRONO;
+
+static CHRONO chrono = {
+    _now,
+    _duration,
+};
 
 #else
 #error Unsupported compiler/platform

@@ -46,7 +46,7 @@
 #define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zalloc(header_sz + type_size * 2);
+    void *block = zalloc(header_sz + type_size * 2,1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for deque");
     }

@@ -67,4 +67,7 @@ static unsigned long long cstl_rand64(void) {
 #define rand32              cstl_rand32
 #define rand64              cstl_rand64
 
+
+// shuffle
+
 #endif //_OPENCSTL_C_RANDOM_H

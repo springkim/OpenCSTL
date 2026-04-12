@@ -43,7 +43,7 @@
 #define NTAIL(N)	(N==-1?-2:N)
 OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zmalloc(header_sz + sizeof(size_t));
+    void *block = zalloc(header_sz + sizeof(size_t),1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for list");
     }

@@ -86,7 +86,7 @@
 
 #include "cstl_compare.h"
 #include "random.h"
-#include "watch.h"
+#include "chrono.h"
 #include "fstream.h"
 
 
@@ -161,6 +161,10 @@ OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
 }
 
 OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
+    // if (htm == NULL) {
+    //     return false;
+    // }
+    // return htm_find(htm, it) != NULL;
     for (size_t i = 0; i < htm_length; i++) {
         if (htm[i].p1 <= it && it < htm[i].p2) {
             return true;
@@ -168,6 +172,7 @@ OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
     }
     return false;
 }
+
 
 OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     va_list vl;
@@ -463,6 +468,12 @@ OPENCSTL_FUNC void *_cstl_next(void *it) {
     if (__is_hashtable_iter(it)) {
         return __cstl_hashtable_next_prev(it, -1);
     }
+    // Interval *iv = iveb_find(iveb, it);
+    // if (iv != NULL) {
+    //     if (iv->ctype == CT_VECTOR) {
+    //         return __cstl_vector_next(it, iv->type_size);
+    //     }
+    // }
     size_t node_type = OPENCSTL_NIDX(&it, -3);
     switch (node_type) {
         case OPENCSTL_LIST: {
@@ -491,6 +502,12 @@ OPENCSTL_FUNC void *_cstl_prev(void *it) {
     if (__is_hashtable_iter(it)) {
         return __cstl_hashtable_next_prev(it, -2);
     }
+    // Interval *iv = iveb_find(iveb, it);
+    // if (iv != NULL) {
+    //     if (iv->ctype == CT_VECTOR) {
+    //         return __cstl_vector_prev(it, iv->type_size);
+    //     }
+    // }
     size_t node_type = OPENCSTL_NIDX(&it, -3);
     switch (node_type) {
         case OPENCSTL_LIST: {
@@ -1052,7 +1069,7 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
 }
 
 
-OPENCSTL_FUNC void *_cstl_list_sort(void *container, int argc, ...) {
+OPENCSTL_FUNC void _cstl_sort(void *container, int argc, ...) {
     va_list vl;
     void *va_ptr = NULL;
     __cstl_va_start(vl, argc, va_ptr);
@@ -1067,7 +1084,8 @@ OPENCSTL_FUNC void *_cstl_list_sort(void *container, int argc, ...) {
 
     size_t container_type;
     if (__is_deque((void **) container)) {
-        cstl_error("Invalid operation");
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -1083,7 +1101,6 @@ OPENCSTL_FUNC void *_cstl_list_sort(void *container, int argc, ...) {
             break;
     }
     __cstl_va_end(vl);
-    return NULL;
 }
 
 #if defined(__linux__) || defined(__APPLE__)

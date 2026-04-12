@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#define OPENCSTL_TRACER
 #include "opencstl/opencstl.h"
 #define DECORATE(STR) {int padding = 70 - strlen(STR);int margin=0;if(padding%2==1)margin=1;else margin=0;for (int i = 0; i < padding/2; i++) { putchar('#');  } printf(STR); for (int i = 0; i < padding/2+margin; i++) { putchar('#'); } putchar('\n');}
 
@@ -138,7 +139,7 @@ void cstl_list_test02(void) {
     }
 
 
-    cstl_list_sort(list, LESS(int));
+    cstl_sort(list, LESS(int));
 
     logging.info("list size: %d", size(list));
     for (int *it = begin(list); it != end(list); it = next(it)) {
@@ -388,16 +389,16 @@ void test01(void) {
 void test02(void) {
     VECTOR(int) v = new_vector(int);
 
-    watch t_beg = now();
+    watch t_beg = chrono.now();
     for (int i = 0; i < 100; i++) {
         push_back(v, rand32() % 1000);
     }
 
     sort(v,size(v), sizeof(int),GREATER(int));
 
-    watch t_end = now();
+    watch t_end = chrono.now();
 
-    double ms = duration(t_beg, t_end);
+    double ms = chrono.duration(t_beg, t_end);
     for (int i = 0; i < size(v); i++) {
         printf("[%4d]\n", v[i]);
     }
@@ -444,6 +445,9 @@ void test04(void) {
 }
 
 int main(void) {
+    
+    //cstl_list_test02();
+    //return 0;
     // watch t_beg = now();
     // test_opencstl_unordered_set();
     // watch t_end = now();

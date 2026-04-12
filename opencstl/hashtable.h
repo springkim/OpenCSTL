@@ -34,9 +34,12 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
+
+
 #if !defined(_OPENCSTL_HASHTABLE_H)
 #define _OPENCSTL_HASHTABLE_H
 #include"zalloc.h"
+//#include "van_emde_boas_tree.h"
 /* [already included: error.h] */
 #define HT_EMPTY     0x0000U
 #define HT_FRAG_MASK 0xF000U
@@ -383,6 +386,8 @@ static inline bool __ht_reinsert(
     return true;
 }
 
+// HTMVEB *htm = NULL;
+
 #define HTM_SIZE 1024
 
 typedef struct {
@@ -418,7 +423,7 @@ static void __ht_do_rehash(
     void **container, size_t header_sz,
     size_t key_size, size_t value_size, size_t type_size,
     size_t length, size_t old_cap_mask,
-    uint16_t *old_meta, int htm_index
+    uint16_t *old_meta, size_t htm_index
 ) {
     size_t new_cap = (old_cap_mask + 1) * 2;
     while (true) {
@@ -450,6 +455,10 @@ static void __ht_do_rehash(
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
+        // chtm->p1 = *container;
+        // chtm->p2 = (char *) *container + type_size * new_cap;
+        // chtm->tombstone = (char *) new_meta;
+        // chtm->type_size = (int) type_size;
         htm[htm_index].p1 = *container;
         htm[htm_index].p2 = (char *) *container + type_size * new_cap;
         htm[htm_index].tombstone = (char *) new_meta;
@@ -523,6 +532,9 @@ OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *va
             return;
         }
     do_rehash:;
+
+        //HashtableManager* chtm = htm_find(htm,*container);
+
         int htm_index = -1;
         for (int i = 0; i < (int) htm_length; i++)
             if (htm[i].p1 == *container) {
@@ -664,27 +676,41 @@ OPENCSTL_FUNC size_t __cstl_hashtable_capacity(void **container) {
 }
 
 OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
+    //HashtableManager* chtm = htm_find(htm,it);
     int idx = -1;
     for (int i = 0; i < (int) htm_length; i++)
         if (htm[i].p1 <= it && it < htm[i].p2) {
             idx = i;
             break;
         }
+
+
     if (idx == -1)
         cstl_error("Unregistered hashtable");
+
+    // size_t ts = (size_t)chtm->type_size;
+    // size_t cap = ((char *) chtm->p2 - (char *) chtm->p1) / ts;
+    // uint16_t *meta = (uint16_t *) chtm->tombstone;
+    //
     size_t ts = (size_t) htm[idx].type_size;
     size_t cap = ((char *) htm[idx].p2 - (char *) htm[idx].p1) / ts;
     uint16_t *meta = (uint16_t *) htm[idx].tombstone;
     if (n == -1) {
         size_t pos = ((char *) it - (char *) htm[idx].p1) / ts + 1;
+        //size_t pos = ((char*)it - (char*)chtm->p1)/ts + 1;
         for (; pos < cap; pos++)
-            if (meta[pos] != HT_EMPTY)
+            if (meta[pos] != HT_EMPTY) {
                 return (char *) htm[idx].p1 + pos * ts;
+                //return (char *) chtm->p1 + pos * ts;
+            }
+
         return NULL;
     }
     if (n == -2) {
         size_t pos = ((char *) it - (char *) htm[idx].p1) / ts;
+        //size_t pos = ((char *) it - (char *) chtm->p1) / ts;
         if (pos == 0) return (char *) htm[idx].p1 - ts;
+
         for (size_t i = pos - 1; ; i--) {
             if (meta[i] != HT_EMPTY)
                 return (char *) htm[idx].p1 + i * ts;
@@ -802,6 +828,10 @@ OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, const char *type_key, 
     OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
     OPENCSTL_NIDX(c, -1) = 0;
     OPENCSTL_NIDX(c, 0) = 0;
+    // if (htm == NULL) {
+    //     htm = htm_new();
+    // }
+    // htm_insert(htm, ptr, (char *) ptr + (key_size * cap), (char *) meta, (int) key_size);
     __htm_append(ptr, key_size * cap, (char *) meta, (int) key_size);
     return ptr;
 }
@@ -836,6 +866,7 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
     OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
     OPENCSTL_NIDX(c, -1) = 0;
     OPENCSTL_NIDX(c, 0) = 0;
+    //htm_insert(htm, ptr, (char *) ptr + (type_size * cap), (char *) meta, (int) type_size);
     __htm_append(ptr, type_size * cap, (char *) meta, (int) type_size);
     return ptr;
 }

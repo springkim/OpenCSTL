@@ -3,16 +3,25 @@
 //
 
 
-#ifndef OPENCSTL_PREMAIN_H
-#define OPENCSTL_PREMAIN_H
+#ifndef OPENCSTL_TRACER_H
+#define OPENCSTL_TRACER_H
 #include <stdio.h>
 #include "salloc.h"
 #include "logging.h"
+//#include "van_emde_boas_tree.h"
+#define _1MB (1024*1024)
+
+#ifdef OPENCSTL_TRACER
 void **zalloc_vector = NULL;
 size_t zalloc_size = 0;
+size_t zalloc_count = 0;
+
+void *galloc_vector[_1MB] = {0};
+
 
 static void zappend(void *ptr) {
     zalloc_vector[zalloc_size++] = ptr;
+    zalloc_count++;
 }
 
 static void zerase(void *ptr) {
@@ -25,23 +34,30 @@ static void zerase(void *ptr) {
         }
     }
 }
-
+#endif
 void opencstl_exit(void) {
+#ifdef OPENCSTL_TRACER
     if (zalloc_size > 0) {
-        logging.warning("%d memory blocks were not freed", zalloc_size);
+        logging.warning("%d memory blocks were not released", zalloc_size);
     }
-    puts("exit");
+    logging.info("opencstl_exit");
+    logging.info("zalloc_count: %d", zalloc_count);
+#endif
 }
 
 #if defined(__GNUC__)
 __attribute__((constructor))
 #endif
 int opencstl_init(void) {
-    size_t SZ = 1024 * 1024;
-    zalloc_vector = salloc(SZ); //1MB
+#ifdef OPENCSTL_TRACER
+    size_t SZ = _1MB; //1MB
+    zalloc_vector = salloc(SZ);
     memset(zalloc_vector, 0, SZ);
-    puts("premain");
 
+    logging.info("opencstl_init");
+
+    //htm = htm_new();
+#endif
     atexit(opencstl_exit);
     return 0;
 }
@@ -51,5 +67,4 @@ __declspec(allocate(".CRT$XCU"))static int (*p)(void)= opencstl_init;
 # pragma data_seg()
 #endif
 
-
-#endif //OPENCSTL_PREMAIN_H
+#endif

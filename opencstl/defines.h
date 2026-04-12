@@ -190,7 +190,10 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 
 
 #define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
-#define cstl_list_sort(container,comp)	_cstl_list_sort(&(container),1,comp)
+#define cstl_sort(container,comp)	_cstl_sort(&(container),1,comp)
+
+
+
 #if defined(_WIN32) || defined(_WIN64)
 
 #define cstl_push(container,...)	_cstl_push(&(container),__VA_ARGS__)

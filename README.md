@@ -597,3 +597,7 @@ void   destroy(pq);
 
 [![Hypercommit](https://img.shields.io/badge/Hypercommit-DB2475)](https://hypercommit.com/opencstl)
 
+
+
+* https://mermaid.live/edit
+* https://www.ray.so/#width=null&theme=candy&padding=32&language=cpp&lineNumbers=true&code=I2luY2x1ZGUgIm9wZW5jc3RsLmgiCgppbnQgbWFpbigpIHsKICAgIAogICAgcmV0dXJuIDA7Cn0K&title=filename.c&background=true&darkMode=true

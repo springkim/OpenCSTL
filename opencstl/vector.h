@@ -39,7 +39,7 @@
 #define _OPENCSTL_VECTOR_H
 #include"error.h"
 #include"zalloc.h"
-
+//#include "van_emde_boas_tree.h"
 // ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
 // ██║░░░██║██╔════╝██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗
 // ╚██╗░██╔╝█████╗░░██║░░╚═╝░░░██║░░░██║░░██║██████╔╝
@@ -50,7 +50,7 @@
 #define cstl_vector(TYPE)	__cstl_vector(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zalloc(header_sz + type_size);
+    void *block = zalloc(header_sz + type_size,1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for vector");
     }

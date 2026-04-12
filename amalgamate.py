@@ -251,6 +251,7 @@ def main():
 
     shutil.copy("opencstl.h", "examples/opencstl.h")
     shutil.copy("opencstl.h", "assets/opencstl.h")
+    shutil.copy("opencstl.h", "bench/bench_cstl/3rdparty/include/opencstl.h")
 
 if __name__ == '__main__':
     main()
