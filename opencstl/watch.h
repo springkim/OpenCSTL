@@ -67,7 +67,7 @@ static double duration(const watch t_beg, const watch t_end) {
 
 typedef struct timeval watch;
 
-static watch now() {
+static watch now(void) {
     watch tv;
     gettimeofday(&tv, NULL);
     return tv;

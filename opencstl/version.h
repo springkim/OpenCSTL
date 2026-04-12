@@ -37,15 +37,15 @@
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 #include "crossplatform.h"
-static char *OPENCSTL_VERSION = "1.2.1";
+static char *OPENCSTL_VERSION = "1.2.2";
 
-static char *opencstl_version() {
+static char *opencstl_version(void) {
     return OPENCSTL_VERSION;
 }
 
 static char __opencstl_env_str[512] = {0};
 
-char *opencstl_env() {
+char *opencstl_env(void) {
     sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
     return __opencstl_env_str;
 }

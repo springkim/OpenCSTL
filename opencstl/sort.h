@@ -64,6 +64,20 @@
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_TCC)
 #define stable_sort tsort
 #define sort qsort
+
+
+#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_CLANG)
+#define stable_sort tsort
+#define sort pdqsort
+#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_GCC)
+#define stable_sort tsort
+#define sort pdqsort
+#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_TCC)
+#define stable_sort tsort
+#define sort pdqsort
+#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_MSVC)
+#define stable_sort tsort
+#define sort pdqsort
 #endif
 
 

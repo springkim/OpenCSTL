@@ -59,7 +59,7 @@ static void cstl_rand_seed64(unsigned long long seed) {
     _seed64 = seed;
 }
 
-static unsigned long long cstl_rand64() {
+static unsigned long long cstl_rand64(void) {
     _seed64 = (_seed64 * 6364136223846793005ULL) + 1442695040888963407ULL;
     return (unsigned long long) _seed64;
 }

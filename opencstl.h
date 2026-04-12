@@ -13,10 +13,12 @@
 #define _OPENCSTL_AMALGAMATED_H
 
 /* ── System includes — unconditional, deduplicated ───────────────────── */
-#include <stdio.h>
-#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
 
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -2504,6 +2506,44 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
 /* BEGIN  hashtable.h                    (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_HASHTABLE_H)
+#define _OPENCSTL_HASHTABLE_H
 /* [already included: error.h] */
 #define HT_EMPTY     0x0000U
 #define HT_FRAG_MASK 0xF000U
@@ -2538,34 +2578,165 @@ static inline size_t __ht_quad(uint16_t d) {
     return ((size_t) d * d + d) / 2;
 }
 
+
+// requires <string.h> for memcpy
+
+#define OPENCSTL_XXH_ROTL32(x, r) (((x) << (r)) | ((x) >> (32 - (r))))
+#define OPENCSTL_XXH_ROTL64(x, r) (((x) << (r)) | ((x) >> (64 - (r))))
+
+// XXH32 primes
+#define OPENCSTL_XXH32_P2 2246822519U     // 0x85EBCA77
+#define OPENCSTL_XXH32_P3 3266489917U     // 0xC2B2AE3D
+
+// XXH64 primes
+#define OPENCSTL_XXH64_P1 11400714785074694791ULL  // 0x9E3779B185EBCA87
+#define OPENCSTL_XXH64_P2 14029467366897019727ULL  // 0xC2B2AE3D27D4EB4F
+#define OPENCSTL_XXH64_P3  1609587929392839161ULL  // 0x165667B19E3779F9
+#define OPENCSTL_XXH64_P4  9650029242287828579ULL  // 0x85EBCA77C2B2AE63
+#define OPENCSTL_XXH64_P5  2870177450012600261ULL  // 0x27D4EB2F165667C5
+
 OPENCSTL_FUNC size_t hash32(void *_key) {
     unsigned int h = *(unsigned int *) _key;
-    h ^= h >> 16;
-    h *= 0x85ebca6b;
+    // XXH32 avalanche
+    h ^= h >> 15;
+    h *= OPENCSTL_XXH32_P2;
     h ^= h >> 13;
-    h *= 0xc2b2ae35;
+    h *= OPENCSTL_XXH32_P3;
     h ^= h >> 16;
     return (size_t) h;
 }
 
 OPENCSTL_FUNC size_t hash64(void *_key) {
     unsigned long long x = *(unsigned long long *) _key;
-    x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
-    x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
-    return (size_t) (x ^ (x >> 31));
+    // XXH64 avalanche
+    x ^= x >> 33;
+    x *= OPENCSTL_XXH64_P2;
+    x ^= x >> 29;
+    x *= OPENCSTL_XXH64_P3;
+    x ^= x >> 32;
+    return (size_t) x;
 }
 
-OPENCSTL_FUNC size_t hash(void *_key, size_t n) {
-    unsigned char *key = (unsigned char *) _key;
-    size_t ret = 0xCBF29CE484222325ULL;
-    while (n >= sizeof(size_t)) {
-        ret ^= (sizeof(size_t) == 8) ? hash64(key) : hash32(key);
-        ret *= 0x100000001b3ULL;
-        key += sizeof(size_t);
-        n -= sizeof(size_t);
+OPENCSTL_FUNC size_t hash(void *_key, size_t len) {
+    const unsigned char *p = (const unsigned char *) _key;
+    const unsigned char *end = p + len;
+    unsigned long long h64;
+    unsigned long long k;
+
+    // --- stripe loop (32 bytes/iter, 4-lane unrolled) ---
+    if (len >= 32) {
+        unsigned long long v1 = OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P2;
+        unsigned long long v2 = OPENCSTL_XXH64_P2;
+        unsigned long long v3 = 0ULL;
+        unsigned long long v4 = 0ULL - OPENCSTL_XXH64_P1;
+        const unsigned char *limit = end - 32;
+
+        do {
+            memcpy(&k, p, 8);
+            v1 += k * OPENCSTL_XXH64_P2;
+            v1 = OPENCSTL_XXH_ROTL64(v1, 31) * OPENCSTL_XXH64_P1;
+            p += 8;
+            memcpy(&k, p, 8);
+            v2 += k * OPENCSTL_XXH64_P2;
+            v2 = OPENCSTL_XXH_ROTL64(v2, 31) * OPENCSTL_XXH64_P1;
+            p += 8;
+            memcpy(&k, p, 8);
+            v3 += k * OPENCSTL_XXH64_P2;
+            v3 = OPENCSTL_XXH_ROTL64(v3, 31) * OPENCSTL_XXH64_P1;
+            p += 8;
+            memcpy(&k, p, 8);
+            v4 += k * OPENCSTL_XXH64_P2;
+            v4 = OPENCSTL_XXH_ROTL64(v4, 31) * OPENCSTL_XXH64_P1;
+            p += 8;
+        } while (p <= limit);
+
+        // merge accumulators
+        h64 = OPENCSTL_XXH_ROTL64(v1, 1)
+              + OPENCSTL_XXH_ROTL64(v2, 7)
+              + OPENCSTL_XXH_ROTL64(v3, 12)
+              + OPENCSTL_XXH_ROTL64(v4, 18);
+
+        v1 = OPENCSTL_XXH_ROTL64(v1, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= v1;
+        h64 = h64 * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+        v2 = OPENCSTL_XXH_ROTL64(v2, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= v2;
+        h64 = h64 * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+        v3 = OPENCSTL_XXH_ROTL64(v3, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= v3;
+        h64 = h64 * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+        v4 = OPENCSTL_XXH_ROTL64(v4, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= v4;
+        h64 = h64 * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+    } else {
+        h64 = OPENCSTL_XXH64_P5;
     }
-    return ret;
+
+    h64 += (unsigned long long) len;
+
+    // --- tail: 8-byte chunks ---
+    while (p + 8 <= end) {
+        memcpy(&k, p, 8);
+        k = OPENCSTL_XXH_ROTL64(k * OPENCSTL_XXH64_P2, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= k;
+        h64 = OPENCSTL_XXH_ROTL64(h64, 27) * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+        p += 8;
+    }
+
+    // --- tail: 4-byte chunk ---
+    if (p + 4 <= end) {
+        unsigned int k32;
+        memcpy(&k32, p, 4);
+        h64 ^= (unsigned long long) k32 * OPENCSTL_XXH64_P1;
+        h64 = OPENCSTL_XXH_ROTL64(h64, 23) * OPENCSTL_XXH64_P2 + OPENCSTL_XXH64_P3;
+        p += 4;
+    }
+
+    // --- tail: remaining bytes ---
+    while (p < end) {
+        h64 ^= (unsigned long long) (*p) * OPENCSTL_XXH64_P5;
+        h64 = OPENCSTL_XXH_ROTL64(h64, 11) * OPENCSTL_XXH64_P1;
+        p++;
+    }
+
+    // --- final avalanche ---
+    h64 ^= h64 >> 33;
+    h64 *= OPENCSTL_XXH64_P2;
+    h64 ^= h64 >> 29;
+    h64 *= OPENCSTL_XXH64_P3;
+    h64 ^= h64 >> 32;
+
+    return (size_t) h64;
 }
+
+// OPENCSTL_FUNC size_t hash32(void *_key) {
+//     unsigned int h = *(unsigned int *) _key;
+//     h ^= h >> 16;
+//     h *= 0x85ebca6b;
+//     h ^= h >> 13;
+//     h *= 0xc2b2ae35;
+//     h ^= h >> 16;
+//     return (size_t) h;
+// }
+//
+// OPENCSTL_FUNC size_t hash64(void *_key) {
+//     unsigned long long x = *(unsigned long long *) _key;
+//     x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
+//     x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
+//     return (size_t) (x ^ (x >> 31));
+// }
+//
+// OPENCSTL_FUNC size_t hash(void *_key, size_t n) {
+//     unsigned char *key = (unsigned char *) _key;
+//     size_t ret = 0xCBF29CE484222325ULL;
+//     while (n >= sizeof(size_t)) {
+//         ret ^= (sizeof(size_t) == 8) ? hash64(key) : hash32(key);
+//         ret *= 0x100000001b3ULL;
+//         key += sizeof(size_t);
+//         n -= sizeof(size_t);
+//     }
+//     return ret;
+// }
 
 static inline uint64_t __ht_mum(uint64_t a, uint64_t b) {
 #ifdef __SIZEOF_INT128__
@@ -3107,6 +3278,7 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
     __htm_append(ptr, type_size * cap, (char *) meta, (int) type_size);
     return ptr;
 }
+#endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    hashtable.h */
@@ -3438,6 +3610,8 @@ static watch now() {
 }
 
 static double duration(const watch t_beg, const watch t_end) {
+    LARGE_INTEGER freq;
+    QueryPerformanceFrequency(&freq);
     double ms = (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
     return ms > 0 ? ms : -ms;
 }
@@ -3479,9 +3653,41 @@ static double duration(const watch t_beg, const watch t_end) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 3/29/2026.
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
-
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
 #if !defined(_OPENCSTL_CSTL_FILE_H)
 #define _OPENCSTL_CSTL_FILE_H
 #include <stdio.h>
@@ -3566,7 +3772,40 @@ FSTREAM fstream = {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 2026. 4. 12..
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
 //
 
 #if !defined(_OPENCSTL_SORT_H)
@@ -4071,16 +4310,363 @@ void tsort(void *mem, const size_t len, const size_t size_elem,
 /* END    tsort.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  pdqsort.h                      (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
 
-#define sort qsort
+#define PDQ_ISORT_THRESH      24
+#define PDQ_NINTHER_THRESH   128
+#define PDQ_PARTIAL_LIMIT      8
+#define PDQ_MAX_STACK         64
+
+
+#if defined(_MSC_VER)
+    #define PDQ_LIKELY(x)   (x)
+    #define PDQ_UNLIKELY(x) (x)
+#else
+    #define PDQ_LIKELY(x)   __builtin_expect(!!(x), 1)
+    #define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
+#endif
+
+static inline void pdq__swap(unsigned char *a, unsigned char *b, size_t n) {
+    if (PDQ_LIKELY(n == 8)) {
+        uint64_t t;
+        memcpy(&t, a, 8);
+        memcpy(a, b, 8);
+        memcpy(b, &t, 8);
+    } else if (PDQ_UNLIKELY(n == 4)) {
+        uint32_t t;
+        memcpy(&t, a, 4);
+        memcpy(a, b, 4);
+        memcpy(b, &t, 4);
+    } else {
+        unsigned char t;
+        for (size_t i = 0; i < n; ++i) {
+            t = a[i];
+            a[i] = b[i];
+            b[i] = t;
+        }
+    }
+}
+
+#define PDQ_ELEM(base, i) ((base) + (i) * sz)
+
+static inline size_t pdq_log2(size_t n) {
+    size_t r = 0;
+    while (n > 1) {
+        n >>= 1;
+        ++r;
+    }
+    return r;
+}
+
+static void pdq_isort(unsigned char *base, size_t n, size_t sz,
+                      int (*cmp)(const void *, const void *), unsigned char *tmp) {
+    if (n < 2) return;
+    for (size_t i = 1; i < n; ++i)
+        if (cmp(PDQ_ELEM(base, i), base) < 0)
+            pdq__swap(PDQ_ELEM(base, i), base, sz);
+    for (size_t i = 2; i < n; ++i) {
+        unsigned char *c = PDQ_ELEM(base, i);
+        if (cmp(c - sz, c) <= 0) continue;
+        memcpy(tmp, c, sz);
+        unsigned char *j = c;
+        do {
+            memcpy(j, j - sz, sz);
+            j -= sz;
+        } while (cmp(j - sz, tmp) > 0);
+        memcpy(j, tmp, sz);
+    }
+}
+
+static void pdq_isort_unguard(unsigned char *base, size_t n, size_t sz,
+                              int (*cmp)(const void *, const void *), unsigned char *tmp) {
+    for (size_t i = 1; i < n; ++i) {
+        unsigned char *c = PDQ_ELEM(base, i);
+        if (cmp(c - sz, c) <= 0) continue;
+        memcpy(tmp, c, sz);
+        unsigned char *j = c;
+        do {
+            memcpy(j, j - sz, sz);
+            j -= sz;
+        } while (j > base && cmp(j - sz, tmp) > 0);
+        memcpy(j, tmp, sz);
+    }
+}
+
+static int pdq_partial_isort(unsigned char *base, size_t n, size_t sz,
+                             int (*cmp)(const void *, const void *), unsigned char *tmp) {
+    if (n < 2) return 1;
+    size_t cnt = 0;
+    for (size_t i = 1; i < n; ++i) {
+        unsigned char *c = PDQ_ELEM(base, i);
+        if (cmp(c - sz, c) <= 0) continue;
+        memcpy(tmp, c, sz);
+        unsigned char *j = c;
+        do {
+            memcpy(j, j - sz, sz);
+            j -= sz;
+            if (++cnt > PDQ_PARTIAL_LIMIT) return 0;
+        } while (j > base && cmp(j - sz, tmp) > 0);
+        memcpy(j, tmp, sz);
+    }
+    return 1;
+}
+
+static inline int pdq_s2(unsigned char *base, size_t a, size_t b,
+                         size_t sz, int (*cmp)(const void *, const void *)) {
+    if (cmp(PDQ_ELEM(base, b), PDQ_ELEM(base, a)) < 0) {
+        pdq__swap(PDQ_ELEM(base, a), PDQ_ELEM(base, b), sz);
+        return 1;
+    }
+    return 0;
+}
+
+static inline int pdq_s3(unsigned char *base, size_t a, size_t b, size_t c,
+                         size_t sz, int (*cmp)(const void *, const void *)) {
+    int s = pdq_s2(base, a, b, sz, cmp);
+    s += pdq_s2(base, b, c, sz, cmp);
+    s += pdq_s2(base, a, b, sz, cmp);
+    return s;
+}
+
+static int pdq_pick_pivot(unsigned char *base, size_t n, size_t sz,
+                          int (*cmp)(const void *, const void *)) {
+    size_t mid = n >> 1;
+    int sw = 0;
+    if (n >= PDQ_NINTHER_THRESH) {
+        size_t s = n >> 3;
+        sw += pdq_s3(base, 0, s, s * 2, sz, cmp);
+        sw += pdq_s3(base, mid - s, mid, mid + s, sz, cmp);
+        sw += pdq_s3(base, n - 1 - s * 2, n - 1 - s, n - 1, sz, cmp);
+        sw += pdq_s3(base, s, mid, n - 1 - s, sz, cmp);
+    } else {
+        sw += pdq_s3(base, 0, mid, n - 1, sz, cmp);
+    }
+    pdq__swap(base, PDQ_ELEM(base, mid), sz);
+    return sw;
+}
+
+static void pdq_sift(unsigned char *base, size_t root, size_t n,
+                     size_t sz, int (*cmp)(const void *, const void *)) {
+    for (;;) {
+        size_t c = root * 2 + 1;
+        if (c >= n) break;
+        size_t mx = root;
+        if (cmp(PDQ_ELEM(base, mx), PDQ_ELEM(base, c)) < 0) mx = c;
+        if (c + 1 < n && cmp(PDQ_ELEM(base, mx), PDQ_ELEM(base, c + 1)) < 0)
+            mx = c + 1;
+        if (mx == root) break;
+        pdq__swap(PDQ_ELEM(base, root), PDQ_ELEM(base, mx), sz);
+        root = mx;
+    }
+}
+
+static void pdq_heap(unsigned char *base, size_t n, size_t sz, int (*cmp)(const void *, const void *)) {
+    if (n < 2) return;
+    for (size_t i = n / 2; i-- > 0;) pdq_sift(base, i, n, sz, cmp);
+    for (size_t e = n; e-- > 1;) {
+        pdq__swap(base, PDQ_ELEM(base, e), sz);
+        pdq_sift(base, 0, e, sz, cmp);
+    }
+}
+
+static inline uint64_t pdq_rng(uint64_t *s) {
+    uint64_t x = *s;
+    x ^= x << 13;
+    x ^= x >> 7;
+    x ^= x << 17;
+    return (*s = x);
+}
+
+static void pdq_break(unsigned char *base, size_t n, size_t sz, uint64_t *rs) {
+    if (n < 8) return;
+    size_t h = n >> 1, q = n >> 2;
+    pdq__swap(PDQ_ELEM(base, q), PDQ_ELEM(base, q + pdq_rng(rs) % (h?h:1)), sz);
+    pdq__swap(PDQ_ELEM(base, h), PDQ_ELEM(base, q + pdq_rng(rs) % (h?h:1)), sz);
+    pdq__swap(PDQ_ELEM(base, q + h), PDQ_ELEM(base, q + pdq_rng(rs) % (h?h:1)), sz);
+}
+
+static inline size_t pdq_part_r(unsigned char *base, size_t n, size_t sz,
+                                int (*cmp)(const void *, const void *), unsigned char *piv,
+                                int *ap) {
+    unsigned char *lo = base + sz;
+    unsigned char *hi = base + (n - 1) * sz;
+    while (lo <= hi && cmp(lo, piv) < 0) lo += sz;
+    while (lo <= hi && cmp(hi, piv) >= 0) hi -= sz;
+    int was_partitioned = (lo > hi);
+    while (lo < hi) {
+        pdq__swap(lo, hi, sz);
+        lo += sz;
+        hi -= sz;
+        while (cmp(lo, piv) < 0) lo += sz;
+        while (cmp(hi, piv) >= 0) hi -= sz;
+    }
+    unsigned char *pp = lo - sz;
+    if (pp > base)
+        memcpy(base, pp, sz);
+    memcpy(pp, piv, sz);
+    *ap = was_partitioned;
+    return (size_t) (pp - base) / sz;
+}
+
+static inline size_t pdq_part_l(unsigned char *base, size_t n, size_t sz,
+                                int (*cmp)(const void *, const void *), unsigned char *piv) {
+    memcpy(piv, base, sz);
+    unsigned char *lo = base + sz;
+    unsigned char *hi = base + (n - 1) * sz;
+    while (lo <= hi && cmp(piv, hi) < 0) hi -= sz;
+    while (lo <= hi && cmp(lo, piv) <= 0) lo += sz;
+    while (lo < hi) {
+        pdq__swap(lo, hi, sz);
+        lo += sz;
+        hi -= sz;
+        while (cmp(lo, piv) <= 0) lo += sz;
+        while (cmp(piv, hi) < 0) hi -= sz;
+    }
+    if (hi > base)
+        memcpy(base, hi, sz);
+    memcpy(hi, piv, sz);
+    return (size_t) (hi - base) / sz;
+}
+
+void pdqsort(void *__base, size_t __nel, size_t __width,
+             int (*__compar)(const void *, const void *)) {
+    if (!__base || !__compar || __width == 0 || __nel < 2) return;
+    const size_t sz = __width;
+    int (*cmp)(const void *, const void *) = __compar;
+    unsigned char *arr = (unsigned char *) __base;
+    unsigned char sbuf[512];
+    unsigned char *scratch;
+    size_t need = sz * 2;
+    scratch = (need <= sizeof(sbuf)) ? sbuf : (unsigned char *) malloc(need);
+    if (!scratch) return;
+    unsigned char *tmp = scratch;
+    unsigned char *piv = scratch + sz;
+    uint64_t rs = (uint64_t) __nel ^ 0x517cc1b727220a95ULL;
+    struct pdq_frame {
+        unsigned char *base;
+        size_t n;
+        size_t bad;
+        int left;
+    };
+    struct pdq_frame stk[PDQ_MAX_STACK];
+    int sp = 0;
+    stk[sp].base = arr;
+    stk[sp].n = __nel;
+    stk[sp].bad = pdq_log2(__nel) * 2 + 1;
+    stk[sp].left = 1;
+    ++sp;
+    while (sp > 0) {
+        --sp;
+        unsigned char *base = stk[sp].base;
+        size_t n = stk[sp].n;
+        size_t bad = stk[sp].bad;
+        int leftmost = stk[sp].left;
+    again:
+        if (n <= PDQ_ISORT_THRESH) {
+            if (leftmost)
+                pdq_isort(base, n, sz, cmp, tmp);
+            else
+                pdq_isort_unguard(base, n, sz, cmp, tmp);
+            continue;
+        }
+        if (bad == 0) {
+            pdq_heap(base, n, sz, cmp);
+            continue;
+        }
+        if (!leftmost && cmp(base - sz, base) >= 0) {
+            size_t pp = pdq_part_l(base, n, sz, cmp, piv);
+            base += (pp + 1) * sz;
+            n -= pp + 1;
+            goto again;
+        }
+        pdq_pick_pivot(base, n, sz, cmp);
+        memcpy(piv, base, sz);
+        int ap = 0;
+        size_t pp = pdq_part_r(base, n, sz, cmp, piv, &ap);
+        size_t lsz = pp;
+        size_t rsz = n - pp - 1;
+        int unbal = (lsz < n / 8 || rsz < n / 8);
+        if (unbal) {
+            bad--;
+            if (lsz >= PDQ_ISORT_THRESH) pdq_break(base, lsz, sz, &rs);
+            if (rsz >= PDQ_ISORT_THRESH) pdq_break(base + (pp + 1) * sz, rsz, sz, &rs);
+        } else if (ap) {
+            int lok = pdq_partial_isort(base, lsz, sz, cmp, tmp);
+            int rok = pdq_partial_isort(base + (pp + 1) * sz, rsz, sz, cmp, tmp);
+            if (lok && rok) continue;
+        }
+        unsigned char *rbase = base + (pp + 1) * sz;
+        if (lsz < rsz) {
+            if (rsz > 1 && sp < PDQ_MAX_STACK) {
+                stk[sp].base = rbase;
+                stk[sp].n = rsz;
+                stk[sp].bad = bad;
+                stk[sp].left = 0;
+                ++sp;
+            }
+            n = lsz;
+        } else {
+            if (lsz > 1 && sp < PDQ_MAX_STACK) {
+                stk[sp].base = base;
+                stk[sp].n = lsz;
+                stk[sp].bad = bad;
+                stk[sp].left = leftmost;
+                ++sp;
+            }
+            base = rbase;
+            n = rsz;
+            leftmost = 0;
+        }
+        goto again;
+    }
+    if (scratch != sbuf) free(scratch);
+}
+#undef PDQ_ELEM
+#undef PDQ_ISORT_THRESH
+#undef PDQ_NINTHER_THRESH
+#undef PDQ_PARTIAL_LIMIT
+#undef PDQ_MAX_STACK
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    pdqsort.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
 
 #if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_CLANG)
 #define stable_sort msort
+#define sort pdqsort
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_GCC)
 #define stable_sort tsort
+#define sort pdqsort
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
 #define stable_sort tsort
+#define sort qsort
 
+#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_CLANG)
+#define stable_sort msort
+#define sort pdqsort
+#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_GCC)
+#define stable_sort tsort
+#define sort pdqsort
+#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_TCC)
+#define stable_sort tsort
+#define sort qsort
+
+
+#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_CLANG)
+#define stable_sort tsort
+#define sort pdqsort
+#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_GCC)
+#define stable_sort tsort
+#define sort pdqsort
+#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_TCC)
+#define stable_sort tsort
+#define sort pdqsort
+#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_MSVC)
+#define stable_sort tsort
+#define sort pdqsort
 #endif
 
 

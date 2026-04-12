@@ -344,3 +344,6 @@ words.txt
 words_random.txt
 shuffle.py
 perftest/
+
+bench/bench_cstl/3rdparty/
+bench/

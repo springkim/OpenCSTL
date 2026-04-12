@@ -36,12 +36,29 @@
 //
 #pragma once
 
+#include "tracer.h"
 #include "crossplatform.h"
 #if defined(OCSTL_CC_CLANG)
+#pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic ignored "-Wunused-value"
+#pragma clang diagnostic ignored "-Wsign-compare"
+#pragma clang diagnostic ignored "-Wpedantic"
+#pragma clang diagnostic ignored "-Wgnu-auto-type"
+#pragma clang diagnostic ignored "-Wsometimes-uninitialized"
 #endif
 
 #if defined(OCSTL_CC_GCC)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
 
@@ -134,7 +151,7 @@
 
 
 #define first(IT)                   (*IT)
-#define second(IT, TYPE)            cstl_value(IT, TYPE)
+#define second(IT, TYPE)            ((TYPE)cstl_value(IT, TYPE))
 #endif
 
 OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
@@ -144,7 +161,7 @@ OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
 }
 
 OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
-    for (int i = 0; i < htm_length; i++) {
+    for (size_t i = 0; i < htm_length; i++) {
         if (htm[i].p1 <= it && it < htm[i].p2) {
             return true;
         }
@@ -1010,9 +1027,9 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
     size_t container_type;
     if (__is_deque((void **) container)) {
         cstl_error("Invalid operation");
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
+    container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             if (argc == 1) {
@@ -1033,8 +1050,57 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
     }
     __cstl_va_end(vl);
 }
+
+
+OPENCSTL_FUNC void *_cstl_list_sort(void *container, int argc, ...) {
+    va_list vl;
+    void *va_ptr = NULL;
+    __cstl_va_start(vl, argc, va_ptr);
+#if CSTL_USE_VAARG
+    void *param1 = __cstl_va_arg_next(vl);
+    void *param2 = __cstl_va_arg_next(vl);
+#else
+    void *param1 = __cstl_va_arg(va_ptr);
+    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
+#endif
+
+
+    size_t container_type;
+    if (__is_deque((void **) container)) {
+        cstl_error("Invalid operation");
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_LIST: {
+            if (argc == 1) {
+                __cstl_list_sort((void **) container, param1);
+            }
+        }
+        break;
+
+        default: cstl_error("Invalid operator");
+            break;
+    }
+    __cstl_va_end(vl);
+    return NULL;
+}
+
 #if defined(__linux__) || defined(__APPLE__)
 // #if !defined(__8cc__ )
 // #pragma GCC pop_options
 // #endif
+
+
+#if defined(OCSTL_CC_CLANG)
+#pragma clang diagnostic pop
+#pragma clang diagnostic ignored "-Wgnu-auto-type"
+#pragma clang diagnostic ignored "-Wgnu-statement-expression-from-macro-expansion"
+#pragma clang diagnostic ignored "-Wvariadic-macro-arguments-omitted"
+#endif
+#if defined(OCSTL_CC_GCC)
+#pragma GCC diagnostic pop
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
 #endif

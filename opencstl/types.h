@@ -54,6 +54,6 @@ typedef size_t cstl_ptr;
 typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
 
 
-typedef unsigned int size_type;
+typedef int size_type;
 
 #endif

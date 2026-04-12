@@ -6,7 +6,7 @@
 #define DECORATE(STR) {int padding = 70 - strlen(STR);int margin=0;if(padding%2==1)margin=1;else margin=0;for (int i = 0; i < padding/2; i++) { putchar('#');  } printf(STR); for (int i = 0; i < padding/2+margin; i++) { putchar('#'); } putchar('\n');}
 
 
-void cstl_vector_test() {
+void cstl_vector_test(void) {
     DECORATE("OPENCSTL{vector} test begin");
     VECTOR(int) arr = new_vector(int);
 
@@ -55,7 +55,7 @@ void cstl_vector_test() {
     destroy(arr);
 }
 
-void cstl_vector_test2() {
+void cstl_vector_test2(void) {
     DECORATE("opencstl{vector 2d} test begin");
     VECTOR(int*) matrix = new_vector(int*);
     const size_t sz = 7;
@@ -83,11 +83,12 @@ void cstl_vector_test2() {
     destroy(matrix);
 }
 
-void cstl_vector_test3() {
+void cstl_vector_test3(void) {
     DECORATE("opencstl{vector/qsort} test begin");
     VECTOR(int) vec = new_vector(int);
-    for (int i = 0; i < 100; i++) {
-        int val = rand32() % 1000;
+    const size_t N = 1000;
+    for (int i = 0; i < N; i++) {
+        int val = rand32() % N;
         push_back(vec, val);
     }
 
@@ -102,7 +103,7 @@ void cstl_vector_test3() {
 }
 
 
-void cstl_list_test02() {
+void cstl_list_test02(void) {
     DECORATE("opencstl{list} test begin");
     LIST(int) list = new_list(int);
     for (int i = 0; i < 10; i++) {
@@ -129,13 +130,28 @@ void cstl_list_test02() {
 
     resize(list, 20);
     printf("list size: %d\n", size(list));
-    resize(list, 3);
+    resize(list, 0);
     printf("list size: %d\n", size(list));
+
+    for (int i = 0; i < 50; i++) {
+        push_back(list, rand32() % 1000);
+    }
+
+
+    cstl_list_sort(list, LESS(int));
+
+    logging.info("list size: %d", size(list));
+    for (int *it = begin(list); it != end(list); it = next(it)) {
+        printf("[%d]->", *it);
+    }
+    puts("[NULL]");
+
+
     destroy(list);
 }
 
 
-void cstl_set_test() {
+void cstl_set_test(void) {
     DECORATE("OPENCSTL{set} test begin");
     SET(float) tree = new_set(float);
     for (float i = 0; i < 100; i++) {
@@ -157,7 +173,7 @@ void cstl_set_test() {
     destroy(tree);
 }
 
-void cstl_map_test() {
+void cstl_map_test(void) {
     DECORATE("OPENCSTL{map} test begin");
     MAP(int) tree = new_map(int, double);
     for (int i = 0; i < 10; i++) {
@@ -178,7 +194,7 @@ void cstl_map_test() {
     destroy(tree);
 }
 
-void cstl_deque_test() {
+void cstl_deque_test(void) {
     DECORATE("OPENCSTL{deque} test begin");
     DEQUE(int) deque = new_deque(int);
     for (int i = 0; i < 10; i++) {
@@ -218,7 +234,7 @@ void cstl_deque_test() {
     destroy(deque);
 }
 
-void cstl_stack_test() {
+void cstl_stack_test(void) {
     DECORATE("OPENCSTL{stack} test begin");
     STACK(int) stack = new_stack(int);
     for (int i = 0; i < 10; i++) {
@@ -232,7 +248,7 @@ void cstl_stack_test() {
     destroy(stack);
 }
 
-void cstl_queue_test() {
+void cstl_queue_test(void) {
     DECORATE("OPENCSTL{queue} test begin");
     QUEUE(int) queue = new_queue(int);
     for (int i = 0; i < 100; i++) {
@@ -246,7 +262,7 @@ void cstl_queue_test() {
     destroy(queue);
 }
 
-void cstl_priority_queue_test() {
+void cstl_priority_queue_test(void) {
     DECORATE("OPENCSTL{priority_queue} test begin");
     QUEUE(int) queue = new_priority_queue(int);
     for (int i = 0; i < 10; i++) {
@@ -300,7 +316,7 @@ int *dijkstra(Edge **vec, int beg) {
     return d;
 }
 
-void cstl_priority_queue_test2() {
+void cstl_priority_queue_test2(void) {
     DECORATE("OPENCSTL{priority_queue/dijkstra} test begin");
     Edge **vec = new_vector(Edge*);
     assign(vec, 7);
@@ -328,7 +344,7 @@ void cstl_priority_queue_test2() {
     destroy(vec);
 }
 
-void cstl_hash_test() {
+void cstl_hash_test(void) {
     DECORATE("OPENCSTL{unordered_set} test begin");
     UNORDERED_SET(int) h = new_unordered_set(int);
 
@@ -354,7 +370,7 @@ void cstl_hash_test() {
     destroy(h);
 }
 
-void test01() {
+void test01(void) {
     cstl_vector_test();
     cstl_vector_test2();
     cstl_list_test02();
@@ -369,7 +385,7 @@ void test01() {
     cstl_hash_test();
 }
 
-void test02() {
+void test02(void) {
     VECTOR(int) v = new_vector(int);
 
     watch t_beg = now();
@@ -387,9 +403,10 @@ void test02() {
     }
     printf("duration : %f ms\n", ms);
     printf("%s\n", opencstl_version());
+    destroy(v);
 }
 
-void test_opencstl_unordered_set() {
+void test_opencstl_unordered_set(void) {
     srand(21);
     UNORDERED_SET(int) v = new_unordered_set(int);
     for (int i = 0; i < 50000000; ++i) {
@@ -399,7 +416,7 @@ void test_opencstl_unordered_set() {
     destroy(v);
 }
 
-void test03() {
+void test03(void) {
     FILE *fp = fstream.open("../words_random.txt", "r");
     VECTOR(char*) words = new_vector(char*);
     char *line = NULL;
@@ -418,7 +435,7 @@ void test03() {
     destroy(words);
 }
 
-void test04() {
+void test04(void) {
     FILE *fp = fstream.open("../words_random.txt", "r");
     char *file = fstream.read(fp);
     fstream.close(fp);
@@ -426,8 +443,7 @@ void test04() {
     free(file);
 }
 
-int main() {
-    
+int main(void) {
     // watch t_beg = now();
     // test_opencstl_unordered_set();
     // watch t_end = now();
@@ -441,13 +457,14 @@ int main() {
     test01();
     //cstl_priority_queue_test();
     test02();
-    logging.debug("debug message");
-    logging.info("info message");
-    logging.warning("warning message");
-    logging.error("error message");
+    // logging.debug("debug message");
+    // logging.info("info message");
+    // logging.warning("warning message");
+    // logging.error("error message");
     //logging.critical("critical message");
     //logging.fatal("fatal message");
     logging.message("message");
+
 
     return 0;
 }

@@ -34,17 +34,19 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#pragma once
 #if !defined(_OPENCSTL_HASHTABLE_H)
 #define _OPENCSTL_HASHTABLE_H
-#include "error.h"
+#include"zalloc.h"
+/* [already included: error.h] */
 #define HT_EMPTY     0x0000U
 #define HT_FRAG_MASK 0xF000U
 #define HT_IN_HOME   0x0800U
 #define HT_DISP_MASK 0x07FFU
 #define HT_DISP_END  0x07FFU
-#define HT_LOAD      0.9
+#define HT_LOAD      0.875
 #define HT_MIN_CAP   8U
+/* threshold = cap * 7/8, computed via shifts (no fp) */
+#define HT_THRESHOLD(cap) ((cap) - ((cap) >> 3))
 
 
 static inline size_t __ht_next_pow2(size_t n) {
@@ -71,34 +73,165 @@ static inline size_t __ht_quad(uint16_t d) {
     return ((size_t) d * d + d) / 2;
 }
 
+
+// requires <string.h> for memcpy
+
+#define OPENCSTL_XXH_ROTL32(x, r) (((x) << (r)) | ((x) >> (32 - (r))))
+#define OPENCSTL_XXH_ROTL64(x, r) (((x) << (r)) | ((x) >> (64 - (r))))
+
+// XXH32 primes
+#define OPENCSTL_XXH32_P2 2246822519U     // 0x85EBCA77
+#define OPENCSTL_XXH32_P3 3266489917U     // 0xC2B2AE3D
+
+// XXH64 primes
+#define OPENCSTL_XXH64_P1 11400714785074694791ULL  // 0x9E3779B185EBCA87
+#define OPENCSTL_XXH64_P2 14029467366897019727ULL  // 0xC2B2AE3D27D4EB4F
+#define OPENCSTL_XXH64_P3  1609587929392839161ULL  // 0x165667B19E3779F9
+#define OPENCSTL_XXH64_P4  9650029242287828579ULL  // 0x85EBCA77C2B2AE63
+#define OPENCSTL_XXH64_P5  2870177450012600261ULL  // 0x27D4EB2F165667C5
+
 OPENCSTL_FUNC size_t hash32(void *_key) {
     unsigned int h = *(unsigned int *) _key;
-    h ^= h >> 16;
-    h *= 0x85ebca6b;
+    // XXH32 avalanche
+    h ^= h >> 15;
+    h *= OPENCSTL_XXH32_P2;
     h ^= h >> 13;
-    h *= 0xc2b2ae35;
+    h *= OPENCSTL_XXH32_P3;
     h ^= h >> 16;
     return (size_t) h;
 }
 
 OPENCSTL_FUNC size_t hash64(void *_key) {
     unsigned long long x = *(unsigned long long *) _key;
-    x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
-    x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
-    return (size_t) (x ^ (x >> 31));
+    // XXH64 avalanche
+    x ^= x >> 33;
+    x *= OPENCSTL_XXH64_P2;
+    x ^= x >> 29;
+    x *= OPENCSTL_XXH64_P3;
+    x ^= x >> 32;
+    return (size_t) x;
 }
 
-OPENCSTL_FUNC size_t hash(void *_key, size_t n) {
-    unsigned char *key = (unsigned char *) _key;
-    size_t ret = 0xCBF29CE484222325ULL;
-    while (n >= sizeof(size_t)) {
-        ret ^= (sizeof(size_t) == 8) ? hash64(key) : hash32(key);
-        ret *= 0x100000001b3ULL;
-        key += sizeof(size_t);
-        n -= sizeof(size_t);
+OPENCSTL_FUNC size_t hash(void *_key, size_t len) {
+    const unsigned char *p = (const unsigned char *) _key;
+    const unsigned char *end = p + len;
+    unsigned long long h64;
+    unsigned long long k;
+
+    // --- stripe loop (32 bytes/iter, 4-lane unrolled) ---
+    if (len >= 32) {
+        unsigned long long v1 = OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P2;
+        unsigned long long v2 = OPENCSTL_XXH64_P2;
+        unsigned long long v3 = 0ULL;
+        unsigned long long v4 = 0ULL - OPENCSTL_XXH64_P1;
+        const unsigned char *limit = end - 32;
+
+        do {
+            memcpy(&k, p, 8);
+            v1 += k * OPENCSTL_XXH64_P2;
+            v1 = OPENCSTL_XXH_ROTL64(v1, 31) * OPENCSTL_XXH64_P1;
+            p += 8;
+            memcpy(&k, p, 8);
+            v2 += k * OPENCSTL_XXH64_P2;
+            v2 = OPENCSTL_XXH_ROTL64(v2, 31) * OPENCSTL_XXH64_P1;
+            p += 8;
+            memcpy(&k, p, 8);
+            v3 += k * OPENCSTL_XXH64_P2;
+            v3 = OPENCSTL_XXH_ROTL64(v3, 31) * OPENCSTL_XXH64_P1;
+            p += 8;
+            memcpy(&k, p, 8);
+            v4 += k * OPENCSTL_XXH64_P2;
+            v4 = OPENCSTL_XXH_ROTL64(v4, 31) * OPENCSTL_XXH64_P1;
+            p += 8;
+        } while (p <= limit);
+
+        // merge accumulators
+        h64 = OPENCSTL_XXH_ROTL64(v1, 1)
+              + OPENCSTL_XXH_ROTL64(v2, 7)
+              + OPENCSTL_XXH_ROTL64(v3, 12)
+              + OPENCSTL_XXH_ROTL64(v4, 18);
+
+        v1 = OPENCSTL_XXH_ROTL64(v1, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= v1;
+        h64 = h64 * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+        v2 = OPENCSTL_XXH_ROTL64(v2, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= v2;
+        h64 = h64 * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+        v3 = OPENCSTL_XXH_ROTL64(v3, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= v3;
+        h64 = h64 * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+        v4 = OPENCSTL_XXH_ROTL64(v4, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= v4;
+        h64 = h64 * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+    } else {
+        h64 = OPENCSTL_XXH64_P5;
     }
-    return ret;
+
+    h64 += (unsigned long long) len;
+
+    // --- tail: 8-byte chunks ---
+    while (p + 8 <= end) {
+        memcpy(&k, p, 8);
+        k = OPENCSTL_XXH_ROTL64(k * OPENCSTL_XXH64_P2, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= k;
+        h64 = OPENCSTL_XXH_ROTL64(h64, 27) * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+        p += 8;
+    }
+
+    // --- tail: 4-byte chunk ---
+    if (p + 4 <= end) {
+        unsigned int k32;
+        memcpy(&k32, p, 4);
+        h64 ^= (unsigned long long) k32 * OPENCSTL_XXH64_P1;
+        h64 = OPENCSTL_XXH_ROTL64(h64, 23) * OPENCSTL_XXH64_P2 + OPENCSTL_XXH64_P3;
+        p += 4;
+    }
+
+    // --- tail: remaining bytes ---
+    while (p < end) {
+        h64 ^= (unsigned long long) (*p) * OPENCSTL_XXH64_P5;
+        h64 = OPENCSTL_XXH_ROTL64(h64, 11) * OPENCSTL_XXH64_P1;
+        p++;
+    }
+
+    // --- final avalanche ---
+    h64 ^= h64 >> 33;
+    h64 *= OPENCSTL_XXH64_P2;
+    h64 ^= h64 >> 29;
+    h64 *= OPENCSTL_XXH64_P3;
+    h64 ^= h64 >> 32;
+
+    return (size_t) h64;
 }
+
+// OPENCSTL_FUNC size_t hash32(void *_key) {
+//     unsigned int h = *(unsigned int *) _key;
+//     h ^= h >> 16;
+//     h *= 0x85ebca6b;
+//     h ^= h >> 13;
+//     h *= 0xc2b2ae35;
+//     h ^= h >> 16;
+//     return (size_t) h;
+// }
+//
+// OPENCSTL_FUNC size_t hash64(void *_key) {
+//     unsigned long long x = *(unsigned long long *) _key;
+//     x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
+//     x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
+//     return (size_t) (x ^ (x >> 31));
+// }
+//
+// OPENCSTL_FUNC size_t hash(void *_key, size_t n) {
+//     unsigned char *key = (unsigned char *) _key;
+//     size_t ret = 0xCBF29CE484222325ULL;
+//     while (n >= sizeof(size_t)) {
+//         ret ^= (sizeof(size_t) == 8) ? hash64(key) : hash32(key);
+//         ret *= 0x100000001b3ULL;
+//         key += sizeof(size_t);
+//         n -= sizeof(size_t);
+//     }
+//     return ret;
+// }
 
 static inline uint64_t __ht_mum(uint64_t a, uint64_t b) {
 #ifdef __SIZEOF_INT128__
@@ -111,7 +244,17 @@ static inline uint64_t __ht_mum(uint64_t a, uint64_t b) {
 #endif
 }
 
-OPENCSTL_FUNC size_t hash_mixer(void *key, size_t n) {
+#if defined(__GNUC__) || defined(__clang__)
+#define OPENCSTL_ALWAYS_INLINE static inline __attribute__((always_inline))
+#define OPENCSTL_LIKELY(x)   __builtin_expect(!!(x), 1)
+#define OPENCSTL_UNLIKELY(x) __builtin_expect(!!(x), 0)
+#else
+#define OPENCSTL_ALWAYS_INLINE static inline
+#define OPENCSTL_LIKELY(x)   (x)
+#define OPENCSTL_UNLIKELY(x) (x)
+#endif
+
+OPENCSTL_ALWAYS_INLINE size_t hash_mixer(void *key, size_t n) {
     static const uint64_t s0 = 0xa0761d6478bd642fULL;
     static const uint64_t s1 = 0xe7037ed1a0b428dbULL;
     if (n == 4) {
@@ -157,21 +300,25 @@ OPENCSTL_FUNC size_t hash_mixer(void *key, size_t n) {
     return (size_t) __ht_mum(s1 ^ (uint64_t) n, __ht_mum(a ^ s1, b ^ s0));
 }
 
-static inline bool __ht_find_empty(
+OPENCSTL_ALWAYS_INLINE bool __ht_find_empty(
     uint16_t *meta, size_t cap_mask, size_t home,
     size_t *empty, uint16_t *disp
 ) {
-    *disp = 1;
+    uint16_t d = 1;
     size_t linear = 1;
     while (true) {
-        *empty = (home + linear) & cap_mask;
-        if (meta[*empty] == HT_EMPTY) return true;
-        if (++(*disp) == HT_DISP_END) return false;
-        linear += *disp;
+        size_t slot = (home + linear) & cap_mask;
+        if (meta[slot] == HT_EMPTY) {
+            *empty = slot;
+            *disp = d;
+            return true;
+        }
+        if (++d == HT_DISP_END) return false;
+        linear += d;
     }
 }
 
-static inline size_t __ht_find_chain_pos(
+OPENCSTL_ALWAYS_INLINE size_t __ht_find_chain_pos(
     uint16_t *meta, size_t cap_mask, size_t home, uint16_t disp_to_empty
 ) {
     size_t candidate = home;
@@ -260,7 +407,7 @@ void __htm_append(void *ptr, size_t sz, char *tombstone, int type_size) {
 #define __HASHTABLE_DEFAULT_SIZE__ HT_MIN_CAP
 
 static uint16_t *__ht_alloc_meta(size_t cap) {
-    uint16_t *m = (uint16_t *) calloc(cap + 4, sizeof(uint16_t));
+    uint16_t *m = (uint16_t *) zalloc(cap + 4, sizeof(uint16_t));
     if (!m)
         cstl_error("Allocation failed (metadata)");
     m[cap] = 0x0001;
@@ -275,7 +422,7 @@ static void __ht_do_rehash(
 ) {
     size_t new_cap = (old_cap_mask + 1) * 2;
     while (true) {
-        void *new_raw = calloc(header_sz + new_cap * type_size, 1);
+        void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
         if (!new_raw)
             cstl_error("Allocation failed (rehash)");
         memcpy(new_raw, (char *)*container - header_sz, header_sz);
@@ -293,13 +440,13 @@ static void __ht_do_rehash(
             }
         }
         if (done < length) {
-            free(new_raw);
-            free(new_meta);
+            zfree(new_raw);
+            zfree(new_meta);
             new_cap *= 2;
             continue;
         }
-        free((char *) *container - header_sz);
-        free(old_meta);
+        zfree((char *) *container - header_sz);
+        zfree(old_meta);
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
@@ -349,7 +496,7 @@ OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *va
     while (true) {
         size_t cap = cap_mask + 1;
         size_t home = key_hash & cap_mask;
-        if (length + 1 > (size_t) (HT_LOAD * (double) cap)) goto do_rehash;
+        if (length + 1 > HT_THRESHOLD(cap)) goto do_rehash;
         if (!(meta[home] & HT_IN_HOME)) {
             if (meta[home] != HT_EMPTY &&
                 !__ht_evict(*container, meta, cap_mask, home, type_size, key_size))
@@ -561,18 +708,70 @@ OPENCSTL_FUNC void __cstl_hashtable_free(void **container) {
         memmove(&htm[fi], &htm[fi + 1], (htm_length - fi) * sizeof(HashtableManager));
         htm_length--;
     }
-    free(meta);
-    free((char *) (*container) - header_sz);
+    zfree(meta);
+    zfree((char *) (*container) - header_sz);
     *container = NULL;
 }
 
 OPENCSTL_FUNC void __cstl_hashtable_reserve(void **container, size_t n) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t cap = __HASHTABLE_DEFAULT_SIZE__;
-    if (n > cap) cap = n;
-    uint16_t *meta = __ht_alloc_meta(cap);
-    OPENCSTL_NIDX(container, -7) = cap - 1;
-    OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) meta;
+    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t value_size = OPENCSTL_NIDX(container, -4);
+    size_t type_size = key_size + value_size;
+    size_t length = OPENCSTL_NIDX(container, -1);
+    size_t cap_mask_old = OPENCSTL_NIDX(container, -7);
+    uint16_t *old_meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
+    /* Required cap so that length+n fits comfortably under the load factor */
+    size_t want = length + n;
+    size_t min_cap = (want * 8 + 6) / 7; /* inverse of 7/8 load */
+    if (min_cap < __HASHTABLE_DEFAULT_SIZE__) min_cap = __HASHTABLE_DEFAULT_SIZE__;
+    size_t new_cap = __ht_next_pow2(min_cap);
+    if (new_cap <= cap_mask_old + 1) return; /* already big enough */
+
+    int htm_index = -1;
+    for (int i = 0; i < (int) htm_length; i++)
+        if (htm[i].p1 == *container) {
+            htm_index = i;
+            break;
+        }
+    if (htm_index == -1)
+        cstl_error("Unregistered hashtable");
+
+    while (true) {
+        void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
+        if (!new_raw)
+            cstl_error("Allocation failed (reserve)");
+        memcpy(new_raw, (char *) *container - header_sz, header_sz);
+        uint16_t *new_meta = __ht_alloc_meta(new_cap);
+        void *nb = (char *) new_raw + header_sz;
+        size_t new_mask = new_cap - 1;
+        size_t done = 0;
+        for (size_t i = 0; i <= cap_mask_old; i++) {
+            if (old_meta[i] != HT_EMPTY) {
+                void *ok = (char *) *container + i * type_size;
+                void *ov = value_size > 0 ? (char *) ok + key_size : NULL;
+                size_t h = hash_mixer(ok, key_size);
+                if (__ht_reinsert(nb, new_meta, new_mask, ok, ov, key_size, value_size, h))
+                    done++;
+            }
+        }
+        if (done < length) {
+            zfree(new_raw);
+            zfree(new_meta);
+            new_cap *= 2;
+            continue;
+        }
+        zfree((char *) *container - header_sz);
+        zfree(old_meta);
+        *container = nb;
+        OPENCSTL_NIDX(container, -7) = new_mask;
+        OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
+        htm[htm_index].p1 = *container;
+        htm[htm_index].p2 = (char *) *container + type_size * new_cap;
+        htm[htm_index].tombstone = (char *) new_meta;
+        htm[htm_index].type_size = (int) type_size;
+        return;
+    }
 }
 
 // ██╗░░░██╗███╗░░██╗░█████╗░██████╗░██████╗░███████╗██████╗░███████╗██████╗░░░░░░░░██████╗███████╗████████╗
@@ -588,7 +787,7 @@ OPENCSTL_FUNC void __cstl_hashtable_reserve(void **container, size_t n) {
 OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     size_t cap = __HASHTABLE_DEFAULT_SIZE__;
-    void *ptr = (char *) calloc(header_sz + key_size * cap, 1) + header_sz;
+    void *ptr = (char *) zalloc(header_sz + key_size * cap, 1) + header_sz;
     void **c = &ptr;
     uint16_t *meta = __ht_alloc_meta(cap);
     OPENCSTL_NIDX(c, NIDX_CTYPE) = OPENCSTL_UNORDERED_SET;
@@ -622,7 +821,7 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     size_t type_size = key_size + value_size;
     size_t cap = __HASHTABLE_DEFAULT_SIZE__;
-    void *ptr = (char *) calloc(header_sz + type_size * cap, 1) + header_sz;
+    void *ptr = (char *) zalloc(header_sz + type_size * cap, 1) + header_sz;
     void **c = &ptr;
     uint16_t *meta = __ht_alloc_meta(cap);
     OPENCSTL_NIDX(c, NIDX_CTYPE) = OPENCSTL_UNORDERED_MAP;

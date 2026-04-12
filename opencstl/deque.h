@@ -37,6 +37,7 @@
 #if !defined(_OPENCSTL_DEQUE_H)
 #define _OPENCSTL_DEQUE_H
 #include "error.h"
+#include "zalloc.h"
 #ifdef _MSC_VER
 #pragma warning(disable:4146)
 #pragma warning(disable:4308)
@@ -45,7 +46,7 @@
 #define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = malloc(header_sz + type_size * 2);
+    void *block = zalloc(header_sz + type_size * 2);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for deque");
     }
@@ -81,9 +82,9 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_t n, void *value) 
 #endif
 
     capacity = n;
-    void *b = calloc(1, header_sz + capacity * type_size);
+    void *b = zalloc(1, header_sz + capacity * type_size);
     memcpy(b, (char *) *container - header_sz + distance, header_sz);
-    free(((char *) *container) - header_sz + distance);
+    zfree(((char *) *container) - header_sz + distance);
     *container = ((char *) b) + header_sz;
     OPENCSTL_NIDX(container, -1) = -1;
     distance = 0;
@@ -118,11 +119,11 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
 
     if (length == capacity + distance / (ptrdiff_t) type_size) {
         size_t distance_sz = -distance;
-        void *b = calloc(1, header_sz + capacity * 2 * type_size);
+        void *b = zalloc(1, header_sz + capacity * 2 * type_size);
         memcpy(b, (char *) *container - (header_sz + distance_sz), header_sz);
         distance = capacity * 2 / 4;
         memcpy((char *) b + header_sz + distance * type_size, *container, length * type_size);
-        free((char *) *container - (header_sz + distance_sz));
+        zfree((char *) *container - (header_sz + distance_sz));
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) *= 2;
@@ -150,11 +151,11 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     }
 #endif
     if (distance == 0) {
-        void *b = calloc(1, header_sz + capacity * 2 * type_size);
+        void *b = zalloc(1, header_sz + capacity * 2 * type_size);
         memcpy(b, (char *) *container - header_sz, header_sz);
         distance = capacity * 2 / 4;
         memcpy((char *) b + header_sz + distance * type_size, *container, length * type_size);
-        free((char *) *container - header_sz);
+        zfree((char *) *container - header_sz);
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) *= 2;
@@ -195,9 +196,10 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_t n, voi
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
+    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -247,9 +249,10 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
+    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -258,10 +261,10 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
 #endif
     if (capacity + distance / (ptrdiff_t) type_size < n) {
         capacity = n;
-        void *b = calloc(1, header_sz + capacity * type_size);
+        void *b = zalloc(1, header_sz + capacity * type_size);
         memcpy(b, (char *) *container - header_sz + distance, header_sz);
         memcpy((char *) b + header_sz, *container, length * type_size);
-        free((char *) *container - header_sz + distance);
+        zfree((char *) *container - header_sz + distance);
         *container = (char *) b + header_sz;
         OPENCSTL_NIDX(container, -1) = -1;
         distance = 0;
@@ -316,18 +319,19 @@ OPENCSTL_FUNC void __cstl_deque_free(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
 
-    free((char *) *container - (header_sz - distance));
+    zfree((char *) *container - (header_sz - distance));
 }
 
 OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
+    //size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
-    size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
+    //size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
+    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;

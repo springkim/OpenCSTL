@@ -40,6 +40,7 @@
 
 
 #include"error.h"
+#include"zalloc.h"
 
 #define P	    (-4)
 #define R       (-1)
@@ -66,7 +67,7 @@ struct cstl_arena_chunk {
 };
 
 OPENCSTL_FUNC cstl_arena_chunk *__cstl_arena_new_chunk(size_t node_size, size_t capacity) {
-    cstl_arena_chunk *chunk = (cstl_arena_chunk *) malloc(
+    cstl_arena_chunk *chunk = (cstl_arena_chunk *) zalloc(
         sizeof(cstl_arena_chunk) + node_size * capacity
     );
     chunk->next = NULL;
@@ -106,7 +107,7 @@ OPENCSTL_FUNC void __cstl_arena_free_all(cstl_arena_chunk **arena, void **freeli
     cstl_arena_chunk *c = *arena;
     while (c != NULL) {
         cstl_arena_chunk *next = c->next;
-        free(c);
+        zfree(c);
         c = next;
     }
     *arena = NULL;
@@ -119,7 +120,7 @@ OPENCSTL_FUNC void *__cstl_tree_node(size_t type_size, size_t node_type) {
     // [color][parent][node type][left][right] -> [data]
     size_t node_sz = type_size + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     node_sz = (node_sz + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
-    void *ptr = (char *) calloc(node_sz, 1) + sizeof(void *) * NIDX_TREE_NODE_SIZE;
+    void *ptr = (char *) zalloc(node_sz, 1) + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     OPENCSTL_NIDX(&ptr, -3) = node_type;
     COLOR(ptr) = BLACK;
     return ptr;
@@ -159,7 +160,7 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, void *compare) {
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = (char *) malloc(header_sz + sizeof(size_t)) + header_sz;
+    void *ptr = (char *) zalloc(header_sz + sizeof(size_t)) + header_sz;
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_SET;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
@@ -191,7 +192,7 @@ OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_ke
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = (char *) malloc(header_sz + sizeof(size_t)) + header_sz;
+    void *ptr = (char *) zalloc(header_sz + sizeof(size_t)) + header_sz;
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_MAP;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
@@ -289,19 +290,20 @@ OPENCSTL_FUNC void __cstl_tree_insert_fixup(void **container, void *z) {
 
 OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) {
     size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t value_size = OPENCSTL_NIDX(container, -4);
     size_t type_size = key_size + value_size;
     cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
 
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
+    // char *type_key = (char *) OPENCSTL_NIDX(container, -3);
+    // char *type_value = (char *) OPENCSTL_NIDX(container, -5);
 
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
+    
 
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float_key = OPENCSTL_NIDX(container, -8);
+    size_t is_float_value = OPENCSTL_NIDX(container, -9);
     float keyf = 0.0F;
     if (is_float_key) {
         keyf = (float) *(double *) key;
@@ -415,13 +417,13 @@ OPENCSTL_FUNC void __cstl_tree_erase_fixup(void **container, void *x) {
 
 OPENCSTL_FUNC void __cstl_tree_erase(void **container, void **iter) {
     if (iter == NULL)return;
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    size_t type_size = key_size + value_size;
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
-    void ***root = (void ***) *container;
+    // size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
+    // size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    // size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    // size_t value_size = OPENCSTL_NIDX(container, -4);
+    //size_t type_size = key_size + value_size;
+    //cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
+    //void ***root = (void ***) *container;
     void *z = iter;
 
     void *y = z;
@@ -461,16 +463,17 @@ OPENCSTL_FUNC void __cstl_tree_erase(void **container, void **iter) {
 }
 
 OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    // size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
+    // size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t value_size = OPENCSTL_NIDX(container, -4);
     size_t type_size = key_size + value_size;
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
+    //char *type_key = (char *) OPENCSTL_NIDX(container, -3);
 
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
+    
 
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float_key = OPENCSTL_NIDX(container, -8);
     float keyf = 0.0F;
     if (is_float_key) {
         keyf = (float) *(double *) key;
@@ -507,6 +510,7 @@ OPENCSTL_FUNC void *__cstl_tree_rbegin(void **container) {
 }
 
 OPENCSTL_FUNC void *__cstl_tree_end_rend(void **container) {
+    (void)container;
     return nil;
 }
 
@@ -547,7 +551,7 @@ OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
 OPENCSTL_FUNC void __cstl_tree_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     __cstl_tree_clear(container);
-    free((char *) (*container) - header_sz);
+    zfree((char *) (*container) - header_sz);
     *container = NULL;
 }
 
@@ -575,14 +579,14 @@ OPENCSTL_FUNC void *__cstl_tree_next_prev(void *it, int r, int l, void *(todeep)
 // }
 
 OPENCSTL_FUNC size_type __cstl_tree_size(void **container) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    size_t type_size = key_size + value_size;
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
-    void ***root = (void ***) *container;
-    void *c = *root;
+    //size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //size_t value_size = OPENCSTL_NIDX(container, -4);
+    //size_t type_size = key_size + value_size;
+    //cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
+    //void ***root = (void ***) *container;
+    //void *c = *root;
     size_t length = OPENCSTL_NIDX(container, -1);
     //return ___cstl_tree_size(c);
     return (size_type)length;

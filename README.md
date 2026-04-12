@@ -195,6 +195,7 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
       ISORT(isort.h) --> MSORT(msort.h)
       TSORT(tsort.h) --> SORT(sort.h)
       MSORT(msort.h) --> SORT(sort.h)
+      PDQSORT(pdqsort.h) --> SORT(sort.h)
       C(crossplatform.h) --> SORT(sort.h)
       SORT(sort.h) --> OCSTL(opencstl.h)
       VER(version.h) --> OCSTL(opencstl.h)

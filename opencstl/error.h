@@ -48,16 +48,15 @@
 // ██║░░██║╚██████╔╝██║░╚███║░░░██║░░░██║██║░╚═╝░██║███████╗░░░░░░███████╗██║░░██║██║░░██║╚█████╔╝██║░░██║
 // ╚═╝░░╚═╝░╚═════╝░╚═╝░░╚══╝░░░╚═╝░░░╚═╝╚═╝░░░░░╚═╝╚══════╝░░░░░░╚══════╝╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝
 
-
-#if defined(__FUNCTION__)
-#define __OPENCSTL_FUNCTION__ __FUNCTION__
-#elif defined(__func__)
+#if defined(__func__)
 #define __OPENCSTL_FUNCTION__ __func__
+#elif defined(__FUNCTION__)
+#define __OPENCSTL_FUNCTION__ __FUNCTION__
 #endif
 
 
 #if defined(__GNUC__)
-#define cstl_error(msg)		__cstl_error(msg,__FILE__,__FUNCTION__,__LINE__)
+#define cstl_error(msg)		__cstl_error(msg,__FILE__,__func__,__LINE__)
 OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, const char *function, int line) {
     char err_msg[1024] = {0};
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
