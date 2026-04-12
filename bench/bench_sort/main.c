@@ -6,8 +6,18 @@
 #include <sys/time.h>
 #include "tsort.h"
 #include "msort.h"
-#include "pdq_sort.h"
-
+#include "pdqsort.h"
+#include "rsort.h"
+/*
+ *
+ *
+ 
+void qsort(
+    void *__base, 
+    size_t __nel, 
+    size_t __width, 
+    int(*__compar)(const void *, const void *)) 
+ */
 int is_sorted(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *)) {
     for (size_t i = 1; i < nmemb; i += size) {
         const int r = compar(((char *) base) + ((i - 1) * size), (char *) base + (i * size));
@@ -32,7 +42,7 @@ int sort_test() {
 
     DTYPE N = 5000000;
 
-    size_t ALGORITHMS = 4;
+    size_t ALGORITHMS = 5;
 #ifdef DEBUG
     size_t REPEAT = 3;
     printf("RAND_MAX: %d\n", RAND_MAX);
@@ -56,6 +66,7 @@ int sort_test() {
     double q_diff = 0;
     double t_diff = 0;
     double p_diff = 0;
+    double r_diff = 0;
     for (int i = 0; i < ALGORITHMS * REPEAT; i++) {
         memcpy(target, arr, N * sizeof(int));
         gettimeofday(&bgn, NULL);
@@ -79,9 +90,15 @@ int sort_test() {
             };
                 break;
             case 3: {
-                pdq_qsort(target, N, sizeof(DTYPE), compare);
+                pdqsort(target, N, sizeof(DTYPE), compare);
                 gettimeofday(&end, NULL);
                 p_diff += end.tv_sec + end.tv_usec / 1000000.0 - bgn.tv_sec - bgn.tv_usec / 1000000.0;
+            }
+            break;
+            case 4: {
+                rsort64(target, N);
+                gettimeofday(&end, NULL);
+                r_diff += end.tv_sec + end.tv_usec / 1000000.0 - bgn.tv_sec - bgn.tv_usec / 1000000.0;
             }
             break;
             default: {
@@ -93,10 +110,12 @@ int sort_test() {
             puts("Not sorted");
         }
     }
-    printf("msort: %f\n", m_diff);
     printf("qsort: %f\n", q_diff);
+    printf("msort: %f\n", m_diff);
+    
     printf("tsort: %f\n", t_diff);
-    printf("pdq_qsort: %f\n", p_diff);
+    printf("pdqsort: %f\n", p_diff);
+    printf("rsort: %f\n", r_diff);
     return 0;
 }
 

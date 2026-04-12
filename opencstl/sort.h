@@ -53,6 +53,13 @@
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
 #define stable_sort tsort
 
+
+#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_CLANG)
+#define stable_sort msort
+#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_GCC)
+#define stable_sort tsort
+#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_TCC)
+#define stable_sort tsort
 #endif
 
 

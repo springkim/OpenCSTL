@@ -43,8 +43,8 @@
 #define MSORT_ISORT_THRESH 32
 
 
-static void merge(char *arr, size_t len1, size_t len2, size_t sz,
-                  int (*cmp)(const void *, const void *), char *buf) {
+static inline void merge(char *arr, size_t len1, size_t len2, size_t sz,
+                         int (*cmp)(const void *, const void *), char *buf) {
     if (cmp(arr + (len1 - 1) * sz, arr + len1 * sz) <= 0) return;
     if (len1 <= len2) {
         memcpy(buf, arr, len1 * sz);
@@ -81,24 +81,24 @@ static void merge(char *arr, size_t len1, size_t len2, size_t sz,
     }
 }
 
-static void msort(void *base, size_t nmemb, size_t size,
-                  int (*compar)(const void *, const void *)) {
-    if (nmemb < 2) return;
-    char *arr = (char *) base;
-    size_t sz = size;
-    for (size_t i = 0; i < nmemb; i += MSORT_ISORT_THRESH) {
-        size_t blk = nmemb - i;
+static void msort(void *__base, size_t __nel, size_t __width,
+                  int (*__compar)(const void *, const void *)) {
+    if (__nel < 2) return;
+    char *arr = (char *) __base;
+    size_t sz = __width;
+    for (size_t i = 0; i < __nel; i += MSORT_ISORT_THRESH) {
+        size_t blk = __nel - i;
         if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
-        isort(arr + i * sz, blk, sz, compar);
+        isort(arr + i * sz, blk, sz, __compar);
     }
-    char *buf = (char *) malloc(((nmemb + 1) / 2) * sz);
+    char *buf = (char *) malloc(((__nel + 1) / 2) * sz);
     if (!buf) return;
-    for (size_t width = MSORT_ISORT_THRESH; width < nmemb; width *= 2) {
-        for (size_t i = 0; i + width < nmemb; i += 2 * width) {
+    for (size_t width = MSORT_ISORT_THRESH; width < __nel; width *= 2) {
+        for (size_t i = 0; i + width < __nel; i += 2 * width) {
             size_t len1 = width;
-            size_t len2 = nmemb - i - width;
+            size_t len2 = __nel - i - width;
             if (len2 > width) len2 = width;
-            merge(arr + i * sz, len1, len2, sz, compar, buf);
+            merge(arr + i * sz, len1, len2, sz, __compar, buf);
         }
     }
     free(buf);
