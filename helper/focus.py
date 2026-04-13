@@ -442,7 +442,7 @@ focus_table = {
 }
 
 
-def focus_message(text: str):
+def banner(text: str):
     text = text.upper()
     for i in range(6):
         for c in text:
@@ -450,5 +450,4 @@ def focus_message(text: str):
         print()
 
 
-print(len(focus_table))
-focus_message("Hello World")
+banner("Hello World")

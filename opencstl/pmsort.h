@@ -37,7 +37,7 @@
 #pragma once
 #if !defined(_OPENCSTL_PMSORT_H)
 #define _OPENCSTL_PMSORT_H
-#include <pthread.h>
+#include "pthread_cc.h"
 #include <stdlib.h>
 #include <string.h>
 #include "msort.h"

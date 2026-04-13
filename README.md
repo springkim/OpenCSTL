@@ -168,6 +168,7 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
       T(types.h) --> E(error.h)
       D(defines.h) --> E(error.h)
       C(crossplatform.h) --> L(logging.h)
+      C(crossplatform.h) --> PTHREADCC(pthread_cc.h)
       E(error.h) --> V(vector.h)
       E(error.h) --> LST(list.h)
       E(error.h) --> S(stack.h)
@@ -191,7 +192,6 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
           H(hashtable.h)
       end
 
-      C(crossplatform.h) --> OCSTL(opencstl.h)
       V(vector.h) --> OCSTL(opencstl.h)
       LST(list.h) --> OCSTL(opencstl.h)
       TREE(tree.h) --> OCSTL(opencstl.h)
@@ -202,6 +202,9 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
       ISORT(isort.h) --> MSORT(msort.h)
       TSORT(tsort.h) --> SORT(sort.h)
       MSORT(msort.h) --> SORT(sort.h)
+      PTHREADCC(pthread_cc.h) --> PMSORT(pmsort.h)
+      MSORT(msort.h) --> PMSORT(pmsort.h)
+      PMSORT(pmsort.h) --> SORT(sort.h)
       ITER(iterator.h) --> SORT(sort.h)
       ITER(iterator.h) --> ALGO(algorithm.h)
       PDQSORT(pdqsort.h) --> SORT(sort.h)

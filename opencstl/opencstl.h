@@ -94,6 +94,7 @@
 #include "sort.h"
 #include "logging.h"
 #include "version.h"
+#include "lprint.h"
 
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**

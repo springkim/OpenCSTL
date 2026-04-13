@@ -55,6 +55,7 @@ static double duration(const watch t_beg, const watch t_end) {
 #include "msort.h"
 #include "pdqsort.h"
 #include "rsort.h"
+#include "pmsort.h"
 /*
  *
  *
@@ -106,7 +107,7 @@ int sort_test() {
 
     DTYPE N = 5000000;
 
-    size_t ALGORITHMS = 5;
+    size_t ALGORITHMS = 6;
 #ifdef DEBUG
     size_t REPEAT = 3;
     printf("RAND_MAX: %d\n", RAND_MAX);
@@ -131,6 +132,7 @@ int sort_test() {
     double t_diff = 0;
     double p_diff = 0;
     double r_diff = 0;
+    double pm_diff = 0;
     for (int i = 0; i < ALGORITHMS * REPEAT; i++) {
         memcpy(target, arr, N * sizeof(int));
         bgn = now();
@@ -165,6 +167,11 @@ int sort_test() {
                 r_diff += duration(bgn, end);
             }
             break;
+            case 5: {
+                pmsort(target, N, sizeof(DTYPE), compare);
+                end = now();
+                pm_diff += duration(bgn, end);
+            }break;
             default: {
                 exit(-1);
             };
@@ -181,6 +188,8 @@ int sort_test() {
     printf("pdqsort: %.2fms\n", p_diff);
     printf("rsort: %.2fms\n", r_diff);
 
+    printf("pmsort: %.2fms\n", pm_diff);
+
     printf("|%.2f|%.2f|%.2f|%.2f|\n", q_diff, m_diff, t_diff, p_diff);
 
 
@@ -191,5 +200,4 @@ int sort_test() {
 int main(void) {
     sort_test();
     return 0;
-    
 }

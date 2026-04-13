@@ -1277,7 +1277,6 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 (OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[cstl_error("Invalid Operation")]))   //priority queue
 
 
-
 #define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
 
 
@@ -1603,6 +1602,423 @@ static void *zrealloc(void *ptr, size_t new_size) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    zalloc.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  van_emde_boas_tree.h           (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+
+
+typedef uintptr_t u64;
+
+
+#define VEB_EMPTY   (~(u64)0)
+#define HM_INIT_CAP 16
+
+
+typedef struct {
+    u64 key;
+    void *val;
+    int used;
+} HMEntry;
+
+typedef struct {
+    HMEntry *e;
+    size_t cap, size;
+} HashMap;
+
+static u64 hm_hash(u64 k) {
+    k = (k ^ (k >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
+    k = (k ^ (k >> 27)) * UINT64_C(0x94d049bb133111eb);
+    return k ^ (k >> 31);
+}
+
+static HashMap *hm_new(void) {
+    HashMap *h = (HashMap *) calloc(1, sizeof(HashMap));
+    h->cap = HM_INIT_CAP;
+    h->e = (HMEntry *) calloc(h->cap, sizeof(HMEntry));
+    return h;
+}
+
+static void hm_free(HashMap *h) {
+    free(h->e);
+    free(h);
+}
+
+
+static void hm_set(HashMap *h, u64 key, void *val);
+
+static void hm_grow(HashMap *h) {
+    size_t oc = h->cap;
+    HMEntry *oe = h->e;
+    h->cap = oc * 2;
+    h->e = (HMEntry *) calloc(h->cap, sizeof(HMEntry));
+    h->size = 0;
+    for (size_t i = 0; i < oc; i++)
+        if (oe[i].used) hm_set(h, oe[i].key, oe[i].val);
+    free(oe);
+}
+
+static void hm_set(HashMap *h, u64 k, void *v) {
+    if (h->size * 2 >= h->cap) hm_grow(h);
+    size_t i = (size_t) (hm_hash(k) % h->cap);
+    while (h->e[i].used && h->e[i].key != k)
+        i = (i + 1) % h->cap;
+    if (!h->e[i].used) h->size++;
+    h->e[i] = (HMEntry){k, v, 1};
+}
+
+static void *hm_get(const HashMap *h, u64 k) {
+    size_t i = (size_t) (hm_hash(k) % h->cap);
+    while (h->e[i].used) {
+        if (h->e[i].key == k) return h->e[i].val;
+        i = (i + 1) % h->cap;
+    }
+    return NULL;
+}
+
+static void hm_del(HashMap *h, u64 k) {
+    size_t i = (size_t) (hm_hash(k) % h->cap);
+    while (h->e[i].used && h->e[i].key != k)
+        i = (i + 1) % h->cap;
+    if (!h->e[i].used) return;
+    h->e[i].used = 0;
+    h->size--;
+    // 삭제 후 뒤따르는 항목들 재배치 (프로빙 체인 불변 유지)
+    size_t j = (i + 1) % h->cap;
+    while (h->e[j].used) {
+        HMEntry t = h->e[j];
+        h->e[j].used = 0;
+        h->size--;
+        hm_set(h, t.key, t.val);
+        j = (j + 1) % h->cap;
+    }
+}
+
+
+typedef struct VEB {
+    int bits;
+    u64 min;
+    u64 max;
+    struct VEB *sum;
+    HashMap *cls;
+} VEB;
+
+
+static int lo_b(int b) { return b / 2; }
+static int hi_b(int b) { return b - b / 2; }
+
+
+static u64 vhi(u64 x, int b) { return x >> lo_b(b); }
+static u64 vlo(u64 x, int b) { return x & (((u64) 1 << lo_b(b)) - 1); }
+static u64 vidx(u64 h, u64 l, int b) { return (h << lo_b(b)) | l; }
+
+static VEB *veb_new(int bits) {
+    VEB *v = (VEB *) calloc(1, sizeof(VEB));
+    v->bits = bits;
+    v->min = VEB_EMPTY;
+    v->max = VEB_EMPTY;
+    if (bits > 1) v->cls = hm_new();
+    return v;
+}
+
+// 전방 선언
+static void veb_free(VEB *v);
+
+static void cls_free_all(HashMap *hm) {
+    for (size_t i = 0; i < hm->cap; i++)
+        if (hm->e[i].used) veb_free((VEB *) hm->e[i].val);
+    hm_free(hm);
+}
+
+static void veb_free(VEB *v) {
+    if (!v) return;
+    if (v->bits > 1) {
+        veb_free(v->sum);
+        if (v->cls) cls_free_all(v->cls);
+    }
+    free(v);
+}
+
+static int veb_empty(const VEB *v) { return v->min == VEB_EMPTY; }
+
+static VEB *cls_get(VEB *v, u64 h) { return (VEB *) hm_get(v->cls, h); }
+
+
+static VEB *cls_or_new(VEB *v, u64 h) {
+    VEB *c = (VEB *) hm_get(v->cls, h);
+    if (!c) {
+        c = veb_new(lo_b(v->bits));
+        hm_set(v->cls, h, c);
+    }
+    return c;
+}
+
+
+static VEB *sum_or_new(VEB *v) {
+    if (!v->sum) v->sum = veb_new(hi_b(v->bits));
+    return v->sum;
+}
+
+
+static void veb_ins(VEB *v, u64 x) {
+    if (veb_empty(v)) {
+        v->min = v->max = x;
+        return;
+    }
+
+    // x가 현재 min보다 작으면 교환해 min 갱신
+    // (min은 클러스터에 저장하지 않으므로 재귀 불필요)
+    if (x < v->min) {
+        u64 t = v->min;
+        v->min = x;
+        x = t;
+    }
+
+    // bits==1: universe {0,1}, 클러스터 없이 min/max로 처리
+    if (v->bits == 1) {
+        if (x > v->max) v->max = x;
+        return;
+    }
+
+    u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
+    VEB *c = cls_or_new(v, h);
+    // 클러스터가 비어있었으면 summary에 h 삽입
+    if (veb_empty(c)) veb_ins(sum_or_new(v), h);
+    veb_ins(c, l);
+    if (x > v->max) v->max = x;
+}
+
+
+static void veb_del(VEB *v, u64 x) {
+    // 원소가 1개뿐이면 바로 비움
+    if (v->min == v->max) {
+        v->min = v->max = VEB_EMPTY;
+        return;
+    }
+
+    // bits==1: {0,1} 중 하나 제거
+    if (v->bits == 1) {
+        v->min = v->max = (x == 0) ? 1 : 0;
+        return;
+    }
+
+    if (x == v->min) {
+        // min 제거: 다음 최솟값을 클러스터에서 꺼내 min으로 승격
+        if (!v->sum || veb_empty(v->sum)) {
+            v->min = v->max = VEB_EMPTY;
+            return;
+        }
+        u64 fh = v->sum->min; // 비어있지 않은 첫 클러스터
+        VEB *fc = cls_get(v, fh);
+        v->min = x = vidx(fh, fc->min, v->bits);
+    }
+
+    u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
+    VEB *c = cls_get(v, h);
+    if (!c) return;
+    veb_del(c, l);
+
+    if (veb_empty(c)) {
+        // 클러스터가 비면 해제하고 summary에서도 제거
+        hm_del(v->cls, h);
+        veb_free(c);
+        if (v->sum) veb_del(v->sum, h);
+        if (x == v->max) {
+            if (!v->sum || veb_empty(v->sum)) v->max = v->min;
+            else {
+                u64 lh = v->sum->max; // 비어있지 않은 마지막 클러스터
+                VEB *lc = cls_get(v, lh);
+                v->max = vidx(lh, lc->max, v->bits);
+            }
+        }
+    } else if (x == v->max) {
+        v->max = vidx(h, c->max, v->bits);
+    }
+}
+
+
+static u64 veb_pred(VEB *v, u64 x) {
+    if (veb_empty(v) || x <= v->min) return VEB_EMPTY;
+    if (x > v->max) return v->max;
+    // bits==1: x==1, v->min==0 임이 보장됨
+    if (v->bits == 1) return 0;
+
+    u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
+    VEB *c = cls_get(v, h);
+
+    // 같은 클러스터 내에 l보다 작은 원소가 있으면 그것을 반환
+    if (c && !veb_empty(c) && l > c->min)
+        return vidx(h, veb_pred(c, l), v->bits);
+
+    // 이전 클러스터(summary 기준으로 h 미만)의 최댓값을 반환
+    u64 ph = (v->sum && !veb_empty(v->sum)) ? veb_pred(v->sum, h) : VEB_EMPTY;
+    if (ph == VEB_EMPTY) return (x > v->min) ? v->min : VEB_EMPTY;
+    VEB *pc = cls_get(v, ph);
+    return pc ? vidx(ph, pc->max, v->bits) : VEB_EMPTY;
+}
+
+
+static u64 veb_floor(VEB *v, u64 x) {
+    if (veb_empty(v) || x < v->min) return VEB_EMPTY;
+    if (x >= v->max) return v->max;
+    if (x == v->min) return v->min;
+    // pred(x+1) = x 이하의 최댓값
+    // x < max 이므로 x+1 이 VEB_EMPTY 로 오버플로되지 않음
+    return veb_pred(v, x + 1);
+}
+
+
+typedef enum CONTAINER_TYPE {
+    CT_VECTOR,
+    CT_LIST,
+    CT_STACK,
+    CT_QUEUE,
+    CT_DEQUE,
+    CT_SET,
+    CT_MAP,
+    CT_UNORDERED_SET,
+    CT_UNORDERED_MAP,
+} CONTAINER_TYPE;
+
+typedef struct {
+    void *a; // 구간 시작 (inclusive)
+    void *b; // 구간 끝   (inclusive)
+    CONTAINER_TYPE ctype;
+    size_t type_size;
+    char *type_name;
+} Interval;
+
+typedef struct {
+    VEB *veb;
+    HashMap *data;
+} IntervalVEB;
+
+typedef struct {
+    void *p1, *p2;
+    char *tombstone;
+    int type_size;
+    bool used;
+} HashtableManager;
+
+typedef struct {
+    VEB *veb;
+    HashMap *data;
+} HTMVEB;
+
+HTMVEB *htm_new(void) {
+    HTMVEB *iv = (HTMVEB *) calloc(1, sizeof(HTMVEB));
+    iv->veb = veb_new(64);
+    iv->data = hm_new();
+    return iv;
+}
+
+void htm_free(HTMVEB *iv) {
+    for (size_t i = 0; i < iv->data->cap; i++)
+        if (iv->data->e[i].used) free(iv->data->e[i].val);
+    hm_free(iv->data);
+    veb_free(iv->veb);
+    free(iv);
+}
+
+void htm_insert(HTMVEB *iv, void *a, void *b, char *tombstone, int type_size) {
+    u64 k = (u64) (uintptr_t) a;
+    HashtableManager *it = (HashtableManager *) hm_get(iv->data, k);
+    if (!it) {
+        it = (HashtableManager *) malloc(sizeof(HashtableManager));
+        hm_set(iv->data, k, it);
+        veb_ins(iv->veb, k);
+    }
+    it->p1 = a;
+    it->p2 = b;
+    it->tombstone = tombstone;
+    it->used = true;
+    it->type_size = type_size;
+}
+
+
+void htm_erase(HTMVEB *iv, void *a) {
+    u64 k = (u64) (uintptr_t) a;
+    HashtableManager *it = (HashtableManager *) hm_get(iv->data, k);
+    if (!it) return;
+    free(it);
+    hm_del(iv->data, k);
+    veb_del(iv->veb, k);
+}
+
+
+HashtableManager *htm_find(HTMVEB *iv, void *x) {
+    u64 key = (u64) (uintptr_t) x;
+    u64 start = veb_floor(iv->veb, key);
+    if (start == VEB_EMPTY) return NULL;
+    HashtableManager *it = (HashtableManager *) hm_get(iv->data, start);
+    if (!it) return NULL;
+    return ((uintptr_t) x <= (uintptr_t) it->p2) ? it : NULL;
+}
+
+
+IntervalVEB *iveb_new(void) {
+    IntervalVEB *iv = (IntervalVEB *) calloc(1, sizeof(IntervalVEB));
+    iv->veb = veb_new(64);
+    iv->data = hm_new();
+    return iv;
+}
+
+
+void iveb_free(IntervalVEB *iv) {
+    for (size_t i = 0; i < iv->data->cap; i++)
+        if (iv->data->e[i].used) free(iv->data->e[i].val);
+    hm_free(iv->data);
+    veb_free(iv->veb);
+    free(iv);
+}
+
+
+void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_t type_size, char *type_name) {
+    u64 k = (u64) (uintptr_t) a;
+    Interval *it = (Interval *) hm_get(iv->data, k);
+    if (!it) {
+        it = (Interval *) malloc(sizeof(Interval));
+        hm_set(iv->data, k, it);
+        veb_ins(iv->veb, k);
+    }
+    it->a = a;
+    it->b = b;
+    it->ctype = ctype;
+    it->type_size = type_size;
+    it->type_name = type_name;
+}
+
+
+void iveb_erase(IntervalVEB *iv, void *a) {
+    u64 k = (u64) (uintptr_t) a;
+    Interval *it = (Interval *) hm_get(iv->data, k);
+    if (!it) return;
+    free(it);
+    hm_del(iv->data, k);
+    veb_del(iv->veb, k);
+}
+
+
+Interval *iveb_find(IntervalVEB *iv, void *x) {
+    u64 key = (u64) (uintptr_t) x;
+    u64 start = veb_floor(iv->veb, key);
+    if (start == VEB_EMPTY) return NULL;
+    Interval *it = (Interval *) hm_get(iv->data, start);
+    if (!it) return NULL;
+    return ((uintptr_t) x <= (uintptr_t) it->b) ? it : NULL;
+}
+
+static IntervalVEB *iveb = NULL;
+static HTMVEB *htm = NULL;
+
+void __opencstl_iveb_destroy(void) {
+    iveb_free(iveb);
+}
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    van_emde_boas_tree.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 #ifdef _MSC_VER
 #pragma warning(disable:4146)
 #pragma warning(disable:4308)
@@ -1634,8 +2050,18 @@ OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, -4) = (size_t) type;
     OPENCSTL_NIDX(container, -3) = 2; // capacity
     OPENCSTL_NIDX(container, -2) = 0; // length
+    void *buf_start = ptr;
     *container = (char *) ptr + type_size;
     OPENCSTL_NIDX(container, -1) = -type_size - 1;
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, buf_start, (char *) buf_start + (type_size * 2), CT_DEQUE, type_size, type);
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return ptr;
 }
 
@@ -1655,6 +2081,7 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_t n, void *value) 
 #endif
 
     capacity = n;
+    iveb_erase(iveb, (char *) *container + distance);
     void *b = zalloc(1, header_sz + capacity * type_size);
     memcpy(b, (char *) *container - header_sz + distance, header_sz);
     zfree(((char *) *container) - header_sz + distance);
@@ -1663,6 +2090,7 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_t n, void *value) 
     distance = 0;
     *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) = n;
     *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) = n;
+    iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_DEQUE, type_size, type);
 
     if (value == NULL) {
         memset((char *) *container, 0, n * type_size);
@@ -1679,7 +2107,7 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
@@ -1692,15 +2120,19 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
 
     if (length == capacity + distance / (ptrdiff_t) type_size) {
         size_t distance_sz = -distance;
-        void *b = zalloc(1, header_sz + capacity * 2 * type_size);
+        size_t new_capacity = capacity * 2;
+        iveb_erase(iveb, (char *) *container + distance);
+        void *b = zalloc(1, header_sz + new_capacity * type_size);
         memcpy(b, (char *) *container - (header_sz + distance_sz), header_sz);
-        distance = capacity * 2 / 4;
+        distance = new_capacity / 4;
         memcpy((char *) b + header_sz + distance * type_size, *container, length * type_size);
         zfree((char *) *container - (header_sz + distance_sz));
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) *= 2;
         OPENCSTL_NIDX(container, -1) = distance - 1;
+        iveb_insert(iveb, (char *) *container + distance,
+                    (char *) *container + distance + (type_size * new_capacity), CT_DEQUE, type_size, type);
     }
     memcpy((char *) *container + type_size * length, value, type_size);
 
@@ -1713,7 +2145,7 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
@@ -1724,14 +2156,18 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     }
 #endif
     if (distance == 0) {
-        void *b = zalloc(1, header_sz + capacity * 2 * type_size);
+        size_t new_capacity = capacity * 2;
+        iveb_erase(iveb, (char *) *container);
+        void *b = zalloc(1, header_sz + new_capacity * type_size);
         memcpy(b, (char *) *container - header_sz, header_sz);
-        distance = capacity * 2 / 4;
+        distance = new_capacity / 4;
         memcpy((char *) b + header_sz + distance * type_size, *container, length * type_size);
         zfree((char *) *container - header_sz);
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) *= 2;
+        iveb_insert(iveb, (char *) *container + distance,
+                    (char *) *container + distance + (type_size * new_capacity), CT_DEQUE, type_size, type);
     }
     memcpy((char *) *container - type_size * 2, (char *) *container - type_size, type_size);
     memcpy((char *) *container - type_size, value, type_size);
@@ -1769,7 +2205,7 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_t n, voi
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
@@ -1781,10 +2217,14 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_t n, voi
 #endif
     size_t pos = (*(char **) it - *(char **) container) / type_size;
     if (length + n > capacity + distance / (ptrdiff_t) type_size) {
+        iveb_erase(iveb, (char *) *container + distance);
         capacity += n;
-        void *b = realloc((char *) *container - header_sz + distance, header_sz + capacity * type_size - distance);
+        size_t alloc_sz = header_sz + capacity * type_size - distance;
+        void *b = realloc((char *) *container - header_sz + distance, alloc_sz);
         *container = (char *) b + header_sz - distance;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) += n;
+        iveb_insert(iveb, (char *) *container + distance,
+                    (char *) b + alloc_sz, CT_DEQUE, type_size, type);
     }
     memcpy((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
            (length - pos) * type_size);
@@ -1822,7 +2262,7 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
@@ -1834,6 +2274,7 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
 #endif
     if (capacity + distance / (ptrdiff_t) type_size < n) {
         capacity = n;
+        iveb_erase(iveb, (char *) *container + distance);
         void *b = zalloc(1, header_sz + capacity * type_size);
         memcpy(b, (char *) *container - header_sz + distance, header_sz);
         memcpy((char *) b + header_sz, *container, length * type_size);
@@ -1842,6 +2283,7 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
         OPENCSTL_NIDX(container, -1) = -1;
         distance = 0;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) = n;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_DEQUE, type_size, type);
     }
     *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) = n;
     if (length < n) {
@@ -1892,6 +2334,7 @@ OPENCSTL_FUNC void __cstl_deque_free(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
 
+    iveb_erase(iveb, (char *) *container + distance);
     zfree((char *) *container - (header_sz - distance));
 }
 
@@ -1969,7 +2412,7 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
 #define _OPENCSTL_VECTOR_H
 /* [already included: error.h] */
 /* [already included: zalloc.h] */
-//#include "van_emde_boas_tree.h"
+/* [already included: van_emde_boas_tree.h] */
 // ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
 // ██║░░░██║██╔════╝██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗
 // ╚██╗░██╔╝█████╗░░██║░░╚═╝░░░██║░░░██║░░██║██████╔╝
@@ -1980,7 +2423,7 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
 #define cstl_vector(TYPE)	__cstl_vector(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zalloc(header_sz + type_size,1);
+    void *block = zalloc(header_sz + type_size, 1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for vector");
     }
@@ -1997,6 +2440,15 @@ OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, -3) = 0; //
     OPENCSTL_NIDX(container, -2) = 1; //capacity
     OPENCSTL_NIDX(container, -1) = 0; //length
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, ptr, (char *) ptr + (type_size), CT_VECTOR, type_size, type);
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return ptr;
 }
 
@@ -2005,7 +2457,7 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value)
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     //size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
-    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = OPENCSTL_NIDX(container, -8);
@@ -2016,12 +2468,14 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value)
     }
 #endif
     if (capacity < n) {
+        iveb_erase(iveb, *container);
         void *b = zrealloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector assign");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size, type);
     }
     if (value == NULL) {
         memset(*container, 0, type_size * n);
@@ -2038,7 +2492,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
-    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = OPENCSTL_NIDX(container, -8);
@@ -2049,12 +2503,15 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     }
 #endif
     if (length == capacity) {
-        void *b = zrealloc((char *) *container - header_sz, header_sz + capacity * 2 * type_size);
+        iveb_erase(iveb, *container);
+        size_t new_capaciy = capacity * 2;
+        void *b = zrealloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector push_back");
         }
         *container = ((char *) b + header_sz);
-        OPENCSTL_NIDX(container, -2) *= 2;
+        OPENCSTL_NIDX(container, -2) = new_capaciy;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capaciy), CT_VECTOR, type_size, type);
     }
     memcpy((char *) *container + type_size * length, value, type_size);
     OPENCSTL_NIDX(container, -1)++;
@@ -2081,7 +2538,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
     size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
     size_t pos = (*(char **) iter - *(char **) container) / type_size;
-    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = OPENCSTL_NIDX(container, -8);
@@ -2092,13 +2549,15 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
     }
 #endif
     if (length + N >= capacity) {
-        capacity += N;
-        void *b = zrealloc((char *) *container - header_sz, header_sz + capacity * type_size);
+        iveb_erase(iveb, *container);
+        size_t new_capaciy = (capacity + N) * 2;
+        void *b = zrealloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector insert");
         }
         *container = ((char *) b + header_sz);
-        OPENCSTL_NIDX(container, -2) *= 2;
+        OPENCSTL_NIDX(container, -2) = new_capaciy;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capaciy), CT_VECTOR, type_size, type);
     }
     memmove((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
             (length - pos) * type_size);
@@ -2146,7 +2605,7 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
-    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
@@ -2156,12 +2615,14 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
     }
 #endif
     if (capacity < n) {
+        iveb_erase(iveb, *container);
         void *b = zrealloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector resize");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size, type);
     }
     if (n > length) {
         if (value == NULL) {
@@ -2205,6 +2666,7 @@ OPENCSTL_FUNC void __cstl_vector_clear(void **container) {
 
 OPENCSTL_FUNC void __cstl_vector_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    iveb_erase(iveb, *container);
     zfree((char *) (*container) - header_sz);
     *container = NULL;
 }
@@ -2214,16 +2676,26 @@ OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     //size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
     if (capacity < n) {
+        iveb_erase(iveb, *container);
         void *b = zrealloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector reserve");
         }
         *container = ((char *) b + header_sz);
+        OPENCSTL_NIDX(container, -2) = n;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size,type);
     }
 }
 
+OPENCSTL_FUNC void *__cstl_vector_next(void *it, size_t type_size) {
+    return (char *) it + type_size;
+}
 
+OPENCSTL_FUNC void *__cstl_vector_prev(void *it, size_t type_size) {
+    return (char *) it - type_size;
+}
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -3689,418 +4161,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
 #if !defined(_OPENCSTL_HASHTABLE_H)
 #define _OPENCSTL_HASHTABLE_H
 /* [already included: zalloc.h] */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  van_emde_boas_tree.h           (depth 2) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-
-
-typedef uintptr_t u64;
-
-
-#define VEB_EMPTY   (~(u64)0)
-#define HM_INIT_CAP 16
-
-
-typedef struct {
-    u64 key;
-    void *val;
-    int used;
-} HMEntry;
-
-typedef struct {
-    HMEntry *e;
-    size_t cap, size;
-} HashMap;
-
-static u64 hm_hash(u64 k) {
-    k = (k ^ (k >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
-    k = (k ^ (k >> 27)) * UINT64_C(0x94d049bb133111eb);
-    return k ^ (k >> 31);
-}
-
-static HashMap *hm_new(void) {
-    HashMap *h = (HashMap *) calloc(1, sizeof(HashMap));
-    h->cap = HM_INIT_CAP;
-    h->e = (HMEntry *) calloc(h->cap, sizeof(HMEntry));
-    return h;
-}
-
-static void hm_free(HashMap *h) {
-    free(h->e);
-    free(h);
-}
-
-
-static void hm_set(HashMap *h, u64 key, void *val);
-
-static void hm_grow(HashMap *h) {
-    size_t oc = h->cap;
-    HMEntry *oe = h->e;
-    h->cap = oc * 2;
-    h->e = (HMEntry *) calloc(h->cap, sizeof(HMEntry));
-    h->size = 0;
-    for (size_t i = 0; i < oc; i++)
-        if (oe[i].used) hm_set(h, oe[i].key, oe[i].val);
-    free(oe);
-}
-
-static void hm_set(HashMap *h, u64 k, void *v) {
-    if (h->size * 2 >= h->cap) hm_grow(h);
-    size_t i = (size_t) (hm_hash(k) % h->cap);
-    while (h->e[i].used && h->e[i].key != k)
-        i = (i + 1) % h->cap;
-    if (!h->e[i].used) h->size++;
-    h->e[i] = (HMEntry){k, v, 1};
-}
-
-static void *hm_get(const HashMap *h, u64 k) {
-    size_t i = (size_t) (hm_hash(k) % h->cap);
-    while (h->e[i].used) {
-        if (h->e[i].key == k) return h->e[i].val;
-        i = (i + 1) % h->cap;
-    }
-    return NULL;
-}
-
-static void hm_del(HashMap *h, u64 k) {
-    size_t i = (size_t) (hm_hash(k) % h->cap);
-    while (h->e[i].used && h->e[i].key != k)
-        i = (i + 1) % h->cap;
-    if (!h->e[i].used) return;
-    h->e[i].used = 0;
-    h->size--;
-    // 삭제 후 뒤따르는 항목들 재배치 (프로빙 체인 불변 유지)
-    size_t j = (i + 1) % h->cap;
-    while (h->e[j].used) {
-        HMEntry t = h->e[j];
-        h->e[j].used = 0;
-        h->size--;
-        hm_set(h, t.key, t.val);
-        j = (j + 1) % h->cap;
-    }
-}
-
-
-typedef struct VEB {
-    int bits;
-    u64 min;
-    u64 max;
-    struct VEB *sum;
-    HashMap *cls;
-} VEB;
-
-
-static int lo_b(int b) { return b / 2; }
-static int hi_b(int b) { return b - b / 2; }
-
-
-static u64 vhi(u64 x, int b) { return x >> lo_b(b); }
-static u64 vlo(u64 x, int b) { return x & (((u64) 1 << lo_b(b)) - 1); }
-static u64 vidx(u64 h, u64 l, int b) { return (h << lo_b(b)) | l; }
-
-static VEB *veb_new(int bits) {
-    VEB *v = (VEB *) calloc(1, sizeof(VEB));
-    v->bits = bits;
-    v->min = VEB_EMPTY;
-    v->max = VEB_EMPTY;
-    if (bits > 1) v->cls = hm_new();
-    return v;
-}
-
-// 전방 선언
-static void veb_free(VEB *v);
-
-static void cls_free_all(HashMap *hm) {
-    for (size_t i = 0; i < hm->cap; i++)
-        if (hm->e[i].used) veb_free((VEB *) hm->e[i].val);
-    hm_free(hm);
-}
-
-static void veb_free(VEB *v) {
-    if (!v) return;
-    if (v->bits > 1) {
-        veb_free(v->sum);
-        if (v->cls) cls_free_all(v->cls);
-    }
-    free(v);
-}
-
-static int veb_empty(const VEB *v) { return v->min == VEB_EMPTY; }
-
-static VEB *cls_get(VEB *v, u64 h) { return (VEB *) hm_get(v->cls, h); }
-
-
-static VEB *cls_or_new(VEB *v, u64 h) {
-    VEB *c = (VEB *) hm_get(v->cls, h);
-    if (!c) {
-        c = veb_new(lo_b(v->bits));
-        hm_set(v->cls, h, c);
-    }
-    return c;
-}
-
-
-static VEB *sum_or_new(VEB *v) {
-    if (!v->sum) v->sum = veb_new(hi_b(v->bits));
-    return v->sum;
-}
-
-
-static void veb_ins(VEB *v, u64 x) {
-    if (veb_empty(v)) {
-        v->min = v->max = x;
-        return;
-    }
-
-    // x가 현재 min보다 작으면 교환해 min 갱신
-    // (min은 클러스터에 저장하지 않으므로 재귀 불필요)
-    if (x < v->min) {
-        u64 t = v->min;
-        v->min = x;
-        x = t;
-    }
-
-    // bits==1: universe {0,1}, 클러스터 없이 min/max로 처리
-    if (v->bits == 1) {
-        if (x > v->max) v->max = x;
-        return;
-    }
-
-    u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
-    VEB *c = cls_or_new(v, h);
-    // 클러스터가 비어있었으면 summary에 h 삽입
-    if (veb_empty(c)) veb_ins(sum_or_new(v), h);
-    veb_ins(c, l);
-    if (x > v->max) v->max = x;
-}
-
-
-static void veb_del(VEB *v, u64 x) {
-    // 원소가 1개뿐이면 바로 비움
-    if (v->min == v->max) {
-        v->min = v->max = VEB_EMPTY;
-        return;
-    }
-
-    // bits==1: {0,1} 중 하나 제거
-    if (v->bits == 1) {
-        v->min = v->max = (x == 0) ? 1 : 0;
-        return;
-    }
-
-    if (x == v->min) {
-        // min 제거: 다음 최솟값을 클러스터에서 꺼내 min으로 승격
-        if (!v->sum || veb_empty(v->sum)) {
-            v->min = v->max = VEB_EMPTY;
-            return;
-        }
-        u64 fh = v->sum->min; // 비어있지 않은 첫 클러스터
-        VEB *fc = cls_get(v, fh);
-        v->min = x = vidx(fh, fc->min, v->bits);
-    }
-
-    u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
-    VEB *c = cls_get(v, h);
-    if (!c) return;
-    veb_del(c, l);
-
-    if (veb_empty(c)) {
-        // 클러스터가 비면 해제하고 summary에서도 제거
-        hm_del(v->cls, h);
-        veb_free(c);
-        if (v->sum) veb_del(v->sum, h);
-        if (x == v->max) {
-            if (!v->sum || veb_empty(v->sum)) v->max = v->min;
-            else {
-                u64 lh = v->sum->max; // 비어있지 않은 마지막 클러스터
-                VEB *lc = cls_get(v, lh);
-                v->max = vidx(lh, lc->max, v->bits);
-            }
-        }
-    } else if (x == v->max) {
-        v->max = vidx(h, c->max, v->bits);
-    }
-}
-
-
-static u64 veb_pred(VEB *v, u64 x) {
-    if (veb_empty(v) || x <= v->min) return VEB_EMPTY;
-    if (x > v->max) return v->max;
-    // bits==1: x==1, v->min==0 임이 보장됨
-    if (v->bits == 1) return 0;
-
-    u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
-    VEB *c = cls_get(v, h);
-
-    // 같은 클러스터 내에 l보다 작은 원소가 있으면 그것을 반환
-    if (c && !veb_empty(c) && l > c->min)
-        return vidx(h, veb_pred(c, l), v->bits);
-
-    // 이전 클러스터(summary 기준으로 h 미만)의 최댓값을 반환
-    u64 ph = (v->sum && !veb_empty(v->sum)) ? veb_pred(v->sum, h) : VEB_EMPTY;
-    if (ph == VEB_EMPTY) return (x > v->min) ? v->min : VEB_EMPTY;
-    VEB *pc = cls_get(v, ph);
-    return pc ? vidx(ph, pc->max, v->bits) : VEB_EMPTY;
-}
-
-
-static u64 veb_floor(VEB *v, u64 x) {
-    if (veb_empty(v) || x < v->min) return VEB_EMPTY;
-    if (x >= v->max) return v->max;
-    if (x == v->min) return v->min;
-    // pred(x+1) = x 이하의 최댓값
-    // x < max 이므로 x+1 이 VEB_EMPTY 로 오버플로되지 않음
-    return veb_pred(v, x + 1);
-}
-
-
-typedef enum CONTAINER_TYPE {
-    CT_VECTOR,
-    CT_LIST,
-    CT_STACK,
-    CT_QUEUE,
-    CT_DEQUE,
-    CT_SET,
-    CT_MAP,
-    CT_UNORDERED_SET,
-    CT_UNORDERED_MAP,
-} CONTAINER_TYPE;
-
-typedef struct {
-    void *a; // 구간 시작 (inclusive)
-    void *b; // 구간 끝   (inclusive)
-    CONTAINER_TYPE ctype;
-    size_t type_size;
-} Interval;
-
-typedef struct {
-    VEB *veb;
-    HashMap *data;
-} IntervalVEB;
-
-typedef struct {
-    void *p1, *p2;
-    char *tombstone;
-    int type_size;
-    bool used;
-} HashtableManager;
-
-typedef struct {
-    VEB *veb;
-    HashMap *data;
-} HTMVEB;
-
-HTMVEB *htm_new(void) {
-    HTMVEB *iv = (HTMVEB *) calloc(1, sizeof(HTMVEB));
-    iv->veb = veb_new(64);
-    iv->data = hm_new();
-    return iv;
-}
-
-void htm_free(HTMVEB *iv) {
-    for (size_t i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used) free(iv->data->e[i].val);
-    hm_free(iv->data);
-    veb_free(iv->veb);
-    free(iv);
-}
-
-void htm_insert(HTMVEB *iv, void *a, void *b, char *tombstone, int type_size) {
-    u64 k = (u64) (uintptr_t) a;
-    HashtableManager *it = (HashtableManager *) hm_get(iv->data, k);
-    if (!it) {
-        it = (HashtableManager *) malloc(sizeof(HashtableManager));
-        hm_set(iv->data, k, it);
-        veb_ins(iv->veb, k);
-    }
-    it->p1 = a;
-    it->p2 = b;
-    it->tombstone = tombstone;
-    it->used = true;
-    it->type_size = type_size;
-}
-
-
-void htm_erase(HTMVEB *iv, void *a) {
-    u64 k = (u64) (uintptr_t) a;
-    HashtableManager *it = (HashtableManager *) hm_get(iv->data, k);
-    if (!it) return;
-    free(it);
-    hm_del(iv->data, k);
-    veb_del(iv->veb, k);
-}
-
-
-HashtableManager *htm_find(HTMVEB *iv, void *x) {
-    u64 key = (u64) (uintptr_t) x;
-    u64 start = veb_floor(iv->veb, key);
-    if (start == VEB_EMPTY) return NULL;
-    HashtableManager *it = (HashtableManager *) hm_get(iv->data, start);
-    if (!it) return NULL;
-    return ((uintptr_t) x <= (uintptr_t) it->p2) ? it : NULL;
-}
-
-
-IntervalVEB *iveb_new(void) {
-    IntervalVEB *iv = (IntervalVEB *) calloc(1, sizeof(IntervalVEB));
-    iv->veb = veb_new(64);
-    iv->data = hm_new();
-    return iv;
-}
-
-
-void iveb_free(IntervalVEB *iv) {
-    for (size_t i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used) free(iv->data->e[i].val);
-    hm_free(iv->data);
-    veb_free(iv->veb);
-    free(iv);
-}
-
-
-void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_t type_size) {
-    u64 k = (u64) (uintptr_t) a;
-    Interval *it = (Interval *) hm_get(iv->data, k);
-    if (!it) {
-        it = (Interval *) malloc(sizeof(Interval));
-        hm_set(iv->data, k, it);
-        veb_ins(iv->veb, k);
-    }
-    it->a = a;
-    it->b = b;
-    it->ctype = ctype;
-    it->type_size = type_size;
-}
-
-
-void iveb_erase(IntervalVEB *iv, void *a) {
-    u64 k = (u64) (uintptr_t) a;
-    Interval *it = (Interval *) hm_get(iv->data, k);
-    if (!it) return;
-    free(it);
-    hm_del(iv->data, k);
-    veb_del(iv->veb, k);
-}
-
-
-Interval *iveb_find(IntervalVEB *iv, void *x) {
-    u64 key = (u64) (uintptr_t) x;
-    u64 start = veb_floor(iv->veb, key);
-    if (start == VEB_EMPTY) return NULL;
-    Interval *it = (Interval *) hm_get(iv->data, start);
-    if (!it) return NULL;
-    return ((uintptr_t) x <= (uintptr_t) it->b) ? it : NULL;
-}
-
-static IntervalVEB *iveb = NULL;
-static HTMVEB *htm = NULL;
-
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    van_emde_boas_tree.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
+/* [already included: van_emde_boas_tree.h] */
 /* [already included: error.h] */
 #define HT_EMPTY     0x0000U
 #define HT_FRAG_MASK 0xF000U
@@ -4111,7 +4172,7 @@ static HTMVEB *htm = NULL;
 #define HT_MIN_CAP   8U
 /* threshold = cap * 7/8, computed via shifts (no fp) */
 #define HT_THRESHOLD(cap) ((cap) - ((cap) >> 3))
-
+#define HTM_VEBT
 
 static inline size_t __ht_next_pow2(size_t n) {
     size_t p = HT_MIN_CAP;
@@ -4334,9 +4395,9 @@ OPENCSTL_ALWAYS_INLINE size_t hash_mixer(void *key, size_t n) {
     if (n <= 16 && n >= 4) {
         uint32_t v0, v1, v2, v3;
         memcpy(&v0, p, 4);
-        memcpy(&v1, p + ((n>>3)<<2), 4);
+        memcpy(&v1, p + ((n >> 3) << 2), 4);
         memcpy(&v2, p + n - 4, 4);
-        memcpy(&v3, p + n - 4 - ((n>>3)<<2), 4);
+        memcpy(&v3, p + n - 4 - ((n >> 3) << 2), 4);
         a = ((uint64_t) v0 << 32) | v1;
         b = ((uint64_t) v2 << 32) | v3;
     } else if (n < 4 && n > 0) {
@@ -4409,8 +4470,8 @@ static inline bool __ht_evict(
     uint16_t new_disp;
     if (!__ht_find_empty(meta, cap_mask, home, &empty, &new_disp)) return false;
     size_t ins_prev = __ht_find_chain_pos(meta, cap_mask, home, new_disp);
-    memcpy((char *)base + empty * type_size,
-           (char *)base + bucket * type_size, type_size);
+    memcpy((char *) base + empty * type_size,
+           (char *) base + bucket * type_size, type_size);
     meta[empty] = (uint16_t) ((meta[bucket] & HT_FRAG_MASK) | (meta[ins_prev] & HT_DISP_MASK));
     meta[ins_prev] = (uint16_t) ((meta[ins_prev] & ~HT_DISP_MASK) | new_disp);
     return true;
@@ -4427,9 +4488,9 @@ static inline bool __ht_reinsert(
         if (meta[home] != HT_EMPTY &&
             !__ht_evict(base, meta, cap_mask, home, type_size, key_size))
             return false;
-        memcpy((char *)base + home * type_size, key, key_size);
+        memcpy((char *) base + home * type_size, key, key_size);
         if (value)
-            memcpy((char *)base + home * type_size + key_size, value, value_size);
+            memcpy((char *) base + home * type_size + key_size, value, value_size);
         meta[home] = frag | HT_IN_HOME | HT_DISP_END;
         return true;
     }
@@ -4437,9 +4498,9 @@ static inline bool __ht_reinsert(
     uint16_t disp;
     if (!__ht_find_empty(meta, cap_mask, home, &empty, &disp)) return false;
     size_t prev = __ht_find_chain_pos(meta, cap_mask, home, disp);
-    memcpy((char *)base + empty * type_size, key, key_size);
+    memcpy((char *) base + empty * type_size, key, key_size);
     if (value)
-        memcpy((char *)base + empty * type_size + key_size, value, value_size);
+        memcpy((char *) base + empty * type_size + key_size, value, value_size);
     meta[empty] = (uint16_t) (frag | (meta[prev] & HT_DISP_MASK));
     meta[prev] = (uint16_t) ((meta[prev] & ~HT_DISP_MASK) | disp);
     return true;
@@ -4482,14 +4543,14 @@ static void __ht_do_rehash(
     void **container, size_t header_sz,
     size_t key_size, size_t value_size, size_t type_size,
     size_t length, size_t old_cap_mask,
-    uint16_t *old_meta, HashtableManager *chtm
+    uint16_t *old_meta
 ) {
     size_t new_cap = (old_cap_mask + 1) * 2;
     while (true) {
         void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
         if (!new_raw)
             cstl_error("Allocation failed (rehash)");
-        memcpy(new_raw, (char *)*container - header_sz, header_sz);
+        memcpy(new_raw, (char *) *container - header_sz, header_sz);
         uint16_t *new_meta = __ht_alloc_meta(new_cap);
         void *nb = (char *) new_raw + header_sz;
         size_t new_mask = new_cap - 1;
@@ -4509,24 +4570,23 @@ static void __ht_do_rehash(
             new_cap *= 2;
             continue;
         }
+        void *old_ptr = *container;
         zfree((char *) *container - header_sz);
         zfree(old_meta);
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
-        chtm->p1 = *container;
-        chtm->p2 = (char *) *container + type_size * new_cap;
-        chtm->tombstone = (char *) new_meta;
-        chtm->type_size = (int) type_size;
-        // htm[htm_index].p1 = *container;
-        // htm[htm_index].p2 = (char *) *container + type_size * new_cap;
-        // htm[htm_index].tombstone = (char *) new_meta;
-        // htm[htm_index].type_size = (int) type_size;
+        htm_erase(htm, old_ptr);
+        htm_insert(htm, *container,
+                   (char *) *container + type_size * new_cap,
+                   (char *) new_meta, (int) type_size);
         break;
     }
 }
 
-OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *value) {
+OPENCSTL_FUNC
+
+void __cstl_hashtable_insert(void **container, void *key, void *value) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t value_size = OPENCSTL_NIDX(container, -4);
@@ -4569,9 +4629,9 @@ OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *va
             if (meta[home] != HT_EMPTY &&
                 !__ht_evict(*container, meta, cap_mask, home, type_size, key_size))
                 goto do_rehash;
-            memcpy((char *)*container + home * type_size, key, key_size);
+            memcpy((char *) *container + home * type_size, key, key_size);
             if (value)
-                memcpy((char *)*container + home * type_size + key_size, value, value_size);
+                memcpy((char *) *container + home * type_size + key_size, value, value_size);
             meta[home] = frag | HT_IN_HOME | HT_DISP_END;
             OPENCSTL_NIDX(container, -1) = length + 1;
             return;
@@ -4582,34 +4642,25 @@ OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *va
             if (!__ht_find_empty(meta, cap_mask, home, &empty, &disp))
                 goto do_rehash;
             size_t prev = __ht_find_chain_pos(meta, cap_mask, home, disp);
-            memcpy((char *)*container + empty * type_size, key, key_size);
+            memcpy((char *) *container + empty * type_size, key, key_size);
             if (value)
-                memcpy((char *)*container + empty * type_size + key_size, value, value_size);
+                memcpy((char *) *container + empty * type_size + key_size, value, value_size);
             meta[empty] = (uint16_t) (frag | (meta[prev] & HT_DISP_MASK));
             meta[prev] = (uint16_t) ((meta[prev] & ~HT_DISP_MASK) | disp);
             OPENCSTL_NIDX(container, -1) = length + 1;
             return;
         }
     do_rehash:;
-
-        HashtableManager *chtm = htm_find(htm, *container);
-
-        // int htm_index = -1;
-        // for (int i = 0; i < (int) htm_length; i++)
-        //     if (htm[i].p1 == *container) {
-        //         htm_index = i;
-        //         break;
-        //     }
-        // if (htm_index == -1)
-        //     cstl_error("Unregistered hashtable");
         __ht_do_rehash(container, header_sz, key_size, value_size, type_size,
-                       length, cap_mask, meta, chtm);
+                       length, cap_mask, meta);
         cap_mask = OPENCSTL_NIDX(container, -7);
         meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     }
 }
 
-OPENCSTL_FUNC void __cstl_hashtable_erase(void **container, void *key) {
+OPENCSTL_FUNC
+
+void __cstl_hashtable_erase(void **container, void *key) {
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t cap_mask = OPENCSTL_NIDX(container, -7);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
@@ -4651,15 +4702,17 @@ found:;
         uint16_t d_nn = meta[next] & HT_DISP_MASK;
         uint16_t f_next = meta[next] & HT_FRAG_MASK;
         uint16_t home_flag = meta[bucket] & HT_IN_HOME;
-        memcpy((char *)*container + bucket * type_size,
-               (char *)*container + next * type_size, type_size);
+        memcpy((char *) *container + bucket * type_size,
+               (char *) *container + next * type_size, type_size);
         meta[bucket] = (uint16_t) (f_next | home_flag | d_nn);
         meta[next] = HT_EMPTY;
     }
     OPENCSTL_NIDX(container, -1)--;
 }
 
-OPENCSTL_FUNC void *__cstl_hashtable_find(void **container, void *key) {
+OPENCSTL_FUNC
+
+void *__cstl_hashtable_find(void **container, void *key) {
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t cap_mask = OPENCSTL_NIDX(container, -7);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
@@ -4688,7 +4741,9 @@ OPENCSTL_FUNC void *__cstl_hashtable_find(void **container, void *key) {
     }
 }
 
-OPENCSTL_FUNC void __cstl_hashtable_clear(void **container) {
+OPENCSTL_FUNC
+
+void __cstl_hashtable_clear(void **container) {
     size_t cap_mask = OPENCSTL_NIDX(container, -7);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     memset(meta, 0, (cap_mask + 1 + 4) * sizeof(uint16_t));
@@ -4696,7 +4751,9 @@ OPENCSTL_FUNC void __cstl_hashtable_clear(void **container) {
     OPENCSTL_NIDX(container, -1) = 0;
 }
 
-OPENCSTL_FUNC void *__cstl_hashtable_begin(void **container) {
+OPENCSTL_FUNC
+
+void *__cstl_hashtable_begin(void **container) {
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     size_t cap_mask = OPENCSTL_NIDX(container, -7);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
@@ -4706,8 +4763,12 @@ OPENCSTL_FUNC void *__cstl_hashtable_begin(void **container) {
     return NULL;
 }
 
-OPENCSTL_FUNC void *__cstl_hashtable_end(void **container) { return NULL; }
-OPENCSTL_FUNC void *__cstl_hashtable_rbegin(void **container) {
+OPENCSTL_FUNC
+void *__cstl_hashtable_end(void **container) { return NULL; }
+
+OPENCSTL_FUNC
+
+void *__cstl_hashtable_rbegin(void **container) {
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     size_t cap_mask = OPENCSTL_NIDX(container, -7);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
@@ -4717,12 +4778,16 @@ OPENCSTL_FUNC void *__cstl_hashtable_rbegin(void **container) {
     return NULL;
 }
 
-OPENCSTL_FUNC void *__cstl_hashtable_rend(void **container) {
+OPENCSTL_FUNC
+
+void *__cstl_hashtable_rend(void **container) {
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     return (char *) *container - type_size;
 }
 
-OPENCSTL_FUNC void *__cstl_hashtable_empty(void **container) {
+OPENCSTL_FUNC
+
+void *__cstl_hashtable_empty(void **container) {
     return __cstl_hashtable_rend(container);
 }
 
@@ -4734,7 +4799,9 @@ OPENCSTL_FUNC size_type __cstl_hashtable_capacity(void **container) {
     return (size_type) OPENCSTL_NIDX(container, -7) + 1;
 }
 
-OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
+OPENCSTL_FUNC
+
+void *__cstl_hashtable_next_prev(void *it, int n) {
     HashtableManager *chtm = htm_find(htm, it);
     // int idx = -1;
     // for (int i = 0; i < (int) htm_length; i++)
@@ -4785,7 +4852,9 @@ OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
     return NULL;
 }
 
-OPENCSTL_FUNC void __cstl_hashtable_free(void **container) {
+OPENCSTL_FUNC
+
+void __cstl_hashtable_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
 
@@ -4806,7 +4875,9 @@ OPENCSTL_FUNC void __cstl_hashtable_free(void **container) {
     *container = NULL;
 }
 
-OPENCSTL_FUNC void __cstl_hashtable_reserve(void **container, size_t n) {
+OPENCSTL_FUNC
+
+void __cstl_hashtable_reserve(void **container, size_t n) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t value_size = OPENCSTL_NIDX(container, -4);
@@ -4820,16 +4891,6 @@ OPENCSTL_FUNC void __cstl_hashtable_reserve(void **container, size_t n) {
     if (min_cap < __HASHTABLE_DEFAULT_SIZE__) min_cap = __HASHTABLE_DEFAULT_SIZE__;
     size_t new_cap = __ht_next_pow2(min_cap);
     if (new_cap <= cap_mask_old + 1) return; /* already big enough */
-
-    HashtableManager *chtm = htm_find(htm, *container);
-    // int htm_index = -1;
-    // for (int i = 0; i < (int) htm_length; i++)
-    //     if (htm[i].p1 == *container) {
-    //         htm_index = i;
-    //         break;
-    //     }
-    // if (htm_index == -1)
-    //     cstl_error("Unregistered hashtable");
 
     while (true) {
         void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
@@ -4855,20 +4916,16 @@ OPENCSTL_FUNC void __cstl_hashtable_reserve(void **container, size_t n) {
             new_cap *= 2;
             continue;
         }
+        void *old_ptr = *container;
         zfree((char *) *container - header_sz);
         zfree(old_meta);
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
-        // htm[htm_index].p1 = *container;
-        // htm[htm_index].p2 = (char *) *container + type_size * new_cap;
-        // htm[htm_index].tombstone = (char *) new_meta;
-        // htm[htm_index].type_size = (int) type_size;
-
-        chtm->p1 = *container;
-        chtm->p2 = (char *) *container + type_size * new_cap;
-        chtm->tombstone = (char *) new_meta;
-        chtm->type_size = (int) type_size;
+        htm_erase(htm, old_ptr);
+        htm_insert(htm, *container,
+                   (char *) *container + type_size * new_cap,
+                   (char *) new_meta, (int) type_size);
         return;
     }
 }
@@ -4887,7 +4944,9 @@ void __cstl_htm_destroy(void) {
 #define cstl_unordered_set _cstl_unordered_set
 #define _cstl_unordered_set(KEY,...) _CSTL_USET_DISPATCH(KEY, ##__VA_ARGS__, NULL)
 #define _CSTL_USET_DISPATCH(KEY, FUNC, ...) __cstl_unordered_set(sizeof(KEY),#KEY,(void*)(FUNC))
-OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_func) {
+OPENCSTL_FUNC
+
+void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     size_t cap = __HASHTABLE_DEFAULT_SIZE__;
     void *ptr = (char *) zalloc(header_sz + key_size * cap, 1) + header_sz;
@@ -4905,12 +4964,17 @@ OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, const char *type_key, 
     OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
     OPENCSTL_NIDX(c, -1) = 0;
     OPENCSTL_NIDX(c, 0) = 0;
+    bool htm_init = false;
     if (htm == NULL) {
         htm = htm_new();
-        atexit(__cstl_htm_destroy);
+        htm_init = true;
     }
     htm_insert(htm, ptr, (char *) ptr + (key_size * cap), (char *) meta, (int) key_size);
     //__htm_append(ptr, key_size * cap, (char *) meta, (int) key_size);
+
+    if (htm_init) {
+        atexit(__cstl_htm_destroy);
+    }
     return ptr;
 }
 
@@ -4923,9 +4987,11 @@ OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, const char *type_key, 
 #define cstl_unordered_map(KEY, VALUE) _cstl_unordered_map(KEY, VALUE)
 #define _cstl_unordered_map(KEY,VALUE,...) _CSTL_UMAP_DISPATCH(KEY,VALUE,##__VA_ARGS__,NULL)
 #define _CSTL_UMAP_DISPATCH(KEY,VALUE,FUNC,...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,(void*)(FUNC))
-OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
-                                         const char *type_key, const char *type_value,
-                                         void *hash_func) {
+OPENCSTL_FUNC
+
+void *__cstl_unordered_map(size_t key_size, size_t value_size,
+                           const char *type_key, const char *type_value,
+                           void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     size_t type_size = key_size + value_size;
     size_t cap = __HASHTABLE_DEFAULT_SIZE__;
@@ -4944,12 +5010,16 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
     OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
     OPENCSTL_NIDX(c, -1) = 0;
     OPENCSTL_NIDX(c, 0) = 0;
+    bool htm_init = false;
     if (htm == NULL) {
         htm = htm_new();
-        atexit(__cstl_htm_destroy);
+        htm_init = true;
     }
     htm_insert(htm, ptr, (char *) ptr + (type_size * cap), (char *) meta, (int) type_size);
     //__htm_append(ptr, type_size * cap, (char *) meta, (int) type_size);
+    if (htm_init) {
+        atexit(__cstl_htm_destroy);
+    }
     return ptr;
 }
 #endif
@@ -4973,37 +5043,8 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
 
 /* [already included: defines.h] */
 
-#ifndef MAX
-#define MAX(a,b) ((a)>(b)?(a):(b))
-#endif
-#ifndef MIN
-#define MIN(a,b) ((a)<(b)?(a):(b))
-#endif
-
-OPENCSTL_FUNC void fill(void *container, ...) {
-    va_list vl;
-    void *va_ptr = NULL;
-    __cstl_va_start(vl, container, va_ptr);
-#if CSTL_USE_VAARG
-    void *param1 = __cstl_va_arg_next(vl);
-#else
-    void *param1 = __cstl_va_arg(va_ptr);
-#endif
-
-
-    __cstl_va_end(vl);
-}
-
-
-#endif //_OPENCSTL_C_ALGORITHM_H
-
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* END    algorithm.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  compare.h                      (depth 1) */
+/* BEGIN  compare.h                      (depth 2) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -5428,6 +5469,361 @@ _OpenCSTLCompareFunc _memcmp_funcs[128 + 1] = {
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    compare.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  iterator.h                     (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/14/2026.
+//
+
+#ifndef OPENCSTL_ITERATOR_H
+#define OPENCSTL_ITERATOR_H
+/* [already included: hashtable.h] */
+/* [already included: error.h] */
+/* [already included: vector.h] */
+/* [already included: list.h] */
+/* [already included: tree.h] */
+
+#define first(IT)                   (*IT)
+#define second(IT, TYPE)            ((TYPE)cstl_value(IT, TYPE))
+
+
+OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
+#ifdef HTM_VEBT
+    if (htm == NULL) {
+        return false;
+    }
+    return htm_find(htm, it) != NULL;
+#else
+    for (size_t i = 0; i < htm_length; i++) {
+        if (htm[i].p1 <= it && it < htm[i].p2) {
+            return true;
+        }
+    }
+    return false;
+#endif
+}
+
+OPENCSTL_FUNC void *_cstl_next(void *it) {
+    if (__is_hashtable_iter(it)) {
+        return __cstl_hashtable_next_prev(it, -1);
+    }
+    Interval *iv = iveb_find(iveb, it);
+    if (iv != NULL) {
+        if (iv->ctype == CT_VECTOR || iv->ctype == CT_DEQUE) {
+            return __cstl_vector_next(it, iv->type_size);
+        }
+    }
+    size_t node_type = OPENCSTL_NIDX(&it, -3);
+    switch (node_type) {
+        case OPENCSTL_LIST: {
+            return __cstl_list_next_prev(it, -1);
+        }
+        break;
+        case OPENCSTL_SET:
+        case OPENCSTL_MAP: {
+            return __cstl_tree_next_prev(it, -1, -2, __cstl_tree_toleft);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_next_prev(it, -1);
+        }
+        break;
+        default: {
+            cstl_error("Invalid operation");
+        }
+        break;
+    }
+    return NULL;
+}
+
+OPENCSTL_FUNC void *_cstl_prev(void *it) {
+    if (__is_hashtable_iter(it)) {
+        return __cstl_hashtable_next_prev(it, -2);
+    }
+    Interval *iv = iveb_find(iveb, it);
+    if (iv != NULL) {
+        if (iv->ctype == CT_VECTOR || iv->ctype == CT_DEQUE) {
+            return __cstl_vector_prev(it, iv->type_size);
+        }
+    }
+    size_t node_type = OPENCSTL_NIDX(&it, -3);
+    switch (node_type) {
+        case OPENCSTL_LIST: {
+            return __cstl_list_next_prev(it, -2);
+        }
+        break;
+        case OPENCSTL_SET:
+        case OPENCSTL_MAP: {
+            return __cstl_tree_next_prev(it, -2, -1, __cstl_tree_toright);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_next_prev(it, -2);
+        }
+        break;
+
+        default: {
+            cstl_error("Invalid operation");
+        }
+    }
+    return NULL;
+}
+
+OPENCSTL_FUNC void *_cstl_begin(void *container) {
+    size_t container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            return __cstl_vector_begin((void **) container);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            return __cstl_list_begin((void **) container);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            return __cstl_deque_begin((void **) container);
+        }
+        break;
+        case OPENCSTL_SET:
+        case OPENCSTL_MAP: {
+            return __cstl_tree_begin((void **) container);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_begin((void **) container);
+        }
+        break;
+        default: cstl_error("Invalid operation");
+            break;
+    }
+    return NULL;
+}
+
+OPENCSTL_FUNC void *_cstl_rbegin(void *container) {
+    size_t container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            return __cstl_vector_rbegin((void **) container);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            return __cstl_list_rbegin((void **) container);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            return __cstl_deque_rbegin((void **) container);
+        }
+        break;
+        case OPENCSTL_SET:
+        case OPENCSTL_MAP: {
+            return __cstl_tree_rbegin((void **) container);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_rbegin((void **) container);
+        }
+        break;
+        default: cstl_error("Invalid operation");
+            break;
+    }
+    return NULL;
+}
+
+OPENCSTL_FUNC void *_cstl_end(void *container) {
+    size_t container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            return __cstl_vector_end((void **) container);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            return __cstl_list_end_rend((void **) container);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            return __cstl_deque_end((void **) container);
+        }
+        break;
+        case OPENCSTL_SET:
+        case OPENCSTL_MAP: {
+            return __cstl_tree_end_rend((void **) container);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_end((void **) container);
+        }
+        break;
+        default: cstl_error("Invalid operation");
+            break;
+    }
+    return NULL;
+}
+
+OPENCSTL_FUNC void *_cstl_rend(void *container) {
+    size_t container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            return __cstl_vector_rend((void **) container);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            return __cstl_list_end_rend((void **) container);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            return __cstl_deque_rend((void **) container);
+        }
+        break;
+        case OPENCSTL_SET:
+        case OPENCSTL_MAP: {
+            return __cstl_tree_end_rend((void **) container);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            return __cstl_hashtable_rend((void **) container);
+        }
+        break;
+        default: cstl_error("Invalid operation");
+            break;
+    }
+    return NULL;
+}
+#endif //OPENCSTL_ITERATOR_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    iterator.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* [already included: van_emde_boas_tree.h] */
+
+bool is_even(void *it) {
+}
+
+#define fill(_First, _Last, _Value) _cstl_fill(_First, _Last, &(__typeof__(_Value)){_Value}, sizeof(_Value))
+OPENCSTL_FUNC void _cstl_fill(void *_begin, void *_end, void *_value, size_t _value_size) {
+    void *it = _begin;
+    while (it != _end) {
+        memcpy(it, _value, _value_size);
+        it = cstl_next(it);
+    }
+}
+
+// ███╗░░░███╗██╗███╗░░██╗░░░░██╗███╗░░░███╗░█████╗░██╗░░██╗
+// ████╗░████║██║████╗░██║░░░██╔╝████╗░████║██╔══██╗╚██╗██╔╝
+// ██╔████╔██║██║██╔██╗██║░░██╔╝░██╔████╔██║███████║░╚███╔╝░
+// ██║╚██╔╝██║██║██║╚████║░██╔╝░░██║╚██╔╝██║██╔══██║░██╔██╗░
+// ██║░╚═╝░██║██║██║░╚███║██╔╝░░░██║░╚═╝░██║██║░░██║██╔╝╚██╗
+// ╚═╝░░░░░╚═╝╚═╝╚═╝░░╚══╝╚═╝░░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░╚═╝
+
+#ifndef MAX
+#define MAX(a,b) ((a)>(b)?(a):(b))
+#endif
+#ifndef MIN
+#define MIN(a,b) ((a)<(b)?(a):(b))
+#endif
+
+
+#define max_element(...) _MAX_ELEMENT_DISPATCH(__VA_ARGS__, NULL)
+#define _MAX_ELEMENT_DISPATCH(_begin, _end, _cmp, ...) _cstl_max_element(_begin, _end, (_OpenCSTLCompareFunc)(_cmp))
+
+OPENCSTL_FUNC void *_cstl_max_element(void *_begin, void *_end, _OpenCSTLCompareFunc _cmp) {
+    if (_begin == _end) {
+        return _end;
+    }
+
+    if (_cmp == NULL) {
+        Interval *tm = iveb_find(iveb, _begin);
+        _cmp = LESS(tm->type_name);
+        if (_cmp == NULL) {
+            _cmp = _memcmp_funcs[tm->type_size];
+        }
+        if (_cmp == NULL) {
+            cstl_error("Compare function is NULL");
+            return _end;
+        }
+    }
+
+    void *max_it = _begin;
+    void *it = cstl_next(_begin);
+    while (it != _end) {
+        if (_cmp(it, max_it) > 0) {
+            max_it = it;
+        }
+        it = cstl_next(it);
+    }
+    return max_it;
+}
+
+#define min_element(...) _MIN_ELEMENT_DISPATCH(__VA_ARGS__, NULL)
+#define _MIN_ELEMENT_DISPATCH(_begin, _end, _cmp, ...) _cstl_min_element(_begin, _end, (_OpenCSTLCompareFunc)(_cmp))
+
+OPENCSTL_FUNC void *_cstl_min_element(void *_begin, void *_end, _OpenCSTLCompareFunc _cmp) {
+    if (_begin == _end) {
+        return _end;
+    }
+
+    if (_cmp == NULL) {
+        Interval *tm = iveb_find(iveb, _begin);
+        _cmp = LESS(tm->type_name);
+        if (_cmp == NULL) {
+            _cmp = _memcmp_funcs[tm->type_size];
+        }
+        if (_cmp == NULL) {
+            cstl_error("Compare function is NULL");
+            return _end;
+        }
+    }
+
+    void *min_it = _begin;
+    void *it = cstl_next(_begin);
+    while (it != _end) {
+        if (_cmp(it, min_it) < 0) {
+            min_it = it;
+        }
+        it = cstl_next(it);
+    }
+    return min_it;
+}
+
+#endif //_OPENCSTL_C_ALGORITHM_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    algorithm.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* [already included: compare.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  random.h                       (depth 1) */
@@ -5960,7 +6356,7 @@ static void msort(void *base, size_t nmemb, size_t size,
         if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
         isort(arr + i * sz, blk, sz, compar);
     }
-    char *buf = (char *) salloc(((nmemb + 1) / 2) * sz);
+    char *buf = (char *) zalloc(((nmemb + 1) / 2), sz);
     if (!buf) return;
     for (size_t width = MSORT_ISORT_THRESH; width < nmemb; width *= 2) {
         for (size_t i = 0; i + width < nmemb; i += 2 * width) {
@@ -5970,7 +6366,7 @@ static void msort(void *base, size_t nmemb, size_t size,
             merge(arr + i * sz, len1, len2, sz, compar, buf);
         }
     }
-    //free(buf);
+    zfree(buf);
 }
 #undef MSORT_ISORT_THRESH
 #endif
@@ -6658,6 +7054,416 @@ void pdqsort(void *__base, size_t __nel, size_t __width,
 /* END    pdqsort.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* [already included: deque.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  pmsort.h                       (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_PMSORT_H)
+#define _OPENCSTL_PMSORT_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  pthread_cc.h                   (depth 3) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#ifndef OPENCSTL_PTHREAD_H
+#define OPENCSTL_PTHREAD_H
+#ifdef __cplusplus
+extern "C" {
+
+
+
+#endif
+/* [already included: defines.h] */
+#if defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_TCC))
+
+#include<windows.h>
+#include<process.h>
+#include<errno.h>
+#include<assert.h>
+#if !defined(sleep)
+#define sleep(num) Sleep(1000*(num))
+#endif
+typedef struct pthread_tag {
+    HANDLE handle;
+} pthread_t;
+
+typedef struct pthread_mutex_tag {
+    HANDLE handle;
+} pthread_mutex_t;
+
+typedef struct pthread_attr_tag {
+    int attr;
+} pthread_attr_t;
+
+typedef struct pthread_mutexattr_tag {
+    int attr;
+} pthread_mutexattr_t;
+
+typedef DWORD pthread_key_t;
+
+typedef struct _pthread_cleanup_stack {
+#define _PTHREAD_CLEANUP_STACK_MAX 128
+    HANDLE thread;
+
+    void (*routine[_PTHREAD_CLEANUP_STACK_MAX])(void *);
+
+    void *arg[_PTHREAD_CLEANUP_STACK_MAX];
+    size_t index;
+    struct _pthread_cleanup_stack *next;
+} _pthread_cleanup_stack;
+
+__declspec(selectany) _pthread_cleanup_stack *_pthread_cleanup_stack_head= NULL;
+__declspec(selectany) HANDLE _pthread_cleanup_mutex= NULL;
+
+inline int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg) {
+    DWORD dwThreadId = 1;
+    HANDLE handle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) start_routine, arg, 0, &dwThreadId);
+    thread->handle = (HANDLE) handle;
+    return thread->handle == (HANDLE) NULL;
+}
+
+inline void pthread_exit(void *value_ptr) {
+    if (!_pthread_cleanup_mutex)
+        if (!_pthread_cleanup_mutex)
+            _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
+    WaitForSingleObject(_pthread_cleanup_mutex, INFINITE);
+    HANDLE thread = GetCurrentThread();
+    _pthread_cleanup_stack **head = &_pthread_cleanup_stack_head;
+    _pthread_cleanup_stack *rts = NULL;
+    while (*head) {
+        _pthread_cleanup_stack *tmp = *head;
+        int b = (*head)->thread == thread;
+        if (b) *head = (*head)->next;
+        if (*head)head = &(*head)->next;
+        if (b)rts = tmp;
+    }
+    if (rts) {
+        while (rts->index--) {
+            rts->routine[rts->index](rts->arg[rts->index]);
+        }
+        free(rts);
+    }
+    TerminateThread(GetCurrentThread(), *(int *) value_ptr);
+    ReleaseMutex(_pthread_cleanup_mutex);
+}
+
+inline int pthread_join(pthread_t thread, void **value_ptr) {
+    DWORD r = WaitForSingleObject(thread.handle, INFINITE);
+    CloseHandle(thread.handle);
+    return r == WAIT_OBJECT_0 ? 0 : EINVAL;
+}
+
+inline pthread_t pthread_self(void) {
+    pthread_t pt;
+    pt.handle = GetCurrentThread();
+    return pt;
+}
+
+inline int pthread_detach(pthread_t thread) {
+    CloseHandle(thread.handle);
+}
+
+inline int pthread_cancel(pthread_t thread) {
+    TerminateThread(thread.handle, 1);
+    return 0;
+}
+
+inline void pthread_cleanup_push(void (*routine)(void *), void *arg) {
+    if (!_pthread_cleanup_mutex)
+        if (!_pthread_cleanup_mutex)
+            _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
+    WaitForSingleObject(_pthread_cleanup_mutex, INFINITE);
+    HANDLE thread = GetCurrentThread();
+    _pthread_cleanup_stack **head = &_pthread_cleanup_stack_head;
+    while (*head) {
+        if ((*head)->thread == thread) break;
+        head = &(*head)->next;
+    }
+    if (!*head) {
+        *head = (_pthread_cleanup_stack *) malloc(sizeof(_pthread_cleanup_stack));
+        (*head)->index = 0;
+        (*head)->next = NULL;
+        (*head)->thread = thread;
+    }
+    (*head)->routine[(*head)->index] = routine;
+    (*head)->arg[(*head)->index] = arg;
+    (*head)->index++;
+    assert((*head)->index <= _PTHREAD_CLEANUP_STACK_MAX);
+    ReleaseMutex(_pthread_cleanup_mutex);
+}
+
+inline void pthread_cleanup_pop(int execute) {
+    if (!_pthread_cleanup_mutex)
+        if (!_pthread_cleanup_mutex)
+            _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
+    WaitForSingleObject(_pthread_cleanup_mutex, INFINITE);
+    HANDLE thread = GetCurrentThread();
+    _pthread_cleanup_stack **head = &_pthread_cleanup_stack_head;
+    while (*head) {
+        _pthread_cleanup_stack *tmp = *head;
+        if ((*head)->thread == thread) {
+            --(*head)->index;
+            assert((*head)->index >= 0);
+            if ((*head)->index == 0) {
+                *head = (*head)->next;
+                while (execute && tmp->index--) {
+                    tmp->routine[tmp->index](tmp->arg[tmp->index]);
+                }
+                free(tmp);
+            }
+            break;
+        } else {
+            head = &(*head)->next;
+        }
+    }
+    ReleaseMutex(_pthread_cleanup_mutex);
+}
+
+inline int pthread_mutexattr_destroy(pthread_mutexattr_t *attr) {
+    return 0;
+}
+
+inline int pthread_mutexattr_init(pthread_mutexattr_t *attr) {
+    return 0;
+}
+
+inline int pthread_mutex_destroy(pthread_mutex_t *mutex) {
+    return !CloseHandle(mutex->handle);
+}
+
+inline int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) {
+    HANDLE handle = CreateMutexA(NULL, FALSE, NULL);
+    if (handle != NULL) {
+        mutex->handle = handle;
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+inline int pthread_mutex_lock(pthread_mutex_t *mutex) {
+    return (WaitForSingleObject(mutex->handle, INFINITE) == WAIT_OBJECT_0) ? 0 : EINVAL;
+}
+
+inline int pthread_mutex_trylock(pthread_mutex_t *mutex) {
+    DWORD retvalue = WaitForSingleObject(mutex->handle, 0);
+    switch (WaitForSingleObject(mutex->handle, 0)) {
+        case WAIT_OBJECT_0: return 0;
+        case WAIT_TIMEOUT: return EBUSY;
+        default: return EINVAL;
+    }
+}
+
+inline int pthread_mutex_unlock(pthread_mutex_t *mutex) {
+    return !ReleaseMutex(mutex->handle);
+}
+
+inline int pthread_key_create(pthread_key_t *key, void (*destr_function)(void *)) {
+    DWORD dkey = TlsAlloc();
+    if (dkey != 0xFFFFFFFF) {
+        *key = dkey;
+        return 0;
+    } else {
+        return EAGAIN;
+    }
+}
+
+inline int pthread_key_delete(pthread_key_t key) {
+    return TlsFree(key) ? 0 : EINVAL;
+}
+
+inline int pthread_setspecific(pthread_key_t key, const void *pointer) {
+    return TlsSetValue(key, (LPVOID) pointer) ? 0 : EINVAL;
+}
+
+inline void *pthread_getspecific(pthread_key_t key) {
+    return TlsGetValue(key);
+}
+#else
+#include <pthread.h>
+#endif
+#ifdef __cplusplus
+}
+#endif
+
+#endif //OPENCSTL_PTHREAD_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    pthread_cc.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+#include <stdlib.h>
+#include <string.h>
+/* [already included: msort.h] */
+#ifndef PS_MAX_DEPTH
+#define PS_MAX_DEPTH 4
+#endif
+
+#ifndef PS_SEQ_CUTOFF
+#define PS_SEQ_CUTOFF 4096
+#endif
+
+typedef int (*ps_cmp_t)(const void *, const void *);
+
+struct ps_args {
+    char *base;
+    char *buf;
+    size_t n;
+    size_t sz;
+    ps_cmp_t cmp;
+    int depth;
+};
+
+static void ps_merge(char *base, char *buf, size_t n1, size_t n2,
+                     size_t sz, ps_cmp_t cmp) {
+    char *l = base;
+    char *r = base + n1 * sz;
+    char *l_end = r;
+    char *r_end = r + n2 * sz;
+    char *d = buf;
+    while (l < l_end && r < r_end) {
+        if (cmp(r, l) < 0) {
+            memcpy(d, r, sz);
+            r += sz;
+        } else {
+            memcpy(d, l, sz);
+            l += sz;
+        }
+        d += sz;
+    }
+    if (l < l_end)
+        memcpy(d, l, (size_t) (l_end - l));
+    if (r < r_end)
+        memcpy(d, r, (size_t) (r_end - r));
+    memcpy(base, buf, (n1 + n2) * sz);
+}
+
+static void *ps_run(void *p) {
+    struct ps_args *a = (struct ps_args *) p;
+
+    if (a->n < 2) return NULL;
+    if (a->n <= PS_SEQ_CUTOFF || a->depth >= PS_MAX_DEPTH) {
+        qsort(a->base, a->n, a->sz, a->cmp);
+        return NULL;
+    }
+
+    size_t mid = a->n / 2;
+    struct ps_args left = {
+        a->base, a->buf, mid, a->sz, a->cmp, a->depth + 1
+    };
+    struct ps_args right = {
+        a->base + mid * a->sz, a->buf + mid * a->sz,
+        a->n - mid, a->sz, a->cmp, a->depth + 1
+    };
+
+    pthread_t tid;
+    int spawned = (pthread_create(&tid, NULL, ps_run, &left) == 0);
+    if (!spawned) ps_run(&left);
+    ps_run(&right);
+    if (spawned) pthread_join(tid, NULL);
+
+    ps_merge(a->base, a->buf, mid, a->n - mid, a->sz, a->cmp);
+    return NULL;
+}
+
+void pmsort(void *mem, const size_t len, const size_t size_elem,
+            int (*cmp)(const void *, const void *)) {
+    if (len < 2) return;
+    if (len <= PS_SEQ_CUTOFF) {
+        msort(mem, len, size_elem, cmp);
+        return;
+    }
+    char *buf = (char *) malloc(len * size_elem);
+    if (!buf) {
+        msort(mem, len, size_elem, cmp);
+        return;
+    }
+    struct ps_args root = {
+        (char *) mem, buf, len, size_elem, cmp, 0
+    };
+    ps_run(&root);
+    free(buf);
+}
+
+#undef PS_MAX_DEPTH
+#undef PS_SEQ_CUTOFF
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    pmsort.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 /* [already included: list.h] */
 /* [already included: defines.h] */
 
@@ -6918,6 +7724,117 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
 
 #endif
 
+// ██╗░██████╗░░░░░░░██████╗░█████╗░██████╗░████████╗███████╗██████╗░
+// ██║██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██╔══██╗
+// ██║╚█████╗░░░░░░░╚█████╗░██║░░██║██████╔╝░░░██║░░░█████╗░░██║░░██║
+// ██║░╚═══██╗░░░░░░░╚═══██╗██║░░██║██╔══██╗░░░██║░░░██╔══╝░░██║░░██║
+// ██║██████╔╝█████╗██████╔╝╚█████╔╝██║░░██║░░░██║░░░███████╗██████╔╝
+// ╚═╝╚═════╝░╚════╝╚═════╝░░╚════╝░╚═╝░░╚═╝░░░╚═╝░░░╚══════╝╚═════╝░
+/* [already included: iterator.h] */
+#define _cstl_is_sorted_func(CONTAINER,...) _CSTL_IS_SORTED_DISPATCH(CONTAINER, ##__VA_ARGS__, NULL)
+#define _CSTL_IS_SORTED_DISPATCH(CONTAINER, FUNC, ...) _cstl_is_sorted(CONTAINER, (void*)(FUNC))
+OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
+    size_t container_type;
+    ptrdiff_t distance = 0;
+    if (__is_deque((void **) &container)) {
+        distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
+    }
+
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            size_t type_size = (size_t) OPENCSTL_NIDX(&container, NIDX_TSIZE);
+            char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
+            size_t length = (size_t) OPENCSTL_NIDX(&container, -1);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
+                return 0;
+            }
+            for (size_t i = 1; i < length; i++) {
+                // cmp(a, b) > 0 means a > b, so prev > curr means not sorted
+                if (cmp((char *) container + (i - 1) * type_size,
+                        (char *) container + i * type_size) > 0) {
+                    return 0;
+                }
+            }
+            return 1;
+        }
+        break;
+        case OPENCSTL_LIST: {
+            size_t type_size = (size_t) OPENCSTL_NIDX(&container, NIDX_TSIZE);
+            char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
+                return 0;
+            }
+            void *it = cstl_begin(container);
+            void *end = cstl_end(container);
+            if (it == end) {
+                return 1;
+            }
+            void *prev = it;
+            it = cstl_next(it);
+            while (it != end) {
+                if (cmp(prev, it) > 0) {
+                    return 0;
+                }
+                prev = it;
+                it = cstl_next(it);
+            }
+            return 1;
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            size_t type_size = *(size_t *) ((char *) *(void **) &container + NIDX_TSIZE * sizeof(size_t) + distance);
+            size_t length = *(size_t *) ((char *) *(void **) &container + -2 * sizeof(size_t) + distance);
+            char *type_name = (char *) *(size_t *) ((char *) *(void **) &container + -4 * sizeof(size_t) + distance);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
+                return 0;
+            }
+            for (size_t i = 1; i < length; i++) {
+                if (cmp((char *) container + (i - 1) * type_size,
+                        (char *) container + i * type_size) > 0) {
+                    return 0;
+                }
+            }
+            return 1;
+        }
+        break;
+        default: {
+            cstl_error("Invalid Operation");
+            return 0;
+        }
+        break;
+    }
+}
+
+#if defined(USE_CSTL_FUNC)
+#define is_sorted _cstl_is_sorted_func
+#endif
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -6968,7 +7885,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 /* [already included: crossplatform.h] */
-static char *OPENCSTL_VERSION = "v1.2.3";
+static char *OPENCSTL_VERSION = "v1.2.4";
 
 static char *opencstl_version(void) {
     return OPENCSTL_VERSION;
@@ -7042,23 +7959,7 @@ char *opencstl_env(void) {
 #define new_priority_queue  cstl_priority_queue
 
 
-#define first(IT)                   (*IT)
-#define second(IT, TYPE)            ((TYPE)cstl_value(IT, TYPE))
 #endif
-
-
-OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
-    if (htm == NULL) {
-        return false;
-    }
-    return htm_find(htm, it) != NULL;
-    // for (size_t i = 0; i < htm_length; i++) {
-    //     if (htm[i].p1 <= it && it < htm[i].p2) {
-    //         return true;
-    //     }
-    // }
-    // return false;
-}
 
 
 OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
@@ -7351,73 +8252,6 @@ OPENCSTL_FUNC size_type _cstl_capacity(void *container) {
     return sz;
 }
 
-OPENCSTL_FUNC void *_cstl_next(void *it) {
-    if (__is_hashtable_iter(it)) {
-        return __cstl_hashtable_next_prev(it, -1);
-    }
-    // Interval *iv = iveb_find(iveb, it);
-    // if (iv != NULL) {
-    //     if (iv->ctype == CT_VECTOR) {
-    //         return __cstl_vector_next(it, iv->type_size);
-    //     }
-    // }
-    size_t node_type = OPENCSTL_NIDX(&it, -3);
-    switch (node_type) {
-        case OPENCSTL_LIST: {
-            return __cstl_list_next_prev(it, -1);
-        }
-        break;
-        case OPENCSTL_SET:
-        case OPENCSTL_MAP: {
-            return __cstl_tree_next_prev(it, -1, -2, __cstl_tree_toleft);
-        }
-        break;
-        case OPENCSTL_UNORDERED_SET:
-        case OPENCSTL_UNORDERED_MAP: {
-            return __cstl_hashtable_next_prev(it, -1);
-        }
-        break;
-        default: {
-            cstl_error("Invalid operation");
-        }
-        break;
-    }
-    return NULL;
-}
-
-OPENCSTL_FUNC void *_cstl_prev(void *it) {
-    if (__is_hashtable_iter(it)) {
-        return __cstl_hashtable_next_prev(it, -2);
-    }
-    // Interval *iv = iveb_find(iveb, it);
-    // if (iv != NULL) {
-    //     if (iv->ctype == CT_VECTOR) {
-    //         return __cstl_vector_prev(it, iv->type_size);
-    //     }
-    // }
-    size_t node_type = OPENCSTL_NIDX(&it, -3);
-    switch (node_type) {
-        case OPENCSTL_LIST: {
-            return __cstl_list_next_prev(it, -2);
-        }
-        break;
-        case OPENCSTL_SET:
-        case OPENCSTL_MAP: {
-            return __cstl_tree_next_prev(it, -2, -1, __cstl_tree_toright);
-        }
-        break;
-        case OPENCSTL_UNORDERED_SET:
-        case OPENCSTL_UNORDERED_MAP: {
-            return __cstl_hashtable_next_prev(it, -2);
-        }
-        break;
-
-        default: {
-            cstl_error("Invalid operation");
-        }
-    }
-    return NULL;
-}
 
 
 OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
@@ -7589,153 +8423,6 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
     __cstl_va_end(vl);
 }
 
-OPENCSTL_FUNC void *_cstl_begin(void *container) {
-    size_t container_type;
-    if (__is_deque((void **) container)) {
-        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
-    }
-    switch (container_type) {
-        case OPENCSTL_VECTOR: {
-            return __cstl_vector_begin((void **) container);
-        }
-        break;
-        case OPENCSTL_LIST: {
-            return __cstl_list_begin((void **) container);
-        }
-        break;
-        case OPENCSTL_DEQUE: {
-            return __cstl_deque_begin((void **) container);
-        }
-        break;
-        case OPENCSTL_SET:
-        case OPENCSTL_MAP: {
-            return __cstl_tree_begin((void **) container);
-        }
-        break;
-        case OPENCSTL_UNORDERED_SET:
-        case OPENCSTL_UNORDERED_MAP: {
-            return __cstl_hashtable_begin((void **) container);
-        }
-        break;
-        default: cstl_error("Invalid operation");
-            break;
-    }
-    return NULL;
-}
-
-OPENCSTL_FUNC void *_cstl_rbegin(void *container) {
-    size_t container_type;
-    if (__is_deque((void **) container)) {
-        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
-    }
-    switch (container_type) {
-        case OPENCSTL_VECTOR: {
-            return __cstl_vector_rbegin((void **) container);
-        }
-        break;
-        case OPENCSTL_LIST: {
-            return __cstl_list_rbegin((void **) container);
-        }
-        break;
-        case OPENCSTL_DEQUE: {
-            return __cstl_deque_rbegin((void **) container);
-        }
-        break;
-        case OPENCSTL_SET:
-        case OPENCSTL_MAP: {
-            return __cstl_tree_rbegin((void **) container);
-        }
-        break;
-        case OPENCSTL_UNORDERED_SET:
-        case OPENCSTL_UNORDERED_MAP: {
-            return __cstl_hashtable_rbegin((void **) container);
-        }
-        break;
-        default: cstl_error("Invalid operation");
-            break;
-    }
-    return NULL;
-}
-
-OPENCSTL_FUNC void *_cstl_end(void *container) {
-    size_t container_type;
-    if (__is_deque((void **) container)) {
-        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
-    }
-    switch (container_type) {
-        case OPENCSTL_VECTOR: {
-            return __cstl_vector_end((void **) container);
-        }
-        break;
-        case OPENCSTL_LIST: {
-            return __cstl_list_end_rend((void **) container);
-        }
-        break;
-        case OPENCSTL_DEQUE: {
-            return __cstl_deque_end((void **) container);
-        }
-        break;
-        case OPENCSTL_SET:
-        case OPENCSTL_MAP: {
-            return __cstl_tree_end_rend((void **) container);
-        }
-        break;
-        case OPENCSTL_UNORDERED_SET:
-        case OPENCSTL_UNORDERED_MAP: {
-            return __cstl_hashtable_end((void **) container);
-        }
-        break;
-        default: cstl_error("Invalid operation");
-            break;
-    }
-    return NULL;
-}
-
-OPENCSTL_FUNC void *_cstl_rend(void *container) {
-    size_t container_type;
-    if (__is_deque((void **) container)) {
-        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
-    }
-    switch (container_type) {
-        case OPENCSTL_VECTOR: {
-            return __cstl_vector_rend((void **) container);
-        }
-        break;
-        case OPENCSTL_LIST: {
-            return __cstl_list_end_rend((void **) container);
-        }
-        break;
-        case OPENCSTL_DEQUE: {
-            return __cstl_deque_rend((void **) container);
-        }
-        break;
-        case OPENCSTL_SET:
-        case OPENCSTL_MAP: {
-            return __cstl_tree_end_rend((void **) container);
-        }
-        break;
-        case OPENCSTL_UNORDERED_SET:
-        case OPENCSTL_UNORDERED_MAP: {
-            return __cstl_hashtable_rend((void **) container);
-        }
-        break;
-        default: cstl_error("Invalid operation");
-            break;
-    }
-    return NULL;
-}
 
 OPENCSTL_FUNC void _cstl_clear(void *container) {
     size_t container_type;
