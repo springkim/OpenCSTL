@@ -83,7 +83,24 @@ COMPARE(DTYPE);
 
 typedef int (*CMPFUNC)(const void *, const void *);
 
+
+typedef void (*fn_msort)(void *, size_t, size_t, int (*)(const void *, const void *));
+
 int sort_test() {
+    // HMODULE hDll = LoadLibraryA("../SortDLL.dll");
+    // if (!hDll) {
+    //     fprintf(stderr, "LoadLibrary failed: %lu\n", GetLastError());
+    //     return 1;
+    // }
+    //
+    // fn_msort msort_dll = (fn_msort) GetProcAddress(hDll, "msort_dll");
+    // if (!msort_dll) {
+    //     fprintf(stderr, "GetProcAddress failed: %lu\n", GetLastError());
+    //     FreeLibrary(hDll);
+    //     return 1;
+    // }
+
+
     CMPFUNC compare = cmp;
 
     DTYPE N = 5000000;
@@ -163,7 +180,10 @@ int sort_test() {
     printf("pdqsort: %.2fms\n", p_diff);
     printf("rsort: %.2fms\n", r_diff);
 
-    printf("|%.2f|%.2f|%.2f|%.2f|\n",q_diff,m_diff,t_diff,p_diff);
+    printf("|%.2f|%.2f|%.2f|%.2f|\n", q_diff, m_diff, t_diff, p_diff);
+
+
+    //FreeLibrary(hDll);
     return 0;
 }
 

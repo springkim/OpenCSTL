@@ -1062,8 +1062,10 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
         }
         break;
 
-        default: cstl_error("Invalid operation");
-            break;
+        default: {
+            cstl_error("Invalid operation");
+        }
+        break;
     }
     __cstl_va_end(vl);
 }
@@ -1092,7 +1094,11 @@ OPENCSTL_FUNC void _cstl_sort(void *container, int argc, ...) {
     switch (container_type) {
         case OPENCSTL_LIST: {
             if (argc == 1) {
+#if CSTL_USE_VAARG
                 __cstl_list_sort((void **) container, param1);
+#else
+                __cstl_list_sort((void **) container, *(void **) param1);
+#endif
             }
         }
         break;

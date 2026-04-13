@@ -198,7 +198,7 @@ static void ts_merge_lo(char *base, size_t len1, size_t len2,
     }
 tail_lo:
     if (c1 < e1)
-        memcpy(d, c1, (size_t)(e1 - c1));
+        memcpy(d, c1, (size_t) (e1 - c1));
 }
 
 static void ts_merge_hi(char *base, size_t len1, size_t len2,

@@ -39,22 +39,107 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const void *)) {
+static void isort(void *__base, size_t __nel, size_t __width, int (*__compar)(const void *, const void *)) {
     char sbuf[256];
-    char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
-    for (size_t i = 1; i < n; i++) {
-        memcpy(tmp, arr + i * sz, sz);
+    char *arr = (char *) __base;
+    char *tmp = (__width <= sizeof(sbuf)) ? sbuf : (char *) malloc(__width);
+    for (size_t i = 1; i < __nel; i++) {
+        memcpy(tmp, arr + i * __width, __width);
         size_t lo = 0, hi = i;
         while (lo < hi) {
             size_t mid = lo + ((hi - lo) >> 1);
-            if (cmp(tmp, arr + mid * sz) < 0) hi = mid;
+            if (__compar(tmp, arr + mid * __width) < 0) hi = mid;
             else lo = mid + 1;
         }
         if (lo < i) {
-            memmove(arr + (lo + 1) * sz, arr + lo * sz, (i - lo) * sz);
-            memcpy(arr + lo * sz, tmp, sz);
+            memmove(arr + (lo + 1) * __width, arr + lo * __width, (i - lo) * __width);
+            memcpy(arr + lo * __width, tmp, __width);
         }
     }
     if (tmp != sbuf) free(tmp);
 }
+
+// #if defined(__GNUC__) || defined(__clang__)
+// #define SORT_LIKELY(x)   __builtin_expect(!!(x), 1)
+// #define SORT_NOINLINE     __attribute__((noinline))
+// #else
+// #define SORT_LIKELY(x)   (x)
+// #define SORT_NOINLINE
+// #endif
+//
+// typedef int (*sort_cmp)(const void *, const void *);
+//
+// // 4-byte 특화 (int, float)
+// static SORT_NOINLINE void isort_w4(void *base, size_t nel, sort_cmp cmp) {
+//     unsigned int *a = (unsigned int *) base;
+//     for (size_t i = 1; i < nel; i++) {
+//         unsigned int tmp = a[i];
+//         if (SORT_LIKELY(cmp(&tmp, &a[i - 1]) >= 0)) continue;
+//         size_t lo = 0, hi = i;
+//         while (lo < hi) {
+//             size_t mid = lo + ((hi - lo) >> 1);
+//             if (cmp(&tmp, &a[mid]) < 0) hi = mid;
+//             else lo = mid + 1;
+//         }
+//         for (size_t j = i; j > lo; j--)
+//             a[j] = a[j - 1];
+//         a[lo] = tmp;
+//     }
+// }
+//
+// // 8-byte 특화 (int64, double, pointer)
+// static SORT_NOINLINE void isort_w8(void *base, size_t nel, sort_cmp cmp) {
+//     unsigned long long *a = (unsigned long long *) base;
+//     for (size_t i = 1; i < nel; i++) {
+//         unsigned long long tmp = a[i];
+//         if (SORT_LIKELY(cmp(&tmp, &a[i - 1]) >= 0)) continue;
+//         size_t lo = 0, hi = i;
+//         while (lo < hi) {
+//             size_t mid = lo + ((hi - lo) >> 1);
+//             if (cmp(&tmp, &a[mid]) < 0) hi = mid;
+//             else lo = mid + 1;
+//         }
+//         for (size_t j = i; j > lo; j--)
+//             a[j] = a[j - 1];
+//         a[lo] = tmp;
+//     }
+// }
+//
+// // generic path
+// static SORT_NOINLINE void isort_generic(void *base, size_t nel, size_t width, sort_cmp cmp) {
+//     char sbuf[256];
+//     char *arr = (char *) base;
+//     char *tmp = (width <= sizeof(sbuf)) ? sbuf : (char *) malloc(width);
+//
+//     for (size_t i = 1; i < nel; i++) {
+//         char *cur = arr + i * width;
+//         memcpy(tmp, cur, width);
+//         if (SORT_LIKELY(cmp(tmp, cur - width) >= 0)) continue;
+//
+//         size_t lo = 0, hi = i;
+//         while (lo < hi) {
+//             size_t mid = lo + ((hi - lo) >> 1);
+//             if (cmp(tmp, arr + mid * width) < 0) hi = mid;
+//             else lo = mid + 1;
+//         }
+//         char *dst = arr + lo * width;
+//         memmove(dst + width, dst, (i - lo) * width);
+//         memcpy(dst, tmp, width);
+//     }
+//
+//     if (tmp != sbuf) free(tmp);
+// }
+//
+// static void isort(void *base, size_t nel, size_t width, sort_cmp cmp) {
+//     if (nel <= 1) return;
+//     if (width == 4) {
+//         isort_w4(base, nel, cmp);
+//         return;
+//     }
+//     if (width == 8) {
+//         isort_w8(base, nel, cmp);
+//         return;
+//     }
+//     isort_generic(base, nel, width, cmp);
+// }
 #endif

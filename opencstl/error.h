@@ -61,7 +61,7 @@ OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, const char *fu
     char err_msg[1024] = {0};
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
     sprintf_s(err_msg, 1024, "[%s] in %s , %s , %d\n", msg, file, function, line);
-    MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
+    //MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
 #else
     sprintf(err_msg, "[%s] in %s , %s , %d\n", msg, file, function, line);
     puts(err_msg);
@@ -77,7 +77,7 @@ OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, int line) {
 
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
 sprintf_s(err_msg, 1024, "[%s] in %s , %d\n", msg, file, line);
-MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
+//MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
 #else
 sprintf(err_msg, "[%s] in %s , %d\n", msg, file, line);
 //Other platform msg box...

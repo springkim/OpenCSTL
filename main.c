@@ -445,15 +445,9 @@ void test04(void) {
 }
 
 int main(void) {
-    
-    //cstl_list_test02();
-    //return 0;
-    // watch t_beg = now();
-    // test_opencstl_unordered_set();
-    // watch t_end = now();
-    // double ms = duration(t_beg, t_end);
-    // printf("duration : %f ms\n", ms);
+    // cstl_list_test02();
     // return 0;
+
     logging.info(opencstl_env());
 
     //cstl_error("Error message");
@@ -467,7 +461,7 @@ int main(void) {
     // logging.error("error message");
     //logging.critical("critical message");
     //logging.fatal("fatal message");
-    logging.message("message");
+    logging.info("message");
 
 
     return 0;

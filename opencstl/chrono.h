@@ -45,22 +45,20 @@
 
 typedef LARGE_INTEGER watch;
 
-static watch now() {
+static watch _now() {
     watch t;
     QueryPerformanceCounter(&t);
     return t;
 }
 
-static double duration(const watch t_beg, const watch t_end) {
+static double _duration(const watch t_beg, const watch t_end) {
     LARGE_INTEGER freq;
     QueryPerformanceFrequency(&freq);
     double ms = (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
     return ms > 0 ? ms : -ms;
 }
 
-
 #elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
-
 
 #include <sys/time.h>
 #include <time.h>
@@ -79,6 +77,10 @@ static double _duration(const watch t_beg, const watch t_end) {
     return ms > 0 ? ms : -ms;
 }
 
+
+#else
+#error Unsupported compiler/platform
+#endif
 typedef watch (*now_fn)(void);
 
 typedef double (*duration_fn)(const watch, const watch);
@@ -92,9 +94,4 @@ static CHRONO chrono = {
     _now,
     _duration,
 };
-
-#else
-#error Unsupported compiler/platform
-#endif
-
 #endif

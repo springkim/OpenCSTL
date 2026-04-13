@@ -43,8 +43,7 @@
 #define MSORT_ISORT_THRESH 32
 
 
-static inline void merge(char *arr, size_t len1, size_t len2, size_t sz,
-                         int (*cmp)(const void *, const void *), char *buf) {
+static inline void merge(char *arr, size_t len1, size_t len2, size_t sz, int (*cmp)(const void *, const void *), char *buf) {
     if (cmp(arr + (len1 - 1) * sz, arr + len1 * sz) <= 0) return;
     if (len1 <= len2) {
         memcpy(buf, arr, len1 * sz);
@@ -62,7 +61,7 @@ static inline void merge(char *arr, size_t len1, size_t len2, size_t sz,
             d += sz;
         }
         if (c1 < e1)
-            memcpy(d, c1, (size_t)(e1 - c1));
+            memcpy(d, c1, (size_t) (e1 - c1));
     } else {
         memcpy(buf, arr + len1 * sz, len2 * sz);
         size_t i = len1, j = len2, k = len1 + len2;
@@ -81,8 +80,7 @@ static inline void merge(char *arr, size_t len1, size_t len2, size_t sz,
     }
 }
 
-static void msort(void *__base, size_t __nel, size_t __width,
-                  int (*__compar)(const void *, const void *)) {
+static void msort(void *__base, size_t __nel, size_t __width, int (*__compar)(const void *, const void *)) {
     if (__nel < 2) return;
     char *arr = (char *) __base;
     size_t sz = __width;

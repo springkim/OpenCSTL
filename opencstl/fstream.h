@@ -41,7 +41,9 @@
 
 FILE *__cstl_fopen(const char *filename, const char *mode) {
     FILE *fp = NULL;
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(__TINYC__)
+    fp = fopen(filename, mode);
+#elif defined(_WIN32) || defined(_WIN64)
     fopen_s(&fp, filename, mode);
 #else
     fp = fopen(filename, mode);

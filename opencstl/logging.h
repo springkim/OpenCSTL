@@ -22,7 +22,7 @@ const char *__yellow = "\033[33m";
 const char *__blue = "\033[34m";
 const char *__magenta = "\033[35m";
 const char *__cyan = "\033[36m";
-const char *__white = "\033[37m";
+// const char *__white = "\033[37m";
 const char *__reset = "\033[0m";
 
 #ifdef OCSTL_OS_WINDOWS
@@ -49,7 +49,7 @@ static WORD ansi_to_winattr(const char *color) {
     if (color == __blue) return FOREGROUND_BLUE | FOREGROUND_INTENSITY;
     if (color == __magenta) return FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
     if (color == __cyan) return FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-    if (color == __white) return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+    //if (color == __white) return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
     return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 }
 
@@ -102,7 +102,7 @@ void __fatal_message_box(const char *msg) {
 }
 #elif defined(OCSTL_OS_WINDOWS)
 void __fatal_message_box(const char *msg) {
-    MessageBoxA(NULL, msg, "FATAL", MB_OK| MB_ICONERROR);
+    //MessageBoxA(NULL, msg, "FATAL", MB_OK| MB_ICONERROR);
 }
 #elif defined(OCSTL_OS_LINUX)
 void __fatal_message_box(const char *msg) {
@@ -173,7 +173,7 @@ static int _logging_critical(const char *format, ...) {
     ret = __vcprintln(__magenta, format, args);
     va_end(args);
     exit(EXIT_FAILURE);
-    
+
     return ret;
 }
 
@@ -188,14 +188,14 @@ static int _logging_fatal(const char *format, ...) {
     return -1;
 }
 
-static int _logging_message(const char *format, ...) {
-    va_list args;
-    int ret;
-    va_start(args, format);
-    ret = __vcprintln(__white, format, args);
-    va_end(args);
-    return ret;
-}
+// static int _logging_message(const char *format, ...) {
+//     va_list args;
+//     int ret;
+//     va_start(args, format);
+//     ret = __vcprintln(__white, format, args);
+//     va_end(args);
+//     return ret;
+// }
 
 typedef int (*logging_fn)(const char *format, ...);
 
@@ -207,7 +207,7 @@ typedef struct LOGGING {
     logging_fn critical;
     logging_fn fatal;
 
-    logging_fn message;
+    //logging_fn message;
 } LOGGING;
 
 static LOGGING logging = {
@@ -219,7 +219,7 @@ static LOGGING logging = {
 
     _logging_fatal,
 
-    _logging_message
+    //_logging_message
 };
 
 #endif
