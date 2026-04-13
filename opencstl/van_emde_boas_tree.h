@@ -354,7 +354,7 @@ HashtableManager *htm_find(HTMVEB *iv, void *x) {
     if (!it) return NULL;
     return ((uintptr_t) x <= (uintptr_t) it->p2) ? it : NULL;
 }
-    
+
 
 IntervalVEB *iveb_new(void) {
     IntervalVEB *iv = (IntervalVEB *) calloc(1, sizeof(IntervalVEB));
@@ -373,7 +373,7 @@ void iveb_free(IntervalVEB *iv) {
 }
 
 
-void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype,size_t type_size) {
+void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_t type_size) {
     u64 k = (u64) (uintptr_t) a;
     Interval *it = (Interval *) hm_get(iv->data, k);
     if (!it) {
@@ -406,6 +406,8 @@ Interval *iveb_find(IntervalVEB *iv, void *x) {
     if (!it) return NULL;
     return ((uintptr_t) x <= (uintptr_t) it->b) ? it : NULL;
 }
-static IntervalVEB* iveb = NULL;
+
+static IntervalVEB *iveb = NULL;
 static HTMVEB *htm = NULL;
+
 #endif //_OPENCSTL_VAN_EMDE_BOAS_TREE_H

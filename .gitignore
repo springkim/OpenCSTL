@@ -347,3 +347,6 @@ perftest/
 
 bench/bench_cstl/3rdparty/
 bench/
+
+assets/opencstl.h
+

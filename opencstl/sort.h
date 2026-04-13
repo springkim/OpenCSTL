@@ -48,50 +48,13 @@
 #include "defines.h"
 
 #include "compare.h"
-#if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_CLANG)
-#define cstl_stable_sort msort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_GCC)
-#define cstl_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
-#define cstl_stable_sort tsort
-#define cstl_unstable_sort qsort
-
-#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_CLANG)
-#define cstl_stable_sort msort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_GCC)
-#define cstl_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_TCC)
-#define cstl_stable_sort tsort
-#define cstl_unstable_sort qsort
-
-
-#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_CLANG)
-#define cstl_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_GCC)
-#define cstl_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_TCC)
-#define cstl_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_MSVC)
-#define cstl_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_CC_NVCC)
-#define cstl_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#endif
-
-#if !defined(cstl_stable_sort)
-#define cstl_stable_sort tsort
-#endif
-#if !defined(cstl_unstable_sort)
-#define cstl_unstable_sort pdqsort
-#endif
+#include "bestsort.h"
+// #if !defined(cstl_stable_sort)
+// #define cstl_stable_sort tsort
+// #endif
+// #if !defined(cstl_unstable_sort)
+// #define cstl_unstable_sort pdqsort
+// #endif
 
 // ██╗░░░██╗███╗░░██╗░██████╗████████╗░█████╗░██████╗░██╗░░░░░███████╗░░░░░░░██████╗░█████╗░██████╗░████████╗
 // ██║░░░██║████╗░██║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝
@@ -124,6 +87,10 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
             if (cmp == NULL) {
                 cmp = _memcmp_funcs[type_size];
             }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
+            }
+
             cstl_unstable_sort(container, length, type_size, cmp);
         }
         break;
@@ -136,6 +103,9 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
             }
             if (cmp == NULL) {
                 cmp = _memcmp_funcs[type_size];
+            }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
             }
             __cstl_list_qsort(&container, cmp);
         }
@@ -150,6 +120,9 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
             }
             if (cmp == NULL) {
                 cmp = _memcmp_funcs[type_size];
+            }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
             }
             cstl_unstable_sort(container, length, type_size, cmp);
         }
@@ -191,7 +164,10 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
             if (cmp == NULL) {
                 cmp = _memcmp_funcs[type_size];
             }
-            cstl_stable_sort(container, length, type_size, cmp);
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
+            }
+            cstl_best_stable_sort(container, length, type_size, cmp);
         }
         break;
         case OPENCSTL_LIST: {
@@ -203,6 +179,9 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
             }
             if (cmp == NULL) {
                 cmp = _memcmp_funcs[type_size];
+            }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
             }
             __cstl_list_msort(&container, cmp);
         }
@@ -218,7 +197,10 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
             if (cmp == NULL) {
                 cmp = _memcmp_funcs[type_size];
             }
-            cstl_stable_sort(container, length, type_size, cmp);
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
+            }
+            cstl_best_stable_sort(container, length, type_size, cmp);
         }
         break;
         default: {

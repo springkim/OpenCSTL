@@ -17,6 +17,9 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <stdbool.h>
 
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -420,7 +423,7 @@ static LOGGING logging = {
 // Created by spring on 4/14/2026.
 //
 
-#ifndef OPENCSTL_MT19937_H
+#if !defined(OPENCSTL_MT19937_H)
 #define OPENCSTL_MT19937_H
 #include <stdint.h>
 
@@ -434,9 +437,9 @@ static LOGGING logging = {
 typedef struct {
     uint64_t mt[MT64_N];
     int index;
-} mt19937_64_t;
+} __mt19937_64_t;
 
-mt19937_64_t __rng64 = {
+__mt19937_64_t __rng64 = {
     {
         1776098118,
         4095968591,
@@ -802,10 +805,47 @@ static double __mt19937_random(void) {
     return (double) (__mt19937_64_next() >> 11) * (1.0 / 9007199254740992.0);
 }
 
+
 // [lo, hi] inclusive integer range (supports negative)
 static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
     uint64_t range = (uint64_t) (hi - lo) + 1ULL;
     return lo + (int64_t) (__mt19937_64_next() % range);
+}
+
+char *__mt19937_uuid(void) {
+    __mt19937_64_seed(time(NULL));
+    static char buf[37];
+    static const char hex[] = "0123456789abcdef";
+
+    uint64_t hi = __mt19937_64_next();
+    uint64_t lo = __mt19937_64_next();
+
+    hi = (hi & ~((uint64_t) 0xF << 12)) | ((uint64_t) 0x4 << 12);
+    lo = (lo & ~((uint64_t) 0x3 << 62)) | ((uint64_t) 0x2 << 62);
+
+    int p = 0;
+    // time_low: 8자 (hi >> 32)
+    for (int i = 60; i >= 32; i -= 4)
+        buf[p++] = hex[(hi >> i) & 0xF];
+    buf[p++] = '-';
+    // time_mid: 4자 (hi >> 16)
+    for (int i = 28; i >= 16; i -= 4)
+        buf[p++] = hex[(hi >> i) & 0xF];
+    buf[p++] = '-';
+    // time_hi_and_version: 4자 (hi >> 0)
+    for (int i = 12; i >= 0; i -= 4)
+        buf[p++] = hex[(hi >> i) & 0xF];
+    buf[p++] = '-';
+    // clock_seq: 4자 (lo >> 48)
+    for (int i = 60; i >= 48; i -= 4)
+        buf[p++] = hex[(lo >> i) & 0xF];
+    buf[p++] = '-';
+    // node: 12자 (lo >> 0)
+    for (int i = 44; i >= 0; i -= 4)
+        buf[p++] = hex[(lo >> i) & 0xF];
+
+    buf[36] = '\0';
+    return buf;
 }
 
 typedef void (*seed_fn)(uint64_t);
@@ -814,16 +854,20 @@ typedef double (*random_fn)(void);
 
 typedef int64_t (*randint_fn)(int64_t, int64_t);
 
+typedef char *(*uuid_fn)(void);
+
 typedef struct {
     random_fn random;
     randint_fn randint;
     seed_fn seed;
+    uuid_fn uuid;
 } RANDOM;
 
-RANDOM random = {
+RANDOM mt19937 = {
     __mt19937_random,
     __mt19937_randint,
-    __mt19937_64_seed
+    __mt19937_64_seed,
+    __mt19937_uuid
 };
 
 #endif //OPENCSTL_MT19937_H
@@ -857,21 +901,20 @@ static void zerase(void *ptr) {
     }
 }
 #endif
-static void opencstl_exit(void) {
 #ifdef OPENCSTL_TRACER
+static void opencstl_exit(void) {
     if (zalloc_size > 0) {
         logging.warning("%d memory blocks were not released", zalloc_size);
     }
     logging.debug("opencstl_exit");
     logging.debug("zalloc_count: %d", zalloc_count);
-#endif
 }
+#endif
 #ifdef OPENCSTL_TRACER
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
 static int opencstl_init(void) {
-
     //size_t SZ = _512KB;
     //zalloc_vector = salloc(SZ);
     //memset(zalloc_vector, 0, SZ);
@@ -887,7 +930,7 @@ static int opencstl_init(void) {
 
 #if defined(_MSC_VER)
 # pragma section(".CRT$XCU",read)
-__declspec(allocate(".CRT$XCU")) static int (*__p)(void) = opencstl_init;
+__declspec(allocate(".CRT$XCU")) static int (*__p)(void)= opencstl_init;
 # pragma data_seg()
 #endif
 #endif
@@ -1234,9 +1277,8 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 (OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[cstl_error("Invalid Operation")]))   //priority queue
 
 
-#define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
 
-//#define cstl_sort(container,comp)	_cstl_sort(&(container),1,comp)
+#define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
 
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -2576,7 +2618,8 @@ OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_t n) {
     memcpy(tmp, a, n);
     memcpy(a, b, n);
     memcpy(b, tmp, n);
-    if (tmp != buf) zfree(tmp);
+    if (tmp != buf)
+        zfree(tmp);
 }
 
 OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
@@ -3646,7 +3689,418 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
 #if !defined(_OPENCSTL_HASHTABLE_H)
 #define _OPENCSTL_HASHTABLE_H
 /* [already included: zalloc.h] */
-//#include "van_emde_boas_tree.h"
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  van_emde_boas_tree.h           (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+
+
+typedef uintptr_t u64;
+
+
+#define VEB_EMPTY   (~(u64)0)
+#define HM_INIT_CAP 16
+
+
+typedef struct {
+    u64 key;
+    void *val;
+    int used;
+} HMEntry;
+
+typedef struct {
+    HMEntry *e;
+    size_t cap, size;
+} HashMap;
+
+static u64 hm_hash(u64 k) {
+    k = (k ^ (k >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
+    k = (k ^ (k >> 27)) * UINT64_C(0x94d049bb133111eb);
+    return k ^ (k >> 31);
+}
+
+static HashMap *hm_new(void) {
+    HashMap *h = (HashMap *) calloc(1, sizeof(HashMap));
+    h->cap = HM_INIT_CAP;
+    h->e = (HMEntry *) calloc(h->cap, sizeof(HMEntry));
+    return h;
+}
+
+static void hm_free(HashMap *h) {
+    free(h->e);
+    free(h);
+}
+
+
+static void hm_set(HashMap *h, u64 key, void *val);
+
+static void hm_grow(HashMap *h) {
+    size_t oc = h->cap;
+    HMEntry *oe = h->e;
+    h->cap = oc * 2;
+    h->e = (HMEntry *) calloc(h->cap, sizeof(HMEntry));
+    h->size = 0;
+    for (size_t i = 0; i < oc; i++)
+        if (oe[i].used) hm_set(h, oe[i].key, oe[i].val);
+    free(oe);
+}
+
+static void hm_set(HashMap *h, u64 k, void *v) {
+    if (h->size * 2 >= h->cap) hm_grow(h);
+    size_t i = (size_t) (hm_hash(k) % h->cap);
+    while (h->e[i].used && h->e[i].key != k)
+        i = (i + 1) % h->cap;
+    if (!h->e[i].used) h->size++;
+    h->e[i] = (HMEntry){k, v, 1};
+}
+
+static void *hm_get(const HashMap *h, u64 k) {
+    size_t i = (size_t) (hm_hash(k) % h->cap);
+    while (h->e[i].used) {
+        if (h->e[i].key == k) return h->e[i].val;
+        i = (i + 1) % h->cap;
+    }
+    return NULL;
+}
+
+static void hm_del(HashMap *h, u64 k) {
+    size_t i = (size_t) (hm_hash(k) % h->cap);
+    while (h->e[i].used && h->e[i].key != k)
+        i = (i + 1) % h->cap;
+    if (!h->e[i].used) return;
+    h->e[i].used = 0;
+    h->size--;
+    // 삭제 후 뒤따르는 항목들 재배치 (프로빙 체인 불변 유지)
+    size_t j = (i + 1) % h->cap;
+    while (h->e[j].used) {
+        HMEntry t = h->e[j];
+        h->e[j].used = 0;
+        h->size--;
+        hm_set(h, t.key, t.val);
+        j = (j + 1) % h->cap;
+    }
+}
+
+
+typedef struct VEB {
+    int bits;
+    u64 min;
+    u64 max;
+    struct VEB *sum;
+    HashMap *cls;
+} VEB;
+
+
+static int lo_b(int b) { return b / 2; }
+static int hi_b(int b) { return b - b / 2; }
+
+
+static u64 vhi(u64 x, int b) { return x >> lo_b(b); }
+static u64 vlo(u64 x, int b) { return x & (((u64) 1 << lo_b(b)) - 1); }
+static u64 vidx(u64 h, u64 l, int b) { return (h << lo_b(b)) | l; }
+
+static VEB *veb_new(int bits) {
+    VEB *v = (VEB *) calloc(1, sizeof(VEB));
+    v->bits = bits;
+    v->min = VEB_EMPTY;
+    v->max = VEB_EMPTY;
+    if (bits > 1) v->cls = hm_new();
+    return v;
+}
+
+// 전방 선언
+static void veb_free(VEB *v);
+
+static void cls_free_all(HashMap *hm) {
+    for (size_t i = 0; i < hm->cap; i++)
+        if (hm->e[i].used) veb_free((VEB *) hm->e[i].val);
+    hm_free(hm);
+}
+
+static void veb_free(VEB *v) {
+    if (!v) return;
+    if (v->bits > 1) {
+        veb_free(v->sum);
+        if (v->cls) cls_free_all(v->cls);
+    }
+    free(v);
+}
+
+static int veb_empty(const VEB *v) { return v->min == VEB_EMPTY; }
+
+static VEB *cls_get(VEB *v, u64 h) { return (VEB *) hm_get(v->cls, h); }
+
+
+static VEB *cls_or_new(VEB *v, u64 h) {
+    VEB *c = (VEB *) hm_get(v->cls, h);
+    if (!c) {
+        c = veb_new(lo_b(v->bits));
+        hm_set(v->cls, h, c);
+    }
+    return c;
+}
+
+
+static VEB *sum_or_new(VEB *v) {
+    if (!v->sum) v->sum = veb_new(hi_b(v->bits));
+    return v->sum;
+}
+
+
+static void veb_ins(VEB *v, u64 x) {
+    if (veb_empty(v)) {
+        v->min = v->max = x;
+        return;
+    }
+
+    // x가 현재 min보다 작으면 교환해 min 갱신
+    // (min은 클러스터에 저장하지 않으므로 재귀 불필요)
+    if (x < v->min) {
+        u64 t = v->min;
+        v->min = x;
+        x = t;
+    }
+
+    // bits==1: universe {0,1}, 클러스터 없이 min/max로 처리
+    if (v->bits == 1) {
+        if (x > v->max) v->max = x;
+        return;
+    }
+
+    u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
+    VEB *c = cls_or_new(v, h);
+    // 클러스터가 비어있었으면 summary에 h 삽입
+    if (veb_empty(c)) veb_ins(sum_or_new(v), h);
+    veb_ins(c, l);
+    if (x > v->max) v->max = x;
+}
+
+
+static void veb_del(VEB *v, u64 x) {
+    // 원소가 1개뿐이면 바로 비움
+    if (v->min == v->max) {
+        v->min = v->max = VEB_EMPTY;
+        return;
+    }
+
+    // bits==1: {0,1} 중 하나 제거
+    if (v->bits == 1) {
+        v->min = v->max = (x == 0) ? 1 : 0;
+        return;
+    }
+
+    if (x == v->min) {
+        // min 제거: 다음 최솟값을 클러스터에서 꺼내 min으로 승격
+        if (!v->sum || veb_empty(v->sum)) {
+            v->min = v->max = VEB_EMPTY;
+            return;
+        }
+        u64 fh = v->sum->min; // 비어있지 않은 첫 클러스터
+        VEB *fc = cls_get(v, fh);
+        v->min = x = vidx(fh, fc->min, v->bits);
+    }
+
+    u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
+    VEB *c = cls_get(v, h);
+    if (!c) return;
+    veb_del(c, l);
+
+    if (veb_empty(c)) {
+        // 클러스터가 비면 해제하고 summary에서도 제거
+        hm_del(v->cls, h);
+        veb_free(c);
+        if (v->sum) veb_del(v->sum, h);
+        if (x == v->max) {
+            if (!v->sum || veb_empty(v->sum)) v->max = v->min;
+            else {
+                u64 lh = v->sum->max; // 비어있지 않은 마지막 클러스터
+                VEB *lc = cls_get(v, lh);
+                v->max = vidx(lh, lc->max, v->bits);
+            }
+        }
+    } else if (x == v->max) {
+        v->max = vidx(h, c->max, v->bits);
+    }
+}
+
+
+static u64 veb_pred(VEB *v, u64 x) {
+    if (veb_empty(v) || x <= v->min) return VEB_EMPTY;
+    if (x > v->max) return v->max;
+    // bits==1: x==1, v->min==0 임이 보장됨
+    if (v->bits == 1) return 0;
+
+    u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
+    VEB *c = cls_get(v, h);
+
+    // 같은 클러스터 내에 l보다 작은 원소가 있으면 그것을 반환
+    if (c && !veb_empty(c) && l > c->min)
+        return vidx(h, veb_pred(c, l), v->bits);
+
+    // 이전 클러스터(summary 기준으로 h 미만)의 최댓값을 반환
+    u64 ph = (v->sum && !veb_empty(v->sum)) ? veb_pred(v->sum, h) : VEB_EMPTY;
+    if (ph == VEB_EMPTY) return (x > v->min) ? v->min : VEB_EMPTY;
+    VEB *pc = cls_get(v, ph);
+    return pc ? vidx(ph, pc->max, v->bits) : VEB_EMPTY;
+}
+
+
+static u64 veb_floor(VEB *v, u64 x) {
+    if (veb_empty(v) || x < v->min) return VEB_EMPTY;
+    if (x >= v->max) return v->max;
+    if (x == v->min) return v->min;
+    // pred(x+1) = x 이하의 최댓값
+    // x < max 이므로 x+1 이 VEB_EMPTY 로 오버플로되지 않음
+    return veb_pred(v, x + 1);
+}
+
+
+typedef enum CONTAINER_TYPE {
+    CT_VECTOR,
+    CT_LIST,
+    CT_STACK,
+    CT_QUEUE,
+    CT_DEQUE,
+    CT_SET,
+    CT_MAP,
+    CT_UNORDERED_SET,
+    CT_UNORDERED_MAP,
+} CONTAINER_TYPE;
+
+typedef struct {
+    void *a; // 구간 시작 (inclusive)
+    void *b; // 구간 끝   (inclusive)
+    CONTAINER_TYPE ctype;
+    size_t type_size;
+} Interval;
+
+typedef struct {
+    VEB *veb;
+    HashMap *data;
+} IntervalVEB;
+
+typedef struct {
+    void *p1, *p2;
+    char *tombstone;
+    int type_size;
+    bool used;
+} HashtableManager;
+
+typedef struct {
+    VEB *veb;
+    HashMap *data;
+} HTMVEB;
+
+HTMVEB *htm_new(void) {
+    HTMVEB *iv = (HTMVEB *) calloc(1, sizeof(HTMVEB));
+    iv->veb = veb_new(64);
+    iv->data = hm_new();
+    return iv;
+}
+
+void htm_free(HTMVEB *iv) {
+    for (size_t i = 0; i < iv->data->cap; i++)
+        if (iv->data->e[i].used) free(iv->data->e[i].val);
+    hm_free(iv->data);
+    veb_free(iv->veb);
+    free(iv);
+}
+
+void htm_insert(HTMVEB *iv, void *a, void *b, char *tombstone, int type_size) {
+    u64 k = (u64) (uintptr_t) a;
+    HashtableManager *it = (HashtableManager *) hm_get(iv->data, k);
+    if (!it) {
+        it = (HashtableManager *) malloc(sizeof(HashtableManager));
+        hm_set(iv->data, k, it);
+        veb_ins(iv->veb, k);
+    }
+    it->p1 = a;
+    it->p2 = b;
+    it->tombstone = tombstone;
+    it->used = true;
+    it->type_size = type_size;
+}
+
+
+void htm_erase(HTMVEB *iv, void *a) {
+    u64 k = (u64) (uintptr_t) a;
+    HashtableManager *it = (HashtableManager *) hm_get(iv->data, k);
+    if (!it) return;
+    free(it);
+    hm_del(iv->data, k);
+    veb_del(iv->veb, k);
+}
+
+
+HashtableManager *htm_find(HTMVEB *iv, void *x) {
+    u64 key = (u64) (uintptr_t) x;
+    u64 start = veb_floor(iv->veb, key);
+    if (start == VEB_EMPTY) return NULL;
+    HashtableManager *it = (HashtableManager *) hm_get(iv->data, start);
+    if (!it) return NULL;
+    return ((uintptr_t) x <= (uintptr_t) it->p2) ? it : NULL;
+}
+
+
+IntervalVEB *iveb_new(void) {
+    IntervalVEB *iv = (IntervalVEB *) calloc(1, sizeof(IntervalVEB));
+    iv->veb = veb_new(64);
+    iv->data = hm_new();
+    return iv;
+}
+
+
+void iveb_free(IntervalVEB *iv) {
+    for (size_t i = 0; i < iv->data->cap; i++)
+        if (iv->data->e[i].used) free(iv->data->e[i].val);
+    hm_free(iv->data);
+    veb_free(iv->veb);
+    free(iv);
+}
+
+
+void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_t type_size) {
+    u64 k = (u64) (uintptr_t) a;
+    Interval *it = (Interval *) hm_get(iv->data, k);
+    if (!it) {
+        it = (Interval *) malloc(sizeof(Interval));
+        hm_set(iv->data, k, it);
+        veb_ins(iv->veb, k);
+    }
+    it->a = a;
+    it->b = b;
+    it->ctype = ctype;
+    it->type_size = type_size;
+}
+
+
+void iveb_erase(IntervalVEB *iv, void *a) {
+    u64 k = (u64) (uintptr_t) a;
+    Interval *it = (Interval *) hm_get(iv->data, k);
+    if (!it) return;
+    free(it);
+    hm_del(iv->data, k);
+    veb_del(iv->veb, k);
+}
+
+
+Interval *iveb_find(IntervalVEB *iv, void *x) {
+    u64 key = (u64) (uintptr_t) x;
+    u64 start = veb_floor(iv->veb, key);
+    if (start == VEB_EMPTY) return NULL;
+    Interval *it = (Interval *) hm_get(iv->data, start);
+    if (!it) return NULL;
+    return ((uintptr_t) x <= (uintptr_t) it->b) ? it : NULL;
+}
+
+static IntervalVEB *iveb = NULL;
+static HTMVEB *htm = NULL;
+
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    van_emde_boas_tree.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 /* [already included: error.h] */
 #define HT_EMPTY     0x0000U
 #define HT_FRAG_MASK 0xF000U
@@ -3683,8 +4137,6 @@ static inline size_t __ht_quad(uint16_t d) {
     return ((size_t) d * d + d) / 2;
 }
 
-
-// requires <string.h> for memcpy
 
 #define OPENCSTL_XXH_ROTL32(x, r) (((x) << (r)) | ((x) >> (32 - (r))))
 #define OPENCSTL_XXH_ROTL64(x, r) (((x) << (r)) | ((x) >> (64 - (r))))
@@ -3993,28 +4445,28 @@ static inline bool __ht_reinsert(
     return true;
 }
 
-// HTMVEB *htm = NULL;
-
-#define HTM_SIZE 1024
-
-typedef struct {
-    void *p1, *p2;
-    char *tombstone;
-    int type_size;
-    bool used;
-} HashtableManager;
-
-static HashtableManager htm[HTM_SIZE] = {0};
-static size_t htm_length = 0;
-
-void __htm_append(void *ptr, size_t sz, char *tombstone, int type_size) {
-    htm[htm_length].p1 = ptr;
-    htm[htm_length].p2 = (char *) ptr + sz;
-    htm[htm_length].tombstone = tombstone;
-    htm[htm_length].used = true;
-    htm[htm_length].type_size = type_size;
-    htm_length++;
-}
+// 
+//
+// #define HTM_SIZE 1024
+//
+// typedef struct {
+//     void *p1, *p2;
+//     char *tombstone;
+//     int type_size;
+//     bool used;
+// } HashtableManager;
+//
+// static HashtableManager htm[HTM_SIZE] = {0};
+// static size_t htm_length = 0;
+//
+// void __htm_append(void *ptr, size_t sz, char *tombstone, int type_size) {
+//     htm[htm_length].p1 = ptr;
+//     htm[htm_length].p2 = (char *) ptr + sz;
+//     htm[htm_length].tombstone = tombstone;
+//     htm[htm_length].used = true;
+//     htm[htm_length].type_size = type_size;
+//     htm_length++;
+// }
 
 #define __HASHTABLE_DEFAULT_SIZE__ HT_MIN_CAP
 
@@ -4030,7 +4482,7 @@ static void __ht_do_rehash(
     void **container, size_t header_sz,
     size_t key_size, size_t value_size, size_t type_size,
     size_t length, size_t old_cap_mask,
-    uint16_t *old_meta, size_t htm_index
+    uint16_t *old_meta, HashtableManager *chtm
 ) {
     size_t new_cap = (old_cap_mask + 1) * 2;
     while (true) {
@@ -4062,14 +4514,14 @@ static void __ht_do_rehash(
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
-        // chtm->p1 = *container;
-        // chtm->p2 = (char *) *container + type_size * new_cap;
-        // chtm->tombstone = (char *) new_meta;
-        // chtm->type_size = (int) type_size;
-        htm[htm_index].p1 = *container;
-        htm[htm_index].p2 = (char *) *container + type_size * new_cap;
-        htm[htm_index].tombstone = (char *) new_meta;
-        htm[htm_index].type_size = (int) type_size;
+        chtm->p1 = *container;
+        chtm->p2 = (char *) *container + type_size * new_cap;
+        chtm->tombstone = (char *) new_meta;
+        chtm->type_size = (int) type_size;
+        // htm[htm_index].p1 = *container;
+        // htm[htm_index].p2 = (char *) *container + type_size * new_cap;
+        // htm[htm_index].tombstone = (char *) new_meta;
+        // htm[htm_index].type_size = (int) type_size;
         break;
     }
 }
@@ -4140,18 +4592,18 @@ OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *va
         }
     do_rehash:;
 
-        //HashtableManager* chtm = htm_find(htm,*container);
+        HashtableManager *chtm = htm_find(htm, *container);
 
-        int htm_index = -1;
-        for (int i = 0; i < (int) htm_length; i++)
-            if (htm[i].p1 == *container) {
-                htm_index = i;
-                break;
-            }
-        if (htm_index == -1)
-            cstl_error("Unregistered hashtable");
+        // int htm_index = -1;
+        // for (int i = 0; i < (int) htm_length; i++)
+        //     if (htm[i].p1 == *container) {
+        //         htm_index = i;
+        //         break;
+        //     }
+        // if (htm_index == -1)
+        //     cstl_error("Unregistered hashtable");
         __ht_do_rehash(container, header_sz, key_size, value_size, type_size,
-                       length, cap_mask, meta, htm_index);
+                       length, cap_mask, meta, chtm);
         cap_mask = OPENCSTL_NIDX(container, -7);
         meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     }
@@ -4275,55 +4727,60 @@ OPENCSTL_FUNC void *__cstl_hashtable_empty(void **container) {
 }
 
 OPENCSTL_FUNC size_type __cstl_hashtable_size(void **container) {
-    return (size_type)OPENCSTL_NIDX(container, -1);
+    return (size_type) OPENCSTL_NIDX(container, -1);
 }
 
 OPENCSTL_FUNC size_type __cstl_hashtable_capacity(void **container) {
-    return (size_type)OPENCSTL_NIDX(container, -7) + 1;
+    return (size_type) OPENCSTL_NIDX(container, -7) + 1;
 }
 
 OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
-    //HashtableManager* chtm = htm_find(htm,it);
-    int idx = -1;
-    for (int i = 0; i < (int) htm_length; i++)
-        if (htm[i].p1 <= it && it < htm[i].p2) {
-            idx = i;
-            break;
-        }
-
-
-    if (idx == -1)
-        cstl_error("Unregistered hashtable");
-
-    // size_t ts = (size_t)chtm->type_size;
-    // size_t cap = ((char *) chtm->p2 - (char *) chtm->p1) / ts;
-    // uint16_t *meta = (uint16_t *) chtm->tombstone;
+    HashtableManager *chtm = htm_find(htm, it);
+    // int idx = -1;
+    // for (int i = 0; i < (int) htm_length; i++)
+    //     if (htm[i].p1 <= it && it < htm[i].p2) {
+    //         idx = i;
+    //         break;
+    //     }
     //
-    size_t ts = (size_t) htm[idx].type_size;
-    size_t cap = ((char *) htm[idx].p2 - (char *) htm[idx].p1) / ts;
-    uint16_t *meta = (uint16_t *) htm[idx].tombstone;
+    //
+    // if (idx == -1)
+    //     cstl_error("Unregistered hashtable");
+
+    size_t ts = (size_t) chtm->type_size;
+    size_t cap = ((char *) chtm->p2 - (char *) chtm->p1) / ts;
+    uint16_t *meta = (uint16_t *) chtm->tombstone;
+
+    // size_t ts = (size_t) htm[idx].type_size;
+    // size_t cap = ((char *) htm[idx].p2 - (char *) htm[idx].p1) / ts;
+    // uint16_t *meta = (uint16_t *) htm[idx].tombstone;
     if (n == -1) {
-        size_t pos = ((char *) it - (char *) htm[idx].p1) / ts + 1;
-        //size_t pos = ((char*)it - (char*)chtm->p1)/ts + 1;
+        //size_t pos = ((char *) it - (char *) htm[idx].p1) / ts + 1;
+        size_t pos = ((char *) it - (char *) chtm->p1) / ts + 1;
         for (; pos < cap; pos++)
             if (meta[pos] != HT_EMPTY) {
-                return (char *) htm[idx].p1 + pos * ts;
-                //return (char *) chtm->p1 + pos * ts;
+                //return (char *) htm[idx].p1 + pos * ts;
+                return (char *) chtm->p1 + pos * ts;
             }
 
         return NULL;
     }
     if (n == -2) {
-        size_t pos = ((char *) it - (char *) htm[idx].p1) / ts;
-        //size_t pos = ((char *) it - (char *) chtm->p1) / ts;
-        if (pos == 0) return (char *) htm[idx].p1 - ts;
+        //size_t pos = ((char *) it - (char *) htm[idx].p1) / ts;
+        size_t pos = ((char *) it - (char *) chtm->p1) / ts;
+        //if (pos == 0) return (char *) htm[idx].p1 - ts;
+        if (pos == 0) return (char *) chtm->p1 - ts;
 
         for (size_t i = pos - 1; ; i--) {
-            if (meta[i] != HT_EMPTY)
-                return (char *) htm[idx].p1 + i * ts;
+            if (meta[i] != HT_EMPTY) {
+                //return (char *) htm[idx].p1 + i * ts;
+                return (char *) chtm->p1 + i * ts;
+            }
+
             if (i == 0) break;
         }
-        return (char *) htm[idx].p1 - ts;
+        //return (char *) htm[idx].p1 - ts;
+        return (char *) chtm->p1 - ts;
     }
     return NULL;
 }
@@ -4331,16 +4788,19 @@ OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
 OPENCSTL_FUNC void __cstl_hashtable_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-    int fi = -1;
-    for (int i = 0; i < (int) htm_length; i++)
-        if (htm[i].p1 == *container) {
-            fi = i;
-            break;
-        }
-    if (fi != -1) {
-        memmove(&htm[fi], &htm[fi + 1], (htm_length - fi) * sizeof(HashtableManager));
-        htm_length--;
-    }
+
+    HashtableManager *chtm = htm_find(htm, *container);
+    htm_erase(htm, chtm->p1);
+    // int fi = -1;
+    // for (int i = 0; i < (int) htm_length; i++)
+    //     if (htm[i].p1 == *container) {
+    //         fi = i;
+    //         break;
+    //     }
+    // if (fi != -1) {
+    //     memmove(&htm[fi], &htm[fi + 1], (htm_length - fi) * sizeof(HashtableManager));
+    //     htm_length--;
+    //}
     zfree(meta);
     zfree((char *) (*container) - header_sz);
     *container = NULL;
@@ -4361,14 +4821,15 @@ OPENCSTL_FUNC void __cstl_hashtable_reserve(void **container, size_t n) {
     size_t new_cap = __ht_next_pow2(min_cap);
     if (new_cap <= cap_mask_old + 1) return; /* already big enough */
 
-    int htm_index = -1;
-    for (int i = 0; i < (int) htm_length; i++)
-        if (htm[i].p1 == *container) {
-            htm_index = i;
-            break;
-        }
-    if (htm_index == -1)
-        cstl_error("Unregistered hashtable");
+    HashtableManager *chtm = htm_find(htm, *container);
+    // int htm_index = -1;
+    // for (int i = 0; i < (int) htm_length; i++)
+    //     if (htm[i].p1 == *container) {
+    //         htm_index = i;
+    //         break;
+    //     }
+    // if (htm_index == -1)
+    //     cstl_error("Unregistered hashtable");
 
     while (true) {
         void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
@@ -4399,12 +4860,21 @@ OPENCSTL_FUNC void __cstl_hashtable_reserve(void **container, size_t n) {
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
-        htm[htm_index].p1 = *container;
-        htm[htm_index].p2 = (char *) *container + type_size * new_cap;
-        htm[htm_index].tombstone = (char *) new_meta;
-        htm[htm_index].type_size = (int) type_size;
+        // htm[htm_index].p1 = *container;
+        // htm[htm_index].p2 = (char *) *container + type_size * new_cap;
+        // htm[htm_index].tombstone = (char *) new_meta;
+        // htm[htm_index].type_size = (int) type_size;
+
+        chtm->p1 = *container;
+        chtm->p2 = (char *) *container + type_size * new_cap;
+        chtm->tombstone = (char *) new_meta;
+        chtm->type_size = (int) type_size;
         return;
     }
+}
+
+void __cstl_htm_destroy(void) {
+    htm_free(htm);
 }
 
 // ██╗░░░██╗███╗░░██╗░█████╗░██████╗░██████╗░███████╗██████╗░███████╗██████╗░░░░░░░░██████╗███████╗████████╗
@@ -4435,11 +4905,12 @@ OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, const char *type_key, 
     OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
     OPENCSTL_NIDX(c, -1) = 0;
     OPENCSTL_NIDX(c, 0) = 0;
-    // if (htm == NULL) {
-    //     htm = htm_new();
-    // }
-    // htm_insert(htm, ptr, (char *) ptr + (key_size * cap), (char *) meta, (int) key_size);
-    __htm_append(ptr, key_size * cap, (char *) meta, (int) key_size);
+    if (htm == NULL) {
+        htm = htm_new();
+        atexit(__cstl_htm_destroy);
+    }
+    htm_insert(htm, ptr, (char *) ptr + (key_size * cap), (char *) meta, (int) key_size);
+    //__htm_append(ptr, key_size * cap, (char *) meta, (int) key_size);
     return ptr;
 }
 
@@ -4473,8 +4944,12 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
     OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
     OPENCSTL_NIDX(c, -1) = 0;
     OPENCSTL_NIDX(c, 0) = 0;
-    //htm_insert(htm, ptr, (char *) ptr + (type_size * cap), (char *) meta, (int) type_size);
-    __htm_append(ptr, type_size * cap, (char *) meta, (int) type_size);
+    if (htm == NULL) {
+        htm = htm_new();
+        atexit(__cstl_htm_destroy);
+    }
+    htm_insert(htm, ptr, (char *) ptr + (type_size * cap), (char *) meta, (int) type_size);
+    //__htm_append(ptr, type_size * cap, (char *) meta, (int) type_size);
     return ptr;
 }
 #endif
@@ -5101,7 +5576,7 @@ static double _duration(const watch t_beg, const watch t_end) {
 
 #elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
 
-#include <sys/time.h>w
+#include <sys/time.h>
 #include <time.h>
 
 typedef struct timeval watch;
@@ -6187,50 +6662,61 @@ void pdqsort(void *__base, size_t __nel, size_t __width,
 /* [already included: defines.h] */
 
 /* [already included: compare.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  bestsort.h                     (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+
+
 #if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_CLANG)
-#define cstl_stable_sort msort
+#define cstl_best_stable_sort msort
 #define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_GCC)
-#define cstl_stable_sort tsort
+#define cstl_best_stable_sort tsort
 #define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
-#define cstl_stable_sort tsort
+#define cstl_best_stable_sort tsort
 #define cstl_unstable_sort qsort
 
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_CLANG)
-#define cstl_stable_sort msort
+#define cstl_best_stable_sort msort
 #define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_GCC)
-#define cstl_stable_sort tsort
+#define cstl_best_stable_sort tsort
 #define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_TCC)
-#define cstl_stable_sort tsort
+#define cstl_best_stable_sort tsort
 #define cstl_unstable_sort qsort
 
 
 #elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_CLANG)
-#define cstl_stable_sort tsort
+#define cstl_best_stable_sort tsort
 #define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_GCC)
-#define cstl_stable_sort tsort
+#define cstl_best_stable_sort tsort
 #define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_TCC)
-#define cstl_stable_sort tsort
+#define cstl_best_stable_sort tsort
 #define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_MSVC)
-#define cstl_stable_sort tsort
+#define cstl_best_stable_sort tsort
 #define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_CC_NVCC)
-#define cstl_stable_sort tsort
+#define cstl_best_stable_sort tsort
 #define cstl_unstable_sort pdqsort
 #endif
 
-#if !defined(cstl_stable_sort)
-#define cstl_stable_sort tsort
-#endif
-#if !defined(cstl_unstable_sort)
-#define cstl_unstable_sort pdqsort
-#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    bestsort.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+// #if !defined(cstl_stable_sort)
+// #define cstl_stable_sort tsort
+// #endif
+// #if !defined(cstl_unstable_sort)
+// #define cstl_unstable_sort pdqsort
+// #endif
 
 // ██╗░░░██╗███╗░░██╗░██████╗████████╗░█████╗░██████╗░██╗░░░░░███████╗░░░░░░░██████╗░█████╗░██████╗░████████╗
 // ██║░░░██║████╗░██║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝
@@ -6263,6 +6749,10 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
             if (cmp == NULL) {
                 cmp = _memcmp_funcs[type_size];
             }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
+            }
+
             cstl_unstable_sort(container, length, type_size, cmp);
         }
         break;
@@ -6275,6 +6765,9 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
             }
             if (cmp == NULL) {
                 cmp = _memcmp_funcs[type_size];
+            }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
             }
             __cstl_list_qsort(&container, cmp);
         }
@@ -6289,6 +6782,9 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
             }
             if (cmp == NULL) {
                 cmp = _memcmp_funcs[type_size];
+            }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
             }
             cstl_unstable_sort(container, length, type_size, cmp);
         }
@@ -6330,7 +6826,10 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
             if (cmp == NULL) {
                 cmp = _memcmp_funcs[type_size];
             }
-            cstl_stable_sort(container, length, type_size, cmp);
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
+            }
+            cstl_best_stable_sort(container, length, type_size, cmp);
         }
         break;
         case OPENCSTL_LIST: {
@@ -6342,6 +6841,9 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
             }
             if (cmp == NULL) {
                 cmp = _memcmp_funcs[type_size];
+            }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
             }
             __cstl_list_msort(&container, cmp);
         }
@@ -6357,7 +6859,10 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
             if (cmp == NULL) {
                 cmp = _memcmp_funcs[type_size];
             }
-            cstl_stable_sort(container, length, type_size, cmp);
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
+            }
+            cstl_best_stable_sort(container, length, type_size, cmp);
         }
         break;
         default: {
@@ -6543,16 +7048,16 @@ char *opencstl_env(void) {
 
 
 OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
-    // if (htm == NULL) {
-    //     return false;
-    // }
-    // return htm_find(htm, it) != NULL;
-    for (size_t i = 0; i < htm_length; i++) {
-        if (htm[i].p1 <= it && it < htm[i].p2) {
-            return true;
-        }
+    if (htm == NULL) {
+        return false;
     }
-    return false;
+    return htm_find(htm, it) != NULL;
+    // for (size_t i = 0; i < htm_length; i++) {
+    //     if (htm[i].p1 <= it && it < htm[i].p2) {
+    //         return true;
+    //     }
+    // }
+    // return false;
 }
 
 

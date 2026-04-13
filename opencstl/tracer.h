@@ -36,21 +36,20 @@ static void zerase(void *ptr) {
     }
 }
 #endif
-static void opencstl_exit(void) {
 #ifdef OPENCSTL_TRACER
+static void opencstl_exit(void) {
     if (zalloc_size > 0) {
         logging.warning("%d memory blocks were not released", zalloc_size);
     }
     logging.debug("opencstl_exit");
     logging.debug("zalloc_count: %d", zalloc_count);
-#endif
 }
+#endif
 #ifdef OPENCSTL_TRACER
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
 static int opencstl_init(void) {
-
     //size_t SZ = _512KB;
     //zalloc_vector = salloc(SZ);
     //memset(zalloc_vector, 0, SZ);
@@ -66,7 +65,7 @@ static int opencstl_init(void) {
 
 #if defined(_MSC_VER)
 # pragma section(".CRT$XCU",read)
-__declspec(allocate(".CRT$XCU")) static int (*__p)(void) = opencstl_init;
+__declspec(allocate(".CRT$XCU")) static int (*__p)(void)= opencstl_init;
 # pragma data_seg()
 #endif
 #endif

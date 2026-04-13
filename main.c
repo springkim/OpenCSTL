@@ -87,9 +87,9 @@ void cstl_vector_test2(void) {
 void cstl_vector_test3(void) {
     DECORATE("opencstl{vector/qsort} test begin");
     VECTOR(int) vec = new_vector(int);
-    const size_t N = 100;
+    const size_type N = 100;
     for (int i = 0; i < N; i++) {
-        int val = random.randint(-N, N);
+        int val = mt19937.randint(-N, N);
         push_back(vec, val);
     }
 
@@ -115,11 +115,11 @@ void cstl_list_test02(void) {
 
     pop_back(list);
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8]
-    insert(list, cstl_begin(list), 777);
+    insert(list, begin(list), 777);
     ///[777] [0] [1] [2] [3] [4] [5] [6] [7] [8]
-    insert(list, cstl_find(list, 4), 5, 999);
+    insert(list, find(list, 4), 5, 999);
     ///[777] [0] [1] [2] [3] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
-    erase(list, cstl_find(list, 2), cstl_find(list, 999));
+    erase(list, find(list, 2), find(list, 999));
     ///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
     for (int *it = begin(list); it != end(list); it = next(it)) {
         printf("[%d] ", *it);
@@ -321,7 +321,7 @@ void cstl_priority_queue_test2(void) {
     DECORATE("OPENCSTL{priority_queue/dijkstra} test begin");
     Edge **vec = new_vector(Edge*);
     assign(vec, 7);
-    for (int i = 0; i < cstl_size(vec); i++) {
+    for (int i = 0; i < size(vec); i++) {
         vec[i] = new_vector(Edge);
     }
     push_back(vec[1], make_edge(10, 2));
@@ -500,6 +500,7 @@ void test_sort(void) {
 // };
 
 int main(void) {
+    
     // printf("%d\n",numeric_limits(int).max);
     // return 0;
 
@@ -522,6 +523,11 @@ int main(void) {
     //logging.fatal("fatal message");
     logging.info("message");
 
+
+    puts(mt19937.uuid());
+
+    // float a = 0;
+    // __auto_type b = 1;
 
     return 0;
 }

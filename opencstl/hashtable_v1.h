@@ -39,7 +39,7 @@
 #if !defined(_OPENCSTL_HASHTABLE_H)
 #define _OPENCSTL_HASHTABLE_H
 #include"zalloc.h"
-#include "van_emde_boas_tree.h"
+//#include "van_emde_boas_tree.h"
 /* [already included: error.h] */
 #define HT_EMPTY     0x0000U
 #define HT_FRAG_MASK 0xF000U
@@ -50,7 +50,7 @@
 #define HT_MIN_CAP   8U
 /* threshold = cap * 7/8, computed via shifts (no fp) */
 #define HT_THRESHOLD(cap) ((cap) - ((cap) >> 3))
-#define HTM_VEBT
+
 
 static inline size_t __ht_next_pow2(size_t n) {
     size_t p = HT_MIN_CAP;
@@ -76,6 +76,8 @@ static inline size_t __ht_quad(uint16_t d) {
     return ((size_t) d * d + d) / 2;
 }
 
+
+// requires <string.h> for memcpy
 
 #define OPENCSTL_XXH_ROTL32(x, r) (((x) << (r)) | ((x) >> (32 - (r))))
 #define OPENCSTL_XXH_ROTL64(x, r) (((x) << (r)) | ((x) >> (64 - (r))))
@@ -384,28 +386,28 @@ static inline bool __ht_reinsert(
     return true;
 }
 
-// 
-//
-// #define HTM_SIZE 1024
-//
-// typedef struct {
-//     void *p1, *p2;
-//     char *tombstone;
-//     int type_size;
-//     bool used;
-// } HashtableManager;
-//
-// static HashtableManager htm[HTM_SIZE] = {0};
-// static size_t htm_length = 0;
-//
-// void __htm_append(void *ptr, size_t sz, char *tombstone, int type_size) {
-//     htm[htm_length].p1 = ptr;
-//     htm[htm_length].p2 = (char *) ptr + sz;
-//     htm[htm_length].tombstone = tombstone;
-//     htm[htm_length].used = true;
-//     htm[htm_length].type_size = type_size;
-//     htm_length++;
-// }
+// HTMVEB *htm = NULL;
+
+#define HTM_SIZE 1024
+
+typedef struct {
+    void *p1, *p2;
+    char *tombstone;
+    int type_size;
+    bool used;
+} HashtableManager;
+
+static HashtableManager htm[HTM_SIZE] = {0};
+static size_t htm_length = 0;
+
+void __htm_append(void *ptr, size_t sz, char *tombstone, int type_size) {
+    htm[htm_length].p1 = ptr;
+    htm[htm_length].p2 = (char *) ptr + sz;
+    htm[htm_length].tombstone = tombstone;
+    htm[htm_length].used = true;
+    htm[htm_length].type_size = type_size;
+    htm_length++;
+}
 
 #define __HASHTABLE_DEFAULT_SIZE__ HT_MIN_CAP
 
@@ -421,7 +423,7 @@ static void __ht_do_rehash(
     void **container, size_t header_sz,
     size_t key_size, size_t value_size, size_t type_size,
     size_t length, size_t old_cap_mask,
-    uint16_t *old_meta
+    uint16_t *old_meta, size_t htm_index
 ) {
     size_t new_cap = (old_cap_mask + 1) * 2;
     while (true) {
@@ -448,23 +450,24 @@ static void __ht_do_rehash(
             new_cap *= 2;
             continue;
         }
-        void *old_ptr = *container;
         zfree((char *) *container - header_sz);
         zfree(old_meta);
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
-        htm_erase(htm, old_ptr);
-        htm_insert(htm, *container,
-                   (char *) *container + type_size * new_cap,
-                   (char *) new_meta, (int) type_size);
+        // chtm->p1 = *container;
+        // chtm->p2 = (char *) *container + type_size * new_cap;
+        // chtm->tombstone = (char *) new_meta;
+        // chtm->type_size = (int) type_size;
+        htm[htm_index].p1 = *container;
+        htm[htm_index].p2 = (char *) *container + type_size * new_cap;
+        htm[htm_index].tombstone = (char *) new_meta;
+        htm[htm_index].type_size = (int) type_size;
         break;
     }
 }
 
-OPENCSTL_FUNC
-
-void __cstl_hashtable_insert(void **container, void *key, void *value) {
+OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *value) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t value_size = OPENCSTL_NIDX(container, -4);
@@ -529,16 +532,25 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
             return;
         }
     do_rehash:;
+
+        //HashtableManager* chtm = htm_find(htm,*container);
+
+        int htm_index = -1;
+        for (int i = 0; i < (int) htm_length; i++)
+            if (htm[i].p1 == *container) {
+                htm_index = i;
+                break;
+            }
+        if (htm_index == -1)
+            cstl_error("Unregistered hashtable");
         __ht_do_rehash(container, header_sz, key_size, value_size, type_size,
-                       length, cap_mask, meta);
+                       length, cap_mask, meta, htm_index);
         cap_mask = OPENCSTL_NIDX(container, -7);
         meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     }
 }
 
-OPENCSTL_FUNC
-
-void __cstl_hashtable_erase(void **container, void *key) {
+OPENCSTL_FUNC void __cstl_hashtable_erase(void **container, void *key) {
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t cap_mask = OPENCSTL_NIDX(container, -7);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
@@ -588,9 +600,7 @@ found:;
     OPENCSTL_NIDX(container, -1)--;
 }
 
-OPENCSTL_FUNC
-
-void *__cstl_hashtable_find(void **container, void *key) {
+OPENCSTL_FUNC void *__cstl_hashtable_find(void **container, void *key) {
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t cap_mask = OPENCSTL_NIDX(container, -7);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
@@ -619,9 +629,7 @@ void *__cstl_hashtable_find(void **container, void *key) {
     }
 }
 
-OPENCSTL_FUNC
-
-void __cstl_hashtable_clear(void **container) {
+OPENCSTL_FUNC void __cstl_hashtable_clear(void **container) {
     size_t cap_mask = OPENCSTL_NIDX(container, -7);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     memset(meta, 0, (cap_mask + 1 + 4) * sizeof(uint16_t));
@@ -629,9 +637,7 @@ void __cstl_hashtable_clear(void **container) {
     OPENCSTL_NIDX(container, -1) = 0;
 }
 
-OPENCSTL_FUNC
-
-void *__cstl_hashtable_begin(void **container) {
+OPENCSTL_FUNC void *__cstl_hashtable_begin(void **container) {
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     size_t cap_mask = OPENCSTL_NIDX(container, -7);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
@@ -641,11 +647,8 @@ void *__cstl_hashtable_begin(void **container) {
     return NULL;
 }
 
-OPENCSTL_FUNC
-void *__cstl_hashtable_end(void **container) { return NULL; }
-OPENCSTL_FUNC
-
-void *__cstl_hashtable_rbegin(void **container) {
+OPENCSTL_FUNC void *__cstl_hashtable_end(void **container) { return NULL; }
+OPENCSTL_FUNC void *__cstl_hashtable_rbegin(void **container) {
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     size_t cap_mask = OPENCSTL_NIDX(container, -7);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
@@ -655,16 +658,12 @@ void *__cstl_hashtable_rbegin(void **container) {
     return NULL;
 }
 
-OPENCSTL_FUNC
-
-void *__cstl_hashtable_rend(void **container) {
+OPENCSTL_FUNC void *__cstl_hashtable_rend(void **container) {
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     return (char *) *container - type_size;
 }
 
-OPENCSTL_FUNC
-
-void *__cstl_hashtable_empty(void **container) {
+OPENCSTL_FUNC void *__cstl_hashtable_empty(void **container) {
     return __cstl_hashtable_rend(container);
 }
 
@@ -676,85 +675,71 @@ OPENCSTL_FUNC size_type __cstl_hashtable_capacity(void **container) {
     return (size_type) OPENCSTL_NIDX(container, -7) + 1;
 }
 
-OPENCSTL_FUNC
+OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
+    //HashtableManager* chtm = htm_find(htm,it);
+    int idx = -1;
+    for (int i = 0; i < (int) htm_length; i++)
+        if (htm[i].p1 <= it && it < htm[i].p2) {
+            idx = i;
+            break;
+        }
 
-void *__cstl_hashtable_next_prev(void *it, int n) {
-    HashtableManager *chtm = htm_find(htm, it);
-    // int idx = -1;
-    // for (int i = 0; i < (int) htm_length; i++)
-    //     if (htm[i].p1 <= it && it < htm[i].p2) {
-    //         idx = i;
-    //         break;
-    //     }
+
+    if (idx == -1)
+        cstl_error("Unregistered hashtable");
+
+    // size_t ts = (size_t)chtm->type_size;
+    // size_t cap = ((char *) chtm->p2 - (char *) chtm->p1) / ts;
+    // uint16_t *meta = (uint16_t *) chtm->tombstone;
     //
-    //
-    // if (idx == -1)
-    //     cstl_error("Unregistered hashtable");
-
-    size_t ts = (size_t) chtm->type_size;
-    size_t cap = ((char *) chtm->p2 - (char *) chtm->p1) / ts;
-    uint16_t *meta = (uint16_t *) chtm->tombstone;
-
-    // size_t ts = (size_t) htm[idx].type_size;
-    // size_t cap = ((char *) htm[idx].p2 - (char *) htm[idx].p1) / ts;
-    // uint16_t *meta = (uint16_t *) htm[idx].tombstone;
+    size_t ts = (size_t) htm[idx].type_size;
+    size_t cap = ((char *) htm[idx].p2 - (char *) htm[idx].p1) / ts;
+    uint16_t *meta = (uint16_t *) htm[idx].tombstone;
     if (n == -1) {
-        //size_t pos = ((char *) it - (char *) htm[idx].p1) / ts + 1;
-        size_t pos = ((char *) it - (char *) chtm->p1) / ts + 1;
+        size_t pos = ((char *) it - (char *) htm[idx].p1) / ts + 1;
+        //size_t pos = ((char*)it - (char*)chtm->p1)/ts + 1;
         for (; pos < cap; pos++)
             if (meta[pos] != HT_EMPTY) {
-                //return (char *) htm[idx].p1 + pos * ts;
-                return (char *) chtm->p1 + pos * ts;
+                return (char *) htm[idx].p1 + pos * ts;
+                //return (char *) chtm->p1 + pos * ts;
             }
 
         return NULL;
     }
     if (n == -2) {
-        //size_t pos = ((char *) it - (char *) htm[idx].p1) / ts;
-        size_t pos = ((char *) it - (char *) chtm->p1) / ts;
-        //if (pos == 0) return (char *) htm[idx].p1 - ts;
-        if (pos == 0) return (char *) chtm->p1 - ts;
+        size_t pos = ((char *) it - (char *) htm[idx].p1) / ts;
+        //size_t pos = ((char *) it - (char *) chtm->p1) / ts;
+        if (pos == 0) return (char *) htm[idx].p1 - ts;
 
         for (size_t i = pos - 1; ; i--) {
-            if (meta[i] != HT_EMPTY) {
-                //return (char *) htm[idx].p1 + i * ts;
-                return (char *) chtm->p1 + i * ts;
-            }
-
+            if (meta[i] != HT_EMPTY)
+                return (char *) htm[idx].p1 + i * ts;
             if (i == 0) break;
         }
-        //return (char *) htm[idx].p1 - ts;
-        return (char *) chtm->p1 - ts;
+        return (char *) htm[idx].p1 - ts;
     }
     return NULL;
 }
 
-OPENCSTL_FUNC
-
-void __cstl_hashtable_free(void **container) {
+OPENCSTL_FUNC void __cstl_hashtable_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     uint16_t *meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-
-    HashtableManager *chtm = htm_find(htm, *container);
-    htm_erase(htm, chtm->p1);
-    // int fi = -1;
-    // for (int i = 0; i < (int) htm_length; i++)
-    //     if (htm[i].p1 == *container) {
-    //         fi = i;
-    //         break;
-    //     }
-    // if (fi != -1) {
-    //     memmove(&htm[fi], &htm[fi + 1], (htm_length - fi) * sizeof(HashtableManager));
-    //     htm_length--;
-    //}
+    int fi = -1;
+    for (int i = 0; i < (int) htm_length; i++)
+        if (htm[i].p1 == *container) {
+            fi = i;
+            break;
+        }
+    if (fi != -1) {
+        memmove(&htm[fi], &htm[fi + 1], (htm_length - fi) * sizeof(HashtableManager));
+        htm_length--;
+    }
     zfree(meta);
     zfree((char *) (*container) - header_sz);
     *container = NULL;
 }
 
-OPENCSTL_FUNC
-
-void __cstl_hashtable_reserve(void **container, size_t n) {
+OPENCSTL_FUNC void __cstl_hashtable_reserve(void **container, size_t n) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t value_size = OPENCSTL_NIDX(container, -4);
@@ -768,6 +753,15 @@ void __cstl_hashtable_reserve(void **container, size_t n) {
     if (min_cap < __HASHTABLE_DEFAULT_SIZE__) min_cap = __HASHTABLE_DEFAULT_SIZE__;
     size_t new_cap = __ht_next_pow2(min_cap);
     if (new_cap <= cap_mask_old + 1) return; /* already big enough */
+
+    int htm_index = -1;
+    for (int i = 0; i < (int) htm_length; i++)
+        if (htm[i].p1 == *container) {
+            htm_index = i;
+            break;
+        }
+    if (htm_index == -1)
+        cstl_error("Unregistered hashtable");
 
     while (true) {
         void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
@@ -793,22 +787,17 @@ void __cstl_hashtable_reserve(void **container, size_t n) {
             new_cap *= 2;
             continue;
         }
-        void *old_ptr = *container;
         zfree((char *) *container - header_sz);
         zfree(old_meta);
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
-        htm_erase(htm, old_ptr);
-        htm_insert(htm, *container,
-                   (char *) *container + type_size * new_cap,
-                   (char *) new_meta, (int) type_size);
+        htm[htm_index].p1 = *container;
+        htm[htm_index].p2 = (char *) *container + type_size * new_cap;
+        htm[htm_index].tombstone = (char *) new_meta;
+        htm[htm_index].type_size = (int) type_size;
         return;
     }
-}
-
-void __cstl_htm_destroy(void) {
-    htm_free(htm);
 }
 
 // ██╗░░░██╗███╗░░██╗░█████╗░██████╗░██████╗░███████╗██████╗░███████╗██████╗░░░░░░░░██████╗███████╗████████╗
@@ -821,9 +810,7 @@ void __cstl_htm_destroy(void) {
 #define cstl_unordered_set _cstl_unordered_set
 #define _cstl_unordered_set(KEY,...) _CSTL_USET_DISPATCH(KEY, ##__VA_ARGS__, NULL)
 #define _CSTL_USET_DISPATCH(KEY, FUNC, ...) __cstl_unordered_set(sizeof(KEY),#KEY,(void*)(FUNC))
-OPENCSTL_FUNC
-
-void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_func) {
+OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     size_t cap = __HASHTABLE_DEFAULT_SIZE__;
     void *ptr = (char *) zalloc(header_sz + key_size * cap, 1) + header_sz;
@@ -841,17 +828,11 @@ void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_fun
     OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
     OPENCSTL_NIDX(c, -1) = 0;
     OPENCSTL_NIDX(c, 0) = 0;
-    bool htm_init = false;
-    if (htm == NULL) {
-        htm = htm_new();
-        htm_init = true;
-    }
-    htm_insert(htm, ptr, (char *) ptr + (key_size * cap), (char *) meta, (int) key_size);
-    //__htm_append(ptr, key_size * cap, (char *) meta, (int) key_size);
-
-    if (htm_init) {
-        atexit(__cstl_htm_destroy);
-    }
+    // if (htm == NULL) {
+    //     htm = htm_new();
+    // }
+    // htm_insert(htm, ptr, (char *) ptr + (key_size * cap), (char *) meta, (int) key_size);
+    __htm_append(ptr, key_size * cap, (char *) meta, (int) key_size);
     return ptr;
 }
 
@@ -864,11 +845,9 @@ void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_fun
 #define cstl_unordered_map(KEY, VALUE) _cstl_unordered_map(KEY, VALUE)
 #define _cstl_unordered_map(KEY,VALUE,...) _CSTL_UMAP_DISPATCH(KEY,VALUE,##__VA_ARGS__,NULL)
 #define _CSTL_UMAP_DISPATCH(KEY,VALUE,FUNC,...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,(void*)(FUNC))
-OPENCSTL_FUNC
-
-void *__cstl_unordered_map(size_t key_size, size_t value_size,
-                           const char *type_key, const char *type_value,
-                           void *hash_func) {
+OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
+                                         const char *type_key, const char *type_value,
+                                         void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     size_t type_size = key_size + value_size;
     size_t cap = __HASHTABLE_DEFAULT_SIZE__;
@@ -887,16 +866,8 @@ void *__cstl_unordered_map(size_t key_size, size_t value_size,
     OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
     OPENCSTL_NIDX(c, -1) = 0;
     OPENCSTL_NIDX(c, 0) = 0;
-    bool htm_init = false;
-    if (htm == NULL) {
-        htm = htm_new();
-        htm_init = true;
-    }
-    htm_insert(htm, ptr, (char *) ptr + (type_size * cap), (char *) meta, (int) type_size);
-    //__htm_append(ptr, type_size * cap, (char *) meta, (int) type_size);
-    if (htm_init) {
-        atexit(__cstl_htm_destroy);
-    }
+    //htm_insert(htm, ptr, (char *) ptr + (type_size * cap), (char *) meta, (int) type_size);
+    __htm_append(ptr, type_size * cap, (char *) meta, (int) type_size);
     return ptr;
 }
 #endif

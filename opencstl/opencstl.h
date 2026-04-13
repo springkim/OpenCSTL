@@ -157,16 +157,19 @@
 
 
 OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
-    // if (htm == NULL) {
-    //     return false;
-    // }
-    // return htm_find(htm, it) != NULL;
+#ifdef HTM_VEBT
+    if (htm == NULL) {
+        return false;
+    }
+    return htm_find(htm, it) != NULL;
+#else
     for (size_t i = 0; i < htm_length; i++) {
         if (htm[i].p1 <= it && it < htm[i].p2) {
             return true;
         }
     }
     return false;
+#endif
 }
 
 

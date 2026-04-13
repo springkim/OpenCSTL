@@ -2,7 +2,7 @@
 // Created by spring on 4/14/2026.
 //
 
-#ifndef OPENCSTL_MT19937_H
+#if !defined(OPENCSTL_MT19937_H)
 #define OPENCSTL_MT19937_H
 #include <stdint.h>
 
@@ -16,9 +16,9 @@
 typedef struct {
     uint64_t mt[MT64_N];
     int index;
-} mt19937_64_t;
+} __mt19937_64_t;
 
-mt19937_64_t __rng64 = {
+__mt19937_64_t __rng64 = {
     {
         1776098118,
         4095968591,
@@ -384,10 +384,47 @@ static double __mt19937_random(void) {
     return (double) (__mt19937_64_next() >> 11) * (1.0 / 9007199254740992.0);
 }
 
+
 // [lo, hi] inclusive integer range (supports negative)
 static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
     uint64_t range = (uint64_t) (hi - lo) + 1ULL;
     return lo + (int64_t) (__mt19937_64_next() % range);
+}
+
+char *__mt19937_uuid(void) {
+    __mt19937_64_seed(time(NULL));
+    static char buf[37];
+    static const char hex[] = "0123456789abcdef";
+
+    uint64_t hi = __mt19937_64_next();
+    uint64_t lo = __mt19937_64_next();
+
+    hi = (hi & ~((uint64_t) 0xF << 12)) | ((uint64_t) 0x4 << 12);
+    lo = (lo & ~((uint64_t) 0x3 << 62)) | ((uint64_t) 0x2 << 62);
+
+    int p = 0;
+    // time_low: 8자 (hi >> 32)
+    for (int i = 60; i >= 32; i -= 4)
+        buf[p++] = hex[(hi >> i) & 0xF];
+    buf[p++] = '-';
+    // time_mid: 4자 (hi >> 16)
+    for (int i = 28; i >= 16; i -= 4)
+        buf[p++] = hex[(hi >> i) & 0xF];
+    buf[p++] = '-';
+    // time_hi_and_version: 4자 (hi >> 0)
+    for (int i = 12; i >= 0; i -= 4)
+        buf[p++] = hex[(hi >> i) & 0xF];
+    buf[p++] = '-';
+    // clock_seq: 4자 (lo >> 48)
+    for (int i = 60; i >= 48; i -= 4)
+        buf[p++] = hex[(lo >> i) & 0xF];
+    buf[p++] = '-';
+    // node: 12자 (lo >> 0)
+    for (int i = 44; i >= 0; i -= 4)
+        buf[p++] = hex[(lo >> i) & 0xF];
+
+    buf[36] = '\0';
+    return buf;
 }
 
 typedef void (*seed_fn)(uint64_t);
@@ -396,16 +433,20 @@ typedef double (*random_fn)(void);
 
 typedef int64_t (*randint_fn)(int64_t, int64_t);
 
+typedef char *(*uuid_fn)(void);
+
 typedef struct {
     random_fn random;
     randint_fn randint;
     seed_fn seed;
+    uuid_fn uuid;
 } RANDOM;
 
-RANDOM random = {
+RANDOM mt19937 = {
     __mt19937_random,
     __mt19937_randint,
-    __mt19937_64_seed
+    __mt19937_64_seed,
+    __mt19937_uuid
 };
 
 #endif //OPENCSTL_MT19937_H
