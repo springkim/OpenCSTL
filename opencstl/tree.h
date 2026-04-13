@@ -217,7 +217,7 @@ OPENCSTL_FUNC void __cstl_tree_left_rotate(void **container, void *x) {
     }
     _(y, P) = _(x, P);
     if ((void *) _(x, P) == nil) {
-        *root = y;
+        *root = (void **) y;
     } else if (x == (void *) _(_(x,P), L)) {
         _(_(x, P), L) = (size_t) y;
     } else {
@@ -236,7 +236,7 @@ OPENCSTL_FUNC void __cstl_tree_right_rotate(void **container, void *x) {
     }
     _(y, P) = _(x, P);
     if ((void *) _(x, P) == nil) {
-        *root = y;
+        *root = (void **) y;
     } else if (x == (void *) _(_(x, P), R)) {
         _(_(x, P), R) = (size_t) y;
     } else {
@@ -349,7 +349,7 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
 OPENCSTL_FUNC void __cstl_tree_transplant(void **container, void *u, void *v) {
     void ***root = (void ***) *container;
     if ((void *) _(u, P) == nil) {
-        *root = v;
+        *root = (void **) v;
     } else if (u == (void *) _(_(u, P), L)) {
         _(_(u, P), L) = (size_t) v;
     } else {
@@ -540,7 +540,7 @@ OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
 
     __cstl_arena_free_all(arena, freelist);
     OPENCSTL_NIDX(container, -1) = 0;
-    *root = nil;
+    *root = (void **) nil;
 }
 
 OPENCSTL_FUNC void __cstl_tree_free(void **container) {

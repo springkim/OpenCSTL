@@ -84,8 +84,9 @@
 
 #include "algorithm.h"
 
-#include "cstl_compare.h"
+#include "compare.h"
 #include "random.h"
+#include"mt19937.h"
 #include "chrono.h"
 #include "fstream.h"
 
@@ -154,11 +155,6 @@
 #define second(IT, TYPE)            ((TYPE)cstl_value(IT, TYPE))
 #endif
 
-OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
-    if (OPENCSTL_NIDX(container, -1) > INT_MAX)
-        return 1;
-    return 0;
-}
 
 OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
     // if (htm == NULL) {
@@ -423,7 +419,7 @@ OPENCSTL_FUNC size_type _cstl_size(void *container) {
         break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
-            return __cstl_hashtable_size((void **) container);
+            sz = __cstl_hashtable_size((void **) container);
         }
         break;
         default: cstl_error("Invalid operation");
@@ -432,7 +428,7 @@ OPENCSTL_FUNC size_type _cstl_size(void *container) {
     return sz;
 }
 
-OPENCSTL_FUNC size_t _cstl_capacity(void *container) {
+OPENCSTL_FUNC size_type _cstl_capacity(void *container) {
     size_t container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -455,7 +451,7 @@ OPENCSTL_FUNC size_t _cstl_capacity(void *container) {
         break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
-            return __cstl_hashtable_capacity((void **) container);
+            sz = __cstl_hashtable_capacity((void **) container);
         }
         break;
         default: cstl_error("Invalid operation");
@@ -561,8 +557,8 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
         }
         break;
         case OPENCSTL_LIST: {
-            if (argc == 2)__cstl_list_insert((void **) container, param1, 1, param2);
-            else __cstl_list_insert((void **) container, param1, *(int *) param2, param3);
+            if (argc == 2)__cstl_list_insert((void **) container, (void **) param1, 1, param2);
+            else __cstl_list_insert((void **) container, (void **) param1, *(int *) param2, param3);
         }
         break;
         case OPENCSTL_DEQUE: {
@@ -632,8 +628,8 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
         case OPENCSTL_LIST: {
             if (argc == 1) {
                 param2 = cstl_next(*(void**)param1);
-                __cstl_list_erase((void **) container, param1, &param2);
-            } else __cstl_list_erase((void **) container, param1, param2);
+                __cstl_list_erase((void **) container, (void **) param1, (void **) &param2);
+            } else __cstl_list_erase((void **) container, (void **) param1, (void **) param2);
         }
         break;
         case OPENCSTL_DEQUE: {
@@ -647,7 +643,7 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
         break;
         case OPENCSTL_MAP:
         case OPENCSTL_SET: {
-            __cstl_tree_erase((void **) container, *(void **) param1);
+            __cstl_tree_erase((void **) container, (void **) *(void **) param1);
         }
         break;
         case OPENCSTL_UNORDERED_SET:
@@ -1004,7 +1000,7 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
             if (argc == 1)
                 return __cstl_list_find((void **) container, (void **) &OPENCSTL_NIDX((void**)container, 0),
                                         param1);
-            else return __cstl_list_find((void **) container, param1, param2);
+            else return __cstl_list_find((void **) container, (void **) param1, param2);
         }
         break;
         case OPENCSTL_DEQUE: {
@@ -1071,7 +1067,7 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
 }
 
 
-OPENCSTL_FUNC void _cstl_sort(void *container, int argc, ...) {
+OPENCSTL_FUNC void ___cstl_sort(void *container, int argc, ...) {
     va_list vl;
     void *va_ptr = NULL;
     __cstl_va_start(vl, argc, va_ptr);
@@ -1095,9 +1091,9 @@ OPENCSTL_FUNC void _cstl_sort(void *container, int argc, ...) {
         case OPENCSTL_LIST: {
             if (argc == 1) {
 #if CSTL_USE_VAARG
-                __cstl_list_sort((void **) container, param1);
+                __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) param1);
 #else
-                __cstl_list_sort((void **) container, *(void **) param1);
+                __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) *(void **) param1);
 #endif
             }
         }

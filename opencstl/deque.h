@@ -43,10 +43,18 @@
 #pragma warning(disable:4308)
 #pragma warning(disable:4307)
 #endif
+
+
+OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
+    if (OPENCSTL_NIDX(container, -1) > INT_MAX)
+        return 1;
+    return 0;
+}
+
 #define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zalloc(header_sz + type_size * 2,1);
+    void *block = zalloc(header_sz + type_size * 2, 1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for deque");
     }
@@ -197,7 +205,7 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_t n, voi
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    
+
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
@@ -250,7 +258,7 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    
+
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
@@ -329,7 +337,7 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     //size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    
+
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;

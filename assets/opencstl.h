@@ -117,7 +117,10 @@
 // ██║░░██╗██║░░██║██║╚██╔╝██║██╔═══╝░██║██║░░░░░██╔══╝░░██╔══██╗
 // ╚█████╔╝╚█████╔╝██║░╚═╝░██║██║░░░░░██║███████╗███████╗██║░░██║
 // ░╚════╝░░╚════╝░╚═╝░░░░░╚═╝╚═╝░░░░░╚═╝╚══════╝╚══════╝╚═╝░░╚═╝
-#if defined(__clang__)
+#if defined(__NVCC__)
+#define OCSTL_CC_STR "NVCC"
+#define OCSTL_CC_NVCC
+#elif defined(__clang__)
 #define OCSTL_CC_STR "Clang"
 #define OCSTL_CC_CLANG
 #elif defined(__TINYC__)
@@ -274,6 +277,10 @@ void __fatal_message_box(const char *msg) {
              msg);
     system(cmd);
 }
+#elif defined(OCSTL_CC_NVCC)
+void __fatal_message_box(const char *msg) {
+    fprintf(stderr, "[FATAL] %s\n", msg);
+}
 #elif defined(OCSTL_OS_WINDOWS)
 #if !defined(OCSTL_CC_TCC)
 void __fatal_message_box(const char *msg) {
@@ -352,8 +359,6 @@ static int _logging_critical(const char *format, ...) {
     va_start(args, format);
     ret = __vcprintln(__magenta, format, args);
     va_end(args);
-    exit(EXIT_FAILURE);
-
     return ret;
 }
 
@@ -406,6 +411,426 @@ static LOGGING logging = {
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    logging.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  mt19937.h                      (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/14/2026.
+//
+
+#ifndef OPENCSTL_MT19937_H
+#define OPENCSTL_MT19937_H
+#include <stdint.h>
+
+
+#define MT64_N          312
+#define MT64_M          156
+#define MT64_MATRIX_A   0xB5026F5AA96619E9ULL
+#define MT64_UPPER_MASK 0xFFFFFFFF80000000ULL
+#define MT64_LOWER_MASK 0x7FFFFFFFULL
+
+typedef struct {
+    uint64_t mt[MT64_N];
+    int index;
+} mt19937_64_t;
+
+mt19937_64_t __rng64 = {
+    {
+        1776098118,
+        4095968591,
+        2489032677,
+        2495002180,
+        1521698085,
+        3468952409,
+        1098923224,
+        2876365311,
+        3875427246,
+        2303920453,
+        3481655941,
+        3656246169,
+        3488737099,
+        1911217468,
+        3072370164,
+        54539853,
+        2100673779,
+        3365782472,
+        3678642746,
+        3156232773,
+        423872610,
+        384980604,
+        14136892,
+        1456753616,
+        237535746,
+        3636975731,
+        2024840138,
+        2028378269,
+        1647654370,
+        3507099562,
+        2984247251,
+        2709726729,
+        4136871816,
+        2050550537,
+        819447735,
+        3874448673,
+        1342874910,
+        2832492440,
+        2016583134,
+        124576301,
+        1384715537,
+        3530629926,
+        671516421,
+        2761930297,
+        648433457,
+        1017100791,
+        1981299097,
+        3101820692,
+        2950834868,
+        1756679637,
+        584964515,
+        4081098669,
+        1775854538,
+        3437182948,
+        1020220836,
+        341993995,
+        3408141005,
+        2904582044,
+        94705709,
+        1395954468,
+        2723919850,
+        4100156421,
+        4019124044,
+        1842129442,
+        4079666746,
+        3677560224,
+        3999536271,
+        2893025081,
+        4228019062,
+        3210991107,
+        1390517408,
+        662431847,
+        1090909027,
+        1852368304,
+        1200827841,
+        521259154,
+        2855284515,
+        202287130,
+        1068495373,
+        2234023621,
+        3282764785,
+        323567790,
+        3148296635,
+        391185413,
+        3058708111,
+        3342934558,
+        3443548783,
+        2861981824,
+        2794386527,
+        142350258,
+        2955638948,
+        3162968156,
+        3760718351,
+        3871919616,
+        1645458827,
+        1497555060,
+        3613359691,
+        458681097,
+        2981316388,
+        713218878,
+        3450818032,
+        1431683567,
+        1600366697,
+        1714270684,
+        1544611227,
+        941048232,
+        2087772914,
+        907867291,
+        4128335230,
+        2840844480,
+        1774507957,
+        2264249920,
+        1258670090,
+        1947410483,
+        2037348156,
+        3228252038,
+        1761066031,
+        2293032587,
+        4078238904,
+        3236442710,
+        2705458281,
+        2303876801,
+        1926326119,
+        3998075151,
+        2811251186,
+        930843956,
+        1144233212,
+        3332349131,
+        97732309,
+        3849002316,
+        2915293496,
+        2810737890,
+        1149413950,
+        1535291243,
+        3360025429,
+        3421309515,
+        3433858864,
+        1712656768,
+        2497877002,
+        28081018,
+        1500134564,
+        1291223784,
+        2088311216,
+        678941823,
+        4050017251,
+        804407025,
+        3248654108,
+        3933873068,
+        4007401725,
+        2277599457,
+        1076301181,
+        2622448272,
+        3748282735,
+        1821610946,
+        817739489,
+        2234696578,
+        1210669987,
+        2701425175,
+        2214421026,
+        486743705,
+        761055154,
+        2043636369,
+        1639492383,
+        2540008982,
+        892906626,
+        3301593260,
+        2463924540,
+        2304834400,
+        2865483490,
+        4019518352,
+        3388450644,
+        2519700470,
+        2378632848,
+        3859218429,
+        41583399,
+        3551979613,
+        455310134,
+        1784672860,
+        2439363685,
+        1129068494,
+        1190855146,
+        1219423658,
+        1519984024,
+        2292587420,
+        457621073,
+        26485539,
+        44862599,
+        4036930934,
+        1752500768,
+        500049802,
+        3842075558,
+        3846522605,
+        1330514793,
+        296294288,
+        1509560985,
+        3534138747,
+        871597155,
+        3371132114,
+        3468519555,
+        3117276577,
+        771937135,
+        879279391,
+        1934008381,
+        1167355102,
+        3585722021,
+        2714912251,
+        1754911891,
+        726519327,
+        1643748675,
+        3770213438,
+        3328598245,
+        2760155758,
+        2639634685,
+        2778091809,
+        1699423094,
+        659540027,
+        2343729207,
+        2118446589,
+        74406227,
+        218555160,
+        30856212,
+        1167930465,
+        3467170840,
+        4084379716,
+        2016327892,
+        1786161279,
+        1516085301,
+        1338537268,
+        530933512,
+        3684209364,
+        2513271217,
+        1475130583,
+        4151669683,
+        1501144793,
+        1340046562,
+        2965836453,
+        1148330311,
+        417665896,
+        2097316195,
+        2645187881,
+        1399929080,
+        2659323017,
+        1490103303,
+        363804462,
+        3465020727,
+        3639391603,
+        1334768429,
+        2136970163,
+        58803944,
+        2115603995,
+        1159651724,
+        3891861745,
+        3070456198,
+        142601912,
+        3549937283,
+        1064205062,
+        1475451662,
+        1811199306,
+        3691353348,
+        2849091044,
+        3302207000,
+        4132176068,
+        989617620,
+        51194066,
+        717904882,
+        4168333670,
+        2453975333,
+        2041085414,
+        4005969440,
+        3758836276,
+        3903149919,
+        4189289922,
+        548363216,
+        973394894,
+        1839689710,
+        1896955670,
+        1636598469,
+        1933293750,
+        3097838145,
+        3857376222,
+        2039165214,
+        2629174834,
+        4288046775,
+        3240581823,
+        1710208853,
+        337962299,
+        3788182518,
+        2090635011,
+        1721836154,
+        2416252352,
+        3422851855,
+        2488421740,
+        1397862477,
+        1477292673,
+        1997234387,
+        2430055230,
+        2579580596,
+        1704015956,
+        2216497525,
+        2313035196,
+        610434450,
+        4230676740,
+        1885612770,
+        3439405078,
+        2028271374,
+        3388301479,
+        3283245152,
+        3050416026,
+        2302106739,
+        2730938597,
+        1762153169,
+        3610328820
+    },
+    MT64_N
+};
+
+static void __mt19937_64_seed(uint64_t seed) {
+    __rng64.mt[0] = seed;
+    for (int i = 1; i < MT64_N; i++) {
+        __rng64.mt[i] = 6364136223846793005ULL * (__rng64.mt[i - 1] ^ (__rng64.mt[i - 1] >> 62)) + (uint64_t) i;
+    }
+    __rng64.index = MT64_N;
+}
+
+
+// [0, 2^64 - 1]
+static inline uint64_t __mt19937_64_next() {
+    uint64_t y;
+
+    if (__rng64.index >= MT64_N) {
+        static const uint64_t mag01[2] = {0ULL, MT64_MATRIX_A};
+        uint64_t y;
+        int i;
+
+        for (i = 0; i < MT64_N - MT64_M; i++) {
+            y = (__rng64.mt[i] & MT64_UPPER_MASK) | (__rng64.mt[i + 1] & MT64_LOWER_MASK);
+            __rng64.mt[i] = __rng64.mt[i + MT64_M] ^ (y >> 1) ^ mag01[y & 1ULL];
+        }
+        for (; i < MT64_N - 1; i++) {
+            y = (__rng64.mt[i] & MT64_UPPER_MASK) | (__rng64.mt[i + 1] & MT64_LOWER_MASK);
+            __rng64.mt[i] = __rng64.mt[i + (MT64_M - MT64_N)] ^ (y >> 1) ^ mag01[y & 1ULL];
+        }
+        y = (__rng64.mt[MT64_N - 1] & MT64_UPPER_MASK) | (__rng64.mt[0] & MT64_LOWER_MASK);
+        __rng64.mt[MT64_N - 1] = __rng64.mt[MT64_M - 1] ^ (y >> 1) ^ mag01[y & 1ULL];
+
+        __rng64.index = 0;
+    }
+
+    y = __rng64.mt[__rng64.index++];
+
+    // tempering
+    y ^= (y >> 29) & 0x5555555555555555ULL;
+    y ^= (y << 17) & 0x71D67FFFEDA60000ULL;
+    y ^= (y << 37) & 0xFFF7EEE000000000ULL;
+    y ^= (y >> 43);
+
+    return y;
+}
+
+// [0, 1) uniform real
+static double __mt19937_random(void) {
+    return (double) (__mt19937_64_next() >> 11) * (1.0 / 9007199254740992.0);
+}
+
+// [lo, hi] inclusive integer range (supports negative)
+static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
+    uint64_t range = (uint64_t) (hi - lo) + 1ULL;
+    return lo + (int64_t) (__mt19937_64_next() % range);
+}
+
+typedef void (*seed_fn)(uint64_t);
+
+typedef double (*random_fn)(void);
+
+typedef int64_t (*randint_fn)(int64_t, int64_t);
+
+typedef struct {
+    random_fn random;
+    randint_fn randint;
+    seed_fn seed;
+} RANDOM;
+
+RANDOM random = {
+    __mt19937_random,
+    __mt19937_randint,
+    __mt19937_64_seed
+};
+
+#endif //OPENCSTL_MT19937_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    mt19937.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 //#include "van_emde_boas_tree.h"
 #define _1MB (1024*1024)
 #define _512KB (1024*512)
@@ -441,12 +866,12 @@ static void opencstl_exit(void) {
     logging.debug("zalloc_count: %d", zalloc_count);
 #endif
 }
-
+#ifdef OPENCSTL_TRACER
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
 static int opencstl_init(void) {
-#ifdef OPENCSTL_TRACER
+
     //size_t SZ = _512KB;
     //zalloc_vector = salloc(SZ);
     //memset(zalloc_vector, 0, SZ);
@@ -454,16 +879,18 @@ static int opencstl_init(void) {
     logging.info("opencstl_init");
 
     //htm = htm_new();
-#endif
+
+    random.seed(time(NULL));
     atexit(opencstl_exit);
     return 0;
 }
+
 #if defined(_MSC_VER)
 # pragma section(".CRT$XCU",read)
-__declspec(allocate(".CRT$XCU")) static int (*p)(void) = opencstl_init;
+__declspec(allocate(".CRT$XCU")) static int (*__p)(void) = opencstl_init;
 # pragma data_seg()
 #endif
-
+#endif
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -747,8 +1174,8 @@ typedef int size_type;
 // On Linux/macOS (GCC, Clang, TCC) the dispatch macros pass &__N (address of a local copy)
 // for each arg. So va_arg(vl, void*) returns void** -- we must dereference to get the actual value.
 #define __cstl_va_start(V,C,beg)	va_start(V,C)
-#define __cstl_va_arg_next(V)	va_arg((V),void*)
-#define __cstl_va_end(V)	va_end(V)
+#define __cstl_va_arg_next(V)	    va_arg((V),void*)
+#define __cstl_va_end(V)	        va_end(V)
 #endif
 
 //Unary Functions
@@ -807,10 +1234,9 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 (OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[cstl_error("Invalid Operation")]))   //priority queue
 
 
-
 #define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
-#define cstl_sort(container,comp)	_cstl_sort(&(container),1,comp)
 
+//#define cstl_sort(container,comp)	_cstl_sort(&(container),1,comp)
 
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -1140,10 +1566,18 @@ static void *zrealloc(void *ptr, size_t new_size) {
 #pragma warning(disable:4308)
 #pragma warning(disable:4307)
 #endif
+
+
+OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
+    if (OPENCSTL_NIDX(container, -1) > INT_MAX)
+        return 1;
+    return 0;
+}
+
 #define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zalloc(header_sz + type_size * 2,1);
+    void *block = zalloc(header_sz + type_size * 2, 1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for deque");
     }
@@ -1294,7 +1728,7 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_t n, voi
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    
+
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
@@ -1347,7 +1781,7 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    
+
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
@@ -1426,7 +1860,7 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     //size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    
+
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
@@ -2039,7 +2473,7 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
     return NULL;
 }
 
-OPENCSTL_FUNC void __cstl_list_sort(void **container, int (*cmp)(const void *, const void *)) {
+OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, const void *)) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
@@ -2071,23 +2505,19 @@ OPENCSTL_FUNC void __cstl_list_sort(void **container, int (*cmp)(const void *, c
             size_t left_count = 0;
             size_t right_count = 0;
 
-            /* left run: [left, width) */
             for (; curr != NULL && left_count < width; ++left_count) {
                 curr = (void *) OPENCSTL_NIDX(&curr, -1);
             }
 
-            /* right run starts here */
             right = curr;
 
-            /* right run: [right, width) */
             for (; curr != NULL && right_count < width; ++right_count) {
                 curr = (void *) OPENCSTL_NIDX(&curr, -1);
             }
 
-            /* next pair of runs */
+
             next_run = curr;
 
-            /* merge left/right into new list */
             while (left_count > 0 || right_count > 0) {
                 void *pick = NULL;
 
@@ -2130,6 +2560,165 @@ OPENCSTL_FUNC void __cstl_list_sort(void **container, int (*cmp)(const void *, c
         *tail = new_tail;
     }
 }
+
+
+typedef struct {
+    void *low;
+    void *high;
+} __cstl_qsort_range;
+
+OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_t n) {
+    unsigned char buf[128];
+    unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) zalloc(n, 1);
+    if (tmp == NULL) {
+        cstl_error("Failed to allocate memory for swap");
+    }
+    memcpy(tmp, a, n);
+    memcpy(a, b, n);
+    memcpy(b, tmp, n);
+    if (tmp != buf) zfree(tmp);
+}
+
+OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
+    void *slow = low;
+    void *fast = low;
+    while (fast != high) {
+        fast = (void *) OPENCSTL_NIDX(&fast, -1);
+        if (fast == high) break;
+        fast = (void *) OPENCSTL_NIDX(&fast, -1);
+        slow = (void *) OPENCSTL_NIDX(&slow, -1);
+    }
+    return slow;
+}
+
+OPENCSTL_FUNC void __cstl_list_median_of_three(void *low, void *high, size_t type_size,
+                                               int (*cmp)(const void *, const void *)) {
+    void *mid = __cstl_list_mid_node(low, high);
+    if (mid == low || mid == high) return;
+    if (cmp(low, mid) > 0) __cstl_list_swap_data(low, mid, type_size);
+    if (cmp(low, high) > 0) __cstl_list_swap_data(low, high, type_size);
+    if (cmp(mid, high) > 0) __cstl_list_swap_data(mid, high, type_size);
+    __cstl_list_swap_data(mid, high, type_size);
+}
+
+OPENCSTL_FUNC void *__cstl_list_partition(void *low, void *high, size_t type_size,
+                                          int (*cmp)(const void *, const void *)) {
+    void *i = NULL;
+    void *j = low;
+    while (j != high) {
+        if (cmp(j, high) <= 0) {
+            i = (i == NULL) ? low : (void *) OPENCSTL_NIDX(&i, -1);
+            if (i != j) {
+                __cstl_list_swap_data(i, j, type_size);
+            }
+        }
+        j = (void *) OPENCSTL_NIDX(&j, -1);
+    }
+    i = (i == NULL) ? low : (void *) OPENCSTL_NIDX(&i, -1);
+    if (i != high) {
+        __cstl_list_swap_data(i, high, type_size);
+    }
+    return i;
+}
+
+OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, const void *)) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
+    void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    (void) header_sz;
+    (void) type_size;
+    (void) type;
+    if (cmp == NULL) {
+        cstl_error("cmp could not be NULL");
+    }
+    if (*head == NULL || *tail == NULL || length < 2) {
+        return;
+    }
+    size_t stack_cap = 64;
+    __cstl_qsort_range *stack = (__cstl_qsort_range *) zalloc(sizeof(__cstl_qsort_range), stack_cap);
+    if (stack == NULL) {
+        cstl_error("Failed to allocate memory for qsort stack");
+    }
+    size_t top = 0;
+    stack[top].low = *head;
+    stack[top].high = *tail;
+    top++;
+    while (top > 0) {
+        top--;
+        void *lo = stack[top].low;
+        void *hi = stack[top].high;
+        if (lo == NULL || hi == NULL || lo == hi) {
+            continue;
+        }
+        __cstl_list_median_of_three(lo, hi, type_size, cmp);
+        void *pivot = __cstl_list_partition(lo, hi, type_size, cmp);
+        void *left_lo = NULL;
+        void *left_hi = NULL;
+        if (pivot != lo) {
+            void *pp = (void *) OPENCSTL_NIDX(&pivot, -2);
+            if (pp != NULL) {
+                left_lo = lo;
+                left_hi = pp;
+            }
+        }
+        void *right_lo = NULL;
+        void *right_hi = NULL;
+        if (pivot != hi) {
+            void *pn = (void *) OPENCSTL_NIDX(&pivot, -1);
+            if (pn != NULL) {
+                right_lo = pn;
+                right_hi = hi;
+            }
+        }
+        size_t left_cnt = 0;
+        size_t right_cnt = 0;
+        if (left_lo != NULL) {
+            void *it = left_lo;
+            while (it != left_hi) {
+                left_cnt++;
+                it = (void *) OPENCSTL_NIDX(&it, -1);
+            }
+            left_cnt++;
+        }
+        if (right_lo != NULL) {
+            void *it = right_lo;
+            while (it != right_hi) {
+                right_cnt++;
+                it = (void *) OPENCSTL_NIDX(&it, -1);
+            }
+            right_cnt++;
+        }
+        if (left_cnt >= right_cnt) {
+            if (left_lo != NULL && left_cnt >= 2) {
+                stack[top].low = left_lo;
+                stack[top].high = left_hi;
+                top++;
+            }
+            if (right_lo != NULL && right_cnt >= 2) {
+                stack[top].low = right_lo;
+                stack[top].high = right_hi;
+                top++;
+            }
+        } else {
+            if (right_lo != NULL && right_cnt >= 2) {
+                stack[top].low = right_lo;
+                stack[top].high = right_hi;
+                top++;
+            }
+            if (left_lo != NULL && left_cnt >= 2) {
+                stack[top].low = left_lo;
+                stack[top].high = left_hi;
+                top++;
+            }
+        }
+    }
+    zfree(stack);
+}
+
+
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -2359,7 +2948,7 @@ OPENCSTL_FUNC void __cstl_tree_left_rotate(void **container, void *x) {
     }
     _(y, P) = _(x, P);
     if ((void *) _(x, P) == nil) {
-        *root = y;
+        *root = (void **) y;
     } else if (x == (void *) _(_(x,P), L)) {
         _(_(x, P), L) = (size_t) y;
     } else {
@@ -2378,7 +2967,7 @@ OPENCSTL_FUNC void __cstl_tree_right_rotate(void **container, void *x) {
     }
     _(y, P) = _(x, P);
     if ((void *) _(x, P) == nil) {
-        *root = y;
+        *root = (void **) y;
     } else if (x == (void *) _(_(x, P), R)) {
         _(_(x, P), R) = (size_t) y;
     } else {
@@ -2491,7 +3080,7 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
 OPENCSTL_FUNC void __cstl_tree_transplant(void **container, void *u, void *v) {
     void ***root = (void ***) *container;
     if ((void *) _(u, P) == nil) {
-        *root = v;
+        *root = (void **) v;
     } else if (u == (void *) _(_(u, P), L)) {
         _(_(u, P), L) = (size_t) v;
     } else {
@@ -2682,7 +3271,7 @@ OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
 
     __cstl_arena_free_all(arena, freelist);
     OPENCSTL_NIDX(container, -1) = 0;
-    *root = nil;
+    *root = (void **) nil;
 }
 
 OPENCSTL_FUNC void __cstl_tree_free(void **container) {
@@ -3685,12 +4274,12 @@ OPENCSTL_FUNC void *__cstl_hashtable_empty(void **container) {
     return __cstl_hashtable_rend(container);
 }
 
-OPENCSTL_FUNC size_t __cstl_hashtable_size(void **container) {
-    return OPENCSTL_NIDX(container, -1);
+OPENCSTL_FUNC size_type __cstl_hashtable_size(void **container) {
+    return (size_type)OPENCSTL_NIDX(container, -1);
 }
 
-OPENCSTL_FUNC size_t __cstl_hashtable_capacity(void **container) {
-    return OPENCSTL_NIDX(container, -7) + 1;
+OPENCSTL_FUNC size_type __cstl_hashtable_capacity(void **container) {
+    return (size_type)OPENCSTL_NIDX(container, -7) + 1;
 }
 
 OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
@@ -3939,7 +4528,7 @@ OPENCSTL_FUNC void fill(void *container, ...) {
 
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  cstl_compare.h                 (depth 1) */
+/* BEGIN  compare.h                      (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -3984,7 +4573,7 @@ OPENCSTL_FUNC void fill(void *container, ...) {
 #include <string.h>
 typedef const void *CVP;
 
-typedef int (*CompareFunc)(CVP a, CVP b);
+typedef int (*_OpenCSTLCompareFunc)(CVP a, CVP b);
 
 #define _SAFE_COMPARE(TYPE,X,Y)  (*(TYPE *) (X) > *(TYPE *) (Y)) - (*(TYPE *) (X) < *(TYPE *) (Y))
 
@@ -4044,7 +4633,7 @@ int greater_string(CVP a, CVP b) {
     return less_string(b, a);
 }
 
-CompareFunc CSTL_LESS(const char *type_str) {
+_OpenCSTLCompareFunc CSTL_LESS(const char *type_str) {
     while (*type_str == ' ') type_str++;
 
     const char *end = type_str + strlen(type_str);
@@ -4069,7 +4658,7 @@ CompareFunc CSTL_LESS(const char *type_str) {
     return NULL;
 }
 
-CompareFunc CSTL_GREATER(const char *type_str) {
+_OpenCSTLCompareFunc CSTL_GREATER(const char *type_str) {
     while (*type_str == ' ') type_str++;
 
     const char *end = type_str + strlen(type_str);
@@ -4096,10 +4685,273 @@ CompareFunc CSTL_GREATER(const char *type_str) {
 
 #define LESS(TYPE)    CSTL_LESS(#TYPE)
 #define GREATER(TYPE) CSTL_GREATER(#TYPE)
+
+
+int _memcmp1(const void *a, const void *b) { return memcmp(a, b, 1); }
+int _memcmp2(const void *a, const void *b) { return memcmp(a, b, 2); }
+int _memcmp3(const void *a, const void *b) { return memcmp(a, b, 3); }
+int _memcmp4(const void *a, const void *b) { return memcmp(a, b, 4); }
+int _memcmp5(const void *a, const void *b) { return memcmp(a, b, 5); }
+int _memcmp6(const void *a, const void *b) { return memcmp(a, b, 6); }
+int _memcmp7(const void *a, const void *b) { return memcmp(a, b, 7); }
+int _memcmp8(const void *a, const void *b) { return memcmp(a, b, 8); }
+int _memcmp9(const void *a, const void *b) { return memcmp(a, b, 9); }
+int _memcmp10(const void *a, const void *b) { return memcmp(a, b, 10); }
+int _memcmp11(const void *a, const void *b) { return memcmp(a, b, 11); }
+int _memcmp12(const void *a, const void *b) { return memcmp(a, b, 12); }
+int _memcmp13(const void *a, const void *b) { return memcmp(a, b, 13); }
+int _memcmp14(const void *a, const void *b) { return memcmp(a, b, 14); }
+int _memcmp15(const void *a, const void *b) { return memcmp(a, b, 15); }
+int _memcmp16(const void *a, const void *b) { return memcmp(a, b, 16); }
+int _memcmp17(const void *a, const void *b) { return memcmp(a, b, 17); }
+int _memcmp18(const void *a, const void *b) { return memcmp(a, b, 18); }
+int _memcmp19(const void *a, const void *b) { return memcmp(a, b, 19); }
+int _memcmp20(const void *a, const void *b) { return memcmp(a, b, 20); }
+int _memcmp21(const void *a, const void *b) { return memcmp(a, b, 21); }
+int _memcmp22(const void *a, const void *b) { return memcmp(a, b, 22); }
+int _memcmp23(const void *a, const void *b) { return memcmp(a, b, 23); }
+int _memcmp24(const void *a, const void *b) { return memcmp(a, b, 24); }
+int _memcmp25(const void *a, const void *b) { return memcmp(a, b, 25); }
+int _memcmp26(const void *a, const void *b) { return memcmp(a, b, 26); }
+int _memcmp27(const void *a, const void *b) { return memcmp(a, b, 27); }
+int _memcmp28(const void *a, const void *b) { return memcmp(a, b, 28); }
+int _memcmp29(const void *a, const void *b) { return memcmp(a, b, 29); }
+int _memcmp30(const void *a, const void *b) { return memcmp(a, b, 30); }
+int _memcmp31(const void *a, const void *b) { return memcmp(a, b, 31); }
+int _memcmp32(const void *a, const void *b) { return memcmp(a, b, 32); }
+int _memcmp33(const void *a, const void *b) { return memcmp(a, b, 33); }
+int _memcmp34(const void *a, const void *b) { return memcmp(a, b, 34); }
+int _memcmp35(const void *a, const void *b) { return memcmp(a, b, 35); }
+int _memcmp36(const void *a, const void *b) { return memcmp(a, b, 36); }
+int _memcmp37(const void *a, const void *b) { return memcmp(a, b, 37); }
+int _memcmp38(const void *a, const void *b) { return memcmp(a, b, 38); }
+int _memcmp39(const void *a, const void *b) { return memcmp(a, b, 39); }
+int _memcmp40(const void *a, const void *b) { return memcmp(a, b, 40); }
+int _memcmp41(const void *a, const void *b) { return memcmp(a, b, 41); }
+int _memcmp42(const void *a, const void *b) { return memcmp(a, b, 42); }
+int _memcmp43(const void *a, const void *b) { return memcmp(a, b, 43); }
+int _memcmp44(const void *a, const void *b) { return memcmp(a, b, 44); }
+int _memcmp45(const void *a, const void *b) { return memcmp(a, b, 45); }
+int _memcmp46(const void *a, const void *b) { return memcmp(a, b, 46); }
+int _memcmp47(const void *a, const void *b) { return memcmp(a, b, 47); }
+int _memcmp48(const void *a, const void *b) { return memcmp(a, b, 48); }
+int _memcmp49(const void *a, const void *b) { return memcmp(a, b, 49); }
+int _memcmp50(const void *a, const void *b) { return memcmp(a, b, 50); }
+int _memcmp51(const void *a, const void *b) { return memcmp(a, b, 51); }
+int _memcmp52(const void *a, const void *b) { return memcmp(a, b, 52); }
+int _memcmp53(const void *a, const void *b) { return memcmp(a, b, 53); }
+int _memcmp54(const void *a, const void *b) { return memcmp(a, b, 54); }
+int _memcmp55(const void *a, const void *b) { return memcmp(a, b, 55); }
+int _memcmp56(const void *a, const void *b) { return memcmp(a, b, 56); }
+int _memcmp57(const void *a, const void *b) { return memcmp(a, b, 57); }
+int _memcmp58(const void *a, const void *b) { return memcmp(a, b, 58); }
+int _memcmp59(const void *a, const void *b) { return memcmp(a, b, 59); }
+int _memcmp60(const void *a, const void *b) { return memcmp(a, b, 60); }
+int _memcmp61(const void *a, const void *b) { return memcmp(a, b, 61); }
+int _memcmp62(const void *a, const void *b) { return memcmp(a, b, 62); }
+int _memcmp63(const void *a, const void *b) { return memcmp(a, b, 63); }
+int _memcmp64(const void *a, const void *b) { return memcmp(a, b, 64); }
+int _memcmp65(const void *a, const void *b) { return memcmp(a, b, 65); }
+int _memcmp66(const void *a, const void *b) { return memcmp(a, b, 66); }
+int _memcmp67(const void *a, const void *b) { return memcmp(a, b, 67); }
+int _memcmp68(const void *a, const void *b) { return memcmp(a, b, 68); }
+int _memcmp69(const void *a, const void *b) { return memcmp(a, b, 69); }
+int _memcmp70(const void *a, const void *b) { return memcmp(a, b, 70); }
+int _memcmp71(const void *a, const void *b) { return memcmp(a, b, 71); }
+int _memcmp72(const void *a, const void *b) { return memcmp(a, b, 72); }
+int _memcmp73(const void *a, const void *b) { return memcmp(a, b, 73); }
+int _memcmp74(const void *a, const void *b) { return memcmp(a, b, 74); }
+int _memcmp75(const void *a, const void *b) { return memcmp(a, b, 75); }
+int _memcmp76(const void *a, const void *b) { return memcmp(a, b, 76); }
+int _memcmp77(const void *a, const void *b) { return memcmp(a, b, 77); }
+int _memcmp78(const void *a, const void *b) { return memcmp(a, b, 78); }
+int _memcmp79(const void *a, const void *b) { return memcmp(a, b, 79); }
+int _memcmp80(const void *a, const void *b) { return memcmp(a, b, 80); }
+int _memcmp81(const void *a, const void *b) { return memcmp(a, b, 81); }
+int _memcmp82(const void *a, const void *b) { return memcmp(a, b, 82); }
+int _memcmp83(const void *a, const void *b) { return memcmp(a, b, 83); }
+int _memcmp84(const void *a, const void *b) { return memcmp(a, b, 84); }
+int _memcmp85(const void *a, const void *b) { return memcmp(a, b, 85); }
+int _memcmp86(const void *a, const void *b) { return memcmp(a, b, 86); }
+int _memcmp87(const void *a, const void *b) { return memcmp(a, b, 87); }
+int _memcmp88(const void *a, const void *b) { return memcmp(a, b, 88); }
+int _memcmp89(const void *a, const void *b) { return memcmp(a, b, 89); }
+int _memcmp90(const void *a, const void *b) { return memcmp(a, b, 90); }
+int _memcmp91(const void *a, const void *b) { return memcmp(a, b, 91); }
+int _memcmp92(const void *a, const void *b) { return memcmp(a, b, 92); }
+int _memcmp93(const void *a, const void *b) { return memcmp(a, b, 93); }
+int _memcmp94(const void *a, const void *b) { return memcmp(a, b, 94); }
+int _memcmp95(const void *a, const void *b) { return memcmp(a, b, 95); }
+int _memcmp96(const void *a, const void *b) { return memcmp(a, b, 96); }
+int _memcmp97(const void *a, const void *b) { return memcmp(a, b, 97); }
+int _memcmp98(const void *a, const void *b) { return memcmp(a, b, 98); }
+int _memcmp99(const void *a, const void *b) { return memcmp(a, b, 99); }
+int _memcmp100(const void *a, const void *b) { return memcmp(a, b, 100); }
+int _memcmp101(const void *a, const void *b) { return memcmp(a, b, 101); }
+int _memcmp102(const void *a, const void *b) { return memcmp(a, b, 102); }
+int _memcmp103(const void *a, const void *b) { return memcmp(a, b, 103); }
+int _memcmp104(const void *a, const void *b) { return memcmp(a, b, 104); }
+int _memcmp105(const void *a, const void *b) { return memcmp(a, b, 105); }
+int _memcmp106(const void *a, const void *b) { return memcmp(a, b, 106); }
+int _memcmp107(const void *a, const void *b) { return memcmp(a, b, 107); }
+int _memcmp108(const void *a, const void *b) { return memcmp(a, b, 108); }
+int _memcmp109(const void *a, const void *b) { return memcmp(a, b, 109); }
+int _memcmp110(const void *a, const void *b) { return memcmp(a, b, 110); }
+int _memcmp111(const void *a, const void *b) { return memcmp(a, b, 111); }
+int _memcmp112(const void *a, const void *b) { return memcmp(a, b, 112); }
+int _memcmp113(const void *a, const void *b) { return memcmp(a, b, 113); }
+int _memcmp114(const void *a, const void *b) { return memcmp(a, b, 114); }
+int _memcmp115(const void *a, const void *b) { return memcmp(a, b, 115); }
+int _memcmp116(const void *a, const void *b) { return memcmp(a, b, 116); }
+int _memcmp117(const void *a, const void *b) { return memcmp(a, b, 117); }
+int _memcmp118(const void *a, const void *b) { return memcmp(a, b, 118); }
+int _memcmp119(const void *a, const void *b) { return memcmp(a, b, 119); }
+int _memcmp120(const void *a, const void *b) { return memcmp(a, b, 120); }
+int _memcmp121(const void *a, const void *b) { return memcmp(a, b, 121); }
+int _memcmp122(const void *a, const void *b) { return memcmp(a, b, 122); }
+int _memcmp123(const void *a, const void *b) { return memcmp(a, b, 123); }
+int _memcmp124(const void *a, const void *b) { return memcmp(a, b, 124); }
+int _memcmp125(const void *a, const void *b) { return memcmp(a, b, 125); }
+int _memcmp126(const void *a, const void *b) { return memcmp(a, b, 126); }
+int _memcmp127(const void *a, const void *b) { return memcmp(a, b, 127); }
+int _memcmp128(const void *a, const void *b) { return memcmp(a, b, 128); }
+_OpenCSTLCompareFunc _memcmp_funcs[128 + 1] = {
+    NULL,
+    _memcmp1,
+    _memcmp2,
+    _memcmp3,
+    _memcmp4,
+    _memcmp5,
+    _memcmp6,
+    _memcmp7,
+    _memcmp8,
+    _memcmp9,
+    _memcmp10,
+    _memcmp11,
+    _memcmp12,
+    _memcmp13,
+    _memcmp14,
+    _memcmp15,
+    _memcmp16,
+    _memcmp17,
+    _memcmp18,
+    _memcmp19,
+    _memcmp20,
+    _memcmp21,
+    _memcmp22,
+    _memcmp23,
+    _memcmp24,
+    _memcmp25,
+    _memcmp26,
+    _memcmp27,
+    _memcmp28,
+    _memcmp29,
+    _memcmp30,
+    _memcmp31,
+    _memcmp32,
+    _memcmp33,
+    _memcmp34,
+    _memcmp35,
+    _memcmp36,
+    _memcmp37,
+    _memcmp38,
+    _memcmp39,
+    _memcmp40,
+    _memcmp41,
+    _memcmp42,
+    _memcmp43,
+    _memcmp44,
+    _memcmp45,
+    _memcmp46,
+    _memcmp47,
+    _memcmp48,
+    _memcmp49,
+    _memcmp50,
+    _memcmp51,
+    _memcmp52,
+    _memcmp53,
+    _memcmp54,
+    _memcmp55,
+    _memcmp56,
+    _memcmp57,
+    _memcmp58,
+    _memcmp59,
+    _memcmp60,
+    _memcmp61,
+    _memcmp62,
+    _memcmp63,
+    _memcmp64,
+    _memcmp65,
+    _memcmp66,
+    _memcmp67,
+    _memcmp68,
+    _memcmp69,
+    _memcmp70,
+    _memcmp71,
+    _memcmp72,
+    _memcmp73,
+    _memcmp74,
+    _memcmp75,
+    _memcmp76,
+    _memcmp77,
+    _memcmp78,
+    _memcmp79,
+    _memcmp80,
+    _memcmp81,
+    _memcmp82,
+    _memcmp83,
+    _memcmp84,
+    _memcmp85,
+    _memcmp86,
+    _memcmp87,
+    _memcmp88,
+    _memcmp89,
+    _memcmp90,
+    _memcmp91,
+    _memcmp92,
+    _memcmp93,
+    _memcmp94,
+    _memcmp95,
+    _memcmp96,
+    _memcmp97,
+    _memcmp98,
+    _memcmp99,
+    _memcmp100,
+    _memcmp101,
+    _memcmp102,
+    _memcmp103,
+    _memcmp104,
+    _memcmp105,
+    _memcmp106,
+    _memcmp107,
+    _memcmp108,
+    _memcmp109,
+    _memcmp110,
+    _memcmp111,
+    _memcmp112,
+    _memcmp113,
+    _memcmp114,
+    _memcmp115,
+    _memcmp116,
+    _memcmp117,
+    _memcmp118,
+    _memcmp119,
+    _memcmp120,
+    _memcmp121,
+    _memcmp122,
+    _memcmp123,
+    _memcmp124,
+    _memcmp125,
+    _memcmp126,
+    _memcmp127,
+    _memcmp128,
+};
+
+
 #endif //OPENCSTL_COMPARE_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* END    cstl_compare.h */
+/* END    compare.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -4182,6 +5034,7 @@ static unsigned long long cstl_rand64(void) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    random.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+/* [already included: mt19937.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  chrono.h                       (depth 1) */
@@ -5329,43 +6182,236 @@ void pdqsort(void *__base, size_t __nel, size_t __width,
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    pdqsort.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+/* [already included: deque.h] */
+/* [already included: list.h] */
+/* [already included: defines.h] */
 
-
+/* [already included: compare.h] */
 #if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_CLANG)
-#define stable_sort msort
-#define sort pdqsort
+#define cstl_stable_sort msort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_GCC)
-#define stable_sort tsort
-#define sort pdqsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
-#define stable_sort tsort
-#define sort qsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort qsort
 
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_CLANG)
-#define stable_sort msort
-#define sort pdqsort
+#define cstl_stable_sort msort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_GCC)
-#define stable_sort tsort
-#define sort pdqsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_TCC)
-#define stable_sort tsort
-#define sort qsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort qsort
 
 
 #elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_CLANG)
-#define stable_sort tsort
-#define sort pdqsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_GCC)
-#define stable_sort tsort
-#define sort pdqsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_TCC)
-#define stable_sort tsort
-#define sort pdqsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_MSVC)
-#define stable_sort tsort
-#define sort pdqsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_NVCC)
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
 #endif
 
+#if !defined(cstl_stable_sort)
+#define cstl_stable_sort tsort
+#endif
+#if !defined(cstl_unstable_sort)
+#define cstl_unstable_sort pdqsort
+#endif
+
+// ██╗░░░██╗███╗░░██╗░██████╗████████╗░█████╗░██████╗░██╗░░░░░███████╗░░░░░░░██████╗░█████╗░██████╗░████████╗
+// ██║░░░██║████╗░██║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝
+// ██║░░░██║██╔██╗██║╚█████╗░░░░██║░░░███████║██████╦╝██║░░░░░█████╗░░░░░░░░╚█████╗░██║░░██║██████╔╝░░░██║░░░
+// ██║░░░██║██║╚████║░╚═══██╗░░░██║░░░██╔══██║██╔══██╗██║░░░░░██╔══╝░░░░░░░░░╚═══██╗██║░░██║██╔══██╗░░░██║░░░
+// ╚██████╔╝██║░╚███║██████╔╝░░░██║░░░██║░░██║██████╦╝███████╗███████╗█████╗██████╔╝╚█████╔╝██║░░██║░░░██║░░░
+// ░╚═════╝░╚═╝░░╚══╝╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝╚═════╝░╚══════╝╚══════╝╚════╝╚═════╝░░╚════╝░╚═╝░░╚═╝░░░╚═╝░░░
+
+#define _cstl_sort_func(CONTAINER,...) _CSTL_SORT_DISPATCH(CONTAINER, ##__VA_ARGS__, NULL)
+#define _CSTL_SORT_DISPATCH(CONTAINER, FUNC, ...) _cstl_sort(CONTAINER, (void*)(FUNC))
+OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
+    size_t container_type;
+    ptrdiff_t distance = 0;
+    if (__is_deque((void **) &container)) {
+        distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
+    }
+
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            size_t type_size = (size_t) OPENCSTL_NIDX(&container, NIDX_TSIZE);
+            char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
+            size_t length = (size_t) OPENCSTL_NIDX(&container, -1);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            cstl_unstable_sort(container, length, type_size, cmp);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            size_t type_size = (size_t) OPENCSTL_NIDX(&container, NIDX_TSIZE);
+            char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            __cstl_list_qsort(&container, cmp);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            size_t type_size = *(size_t *) ((char *) *(void **) &container + NIDX_TSIZE * sizeof(size_t) + distance);
+            size_t length = *(size_t *) ((char *) *(void **) &container + -2 * sizeof(size_t) + distance);
+            char *type_name = (char *) *(size_t *) ((char *) *(void **) &container + -4 * sizeof(size_t) + distance);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            cstl_unstable_sort(container, length, type_size, cmp);
+        }
+        break;
+        default: {
+            cstl_error("Invalid Operation");
+        }
+        break;
+    }
+}
+
+// ░██████╗████████╗░█████╗░██████╗░██╗░░░░░███████╗░░░░░░░██████╗░█████╗░██████╗░████████╗
+// ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝
+// ╚█████╗░░░░██║░░░███████║██████╦╝██║░░░░░█████╗░░░░░░░░╚█████╗░██║░░██║██████╔╝░░░██║░░░
+// ░╚═══██╗░░░██║░░░██╔══██║██╔══██╗██║░░░░░██╔══╝░░░░░░░░░╚═══██╗██║░░██║██╔══██╗░░░██║░░░
+// ██████╔╝░░░██║░░░██║░░██║██████╦╝███████╗███████╗█████╗██████╔╝╚█████╔╝██║░░██║░░░██║░░░
+// ╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝╚═════╝░╚══════╝╚══════╝╚════╝╚═════╝░░╚════╝░╚═╝░░╚═╝░░░╚═╝░░░
+#define _cstl_stable_sort_func(CONTAINER,...) _CSTL_STABLE_SORT_DISPATCH(CONTAINER, ##__VA_ARGS__, NULL)
+#define _CSTL_STABLE_SORT_DISPATCH(CONTAINER, FUNC, ...) _cstl_stable_sort(CONTAINER, (void*)(FUNC))
+OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
+    size_t container_type;
+    ptrdiff_t distance = 0;
+    if (__is_deque((void **) &container)) {
+        distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
+    }
+
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            size_t type_size = (size_t) OPENCSTL_NIDX(&container, NIDX_TSIZE);
+            char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
+            size_t length = (size_t) OPENCSTL_NIDX(&container, -1);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            cstl_stable_sort(container, length, type_size, cmp);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            size_t type_size = (size_t) OPENCSTL_NIDX(&container, NIDX_TSIZE);
+            char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            __cstl_list_msort(&container, cmp);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            size_t type_size = *(size_t *) ((char *) *(void **) &container + NIDX_TSIZE * sizeof(size_t) + distance);
+            size_t length = *(size_t *) ((char *) *(void **) &container + -2 * sizeof(size_t) + distance);
+            char *type_name = (char *) *(size_t *) ((char *) *(void **) &container + -4 * sizeof(size_t) + distance);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            cstl_stable_sort(container, length, type_size, cmp);
+        }
+        break;
+        default: {
+            cstl_error("Invalid Operation");
+        }
+        break;
+    }
+}
+
+#if defined(USE_CSTL_FUNC)
+#define sort _cstl_sort_func
+#define stable_sort _cstl_stable_sort_func
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+#define cstl_sort(container,...)	_cstl_sort(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_stable_sort_def(container,...)	_cstl_stable_sort(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#elif defined(__linux__) || defined(__APPLE__)
+
+// TCC supports typeof but not __auto_type; GCC/Clang support both.
+#if defined(__TINYC__)
+#define _CSTL_TYPEOF(x) typeof(x)
+#else
+#define _CSTL_TYPEOF(x) __auto_type
+#endif
+
+#define cstl_sort(C,...) _linux_cstl_sort(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_sort(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_sort ## _ ## N
+#define _cstl_sort_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_sort( __0,argc);}
+#define _cstl_sort_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_sort( __0,argc,&__1);}
+#define _cstl_sort_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_sort( __0,argc,&__1,&__2);}
+#define _cstl_sort_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_sort( __0,argc,&__1,&__2,&__3);}
+#define _cstl_sort_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_sort_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_sort_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_sort_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_sort_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_sort_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_sort_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_stable_sort(C,...) _linux_cstl_stable_sort(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_stable_sort(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_stable_sort ## _ ## N
+#define _cstl_stable_sort_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_stable_sort( __0,argc);}
+#define _cstl_stable_sort_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_stable_sort( __0,argc,&__1);}
+#define _cstl_stable_sort_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_stable_sort( __0,argc,&__1,&__2);}
+#define _cstl_stable_sort_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_stable_sort( __0,argc,&__1,&__2,&__3);}
+#define _cstl_stable_sort_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_stable_sort_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_stable_sort_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_stable_sort_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_stable_sort_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_stable_sort_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_stable_sort_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+
+#endif
 
 #endif
 
@@ -5495,11 +6541,6 @@ char *opencstl_env(void) {
 #define second(IT, TYPE)            ((TYPE)cstl_value(IT, TYPE))
 #endif
 
-OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
-    if (OPENCSTL_NIDX(container, -1) > INT_MAX)
-        return 1;
-    return 0;
-}
 
 OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
     // if (htm == NULL) {
@@ -5764,7 +6805,7 @@ OPENCSTL_FUNC size_type _cstl_size(void *container) {
         break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
-            return __cstl_hashtable_size((void **) container);
+            sz = __cstl_hashtable_size((void **) container);
         }
         break;
         default: cstl_error("Invalid operation");
@@ -5773,7 +6814,7 @@ OPENCSTL_FUNC size_type _cstl_size(void *container) {
     return sz;
 }
 
-OPENCSTL_FUNC size_t _cstl_capacity(void *container) {
+OPENCSTL_FUNC size_type _cstl_capacity(void *container) {
     size_t container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -5796,7 +6837,7 @@ OPENCSTL_FUNC size_t _cstl_capacity(void *container) {
         break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
-            return __cstl_hashtable_capacity((void **) container);
+            sz = __cstl_hashtable_capacity((void **) container);
         }
         break;
         default: cstl_error("Invalid operation");
@@ -5902,8 +6943,8 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
         }
         break;
         case OPENCSTL_LIST: {
-            if (argc == 2)__cstl_list_insert((void **) container, param1, 1, param2);
-            else __cstl_list_insert((void **) container, param1, *(int *) param2, param3);
+            if (argc == 2)__cstl_list_insert((void **) container, (void **) param1, 1, param2);
+            else __cstl_list_insert((void **) container, (void **) param1, *(int *) param2, param3);
         }
         break;
         case OPENCSTL_DEQUE: {
@@ -5973,8 +7014,8 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
         case OPENCSTL_LIST: {
             if (argc == 1) {
                 param2 = cstl_next(*(void**)param1);
-                __cstl_list_erase((void **) container, param1, &param2);
-            } else __cstl_list_erase((void **) container, param1, param2);
+                __cstl_list_erase((void **) container, (void **) param1, (void **) &param2);
+            } else __cstl_list_erase((void **) container, (void **) param1, (void **) param2);
         }
         break;
         case OPENCSTL_DEQUE: {
@@ -5988,7 +7029,7 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
         break;
         case OPENCSTL_MAP:
         case OPENCSTL_SET: {
-            __cstl_tree_erase((void **) container, *(void **) param1);
+            __cstl_tree_erase((void **) container, (void **) *(void **) param1);
         }
         break;
         case OPENCSTL_UNORDERED_SET:
@@ -6345,7 +7386,7 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
             if (argc == 1)
                 return __cstl_list_find((void **) container, (void **) &OPENCSTL_NIDX((void**)container, 0),
                                         param1);
-            else return __cstl_list_find((void **) container, param1, param2);
+            else return __cstl_list_find((void **) container, (void **) param1, param2);
         }
         break;
         case OPENCSTL_DEQUE: {
@@ -6412,7 +7453,7 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
 }
 
 
-OPENCSTL_FUNC void _cstl_sort(void *container, int argc, ...) {
+OPENCSTL_FUNC void ___cstl_sort(void *container, int argc, ...) {
     va_list vl;
     void *va_ptr = NULL;
     __cstl_va_start(vl, argc, va_ptr);
@@ -6436,9 +7477,9 @@ OPENCSTL_FUNC void _cstl_sort(void *container, int argc, ...) {
         case OPENCSTL_LIST: {
             if (argc == 1) {
 #if CSTL_USE_VAARG
-                __cstl_list_sort((void **) container, param1);
+                __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) param1);
 #else
-                __cstl_list_sort((void **) container, *(void **) param1);
+                __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) *(void **) param1);
 #endif
             }
         }

@@ -280,7 +280,7 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
     return NULL;
 }
 
-OPENCSTL_FUNC void __cstl_list_sort(void **container, int (*cmp)(const void *, const void *)) {
+OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, const void *)) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
@@ -312,23 +312,19 @@ OPENCSTL_FUNC void __cstl_list_sort(void **container, int (*cmp)(const void *, c
             size_t left_count = 0;
             size_t right_count = 0;
 
-            /* left run: [left, width) */
             for (; curr != NULL && left_count < width; ++left_count) {
                 curr = (void *) OPENCSTL_NIDX(&curr, -1);
             }
 
-            /* right run starts here */
             right = curr;
 
-            /* right run: [right, width) */
             for (; curr != NULL && right_count < width; ++right_count) {
                 curr = (void *) OPENCSTL_NIDX(&curr, -1);
             }
 
-            /* next pair of runs */
+
             next_run = curr;
 
-            /* merge left/right into new list */
             while (left_count > 0 || right_count > 0) {
                 void *pick = NULL;
 
@@ -371,4 +367,164 @@ OPENCSTL_FUNC void __cstl_list_sort(void **container, int (*cmp)(const void *, c
         *tail = new_tail;
     }
 }
+
+
+typedef struct {
+    void *low;
+    void *high;
+} __cstl_qsort_range;
+
+OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_t n) {
+    unsigned char buf[128];
+    unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) zalloc(n, 1);
+    if (tmp == NULL) {
+        cstl_error("Failed to allocate memory for swap");
+    }
+    memcpy(tmp, a, n);
+    memcpy(a, b, n);
+    memcpy(b, tmp, n);
+    if (tmp != buf)
+        zfree(tmp);
+}
+
+OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
+    void *slow = low;
+    void *fast = low;
+    while (fast != high) {
+        fast = (void *) OPENCSTL_NIDX(&fast, -1);
+        if (fast == high) break;
+        fast = (void *) OPENCSTL_NIDX(&fast, -1);
+        slow = (void *) OPENCSTL_NIDX(&slow, -1);
+    }
+    return slow;
+}
+
+OPENCSTL_FUNC void __cstl_list_median_of_three(void *low, void *high, size_t type_size,
+                                               int (*cmp)(const void *, const void *)) {
+    void *mid = __cstl_list_mid_node(low, high);
+    if (mid == low || mid == high) return;
+    if (cmp(low, mid) > 0) __cstl_list_swap_data(low, mid, type_size);
+    if (cmp(low, high) > 0) __cstl_list_swap_data(low, high, type_size);
+    if (cmp(mid, high) > 0) __cstl_list_swap_data(mid, high, type_size);
+    __cstl_list_swap_data(mid, high, type_size);
+}
+
+OPENCSTL_FUNC void *__cstl_list_partition(void *low, void *high, size_t type_size,
+                                          int (*cmp)(const void *, const void *)) {
+    void *i = NULL;
+    void *j = low;
+    while (j != high) {
+        if (cmp(j, high) <= 0) {
+            i = (i == NULL) ? low : (void *) OPENCSTL_NIDX(&i, -1);
+            if (i != j) {
+                __cstl_list_swap_data(i, j, type_size);
+            }
+        }
+        j = (void *) OPENCSTL_NIDX(&j, -1);
+    }
+    i = (i == NULL) ? low : (void *) OPENCSTL_NIDX(&i, -1);
+    if (i != high) {
+        __cstl_list_swap_data(i, high, type_size);
+    }
+    return i;
+}
+
+OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, const void *)) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
+    void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    (void) header_sz;
+    (void) type_size;
+    (void) type;
+    if (cmp == NULL) {
+        cstl_error("cmp could not be NULL");
+    }
+    if (*head == NULL || *tail == NULL || length < 2) {
+        return;
+    }
+    size_t stack_cap = 64;
+    __cstl_qsort_range *stack = (__cstl_qsort_range *) zalloc(sizeof(__cstl_qsort_range), stack_cap);
+    if (stack == NULL) {
+        cstl_error("Failed to allocate memory for qsort stack");
+    }
+    size_t top = 0;
+    stack[top].low = *head;
+    stack[top].high = *tail;
+    top++;
+    while (top > 0) {
+        top--;
+        void *lo = stack[top].low;
+        void *hi = stack[top].high;
+        if (lo == NULL || hi == NULL || lo == hi) {
+            continue;
+        }
+        __cstl_list_median_of_three(lo, hi, type_size, cmp);
+        void *pivot = __cstl_list_partition(lo, hi, type_size, cmp);
+        void *left_lo = NULL;
+        void *left_hi = NULL;
+        if (pivot != lo) {
+            void *pp = (void *) OPENCSTL_NIDX(&pivot, -2);
+            if (pp != NULL) {
+                left_lo = lo;
+                left_hi = pp;
+            }
+        }
+        void *right_lo = NULL;
+        void *right_hi = NULL;
+        if (pivot != hi) {
+            void *pn = (void *) OPENCSTL_NIDX(&pivot, -1);
+            if (pn != NULL) {
+                right_lo = pn;
+                right_hi = hi;
+            }
+        }
+        size_t left_cnt = 0;
+        size_t right_cnt = 0;
+        if (left_lo != NULL) {
+            void *it = left_lo;
+            while (it != left_hi) {
+                left_cnt++;
+                it = (void *) OPENCSTL_NIDX(&it, -1);
+            }
+            left_cnt++;
+        }
+        if (right_lo != NULL) {
+            void *it = right_lo;
+            while (it != right_hi) {
+                right_cnt++;
+                it = (void *) OPENCSTL_NIDX(&it, -1);
+            }
+            right_cnt++;
+        }
+        if (left_cnt >= right_cnt) {
+            if (left_lo != NULL && left_cnt >= 2) {
+                stack[top].low = left_lo;
+                stack[top].high = left_hi;
+                top++;
+            }
+            if (right_lo != NULL && right_cnt >= 2) {
+                stack[top].low = right_lo;
+                stack[top].high = right_hi;
+                top++;
+            }
+        } else {
+            if (right_lo != NULL && right_cnt >= 2) {
+                stack[top].low = right_lo;
+                stack[top].high = right_hi;
+                top++;
+            }
+            if (left_lo != NULL && left_cnt >= 2) {
+                stack[top].low = left_lo;
+                stack[top].high = left_hi;
+                top++;
+            }
+        }
+    }
+    zfree(stack);
+}
+
+
 #endif

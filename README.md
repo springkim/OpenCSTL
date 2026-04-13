@@ -98,7 +98,11 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
 
 ### Containers library
 
-컨테이너 라이브러리는 C++ STL의 컨테이너와 동일합니다.
+컨테이너 라이브러리는 모든 타입을 사용할 수 있는 Generic 컨테이너 입니다.C++의 STL과 동일한 인터페이스로 구현하였으며 주로 사용하는 자료구조와 알고리즘들이 구현되어 있습니다.
+
+* Sequence containers
+* Associative containers
+* Unordered associative containers
 
 
 
@@ -201,7 +205,9 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
       VER(version.h) --> OCSTL(opencstl.h)
       FS(fstream.h) --> OCSTL(opencstl.h)
       ALGO(algorithm.h) --> OCSTL(opencstl.h)
-      WATCH(watch.h) --> OCSTL(opencstl.h)
+      WATCH(chrono.h) --> OCSTL(opencstl.h)
+      L(logging.h) --> OCSTL(opencstl.h)
+      MT(mt19937.h) --> OCSTL(opencstl.h)
 ```
 
 

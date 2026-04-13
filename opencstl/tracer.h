@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "logging.h"
+#include "mt19937.h"
 //#include "van_emde_boas_tree.h"
 #define _1MB (1024*1024)
 #define _512KB (1024*512)
@@ -44,12 +45,12 @@ static void opencstl_exit(void) {
     logging.debug("zalloc_count: %d", zalloc_count);
 #endif
 }
-
+#ifdef OPENCSTL_TRACER
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
 static int opencstl_init(void) {
-#ifdef OPENCSTL_TRACER
+
     //size_t SZ = _512KB;
     //zalloc_vector = salloc(SZ);
     //memset(zalloc_vector, 0, SZ);
@@ -57,14 +58,16 @@ static int opencstl_init(void) {
     logging.info("opencstl_init");
 
     //htm = htm_new();
-#endif
+
+    random.seed(time(NULL));
     atexit(opencstl_exit);
     return 0;
 }
+
 #if defined(_MSC_VER)
 # pragma section(".CRT$XCU",read)
-__declspec(allocate(".CRT$XCU")) static int (*p)(void) = opencstl_init;
+__declspec(allocate(".CRT$XCU")) static int (*__p)(void) = opencstl_init;
 # pragma data_seg()
 #endif
-
+#endif
 #endif

@@ -43,42 +43,235 @@
 #include "msort.h"
 #include "tsort.h"
 #include "pdqsort.h"
+#include "deque.h"
+#include "list.h"
+#include "defines.h"
 
-
+#include "compare.h"
 #if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_CLANG)
-#define stable_sort msort
-#define sort pdqsort
+#define cstl_stable_sort msort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_GCC)
-#define stable_sort tsort
-#define sort pdqsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
-#define stable_sort tsort
-#define sort qsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort qsort
 
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_CLANG)
-#define stable_sort msort
-#define sort pdqsort
+#define cstl_stable_sort msort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_GCC)
-#define stable_sort tsort
-#define sort pdqsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_TCC)
-#define stable_sort tsort
-#define sort qsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort qsort
 
 
 #elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_CLANG)
-#define stable_sort tsort
-#define sort pdqsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_GCC)
-#define stable_sort tsort
-#define sort pdqsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_TCC)
-#define stable_sort tsort
-#define sort pdqsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
 #elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_MSVC)
-#define stable_sort tsort
-#define sort pdqsort
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_NVCC)
+#define cstl_stable_sort tsort
+#define cstl_unstable_sort pdqsort
 #endif
 
+#if !defined(cstl_stable_sort)
+#define cstl_stable_sort tsort
+#endif
+#if !defined(cstl_unstable_sort)
+#define cstl_unstable_sort pdqsort
+#endif
+
+// ██╗░░░██╗███╗░░██╗░██████╗████████╗░█████╗░██████╗░██╗░░░░░███████╗░░░░░░░██████╗░█████╗░██████╗░████████╗
+// ██║░░░██║████╗░██║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝
+// ██║░░░██║██╔██╗██║╚█████╗░░░░██║░░░███████║██████╦╝██║░░░░░█████╗░░░░░░░░╚█████╗░██║░░██║██████╔╝░░░██║░░░
+// ██║░░░██║██║╚████║░╚═══██╗░░░██║░░░██╔══██║██╔══██╗██║░░░░░██╔══╝░░░░░░░░░╚═══██╗██║░░██║██╔══██╗░░░██║░░░
+// ╚██████╔╝██║░╚███║██████╔╝░░░██║░░░██║░░██║██████╦╝███████╗███████╗█████╗██████╔╝╚█████╔╝██║░░██║░░░██║░░░
+// ░╚═════╝░╚═╝░░╚══╝╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝╚═════╝░╚══════╝╚══════╝╚════╝╚═════╝░░╚════╝░╚═╝░░╚═╝░░░╚═╝░░░
+
+#define _cstl_sort_func(CONTAINER,...) _CSTL_SORT_DISPATCH(CONTAINER, ##__VA_ARGS__, NULL)
+#define _CSTL_SORT_DISPATCH(CONTAINER, FUNC, ...) _cstl_sort(CONTAINER, (void*)(FUNC))
+OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
+    size_t container_type;
+    ptrdiff_t distance = 0;
+    if (__is_deque((void **) &container)) {
+        distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
+    }
+
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            size_t type_size = (size_t) OPENCSTL_NIDX(&container, NIDX_TSIZE);
+            char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
+            size_t length = (size_t) OPENCSTL_NIDX(&container, -1);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            cstl_unstable_sort(container, length, type_size, cmp);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            size_t type_size = (size_t) OPENCSTL_NIDX(&container, NIDX_TSIZE);
+            char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            __cstl_list_qsort(&container, cmp);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            size_t type_size = *(size_t *) ((char *) *(void **) &container + NIDX_TSIZE * sizeof(size_t) + distance);
+            size_t length = *(size_t *) ((char *) *(void **) &container + -2 * sizeof(size_t) + distance);
+            char *type_name = (char *) *(size_t *) ((char *) *(void **) &container + -4 * sizeof(size_t) + distance);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            cstl_unstable_sort(container, length, type_size, cmp);
+        }
+        break;
+        default: {
+            cstl_error("Invalid Operation");
+        }
+        break;
+    }
+}
+
+// ░██████╗████████╗░█████╗░██████╗░██╗░░░░░███████╗░░░░░░░██████╗░█████╗░██████╗░████████╗
+// ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝
+// ╚█████╗░░░░██║░░░███████║██████╦╝██║░░░░░█████╗░░░░░░░░╚█████╗░██║░░██║██████╔╝░░░██║░░░
+// ░╚═══██╗░░░██║░░░██╔══██║██╔══██╗██║░░░░░██╔══╝░░░░░░░░░╚═══██╗██║░░██║██╔══██╗░░░██║░░░
+// ██████╔╝░░░██║░░░██║░░██║██████╦╝███████╗███████╗█████╗██████╔╝╚█████╔╝██║░░██║░░░██║░░░
+// ╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝╚═════╝░╚══════╝╚══════╝╚════╝╚═════╝░░╚════╝░╚═╝░░╚═╝░░░╚═╝░░░
+#define _cstl_stable_sort_func(CONTAINER,...) _CSTL_STABLE_SORT_DISPATCH(CONTAINER, ##__VA_ARGS__, NULL)
+#define _CSTL_STABLE_SORT_DISPATCH(CONTAINER, FUNC, ...) _cstl_stable_sort(CONTAINER, (void*)(FUNC))
+OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
+    size_t container_type;
+    ptrdiff_t distance = 0;
+    if (__is_deque((void **) &container)) {
+        distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
+    }
+
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            size_t type_size = (size_t) OPENCSTL_NIDX(&container, NIDX_TSIZE);
+            char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
+            size_t length = (size_t) OPENCSTL_NIDX(&container, -1);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            cstl_stable_sort(container, length, type_size, cmp);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            size_t type_size = (size_t) OPENCSTL_NIDX(&container, NIDX_TSIZE);
+            char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            __cstl_list_msort(&container, cmp);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            size_t type_size = *(size_t *) ((char *) *(void **) &container + NIDX_TSIZE * sizeof(size_t) + distance);
+            size_t length = *(size_t *) ((char *) *(void **) &container + -2 * sizeof(size_t) + distance);
+            char *type_name = (char *) *(size_t *) ((char *) *(void **) &container + -4 * sizeof(size_t) + distance);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            cstl_stable_sort(container, length, type_size, cmp);
+        }
+        break;
+        default: {
+            cstl_error("Invalid Operation");
+        }
+        break;
+    }
+}
+
+#if defined(USE_CSTL_FUNC)
+#define sort _cstl_sort_func
+#define stable_sort _cstl_stable_sort_func
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+#define cstl_sort(container,...)	_cstl_sort(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_stable_sort_def(container,...)	_cstl_stable_sort(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#elif defined(__linux__) || defined(__APPLE__)
+
+// TCC supports typeof but not __auto_type; GCC/Clang support both.
+#if defined(__TINYC__)
+#define _CSTL_TYPEOF(x) typeof(x)
+#else
+#define _CSTL_TYPEOF(x) __auto_type
+#endif
+
+#define cstl_sort(C,...) _linux_cstl_sort(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_sort(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_sort ## _ ## N
+#define _cstl_sort_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_sort( __0,argc);}
+#define _cstl_sort_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_sort( __0,argc,&__1);}
+#define _cstl_sort_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_sort( __0,argc,&__1,&__2);}
+#define _cstl_sort_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_sort( __0,argc,&__1,&__2,&__3);}
+#define _cstl_sort_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_sort_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_sort_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_sort_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_sort_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_sort_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_sort_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_stable_sort(C,...) _linux_cstl_stable_sort(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_stable_sort(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_stable_sort ## _ ## N
+#define _cstl_stable_sort_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_stable_sort( __0,argc);}
+#define _cstl_stable_sort_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_stable_sort( __0,argc,&__1);}
+#define _cstl_stable_sort_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_stable_sort( __0,argc,&__1,&__2);}
+#define _cstl_stable_sort_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_stable_sort( __0,argc,&__1,&__2,&__3);}
+#define _cstl_stable_sort_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_stable_sort_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_stable_sort_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_stable_sort_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_stable_sort_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_stable_sort_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_stable_sort_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_stable_sort( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+
+#endif
 
 #endif

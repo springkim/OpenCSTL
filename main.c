@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#define OPENCSTL_TRACER
+//#define OPENCSTL_TRACER
 #include "opencstl/opencstl.h"
 #define DECORATE(STR) {int padding = 70 - strlen(STR);int margin=0;if(padding%2==1)margin=1;else margin=0;for (int i = 0; i < padding/2; i++) { putchar('#');  } printf(STR); for (int i = 0; i < padding/2+margin; i++) { putchar('#'); } putchar('\n');}
 
@@ -89,12 +89,12 @@ void cstl_vector_test3(void) {
     VECTOR(int) vec = new_vector(int);
     const size_t N = 100;
     for (int i = 0; i < N; i++) {
-        int val = rand32() % N;
+        int val = random.randint(-N, N);
         push_back(vec, val);
     }
 
 
-    stable_sort(vec,size(vec), sizeof(int), LESS(int));
+    msort(vec, size(vec), sizeof(int), LESS(int));
     for (int i = 0; i < size(vec); i++) {
         printf("Sorted: [%d]\n", vec[i]);
     }
@@ -139,7 +139,7 @@ void cstl_list_test02(void) {
     }
 
 
-    cstl_sort(list, LESS(int));
+    sort(list);
 
     logging.info("list size: %d", size(list));
     for (int *it = begin(list); it != end(list); it = next(it)) {
@@ -394,7 +394,7 @@ void test02(void) {
         push_back(v, rand32() % 1000);
     }
 
-    sort(v,size(v), sizeof(int),GREATER(int));
+    qsort(v,size(v), sizeof(int),GREATER(int));
 
     watch t_end = chrono.now();
 
@@ -444,7 +444,66 @@ void test04(void) {
     free(file);
 }
 
+struct Point {
+    int x, y;
+};
+
+int cmp_point(const void *a, const void *b) {
+    struct Point *p = (struct Point *) a;
+    struct Point *q = (struct Point *) b;
+    return p->x - q->x;
+}
+
+void test_sort(void) {
+    //VECTOR(int) v = new_vector(int);
+    //DEQUE(int) v = new_deque(int);
+    //LIST(int) v = new_list(int);
+
+    VECTOR(struct Point) v = new_vector(struct Point);
+
+    for (int i = 0; i < 50; i++) {
+        //push_back(v, rand32() % 1000);
+        struct Point p = {
+            rand32() % 1000,
+            rand32() % 1000,
+        };
+        push_back(v, p);
+    }
+    stable_sort(v, cmp_point);
+    // for (int *it = begin(v); it != end(v); it= next(it)) {
+    //     printf("[%3d]", *it);
+    // }
+    // for (int *it = begin(v); it != end(v); it++) {
+    //     printf("[%3d]", *it);
+    // }
+    for (struct Point *it = begin(v); it != end(v); it++) {
+        printf("[%3d](%3d)", it->x, it->y);
+    }
+    puts("");
+    destroy(v);
+    exit(0);
+}
+
+// #include<limits.h>
+//
+//
+// #define numeric_limits(TYPE)    opencstl_nl_##TYPE
+//
+// typedef struct {
+//     int max;
+//     int min;
+// } opencstl_nl_int_t;
+//
+// opencstl_nl_int_t opencstl_nl_int = {
+//     INT_MAX,
+//     INT_MIN
+// };
+
 int main(void) {
+    // printf("%d\n",numeric_limits(int).max);
+    // return 0;
+
+    // test_sort();
     // cstl_list_test02();
     // return 0;
 

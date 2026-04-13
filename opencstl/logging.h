@@ -100,6 +100,10 @@ void __fatal_message_box(const char *msg) {
              msg);
     system(cmd);
 }
+#elif defined(OCSTL_CC_NVCC)
+void __fatal_message_box(const char *msg) {
+    fprintf(stderr, "[FATAL] %s\n", msg);
+}
 #elif defined(OCSTL_OS_WINDOWS)
 #if !defined(OCSTL_CC_TCC)
 void __fatal_message_box(const char *msg) {
@@ -178,8 +182,6 @@ static int _logging_critical(const char *format, ...) {
     va_start(args, format);
     ret = __vcprintln(__magenta, format, args);
     va_end(args);
-    exit(EXIT_FAILURE);
-
     return ret;
 }
 

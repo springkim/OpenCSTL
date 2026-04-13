@@ -667,12 +667,12 @@ OPENCSTL_FUNC void *__cstl_hashtable_empty(void **container) {
     return __cstl_hashtable_rend(container);
 }
 
-OPENCSTL_FUNC size_t __cstl_hashtable_size(void **container) {
-    return OPENCSTL_NIDX(container, -1);
+OPENCSTL_FUNC size_type __cstl_hashtable_size(void **container) {
+    return (size_type)OPENCSTL_NIDX(container, -1);
 }
 
-OPENCSTL_FUNC size_t __cstl_hashtable_capacity(void **container) {
-    return OPENCSTL_NIDX(container, -7) + 1;
+OPENCSTL_FUNC size_type __cstl_hashtable_capacity(void **container) {
+    return (size_type)OPENCSTL_NIDX(container, -7) + 1;
 }
 
 OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
