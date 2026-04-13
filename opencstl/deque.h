@@ -38,6 +38,7 @@
 #define _OPENCSTL_DEQUE_H
 #include "error.h"
 #include "zalloc.h"
+#include "van_emde_boas_tree.h"
 #ifdef _MSC_VER
 #pragma warning(disable:4146)
 #pragma warning(disable:4308)
@@ -71,6 +72,15 @@ OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, -2) = 0; // length
     *container = (char *) ptr + type_size;
     OPENCSTL_NIDX(container, -1) = -type_size - 1;
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, ptr, (char *) ptr + (type_size * 2), CT_DEQUE, type_size, type);
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return ptr;
 }
 
@@ -90,6 +100,7 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_t n, void *value) 
 #endif
 
     capacity = n;
+    iveb_erase(iveb, (char *) *container + distance);
     void *b = zalloc(1, header_sz + capacity * type_size);
     memcpy(b, (char *) *container - header_sz + distance, header_sz);
     zfree(((char *) *container) - header_sz + distance);
@@ -98,6 +109,7 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_t n, void *value) 
     distance = 0;
     *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) = n;
     *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) = n;
+    iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_DEQUE, type_size, type);
 
     if (value == NULL) {
         memset((char *) *container, 0, n * type_size);
@@ -114,7 +126,7 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
@@ -127,15 +139,19 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
 
     if (length == capacity + distance / (ptrdiff_t) type_size) {
         size_t distance_sz = -distance;
-        void *b = zalloc(1, header_sz + capacity * 2 * type_size);
+        size_t new_capacity = capacity * 2;
+        iveb_erase(iveb, (char *) *container + distance);
+        void *b = zalloc(1, header_sz + new_capacity * type_size);
         memcpy(b, (char *) *container - (header_sz + distance_sz), header_sz);
-        distance = capacity * 2 / 4;
+        distance = new_capacity / 4;
         memcpy((char *) b + header_sz + distance * type_size, *container, length * type_size);
         zfree((char *) *container - (header_sz + distance_sz));
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) *= 2;
         OPENCSTL_NIDX(container, -1) = distance - 1;
+        iveb_insert(iveb, (char *) *container + distance,
+                    (char *) *container + distance + (type_size * new_capacity), CT_DEQUE, type_size, type);
     }
     memcpy((char *) *container + type_size * length, value, type_size);
 
@@ -148,7 +164,7 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
@@ -159,14 +175,18 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     }
 #endif
     if (distance == 0) {
-        void *b = zalloc(1, header_sz + capacity * 2 * type_size);
+        size_t new_capacity = capacity * 2;
+        iveb_erase(iveb, (char *) *container);
+        void *b = zalloc(1, header_sz + new_capacity * type_size);
         memcpy(b, (char *) *container - header_sz, header_sz);
-        distance = capacity * 2 / 4;
+        distance = new_capacity / 4;
         memcpy((char *) b + header_sz + distance * type_size, *container, length * type_size);
         zfree((char *) *container - header_sz);
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) *= 2;
+        iveb_insert(iveb, (char *) *container + distance,
+                    (char *) *container + distance + (type_size * new_capacity), CT_DEQUE, type_size, type);
     }
     memcpy((char *) *container - type_size * 2, (char *) *container - type_size, type_size);
     memcpy((char *) *container - type_size, value, type_size);
@@ -204,7 +224,7 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_t n, voi
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
@@ -216,10 +236,14 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_t n, voi
 #endif
     size_t pos = (*(char **) it - *(char **) container) / type_size;
     if (length + n > capacity + distance / (ptrdiff_t) type_size) {
+        iveb_erase(iveb, (char *) *container + distance);
         capacity += n;
-        void *b = realloc((char *) *container - header_sz + distance, header_sz + capacity * type_size - distance);
+        size_t alloc_sz = header_sz + capacity * type_size - distance;
+        void *b = realloc((char *) *container - header_sz + distance, alloc_sz);
         *container = (char *) b + header_sz - distance;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) += n;
+        iveb_insert(iveb, (char *) *container + distance,
+                    (char *) b + alloc_sz, CT_DEQUE, type_size, type);
     }
     memcpy((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
            (length - pos) * type_size);
@@ -257,7 +281,7 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
@@ -269,6 +293,7 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
 #endif
     if (capacity + distance / (ptrdiff_t) type_size < n) {
         capacity = n;
+        iveb_erase(iveb, (char *) *container + distance);
         void *b = zalloc(1, header_sz + capacity * type_size);
         memcpy(b, (char *) *container - header_sz + distance, header_sz);
         memcpy((char *) b + header_sz, *container, length * type_size);
@@ -277,6 +302,7 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
         OPENCSTL_NIDX(container, -1) = -1;
         distance = 0;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) = n;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_DEQUE, type_size, type);
     }
     *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) = n;
     if (length < n) {
@@ -327,6 +353,7 @@ OPENCSTL_FUNC void __cstl_deque_free(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
 
+    iveb_erase(iveb, (char *) *container + distance);
     zfree((char *) *container - (header_sz - distance));
 }
 

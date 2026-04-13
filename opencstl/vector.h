@@ -39,7 +39,7 @@
 #define _OPENCSTL_VECTOR_H
 #include"error.h"
 #include"zalloc.h"
-//#include "van_emde_boas_tree.h"
+#include "van_emde_boas_tree.h"
 // ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
 // ██║░░░██║██╔════╝██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗
 // ╚██╗░██╔╝█████╗░░██║░░╚═╝░░░██║░░░██║░░██║██████╔╝
@@ -50,7 +50,7 @@
 #define cstl_vector(TYPE)	__cstl_vector(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zalloc(header_sz + type_size,1);
+    void *block = zalloc(header_sz + type_size, 1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for vector");
     }
@@ -67,6 +67,15 @@ OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, -3) = 0; //
     OPENCSTL_NIDX(container, -2) = 1; //capacity
     OPENCSTL_NIDX(container, -1) = 0; //length
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, ptr, (char *) ptr + (type_size), CT_VECTOR, type_size, type);
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return ptr;
 }
 
@@ -75,7 +84,7 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value)
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     //size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
-    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = OPENCSTL_NIDX(container, -8);
@@ -86,12 +95,14 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value)
     }
 #endif
     if (capacity < n) {
+        iveb_erase(iveb, *container);
         void *b = zrealloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector assign");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size, type);
     }
     if (value == NULL) {
         memset(*container, 0, type_size * n);
@@ -108,7 +119,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
-    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = OPENCSTL_NIDX(container, -8);
@@ -119,12 +130,15 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     }
 #endif
     if (length == capacity) {
-        void *b = zrealloc((char *) *container - header_sz, header_sz + capacity * 2 * type_size);
+        iveb_erase(iveb, *container);
+        size_t new_capaciy = capacity * 2;
+        void *b = zrealloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector push_back");
         }
         *container = ((char *) b + header_sz);
-        OPENCSTL_NIDX(container, -2) *= 2;
+        OPENCSTL_NIDX(container, -2) = new_capaciy;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capaciy), CT_VECTOR, type_size, type);
     }
     memcpy((char *) *container + type_size * length, value, type_size);
     OPENCSTL_NIDX(container, -1)++;
@@ -151,7 +165,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
     size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
     size_t pos = (*(char **) iter - *(char **) container) / type_size;
-    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = OPENCSTL_NIDX(container, -8);
@@ -162,13 +176,15 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
     }
 #endif
     if (length + N >= capacity) {
-        capacity += N;
-        void *b = zrealloc((char *) *container - header_sz, header_sz + capacity * type_size);
+        iveb_erase(iveb, *container);
+        size_t new_capaciy = (capacity + N) * 2;
+        void *b = zrealloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector insert");
         }
         *container = ((char *) b + header_sz);
-        OPENCSTL_NIDX(container, -2) *= 2;
+        OPENCSTL_NIDX(container, -2) = new_capaciy;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capaciy), CT_VECTOR, type_size, type);
     }
     memmove((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
             (length - pos) * type_size);
@@ -216,7 +232,7 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
-    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
 #if !defined(__linux__) && !defined(__APPLE__)
     size_t is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
@@ -226,12 +242,14 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
     }
 #endif
     if (capacity < n) {
+        iveb_erase(iveb, *container);
         void *b = zrealloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector resize");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size, type);
     }
     if (n > length) {
         if (value == NULL) {
@@ -284,14 +302,24 @@ OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     //size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
     if (capacity < n) {
+        iveb_erase(iveb, *container);
         void *b = zrealloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector reserve");
         }
         *container = ((char *) b + header_sz);
+        OPENCSTL_NIDX(container, -2) = n;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size,type);
     }
 }
 
+OPENCSTL_FUNC void *__cstl_vector_next(void *it, size_t type_size) {
+    return (char *) it + type_size;
+}
 
+OPENCSTL_FUNC void *__cstl_vector_prev(void *it, size_t type_size) {
+    return (char *) it - type_size;
+}
 #endif

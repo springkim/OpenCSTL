@@ -256,4 +256,115 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
 
 #endif
 
+// ██╗░██████╗░░░░░░░██████╗░█████╗░██████╗░████████╗███████╗██████╗░
+// ██║██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██╔══██╗
+// ██║╚█████╗░░░░░░░╚█████╗░██║░░██║██████╔╝░░░██║░░░█████╗░░██║░░██║
+// ██║░╚═══██╗░░░░░░░╚═══██╗██║░░██║██╔══██╗░░░██║░░░██╔══╝░░██║░░██║
+// ██║██████╔╝█████╗██████╔╝╚█████╔╝██║░░██║░░░██║░░░███████╗██████╔╝
+// ╚═╝╚═════╝░╚════╝╚═════╝░░╚════╝░╚═╝░░╚═╝░░░╚═╝░░░╚══════╝╚═════╝░
+#include "iterator.h"
+#define _cstl_is_sorted_func(CONTAINER,...) _CSTL_IS_SORTED_DISPATCH(CONTAINER, ##__VA_ARGS__, NULL)
+#define _CSTL_IS_SORTED_DISPATCH(CONTAINER, FUNC, ...) _cstl_is_sorted(CONTAINER, (void*)(FUNC))
+OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
+    size_t container_type;
+    ptrdiff_t distance = 0;
+    if (__is_deque((void **) &container)) {
+        distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
+    }
+
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            size_t type_size = (size_t) OPENCSTL_NIDX(&container, NIDX_TSIZE);
+            char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
+            size_t length = (size_t) OPENCSTL_NIDX(&container, -1);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
+                return 0;
+            }
+            for (size_t i = 1; i < length; i++) {
+                // cmp(a, b) > 0 means a > b, so prev > curr means not sorted
+                if (cmp((char *) container + (i - 1) * type_size,
+                        (char *) container + i * type_size) > 0) {
+                    return 0;
+                }
+            }
+            return 1;
+        }
+        break;
+        case OPENCSTL_LIST: {
+            size_t type_size = (size_t) OPENCSTL_NIDX(&container, NIDX_TSIZE);
+            char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
+                return 0;
+            }
+            void *it = cstl_begin(container);
+            void *end = cstl_end(container);
+            if (it == end) {
+                return 1;
+            }
+            void *prev = it;
+            it = cstl_next(it);
+            while (it != end) {
+                if (cmp(prev, it) > 0) {
+                    return 0;
+                }
+                prev = it;
+                it = cstl_next(it);
+            }
+            return 1;
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            size_t type_size = *(size_t *) ((char *) *(void **) &container + NIDX_TSIZE * sizeof(size_t) + distance);
+            size_t length = *(size_t *) ((char *) *(void **) &container + -2 * sizeof(size_t) + distance);
+            char *type_name = (char *) *(size_t *) ((char *) *(void **) &container + -4 * sizeof(size_t) + distance);
+            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            if (cmp == NULL) {
+                cmp = CSTL_LESS(type_name);
+            }
+            if (cmp == NULL) {
+                cmp = _memcmp_funcs[type_size];
+            }
+            if (cmp == NULL) {
+                cstl_error("Compare function is NULL");
+                return 0;
+            }
+            for (size_t i = 1; i < length; i++) {
+                if (cmp((char *) container + (i - 1) * type_size,
+                        (char *) container + i * type_size) > 0) {
+                    return 0;
+                }
+            }
+            return 1;
+        }
+        break;
+        default: {
+            cstl_error("Invalid Operation");
+            return 0;
+        }
+        break;
+    }
+}
+
+#if defined(USE_CSTL_FUNC)
+#define is_sorted _cstl_is_sorted_func
+#endif
 #endif

@@ -286,6 +286,7 @@ typedef struct {
     void *b; // 구간 끝   (inclusive)
     CONTAINER_TYPE ctype;
     size_t type_size;
+    char *type_name;
 } Interval;
 
 typedef struct {
@@ -373,7 +374,7 @@ void iveb_free(IntervalVEB *iv) {
 }
 
 
-void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_t type_size) {
+void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_t type_size, char *type_name) {
     u64 k = (u64) (uintptr_t) a;
     Interval *it = (Interval *) hm_get(iv->data, k);
     if (!it) {
@@ -385,6 +386,7 @@ void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_t
     it->b = b;
     it->ctype = ctype;
     it->type_size = type_size;
+    it->type_name = type_name;
 }
 
 
@@ -410,4 +412,7 @@ Interval *iveb_find(IntervalVEB *iv, void *x) {
 static IntervalVEB *iveb = NULL;
 static HTMVEB *htm = NULL;
 
+void __opencstl_iveb_destroy(void) {
+    iveb_free(iveb);
+}
 #endif //_OPENCSTL_VAN_EMDE_BOAS_TREE_H

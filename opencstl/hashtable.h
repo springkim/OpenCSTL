@@ -273,9 +273,9 @@ OPENCSTL_ALWAYS_INLINE size_t hash_mixer(void *key, size_t n) {
     if (n <= 16 && n >= 4) {
         uint32_t v0, v1, v2, v3;
         memcpy(&v0, p, 4);
-        memcpy(&v1, p + ((n>>3)<<2), 4);
+        memcpy(&v1, p + ((n >> 3) << 2), 4);
         memcpy(&v2, p + n - 4, 4);
-        memcpy(&v3, p + n - 4 - ((n>>3)<<2), 4);
+        memcpy(&v3, p + n - 4 - ((n >> 3) << 2), 4);
         a = ((uint64_t) v0 << 32) | v1;
         b = ((uint64_t) v2 << 32) | v3;
     } else if (n < 4 && n > 0) {
@@ -348,8 +348,8 @@ static inline bool __ht_evict(
     uint16_t new_disp;
     if (!__ht_find_empty(meta, cap_mask, home, &empty, &new_disp)) return false;
     size_t ins_prev = __ht_find_chain_pos(meta, cap_mask, home, new_disp);
-    memcpy((char *)base + empty * type_size,
-           (char *)base + bucket * type_size, type_size);
+    memcpy((char *) base + empty * type_size,
+           (char *) base + bucket * type_size, type_size);
     meta[empty] = (uint16_t) ((meta[bucket] & HT_FRAG_MASK) | (meta[ins_prev] & HT_DISP_MASK));
     meta[ins_prev] = (uint16_t) ((meta[ins_prev] & ~HT_DISP_MASK) | new_disp);
     return true;
@@ -366,9 +366,9 @@ static inline bool __ht_reinsert(
         if (meta[home] != HT_EMPTY &&
             !__ht_evict(base, meta, cap_mask, home, type_size, key_size))
             return false;
-        memcpy((char *)base + home * type_size, key, key_size);
+        memcpy((char *) base + home * type_size, key, key_size);
         if (value)
-            memcpy((char *)base + home * type_size + key_size, value, value_size);
+            memcpy((char *) base + home * type_size + key_size, value, value_size);
         meta[home] = frag | HT_IN_HOME | HT_DISP_END;
         return true;
     }
@@ -376,9 +376,9 @@ static inline bool __ht_reinsert(
     uint16_t disp;
     if (!__ht_find_empty(meta, cap_mask, home, &empty, &disp)) return false;
     size_t prev = __ht_find_chain_pos(meta, cap_mask, home, disp);
-    memcpy((char *)base + empty * type_size, key, key_size);
+    memcpy((char *) base + empty * type_size, key, key_size);
     if (value)
-        memcpy((char *)base + empty * type_size + key_size, value, value_size);
+        memcpy((char *) base + empty * type_size + key_size, value, value_size);
     meta[empty] = (uint16_t) (frag | (meta[prev] & HT_DISP_MASK));
     meta[prev] = (uint16_t) ((meta[prev] & ~HT_DISP_MASK) | disp);
     return true;
@@ -428,7 +428,7 @@ static void __ht_do_rehash(
         void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
         if (!new_raw)
             cstl_error("Allocation failed (rehash)");
-        memcpy(new_raw, (char *)*container - header_sz, header_sz);
+        memcpy(new_raw, (char *) *container - header_sz, header_sz);
         uint16_t *new_meta = __ht_alloc_meta(new_cap);
         void *nb = (char *) new_raw + header_sz;
         size_t new_mask = new_cap - 1;
@@ -507,9 +507,9 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
             if (meta[home] != HT_EMPTY &&
                 !__ht_evict(*container, meta, cap_mask, home, type_size, key_size))
                 goto do_rehash;
-            memcpy((char *)*container + home * type_size, key, key_size);
+            memcpy((char *) *container + home * type_size, key, key_size);
             if (value)
-                memcpy((char *)*container + home * type_size + key_size, value, value_size);
+                memcpy((char *) *container + home * type_size + key_size, value, value_size);
             meta[home] = frag | HT_IN_HOME | HT_DISP_END;
             OPENCSTL_NIDX(container, -1) = length + 1;
             return;
@@ -520,9 +520,9 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
             if (!__ht_find_empty(meta, cap_mask, home, &empty, &disp))
                 goto do_rehash;
             size_t prev = __ht_find_chain_pos(meta, cap_mask, home, disp);
-            memcpy((char *)*container + empty * type_size, key, key_size);
+            memcpy((char *) *container + empty * type_size, key, key_size);
             if (value)
-                memcpy((char *)*container + empty * type_size + key_size, value, value_size);
+                memcpy((char *) *container + empty * type_size + key_size, value, value_size);
             meta[empty] = (uint16_t) (frag | (meta[prev] & HT_DISP_MASK));
             meta[prev] = (uint16_t) ((meta[prev] & ~HT_DISP_MASK) | disp);
             OPENCSTL_NIDX(container, -1) = length + 1;
@@ -580,8 +580,8 @@ found:;
         uint16_t d_nn = meta[next] & HT_DISP_MASK;
         uint16_t f_next = meta[next] & HT_FRAG_MASK;
         uint16_t home_flag = meta[bucket] & HT_IN_HOME;
-        memcpy((char *)*container + bucket * type_size,
-               (char *)*container + next * type_size, type_size);
+        memcpy((char *) *container + bucket * type_size,
+               (char *) *container + next * type_size, type_size);
         meta[bucket] = (uint16_t) (f_next | home_flag | d_nn);
         meta[next] = HT_EMPTY;
     }
@@ -643,6 +643,7 @@ void *__cstl_hashtable_begin(void **container) {
 
 OPENCSTL_FUNC
 void *__cstl_hashtable_end(void **container) { return NULL; }
+
 OPENCSTL_FUNC
 
 void *__cstl_hashtable_rbegin(void **container) {

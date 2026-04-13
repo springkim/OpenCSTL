@@ -177,6 +177,9 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
       E(error.h) --> TREE(tree.h)
       E(error.h) --> DQ(deque.h)
       E(error.h) --> H(hashtable.h)
+      VEBT(van_emde_boas_tree.h) --> H(hashtable.h)
+      VEBT(van_emde_boas_tree.h) --> V(vector.h)
+      VEBT(van_emde_boas_tree.h) --> DQ(deque.h)
 
       subgraph CONTAINERS[Containers]
           V(vector.h)
@@ -199,6 +202,8 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
       ISORT(isort.h) --> MSORT(msort.h)
       TSORT(tsort.h) --> SORT(sort.h)
       MSORT(msort.h) --> SORT(sort.h)
+      ITER(iterator.h) --> SORT(sort.h)
+      ITER(iterator.h) --> ALGO(algorithm.h)
       PDQSORT(pdqsort.h) --> SORT(sort.h)
       C(crossplatform.h) --> SORT(sort.h)
       SORT(sort.h) --> OCSTL(opencstl.h)

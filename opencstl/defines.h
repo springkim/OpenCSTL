@@ -188,7 +188,6 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 (OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[cstl_error("Invalid Operation")]))   //priority queue
 
 
-
 #define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
 
 

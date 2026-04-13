@@ -32,7 +32,7 @@ void cstl_vector_test(void) {
     ///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8] [-1] [-1]
     resize(arr, 15, -1);
 
-    for (int *it = begin(arr); it != end(arr); it++) {
+    for (int *it = begin(arr); it != end(arr); it = next(it)) {
         printf("[%d] ", *it);
     }
     puts("");
@@ -206,8 +206,11 @@ void cstl_deque_test(void) {
         push_front(deque, i);
     }
     printf("deque pf size: %d\n", size(deque));
-    for (int i = 0; i < size(deque); i++) {
-        printf("[%3d]", deque[i]);
+    // for (int i = 0; i < size(deque); i++) {
+    //     printf("[%3d]", deque[i]);
+    // }
+    for (int *it = begin(deque); it != end(deque); it = next(it)) {
+        printf("[%d]", *it);
     }
     puts("");
 
@@ -394,10 +397,23 @@ void test02(void) {
         push_back(v, rand32() % 1000);
     }
 
-    qsort(v,size(v), sizeof(int),GREATER(int));
+    int *max_ptr = max_element(begin(v), end(v));
+    printf("max_ptr : %d\n", *max_ptr);
+
+    int *min_ptr = min_element(begin(v), end(v));
+    printf("min_ptr : %d\n", *min_ptr);
+
+    qsort(v,size(v), sizeof(int),LESS(int));
 
     watch t_end = chrono.now();
 
+    if (is_sorted(v)) {
+        puts("sorted");
+    }
+
+    int val = 888;
+    fill(begin(v), end(v), val);
+    fill(begin(v), end(v), 777);
     double ms = chrono.duration(t_beg, t_end);
     for (int i = 0; i < size(v); i++) {
         printf("[%4d]\n", v[i]);
@@ -500,12 +516,11 @@ void test_sort(void) {
 // };
 
 int main(void) {
-    
     // printf("%d\n",numeric_limits(int).max);
     // return 0;
 
     // test_sort();
-    // cstl_list_test02();
+    // test02();
     // return 0;
 
     logging.info(opencstl_env());
