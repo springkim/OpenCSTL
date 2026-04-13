@@ -346,7 +346,7 @@ shuffle.py
 perftest/
 
 bench/bench_cstl/3rdparty/
-bench/
+bench/bench_cstl/
 
 assets/opencstl.h
 
