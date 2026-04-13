@@ -17,9 +17,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <stdbool.h>
+#include <ctype.h>
 
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -69,9 +67,41 @@
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 2026. 4. 12..
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
-
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
 
 #ifndef OPENCSTL_TRACER_H
 #define OPENCSTL_TRACER_H
@@ -420,9 +450,41 @@ static LOGGING logging = {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 4/14/2026.
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
-
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
 #if !defined(OPENCSTL_MT19937_H)
 #define OPENCSTL_MT19937_H
 #include <stdint.h>
@@ -923,7 +985,7 @@ static int opencstl_init(void) {
 
     //htm = htm_new();
 
-    random.seed(time(NULL));
+    mt19937.seed(time(NULL));
     atexit(opencstl_exit);
     return 0;
 }
@@ -1530,8 +1592,39 @@ exit(EXIT_FAILURE);
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 2026. 4. 12..
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or
 #if !defined(_OPENCSTL_ZALLOC_H)
 #define _OPENCSTL_ZALLOC_H
 #include <stdlib.h>
@@ -1607,7 +1700,52 @@ static void *zrealloc(void *ptr, size_t new_size) {
 /* BEGIN  van_emde_boas_tree.h           (depth 2) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
 
+#if !defined(_OPENCSTL_VAN_EMDE_BOAS_TREE_H)
+#define _OPENCSTL_VAN_EMDE_BOAS_TREE_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <string.h>
+#include <stdbool.h>
 
 typedef uintptr_t u64;
 
@@ -2015,6 +2153,7 @@ static HTMVEB *htm = NULL;
 void __opencstl_iveb_destroy(void) {
     iveb_free(iveb);
 }
+#endif //_OPENCSTL_VAN_EMDE_BOAS_TREE_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    van_emde_boas_tree.h */
@@ -5034,9 +5173,41 @@ void *__cstl_unordered_map(size_t key_size, size_t value_size,
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 2026. 4. 9..
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
-
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
 #if !defined(_OPENCSTL_C_ALGORITHM_H)
 #define _OPENCSTL_C_ALGORITHM_H
 
@@ -5475,9 +5646,41 @@ _OpenCSTLCompareFunc _memcmp_funcs[128 + 1] = {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 4/14/2026.
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
-
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
 #ifndef OPENCSTL_ITERATOR_H
 #define OPENCSTL_ITERATOR_H
 /* [already included: hashtable.h] */
@@ -7146,7 +7349,7 @@ extern "C" {
 
 
 #endif
-/* [already included: defines.h] */
+/* [already included: crossplatform.h] */
 #if defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_TCC))
 
 #include<windows.h>
@@ -7473,8 +7676,45 @@ void pmsort(void *mem, const size_t len, const size_t size_elem,
 /* BEGIN  bestsort.h                     (depth 2) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
 
-
+#ifndef OPENCSTL_BESTSORT_H
+#define OPENCSTL_BESTSORT_H
 #if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_CLANG)
 #define cstl_best_stable_sort msort
 #define cstl_unstable_sort pdqsort
@@ -7513,7 +7753,7 @@ void pmsort(void *mem, const size_t len, const size_t size_elem,
 #define cstl_unstable_sort pdqsort
 #endif
 
-
+#endif //OPENCSTL_BESTSORT_H
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    bestsort.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -7901,6 +8141,601 @@ char *opencstl_env(void) {
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    version.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  lprint.h                       (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+
+
+
+#define LPRINT_ROWS 6
+
+typedef struct {
+    char key;
+    const char *rows[LPRINT_ROWS];
+} lprint_glyph_t;
+
+static const lprint_glyph_t lprint__glyphs[] = {
+    {
+        'A', {
+            "░█████╗░",
+            "██╔══██╗",
+            "███████║",
+            "██╔══██║",
+            "██║░░██║",
+            "╚═╝░░╚═╝"
+        }
+    },
+    {
+        'B', {
+            "██████╗░",
+            "██╔══██╗",
+            "██████╦╝",
+            "██╔══██╗",
+            "██████╦╝",
+            "╚═════╝░"
+        }
+    },
+    {
+        'C', {
+            "░█████╗░",
+            "██╔══██╗",
+            "██║░░╚═╝",
+            "██║░░██╗",
+            "╚█████╔╝",
+            "░╚════╝░"
+        }
+    },
+    {
+        'D', {
+            "██████╗░",
+            "██╔══██╗",
+            "██║░░██║",
+            "██║░░██║",
+            "██████╔╝",
+            "╚═════╝░"
+        }
+    },
+    {
+        'E', {
+            "███████╗",
+            "██╔════╝",
+            "█████╗░░",
+            "██╔══╝░░",
+            "███████╗",
+            "╚══════╝"
+        }
+    },
+    {
+        'F', {
+            "███████╗",
+            "██╔════╝",
+            "█████╗░░",
+            "██╔══╝░░",
+            "██║░░░░░",
+            "╚═╝░░░░░"
+        }
+    },
+    {
+        'G', {
+            "░██████╗░",
+            "██╔════╝░",
+            "██║░░██╗░",
+            "██║░░╚██╗",
+            "╚██████╔╝",
+            "░╚═════╝░"
+        }
+    },
+    {
+        'H', {
+            "██╗░░██╗",
+            "██║░░██║",
+            "███████║",
+            "██╔══██║",
+            "██║░░██║",
+            "╚═╝░░╚═╝"
+        }
+    },
+    {
+        'I', {
+            "██╗",
+            "██║",
+            "██║",
+            "██║",
+            "██║",
+            "╚═╝"
+        }
+    },
+    {
+        'J', {
+            "░░░░░██╗",
+            "░░░░░██║",
+            "░░░░░██║",
+            "██╗░░██║",
+            "╚█████╔╝",
+            "░╚════╝░"
+        }
+    },
+    {
+        'K', {
+            "██╗░░██╗",
+            "██║░██╔╝",
+            "█████═╝░",
+            "██╔═██╗░",
+            "██║░╚██╗",
+            "╚═╝░░╚═╝"
+        }
+    },
+    {
+        'L', {
+            "██╗░░░░░",
+            "██║░░░░░",
+            "██║░░░░░",
+            "██║░░░░░",
+            "███████╗",
+            "╚══════╝"
+        }
+    },
+    {
+        'M', {
+            "███╗░░░███╗",
+            "████╗░████║",
+            "██╔████╔██║",
+            "██║╚██╔╝██║",
+            "██║░╚═╝░██║",
+            "╚═╝░░░░░╚═╝"
+        }
+    },
+    {
+        'N', {
+            "███╗░░██╗",
+            "████╗░██║",
+            "██╔██╗██║",
+            "██║╚████║",
+            "██║░╚███║",
+            "╚═╝░░╚══╝"
+        }
+    },
+    {
+        'O', {
+            "░█████╗░",
+            "██╔══██╗",
+            "██║░░██║",
+            "██║░░██║",
+            "╚█████╔╝",
+            "░╚════╝░"
+        }
+    },
+    {
+        'P', {
+            "██████╗░",
+            "██╔══██╗",
+            "██████╔╝",
+            "██╔═══╝░",
+            "██║░░░░░",
+            "╚═╝░░░░░"
+        }
+    },
+    {
+        'Q', {
+            "░██████╗░",
+            "██╔═══██╗",
+            "██║██╗██║",
+            "╚██████╔╝",
+            "░╚═██╔═╝░",
+            "░░░╚═╝░░░"
+        }
+    },
+    {
+        'R', {
+            "██████╗░",
+            "██╔══██╗",
+            "██████╔╝",
+            "██╔══██╗",
+            "██║░░██║",
+            "╚═╝░░╚═╝"
+        }
+    },
+    {
+        'S', {
+            "░██████╗",
+            "██╔════╝",
+            "╚█████╗░",
+            "░╚═══██╗",
+            "██████╔╝",
+            "╚═════╝░"
+        }
+    },
+    {
+        'T', {
+            "████████╗",
+            "╚══██╔══╝",
+            "░░░██║░░░",
+            "░░░██║░░░",
+            "░░░██║░░░",
+            "░░░╚═╝░░░"
+        }
+    },
+    {
+        'U', {
+            "██╗░░░██╗",
+            "██║░░░██║",
+            "██║░░░██║",
+            "██║░░░██║",
+            "╚██████╔╝",
+            "░╚═════╝░"
+        }
+    },
+    {
+        'V', {
+            "██╗░░░██╗",
+            "██║░░░██║",
+            "╚██╗░██╔╝",
+            "░╚████╔╝░",
+            "░░╚██╔╝░░",
+            "░░░╚═╝░░░"
+        }
+    },
+    {
+        'W', {
+            "░██╗░░░░░░░██╗",
+            "░██║░░██╗░░██║",
+            "░╚██╗████╗██╔╝",
+            "░░████╔═████║░",
+            "░░╚██╔╝░╚██╔╝░",
+            "░░░╚═╝░░░╚═╝░░"
+        }
+    },
+    {
+        'X', {
+            "██╗░░██╗",
+            "╚██╗██╔╝",
+            "░╚███╔╝░",
+            "░██╔██╗░",
+            "██╔╝╚██╗",
+            "╚═╝░░╚═╝"
+        }
+    },
+    {
+        'Y', {
+            "██╗░░░██╗",
+            "╚██╗░██╔╝",
+            "░╚████╔╝░",
+            "░░╚██╔╝░░",
+            "░░░██║░░░",
+            "░░░╚═╝░░░"
+        }
+    },
+    {
+        'Z', {
+            "██████╗░",
+            "╚════██╗",
+            "░░███╔═╝",
+            "██╔══╝░░",
+            "███████╗",
+            "╚══════╝"
+        }
+    },
+    {
+        '0', {
+            "░█████╗░",
+            "██╔══██╗",
+            "██║░░██║",
+            "██║░░██║",
+            "╚█████╔╝",
+            "░╚════╝░"
+        }
+    },
+    {
+        '1', {
+            "░░███╗░░",
+            "░████║░░",
+            "██╔██║░░",
+            "╚═╝██║░░",
+            "███████╗",
+            "╚══════╝"
+        }
+    },
+    {
+        '2', {
+            "███████╗",
+            "╚════██║",
+            "███████║",
+            "██╔════╝░░",
+            "███████╗",
+            "╚══════╝"
+        }
+    },
+    {
+        '3', {
+            "██████╗░",
+            "╚════██╗",
+            "░█████╔╝",
+            "░╚═══██╗",
+            "██████╔╝",
+            "╚═════╝░"
+        }
+    },
+    {
+        '4', {
+            "░░██╗██╗",
+            "░██╔╝██║",
+            "██╔╝░██║",
+            "███████║",
+            "╚════██║",
+            "░░░░░╚═╝"
+        }
+    },
+    {
+        '5', {
+            "███████╗",
+            "██╔════╝",
+            "██████╗░",
+            "╚════██╗",
+            "██████╔╝",
+            "╚═════╝░"
+        }
+    },
+    {
+        '6', {
+            "░█████╗░",
+            "██╔═══╝░",
+            "██████╗░",
+            "██╔══██╗",
+            "╚█████╔╝",
+            "░╚════╝░"
+        }
+    },
+    {
+        '7', {
+            "███████╗",
+            "╚════██║",
+            "░░░░██╔╝",
+            "░░░██╔╝░",
+            "░░██╔╝░░",
+            "░░╚═╝░░░"
+        }
+    },
+    {
+        '8', {
+            "░█████╗░",
+            "██╔══██╗",
+            "╚█████╔╝",
+            "██╔══██╗",
+            "╚█████╔╝",
+            "░╚════╝░"
+        }
+    },
+    {
+        '9', {
+            "░█████╗░",
+            "██╔══██╗",
+            "╚██████║",
+            "░╚═══██║",
+            "░█████╔╝",
+            "░╚════╝░"
+        }
+    },
+    {
+        '!', {
+            "██╗",
+            "██║",
+            "██║",
+            "╚═╝",
+            "██╗",
+            "╚═╝"
+        }
+    },
+    {
+        '#', {
+            "░░░██╗░██╗░",
+            "██████████╗",
+            "╚═██╔═██╔═╝",
+            "██████████╗",
+            "╚██╔═██╔══╝",
+            "░╚═╝░╚═╝░░░"
+        }
+    },
+    {
+        '$', {
+            "░███████╗",
+            "██╔██╔══╝",
+            "╚██████╗░",
+            "░╚═██╔██╗",
+            "███████╔╝",
+            "╚══════╝░"
+        }
+    },
+    {
+        '%', {
+            "██╗░██╗",
+            "╚═╝██╔╝",
+            "░░██╔╝░",
+            "░██╔╝░░",
+            "██╔╝██╗",
+            "╚═╝░╚═╝"
+        }
+    },
+    {
+        '(', {
+            "░░██╗",
+            "░██╔╝",
+            "██╔╝░",
+            "╚██╗░",
+            "░╚██╗",
+            "░░╚═╝"
+        }
+    },
+    {
+        ')', {
+            "██╗░░",
+            "╚██╗░",
+            "░╚██╗",
+            "░██╔╝",
+            "██╔╝░",
+            "╚═╝░░"
+        }
+    },
+    {
+        '-', {
+            "░░░░░░",
+            "░░░░░░",
+            "█████╗",
+            "╚════╝",
+            "░░░░░░",
+            "░░░░░░"
+        }
+    },
+    {
+        '_', {
+            "░░░░░░",
+            "░░░░░░",
+            "░░░░░░",
+            "░░░░░░",
+            "█████╗",
+            "╚════╝"
+        }
+    },
+    {
+        '=', {
+            "░░░░░░░",
+            "██████╗",
+            "╚═════╝",
+            "██████╗",
+            "╚═════╝",
+            "░░░░░░░"
+        }
+    },
+    {
+        '+', {
+            "░░░░░░░",
+            "░░██╗░░",
+            "██████╗",
+            "╚═██╔═╝",
+            "░░╚═╝░░",
+            "░░░░░░░"
+        }
+    },
+    {
+        '[', {
+            "████╗",
+            "██╔═╝",
+            "██║░░",
+            "██║░░",
+            "████╗",
+            "╚═══╝"
+        }
+    },
+    {
+        ']', {
+            "████╗",
+            "╚═██║",
+            "░░██║",
+            "░░██║",
+            "████║",
+            "╚═══╝"
+        }
+    },
+    {
+        ':', {
+            "██╗",
+            "╚═╝",
+            "░░░",
+            "░░░",
+            "██╗",
+            "╚═╝"
+        }
+    },
+    {
+        ';', {
+            "██╗",
+            "╚═╝",
+            "░░░",
+            "██╗",
+            "╚█║",
+            "░╚╝"
+        }
+    },
+    {
+        '\"', {
+            "██╗██╗",
+            "╚█║╚█║",
+            "░╚╝░╚╝",
+            "░░░░░░",
+            "░░░░░░",
+            "░░░░░░"
+        }
+    },
+    {
+        '\'', {
+            "██╗",
+            "╚█║",
+            "░╚╝",
+            "░░░",
+            "░░░",
+            "░░░"
+        }
+    },
+    {
+        '?', {
+            "░█████╗░",
+            "██╔══██╗",
+            "╚═╝███╔╝",
+            "░░░╚══╝░",
+            "░░░██╗░░",
+            "░░░╚═╝░░"
+        }
+    },
+    {
+        '/', {
+            "░░░░██╗",
+            "░░░██╔╝",
+            "░░██╔╝░",
+            "░██╔╝░░",
+            "██╔╝░░░",
+            "╚═╝░░░░"
+        }
+    },
+    {
+        ' ', {
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       "
+        }
+    },
+};
+
+#define LPRINT__GLYPH_COUNT (int)(sizeof(lprint__glyphs) / sizeof(lprint__glyphs[0]))
+
+static const lprint_glyph_t *lprint_find(char c) {
+    for (int i = 0; i < LPRINT__GLYPH_COUNT; i++) {
+        if (lprint__glyphs[i].key == c) return &lprint__glyphs[i];
+    }
+    return NULL;
+}
+
+static void lprint(const char *text) {
+    for (int row = 0; row < LPRINT_ROWS; row++) {
+        for (const char *p = text; *p; p++) {
+            char c = (char) toupper((unsigned char) *p);
+            const lprint_glyph_t *g = lprint_find(c);
+            if (g) {
+                fputs(g->rows[row], stdout);
+            }
+        }
+        putchar('\n');
+    }
+}
+
+
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    lprint.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 #define VECTOR(TYPE)            TYPE*

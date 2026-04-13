@@ -13,3 +13,6 @@ if (MSVC)
 else ()
     target_compile_options(${EXE_NAME} PRIVATE -Wall -Wextra -Wpedantic)
 endif ()
+
+
+add_executable(test test.c)
