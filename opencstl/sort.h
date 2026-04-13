@@ -44,6 +44,7 @@
 #include "tsort.h"
 #include "pdqsort.h"
 #include "deque.h"
+#include "pmsort.h"
 #include "list.h"
 #include "defines.h"
 

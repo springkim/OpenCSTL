@@ -94,7 +94,7 @@ void cstl_vector_test3(void) {
     }
 
 
-    msort(vec, size(vec), sizeof(int), LESS(int));
+    pmsort(vec, size(vec), sizeof(int), LESS(int));
     for (int i = 0; i < size(vec); i++) {
         printf("Sorted: [%d]\n", vec[i]);
     }

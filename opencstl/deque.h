@@ -70,6 +70,7 @@ OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, -4) = (size_t) type;
     OPENCSTL_NIDX(container, -3) = 2; // capacity
     OPENCSTL_NIDX(container, -2) = 0; // length
+    void *buf_start = ptr;
     *container = (char *) ptr + type_size;
     OPENCSTL_NIDX(container, -1) = -type_size - 1;
     bool iveb_init = false;
@@ -77,7 +78,7 @@ OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
         iveb = iveb_new();
         iveb_init = true;
     }
-    iveb_insert(iveb, ptr, (char *) ptr + (type_size * 2), CT_DEQUE, type_size, type);
+    iveb_insert(iveb, buf_start, (char *) buf_start + (type_size * 2), CT_DEQUE, type_size, type);
     if (iveb_init) {
         atexit(__opencstl_iveb_destroy);
     }

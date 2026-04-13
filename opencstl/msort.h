@@ -91,7 +91,7 @@ static void msort(void *base, size_t nmemb, size_t size,
         if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
         isort(arr + i * sz, blk, sz, compar);
     }
-    char *buf = (char *) salloc(((nmemb + 1) / 2) * sz);
+    char *buf = (char *) zalloc(((nmemb + 1) / 2), sz);
     if (!buf) return;
     for (size_t width = MSORT_ISORT_THRESH; width < nmemb; width *= 2) {
         for (size_t i = 0; i + width < nmemb; i += 2 * width) {
@@ -101,7 +101,7 @@ static void msort(void *base, size_t nmemb, size_t size,
             merge(arr + i * sz, len1, len2, sz, compar, buf);
         }
     }
-    //free(buf);
+    zfree(buf);
 }
 #undef MSORT_ISORT_THRESH
 #endif

@@ -37,6 +37,7 @@ static watch now() {
     watch tv;
     gettimeofday(&tv, NULL);
     return tv;
+    1
 }
 
 static double duration(const watch t_beg, const watch t_end) {

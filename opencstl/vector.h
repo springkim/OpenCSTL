@@ -293,6 +293,7 @@ OPENCSTL_FUNC void __cstl_vector_clear(void **container) {
 
 OPENCSTL_FUNC void __cstl_vector_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    iveb_erase(iveb, *container);
     zfree((char *) (*container) - header_sz);
     *container = NULL;
 }
