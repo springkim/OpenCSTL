@@ -36,6 +36,15 @@
 //
 #if !defined(_OPENCSTL_ISORT_H)
 #define _OPENCSTL_ISORT_H
+
+#if defined(__cplusplus)
+extern "C" {
+
+
+
+#endif
+
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -57,4 +66,7 @@ static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const
     }
     if (tmp != sbuf) free(tmp);
 }
+#if defined(__cplusplus)
+}
+#endif
 #endif

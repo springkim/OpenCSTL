@@ -6,6 +6,8 @@
 #ifndef OPENCSTL_TRACER_H
 #define OPENCSTL_TRACER_H
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "logging.h"
 //#include "van_emde_boas_tree.h"
 #define _1MB (1024*1024)
@@ -33,7 +35,7 @@ static void zerase(void *ptr) {
     }
 }
 #endif
-void opencstl_exit(void) {
+static void opencstl_exit(void) {
 #ifdef OPENCSTL_TRACER
     if (zalloc_size > 0) {
         logging.warning("%d memory blocks were not released", zalloc_size);
@@ -46,7 +48,7 @@ void opencstl_exit(void) {
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
-int opencstl_init(void) {
+static int opencstl_init(void) {
 #ifdef OPENCSTL_TRACER
     //size_t SZ = _512KB;
     //zalloc_vector = salloc(SZ);

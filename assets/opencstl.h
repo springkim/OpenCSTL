@@ -62,7 +62,29 @@
 
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  crossplatform.h                (depth 1) */
+/* BEGIN  tracer.h                       (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 2026. 4. 12..
+//
+
+
+#ifndef OPENCSTL_TRACER_H
+#define OPENCSTL_TRACER_H
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  logging.h                      (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+
+
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  crossplatform.h                (depth 3) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -160,11 +182,315 @@
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    crossplatform.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+
+#ifdef OCSTL_OS_WINDOWS
+#include <windows.h>
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+#endif
+#endif
+
+const char *__red = "\033[31m";
+const char *__green = "\033[32m";
+const char *__yellow = "\033[33m";
+const char *__blue = "\033[34m";
+const char *__magenta = "\033[35m";
+const char *__cyan = "\033[36m";
+// const char *__white = "\033[37m";
+const char *__reset = "\033[0m";
+
+#ifdef OCSTL_OS_WINDOWS
+
+static int s_ansi_enabled = -1;
+
+static int try_enable_ansi(void) {
+    if (s_ansi_enabled == -1) {
+        HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD mode = 0;
+        if (!GetConsoleMode(h, &mode)) {
+            s_ansi_enabled = 0;
+        } else {
+            s_ansi_enabled = SetConsoleMode(h, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING) ? 1 : 0;
+        }
+    }
+    return s_ansi_enabled;
+}
+
+static WORD ansi_to_winattr(const char *color) {
+    if (color == __red) return FOREGROUND_RED | FOREGROUND_INTENSITY;
+    if (color == __green) return FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+    if (color == __yellow) return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+    if (color == __blue) return FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+    if (color == __magenta) return FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+    if (color == __cyan) return FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+    //if (color == __white) return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+    return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+}
+
+#endif // OCSTL_OS_WINDOWS
+
+static int __vcprintln(const char *color, const char *format, va_list args) {
+    int ret;
+
+#ifdef OCSTL_OS_WINDOWS
+    if (try_enable_ansi()) {
+        printf("%s", color);
+        ret = vprintf(format, args);
+        printf("%s\n", __reset);
+    } else {
+        HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(h, ansi_to_winattr(color));
+        ret = vprintf(format, args);
+        SetConsoleTextAttribute(h, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        printf("\n");
+    }
+#elif defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS)
+    printf("%s", color);
+    ret = vprintf(format, args);
+    printf("%s\n", __reset);
+#else
+    ret = vprintf(format, args);
+    printf("\n");
+#endif
+
+    return ret;
+}
+
+static char *__vcsprintf(const char *format, ...) {
+    static char buf[1024] = {0};
+    va_list args;
+    va_start(args, format);
+    vsprintf(buf, format, args);
+    va_end(args);
+    return buf;
+}
+
+#if defined(OCSTL_OS_MACOS)
+
+void __fatal_message_box(const char *msg) {
+    char cmd[512];
+    snprintf(cmd, sizeof(cmd),
+             "osascript -e 'display dialog \"%s\" with title \"FATAL\" with icon stop buttons {\"OK\"} default button \"OK\"' > /dev/null 2>&1",
+             msg);
+    system(cmd);
+}
+#elif defined(OCSTL_OS_WINDOWS)
+#if !defined(OCSTL_CC_TCC)
+void __fatal_message_box(const char *msg) {
+    MessageBoxA(NULL, msg, "FATAL", MB_OK | MB_ICONERROR);
+}
+#else
+void __fatal_message_box(const char *msg) {
+    fprintf(stderr, "[FATAL] %s\n", msg);
+}
+#endif
+#elif defined(OCSTL_OS_LINUX)
+void __fatal_message_box(const char *msg) {
+    char cmd[512];
+    // zenity 없으면 kdialog, 둘 다 없으면 stderr
+    snprintf(cmd, sizeof(cmd),
+             "zenity --error --title=\"FATAL\" --text=\"%s\" 2>/dev/null"
+             " || kdialog --error \"%s\" --title \"FATAL\" 2>/dev/null",
+             msg, msg);
+    if (system(cmd) != 0)
+        fprintf(stderr, "[FATAL] %s\n", msg);
+}
+#endif
+
+int __clogging(const char *color, const char *format, ...) {
+    va_list args;
+    int ret;
+    va_start(args, format);
+    ret = __vcprintln(color, format, args);
+    va_end(args);
+    return ret;
+}
+
+static int _logging_error(const char *format, ...) {
+    va_list args;
+    int ret;
+    va_start(args, format);
+    ret = __vcprintln(__red, format, args);
+    va_end(args);
+    return ret;
+}
+
+static int _logging_debug(const char *format, ...) {
+#if defined(OCSTL_DEBUG)
+    va_list args;
+    int ret;
+    va_start(args, format);
+    ret = __vcprintln(__green, format, args);
+    va_end(args);
+    return ret;
+#else
+    return 0;
+#endif
+}
+
+static int _logging_warning(const char *format, ...) {
+    va_list args;
+    int ret;
+    va_start(args, format);
+    ret = __vcprintln(__yellow, format, args);
+    va_end(args);
+    return ret;
+}
+
+static int _logging_info(const char *format, ...) {
+    va_list args;
+    int ret;
+    va_start(args, format);
+    ret = __vcprintln(__blue, format, args);
+    va_end(args);
+    return ret;
+}
+
+static int _logging_critical(const char *format, ...) {
+    va_list args;
+    int ret;
+    va_start(args, format);
+    ret = __vcprintln(__magenta, format, args);
+    va_end(args);
+    exit(EXIT_FAILURE);
+
+    return ret;
+}
+
+static int _logging_fatal(const char *format, ...) {
+    va_list args;
+    char *ret;
+    va_start(args, format);
+    ret = __vcsprintf(format, args);
+    va_end(args);
+    __fatal_message_box(ret);
+    exit(EXIT_FAILURE);
+    return -1;
+}
+
+// static int _logging_message(const char *format, ...) {
+//     va_list args;
+//     int ret;
+//     va_start(args, format);
+//     ret = __vcprintln(__white, format, args);
+//     va_end(args);
+//     return ret;
+// }
+
+typedef int (*logging_fn)(const char *format, ...);
+
+typedef struct LOGGING {
+    logging_fn debug;
+    logging_fn info;
+    logging_fn warning;
+    logging_fn error;
+    logging_fn critical;
+    logging_fn fatal;
+
+    //logging_fn message;
+} LOGGING;
+
+static LOGGING logging = {
+    _logging_debug,
+    _logging_info,
+    _logging_warning,
+    _logging_error,
+    _logging_critical,
+
+    _logging_fatal,
+
+    //_logging_message
+};
+
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    logging.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+//#include "van_emde_boas_tree.h"
+#define _1MB (1024*1024)
+#define _512KB (1024*512)
+
+#ifdef OPENCSTL_TRACER
+void *zalloc_vector[_512KB] = {0};
+size_t zalloc_size = 0;
+size_t zalloc_count = 0;
+
+
+static void zappend(void *ptr) {
+    zalloc_vector[zalloc_size++] = ptr;
+    zalloc_count++;
+}
+
+static void zerase(void *ptr) {
+    for (size_t i = 0; i < zalloc_size; i++) {
+        if (zalloc_vector[i] == ptr) {
+            memcpy(zalloc_vector + i, zalloc_vector + i + 1, (zalloc_size - i - 1) * sizeof(void *));
+            zalloc_size--;
+            zalloc_vector[zalloc_size] = NULL;
+            return;
+        }
+    }
+}
+#endif
+static void opencstl_exit(void) {
+#ifdef OPENCSTL_TRACER
+    if (zalloc_size > 0) {
+        logging.warning("%d memory blocks were not released", zalloc_size);
+    }
+    logging.debug("opencstl_exit");
+    logging.debug("zalloc_count: %d", zalloc_count);
+#endif
+}
+
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((constructor))
+#endif
+static int opencstl_init(void) {
+#ifdef OPENCSTL_TRACER
+    //size_t SZ = _512KB;
+    //zalloc_vector = salloc(SZ);
+    //memset(zalloc_vector, 0, SZ);
+
+    logging.info("opencstl_init");
+
+    //htm = htm_new();
+#endif
+    atexit(opencstl_exit);
+    return 0;
+}
+#if defined(_MSC_VER)
+# pragma section(".CRT$XCU",read)
+__declspec(allocate(".CRT$XCU")) static int (*p)(void) = opencstl_init;
+# pragma data_seg()
+#endif
+
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    tracer.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* [already included: crossplatform.h] */
 #if defined(OCSTL_CC_CLANG)
+#pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic ignored "-Wunused-value"
+#pragma clang diagnostic ignored "-Wsign-compare"
+#pragma clang diagnostic ignored "-Wpedantic"
+#pragma clang diagnostic ignored "-Wgnu-auto-type"
+#pragma clang diagnostic ignored "-Wsometimes-uninitialized"
 #endif
 
 #if defined(OCSTL_CC_GCC)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
 
@@ -280,7 +606,7 @@ typedef size_t cstl_ptr;
 typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
 
 
-typedef unsigned int size_type;
+typedef int size_type;
 
 #endif
 
@@ -345,6 +671,7 @@ typedef unsigned int size_type;
 #define OPENCSTL_CC_MSVC
 #elif defined(__GNUC__)
 #define OPENCSTL_CC_GCC
+
 #endif
 
 //#define OPENCSTL_ARRAYBASE	0x80	//b10000000
@@ -480,7 +807,11 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 (OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[cstl_error("Invalid Operation")]))   //priority queue
 
 
+
 #define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
+#define cstl_sort(container,comp)	_cstl_sort(&(container),1,comp)
+
+
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -630,21 +961,20 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 // ██║░░██║╚██████╔╝██║░╚███║░░░██║░░░██║██║░╚═╝░██║███████╗░░░░░░███████╗██║░░██║██║░░██║╚█████╔╝██║░░██║
 // ╚═╝░░╚═╝░╚═════╝░╚═╝░░╚══╝░░░╚═╝░░░╚═╝╚═╝░░░░░╚═╝╚══════╝░░░░░░╚══════╝╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝
 
-
-#if defined(__FUNCTION__)
-#define __OPENCSTL_FUNCTION__ __FUNCTION__
-#elif defined(__func__)
+#if defined(__func__)
 #define __OPENCSTL_FUNCTION__ __func__
+#elif defined(__FUNCTION__)
+#define __OPENCSTL_FUNCTION__ __FUNCTION__
 #endif
 
 
 #if defined(__GNUC__)
-#define cstl_error(msg)		__cstl_error(msg,__FILE__,__FUNCTION__,__LINE__)
+#define cstl_error(msg)		__cstl_error(msg,__FILE__,__func__,__LINE__)
 OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, const char *function, int line) {
     char err_msg[1024] = {0};
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
     sprintf_s(err_msg, 1024, "[%s] in %s , %s , %d\n", msg, file, function, line);
-    MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
+    //MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
 #else
     sprintf(err_msg, "[%s] in %s , %s , %d\n", msg, file, function, line);
     puts(err_msg);
@@ -660,7 +990,7 @@ OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, int line) {
 
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
 sprintf_s(err_msg, 1024, "[%s] in %s , %d\n", msg, file, line);
-MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
+//MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
 #else
 sprintf(err_msg, "[%s] in %s , %d\n", msg, file, line);
 //Other platform msg box...
@@ -727,6 +1057,84 @@ exit(EXIT_FAILURE);
 #if !defined(_OPENCSTL_DEQUE_H)
 #define _OPENCSTL_DEQUE_H
 /* [already included: error.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  zalloc.h                       (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 2026. 4. 12..
+//
+#if !defined(_OPENCSTL_ZALLOC_H)
+#define _OPENCSTL_ZALLOC_H
+#include <stdlib.h>
+/* [already included: tracer.h] */
+#ifdef OPENCSTL_TRACER
+static void zfree(void *ptr) {
+    zerase(ptr);
+    free(ptr);
+}
+#else
+#define zfree free
+#endif
+
+#ifdef OPENCSTL_TRACER
+static inline void *_zalloc(size_t sz) {
+    void *ptr = calloc(sz, 1);
+    if (ptr) {
+        zappend(ptr);
+    }
+    return ptr;
+}
+
+static inline void *zalloc(size_t count, size_t size) {
+    return _zalloc(count * size);
+}
+#else
+#define zalloc calloc
+#endif
+
+// static void *zmalloc(size_t n) {
+//     return _zalloc(n);
+// }
+
+
+//
+// #define ZALLOC_GET_MACRO(_1,_2,NAME,...) NAME
+// #define zalloc(...) ZALLOC_GET_MACRO(__VA_ARGS__, zcalloc, zmalloc)(__VA_ARGS__)
+
+
+#ifdef OPENCSTL_TRACER
+static void *zrealloc(void *ptr, size_t new_size) {
+    if (ptr == NULL) {
+        return _zalloc(new_size);
+    }
+
+    if (new_size == 0) {
+        zfree(ptr);
+        return NULL;
+    }
+
+    void *new_ptr = realloc(ptr, new_size);
+    if (new_ptr == NULL) {
+        return NULL;
+    }
+
+    if (new_ptr != ptr) {
+        zerase(ptr);
+        zappend(new_ptr);
+    }
+
+    return new_ptr;
+}
+#else
+#define zrealloc realloc
+#endif
+#endif //_OPENCSTL_ZALLOC_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    zalloc.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 #ifdef _MSC_VER
 #pragma warning(disable:4146)
 #pragma warning(disable:4308)
@@ -735,7 +1143,7 @@ exit(EXIT_FAILURE);
 #define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = malloc(header_sz + type_size * 2);
+    void *block = zalloc(header_sz + type_size * 2,1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for deque");
     }
@@ -771,9 +1179,9 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_t n, void *value) 
 #endif
 
     capacity = n;
-    void *b = calloc(1, header_sz + capacity * type_size);
+    void *b = zalloc(1, header_sz + capacity * type_size);
     memcpy(b, (char *) *container - header_sz + distance, header_sz);
-    free(((char *) *container) - header_sz + distance);
+    zfree(((char *) *container) - header_sz + distance);
     *container = ((char *) b) + header_sz;
     OPENCSTL_NIDX(container, -1) = -1;
     distance = 0;
@@ -808,11 +1216,11 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
 
     if (length == capacity + distance / (ptrdiff_t) type_size) {
         size_t distance_sz = -distance;
-        void *b = calloc(1, header_sz + capacity * 2 * type_size);
+        void *b = zalloc(1, header_sz + capacity * 2 * type_size);
         memcpy(b, (char *) *container - (header_sz + distance_sz), header_sz);
         distance = capacity * 2 / 4;
         memcpy((char *) b + header_sz + distance * type_size, *container, length * type_size);
-        free((char *) *container - (header_sz + distance_sz));
+        zfree((char *) *container - (header_sz + distance_sz));
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) *= 2;
@@ -840,11 +1248,11 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     }
 #endif
     if (distance == 0) {
-        void *b = calloc(1, header_sz + capacity * 2 * type_size);
+        void *b = zalloc(1, header_sz + capacity * 2 * type_size);
         memcpy(b, (char *) *container - header_sz, header_sz);
         distance = capacity * 2 / 4;
         memcpy((char *) b + header_sz + distance * type_size, *container, length * type_size);
-        free((char *) *container - header_sz);
+        zfree((char *) *container - header_sz);
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) *= 2;
@@ -885,9 +1293,10 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_t n, voi
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
+    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -937,9 +1346,10 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
+    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -948,10 +1358,10 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
 #endif
     if (capacity + distance / (ptrdiff_t) type_size < n) {
         capacity = n;
-        void *b = calloc(1, header_sz + capacity * type_size);
+        void *b = zalloc(1, header_sz + capacity * type_size);
         memcpy(b, (char *) *container - header_sz + distance, header_sz);
         memcpy((char *) b + header_sz, *container, length * type_size);
-        free((char *) *container - header_sz + distance);
+        zfree((char *) *container - header_sz + distance);
         *container = (char *) b + header_sz;
         OPENCSTL_NIDX(container, -1) = -1;
         distance = 0;
@@ -1006,18 +1416,19 @@ OPENCSTL_FUNC void __cstl_deque_free(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
 
-    free((char *) *container - (header_sz - distance));
+    zfree((char *) *container - (header_sz - distance));
 }
 
 OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
+    //size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
-    size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
+    //size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
+    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -1081,7 +1492,8 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
 #if !defined(_OPENCSTL_VECTOR_H)
 #define _OPENCSTL_VECTOR_H
 /* [already included: error.h] */
-
+/* [already included: zalloc.h] */
+//#include "van_emde_boas_tree.h"
 // ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
 // ██║░░░██║██╔════╝██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗
 // ╚██╗░██╔╝█████╗░░██║░░╚═╝░░░██║░░░██║░░██║██████╔╝
@@ -1092,7 +1504,7 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
 #define cstl_vector(TYPE)	__cstl_vector(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = malloc(header_sz + type_size);
+    void *block = zalloc(header_sz + type_size,1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for vector");
     }
@@ -1115,11 +1527,12 @@ OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
 OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
+    //size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -1127,7 +1540,7 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value)
     }
 #endif
     if (capacity < n) {
-        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
+        void *b = zrealloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector assign");
         }
@@ -1149,9 +1562,10 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -1159,7 +1573,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     }
 #endif
     if (length == capacity) {
-        void *b = realloc((char *) *container - header_sz, header_sz + capacity * 2 * type_size);
+        void *b = zrealloc((char *) *container - header_sz, header_sz + capacity * 2 * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector push_back");
         }
@@ -1191,9 +1605,10 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
     size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
     size_t pos = (*(char **) iter - *(char **) container) / type_size;
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -1202,7 +1617,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
 #endif
     if (length + N >= capacity) {
         capacity += N;
-        void *b = realloc((char *) *container - header_sz, header_sz + capacity * type_size);
+        void *b = zrealloc((char *) *container - header_sz, header_sz + capacity * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector insert");
         }
@@ -1218,10 +1633,10 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
 }
 
 OPENCSTL_FUNC void __cstl_vector_erase(void **container, void *iter_begin, void *iter_end) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
+    //size_t capacity = OPENCSTL_NIDX(container, -2);
     size_t pos_begin = (*(char **) iter_begin - *(char **) container) / type_size;
     size_t pos_end = (*(char **) iter_end - *(char **) container) / type_size;
     memmove((char *) *container + type_size * (pos_begin), (char *) *container + type_size * (pos_end),
@@ -1255,9 +1670,9 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -1265,7 +1680,7 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
     }
 #endif
     if (capacity < n) {
-        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
+        void *b = zrealloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector resize");
         }
@@ -1285,14 +1700,15 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
 }
 
 OPENCSTL_FUNC void *__cstl_vector_find(void **container, void *iter_begin, void *value) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
+    //size_t capacity = OPENCSTL_NIDX(container, -2);
     size_t pos = (*(char **) iter_begin - *(char **) container) / type_size;
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -1313,17 +1729,17 @@ OPENCSTL_FUNC void __cstl_vector_clear(void **container) {
 
 OPENCSTL_FUNC void __cstl_vector_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    free((char *) (*container) - header_sz);
+    zfree((char *) (*container) - header_sz);
     *container = NULL;
 }
 
 OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
+    //size_t length = OPENCSTL_NIDX(container, -1);
     size_t capacity = OPENCSTL_NIDX(container, -2);
     if (capacity < n) {
-        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
+        void *b = zrealloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector reserve");
         }
@@ -1381,11 +1797,12 @@ OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
 #if !defined(_OPENCSTL_LIST_H)
 #define _OPENCSTL_LIST_H
 /* [already included: error.h] */
+/* [already included: zalloc.h] */
 #define cstl_list(TYPE)		__cstl_list(sizeof(TYPE),#TYPE)
 #define NTAIL(N)	(N==-1?-2:N)
 OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = malloc(header_sz + sizeof(size_t));
+    void *block = zalloc(header_sz + sizeof(size_t), 1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for list");
     }
@@ -1406,21 +1823,22 @@ OPENCSTL_FUNC void *__cstl_list_node(size_t type_size) {
     //[node type][prev][next] ↘ [data]
     size_t header_sz = sizeof(void *) * NIDX_LIST_NODE_SIZE;
     size_t node_sz = type_size + header_sz;
-    void *ptr = (char *) calloc(node_sz, 1) + header_sz;
+    void *ptr = (char *) zalloc(node_sz, 1) + header_sz;
     void **node = &ptr;
     OPENCSTL_NIDX(node, -3) = OPENCSTL_LIST;
     return ptr;
 }
 
 OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, int ntail, int nhead) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail)); //-1 , 0
     void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
     void *n = __cstl_list_node(type_size);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -1440,20 +1858,20 @@ OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, in
 }
 
 OPENCSTL_FUNC void __cstl_list_pop_back_front(void **container, int ntail, int nhead) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail)); //-1 , 0
     void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
     if (*head == NULL || *tail == NULL) {
         cstl_error("No elements in cstl_list");
     }
     if (*head == *tail) {
-        free(&OPENCSTL_NIDX(tail, -3)); //fix
+        zfree(&OPENCSTL_NIDX(tail, -3)); //fix
         *head = *tail = 0;
     } else {
         *tail = (void *) OPENCSTL_NIDX(tail, -(nhead + 2));
         void *fb = (void *) OPENCSTL_NIDX(tail, -(ntail + 2));
-        free(&OPENCSTL_NIDX(&fb, -3));
+        zfree(&OPENCSTL_NIDX(&fb, -3));
         OPENCSTL_NIDX(tail, -(ntail + 2)) = 0;
     }
 
@@ -1486,13 +1904,14 @@ OPENCSTL_FUNC void __cstl_list_resize(void **container, size_t n, void *value) {
 }
 
 OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_t N, void *value) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -1531,8 +1950,8 @@ OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_t N, v
 }
 
 OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void **iter_end) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     if (*iter_begin == NULL) {
@@ -1552,7 +1971,7 @@ OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void *
     void *it = *iter_begin;
     while (it != *iter_end) {
         void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        free(&OPENCSTL_NIDX(&it, -3));
+        zfree(&OPENCSTL_NIDX(&it, -3));
         OPENCSTL_NIDX(container, -1)--;
         it = tmp;
     }
@@ -1566,6 +1985,7 @@ OPENCSTL_FUNC void *__cstl_list_begin(void **container) {
 }
 
 OPENCSTL_FUNC void *__cstl_list_end_rend(void **container) {
+    (void) container;
     return NULL;
 }
 
@@ -1580,7 +2000,7 @@ OPENCSTL_FUNC void __cstl_list_clear(void **container) {
     void *it = *head;
     while (it != NULL) {
         void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        free(&OPENCSTL_NIDX(&it, -3));
+        zfree(&OPENCSTL_NIDX(&it, -3));
         it = tmp;
     }
     *head = *tail = NULL;
@@ -1590,18 +2010,19 @@ OPENCSTL_FUNC void __cstl_list_clear(void **container) {
 OPENCSTL_FUNC void __cstl_list_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     __cstl_list_clear(container);
-    free((char *) (*container) - header_sz);
+    zfree((char *) (*container) - header_sz);
     *container = NULL;
 }
 
 OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *value) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
-    void **head = (void **) &OPENCSTL_NIDX(container, 0);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    //void **tail = (void **) &OPENCSTL_NIDX(container, -2);
+    //void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -1616,6 +2037,98 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
         it = (void *) OPENCSTL_NIDX(&it, -1);
     }
     return NULL;
+}
+
+OPENCSTL_FUNC void __cstl_list_sort(void **container, int (*cmp)(const void *, const void *)) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
+    void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+    size_t length = OPENCSTL_NIDX(container, -1);
+
+    (void) header_sz;
+    (void) type_size;
+    (void) type;
+
+    if (cmp == NULL) {
+        cstl_error("cmp could not be NULL");
+    }
+    if (*head == NULL || *tail == NULL || length < 2) {
+        return;
+    }
+
+    for (size_t width = 1; width < length; width <<= 1) {
+        void *curr = *head;
+        void *new_head = NULL;
+        void *new_tail = NULL;
+
+        while (curr != NULL) {
+            void *left = curr;
+            void *right = NULL;
+            void *next_run = NULL;
+
+            size_t left_count = 0;
+            size_t right_count = 0;
+
+            /* left run: [left, width) */
+            for (; curr != NULL && left_count < width; ++left_count) {
+                curr = (void *) OPENCSTL_NIDX(&curr, -1);
+            }
+
+            /* right run starts here */
+            right = curr;
+
+            /* right run: [right, width) */
+            for (; curr != NULL && right_count < width; ++right_count) {
+                curr = (void *) OPENCSTL_NIDX(&curr, -1);
+            }
+
+            /* next pair of runs */
+            next_run = curr;
+
+            /* merge left/right into new list */
+            while (left_count > 0 || right_count > 0) {
+                void *pick = NULL;
+
+                if (left_count == 0) {
+                    pick = right;
+                    right = (void *) OPENCSTL_NIDX(&right, -1);
+                    --right_count;
+                } else if (right_count == 0 || right == NULL) {
+                    pick = left;
+                    left = (void *) OPENCSTL_NIDX(&left, -1);
+                    --left_count;
+                } else if (cmp(left, right) <= 0) {
+                    pick = left;
+                    left = (void *) OPENCSTL_NIDX(&left, -1);
+                    --left_count;
+                } else {
+                    pick = right;
+                    right = (void *) OPENCSTL_NIDX(&right, -1);
+                    --right_count;
+                }
+
+                if (new_tail == NULL) {
+                    new_head = pick;
+                    OPENCSTL_NIDX(&pick, -2) = 0;
+                } else {
+                    OPENCSTL_NIDX(&new_tail, -1) = (size_t) pick;
+                    OPENCSTL_NIDX(&pick, -2) = (size_t) new_tail;
+                }
+                new_tail = pick;
+            }
+
+            if (new_tail != NULL) {
+                OPENCSTL_NIDX(&new_tail, -1) = 0;
+            }
+
+            curr = next_run;
+        }
+
+        *head = new_head;
+        *tail = new_tail;
+    }
 }
 #endif
 
@@ -1669,6 +2182,7 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
 
 
 /* [already included: error.h] */
+/* [already included: zalloc.h] */
 
 #define P	    (-4)
 #define R       (-1)
@@ -1682,8 +2196,6 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
 #define COLOR(N)	_(N, -5)
 
 
-
-
 #define CSTL_ARENA_CHUNK_SIZE 256
 typedef struct cstl_arena_chunk cstl_arena_chunk;
 
@@ -1695,8 +2207,8 @@ struct cstl_arena_chunk {
 };
 
 OPENCSTL_FUNC cstl_arena_chunk *__cstl_arena_new_chunk(size_t node_size, size_t capacity) {
-    cstl_arena_chunk *chunk = (cstl_arena_chunk *) malloc(
-        sizeof(cstl_arena_chunk) + node_size * capacity
+    cstl_arena_chunk *chunk = (cstl_arena_chunk *) zalloc(
+        sizeof(cstl_arena_chunk) + node_size * capacity, 1
     );
     chunk->next = NULL;
     chunk->used = 0;
@@ -1735,7 +2247,7 @@ OPENCSTL_FUNC void __cstl_arena_free_all(cstl_arena_chunk **arena, void **freeli
     cstl_arena_chunk *c = *arena;
     while (c != NULL) {
         cstl_arena_chunk *next = c->next;
-        free(c);
+        zfree(c);
         c = next;
     }
     *arena = NULL;
@@ -1748,7 +2260,7 @@ OPENCSTL_FUNC void *__cstl_tree_node(size_t type_size, size_t node_type) {
     // [color][parent][node type][left][right] -> [data]
     size_t node_sz = type_size + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     node_sz = (node_sz + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
-    void *ptr = (char *) calloc(node_sz, 1) + sizeof(void *) * NIDX_TREE_NODE_SIZE;
+    void *ptr = (char *) zalloc(node_sz, 1) + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     OPENCSTL_NIDX(&ptr, -3) = node_type;
     COLOR(ptr) = BLACK;
     return ptr;
@@ -1788,7 +2300,7 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, void *compare) {
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = (char *) malloc(header_sz + sizeof(size_t)) + header_sz;
+    void *ptr = (char *) zalloc(header_sz + sizeof(size_t), 1) + header_sz;
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_SET;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
@@ -1820,7 +2332,7 @@ OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_ke
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = (char *) malloc(header_sz + sizeof(size_t)) + header_sz;
+    void *ptr = (char *) zalloc(header_sz + sizeof(size_t), 1) + header_sz;
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_MAP;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
@@ -1918,19 +2430,19 @@ OPENCSTL_FUNC void __cstl_tree_insert_fixup(void **container, void *z) {
 
 OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) {
     size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t value_size = OPENCSTL_NIDX(container, -4);
     size_t type_size = key_size + value_size;
     cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
 
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
-    char *type_value = (char *) OPENCSTL_NIDX(container, -5);
+    // char *type_key = (char *) OPENCSTL_NIDX(container, -3);
+    // char *type_value = (char *) OPENCSTL_NIDX(container, -5);
 
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
 
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float_key = OPENCSTL_NIDX(container, -8);
+    size_t is_float_value = OPENCSTL_NIDX(container, -9);
     float keyf = 0.0F;
     if (is_float_key) {
         keyf = (float) *(double *) key;
@@ -1953,7 +2465,6 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
     }
     void *p = nil;
     while (*root != nil) {
-
         p = *root;
         int r = compare ? compare(*root, n) : memcmp(*root, n, type_size);
         if (r == 0) {
@@ -2044,13 +2555,13 @@ OPENCSTL_FUNC void __cstl_tree_erase_fixup(void **container, void *x) {
 
 OPENCSTL_FUNC void __cstl_tree_erase(void **container, void **iter) {
     if (iter == NULL)return;
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    size_t type_size = key_size + value_size;
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
-    void ***root = (void ***) *container;
+    // size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
+    // size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    // size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    // size_t value_size = OPENCSTL_NIDX(container, -4);
+    //size_t type_size = key_size + value_size;
+    //cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
+    //void ***root = (void ***) *container;
     void *z = iter;
 
     void *y = z;
@@ -2090,16 +2601,16 @@ OPENCSTL_FUNC void __cstl_tree_erase(void **container, void **iter) {
 }
 
 OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    // size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
+    // size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t value_size = OPENCSTL_NIDX(container, -4);
     size_t type_size = key_size + value_size;
-    char *type_key = (char *) OPENCSTL_NIDX(container, -3);
+    //char *type_key = (char *) OPENCSTL_NIDX(container, -3);
 
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
 
 #if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float_key = OPENCSTL_NIDX(container, -8);
     float keyf = 0.0F;
     if (is_float_key) {
         keyf = (float) *(double *) key;
@@ -2136,6 +2647,7 @@ OPENCSTL_FUNC void *__cstl_tree_rbegin(void **container) {
 }
 
 OPENCSTL_FUNC void *__cstl_tree_end_rend(void **container) {
+    (void) container;
     return nil;
 }
 
@@ -2167,7 +2679,7 @@ OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
     cstl_arena_chunk **arena = (cstl_arena_chunk **) &OPENCSTL_NIDX(container, -7);
     void **freelist = (void **) &OPENCSTL_NIDX(container, -6);
     void ***root = (void ***) *container;
-    
+
     __cstl_arena_free_all(arena, freelist);
     OPENCSTL_NIDX(container, -1) = 0;
     *root = nil;
@@ -2176,7 +2688,7 @@ OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
 OPENCSTL_FUNC void __cstl_tree_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     __cstl_tree_clear(container);
-    free((char *) (*container) - header_sz);
+    zfree((char *) (*container) - header_sz);
     *container = NULL;
 }
 
@@ -2204,17 +2716,17 @@ OPENCSTL_FUNC void *__cstl_tree_next_prev(void *it, int r, int l, void *(todeep)
 // }
 
 OPENCSTL_FUNC size_type __cstl_tree_size(void **container) {
-    size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    size_t type_size = key_size + value_size;
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
-    void ***root = (void ***) *container;
-    void *c = *root;
+    //size_t container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //size_t value_size = OPENCSTL_NIDX(container, -4);
+    //size_t type_size = key_size + value_size;
+    //cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
+    //void ***root = (void ***) *container;
+    //void *c = *root;
     size_t length = OPENCSTL_NIDX(container, -1);
     //return ___cstl_tree_size(c);
-    return (size_type)length;
+    return (size_type) length;
 }
 #undef P
 #undef L
@@ -2504,14 +3016,58 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
 /* BEGIN  hashtable.h                    (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+
+
+#if !defined(_OPENCSTL_HASHTABLE_H)
+#define _OPENCSTL_HASHTABLE_H
+/* [already included: zalloc.h] */
+//#include "van_emde_boas_tree.h"
 /* [already included: error.h] */
 #define HT_EMPTY     0x0000U
 #define HT_FRAG_MASK 0xF000U
 #define HT_IN_HOME   0x0800U
 #define HT_DISP_MASK 0x07FFU
 #define HT_DISP_END  0x07FFU
-#define HT_LOAD      0.9
+#define HT_LOAD      0.875
 #define HT_MIN_CAP   8U
+/* threshold = cap * 7/8, computed via shifts (no fp) */
+#define HT_THRESHOLD(cap) ((cap) - ((cap) >> 3))
 
 
 static inline size_t __ht_next_pow2(size_t n) {
@@ -2538,34 +3094,165 @@ static inline size_t __ht_quad(uint16_t d) {
     return ((size_t) d * d + d) / 2;
 }
 
+
+// requires <string.h> for memcpy
+
+#define OPENCSTL_XXH_ROTL32(x, r) (((x) << (r)) | ((x) >> (32 - (r))))
+#define OPENCSTL_XXH_ROTL64(x, r) (((x) << (r)) | ((x) >> (64 - (r))))
+
+// XXH32 primes
+#define OPENCSTL_XXH32_P2 2246822519U     // 0x85EBCA77
+#define OPENCSTL_XXH32_P3 3266489917U     // 0xC2B2AE3D
+
+// XXH64 primes
+#define OPENCSTL_XXH64_P1 11400714785074694791ULL  // 0x9E3779B185EBCA87
+#define OPENCSTL_XXH64_P2 14029467366897019727ULL  // 0xC2B2AE3D27D4EB4F
+#define OPENCSTL_XXH64_P3  1609587929392839161ULL  // 0x165667B19E3779F9
+#define OPENCSTL_XXH64_P4  9650029242287828579ULL  // 0x85EBCA77C2B2AE63
+#define OPENCSTL_XXH64_P5  2870177450012600261ULL  // 0x27D4EB2F165667C5
+
 OPENCSTL_FUNC size_t hash32(void *_key) {
     unsigned int h = *(unsigned int *) _key;
-    h ^= h >> 16;
-    h *= 0x85ebca6b;
+    // XXH32 avalanche
+    h ^= h >> 15;
+    h *= OPENCSTL_XXH32_P2;
     h ^= h >> 13;
-    h *= 0xc2b2ae35;
+    h *= OPENCSTL_XXH32_P3;
     h ^= h >> 16;
     return (size_t) h;
 }
 
 OPENCSTL_FUNC size_t hash64(void *_key) {
     unsigned long long x = *(unsigned long long *) _key;
-    x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
-    x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
-    return (size_t) (x ^ (x >> 31));
+    // XXH64 avalanche
+    x ^= x >> 33;
+    x *= OPENCSTL_XXH64_P2;
+    x ^= x >> 29;
+    x *= OPENCSTL_XXH64_P3;
+    x ^= x >> 32;
+    return (size_t) x;
 }
 
-OPENCSTL_FUNC size_t hash(void *_key, size_t n) {
-    unsigned char *key = (unsigned char *) _key;
-    size_t ret = 0xCBF29CE484222325ULL;
-    while (n >= sizeof(size_t)) {
-        ret ^= (sizeof(size_t) == 8) ? hash64(key) : hash32(key);
-        ret *= 0x100000001b3ULL;
-        key += sizeof(size_t);
-        n -= sizeof(size_t);
+OPENCSTL_FUNC size_t hash(void *_key, size_t len) {
+    const unsigned char *p = (const unsigned char *) _key;
+    const unsigned char *end = p + len;
+    unsigned long long h64;
+    unsigned long long k;
+
+    // --- stripe loop (32 bytes/iter, 4-lane unrolled) ---
+    if (len >= 32) {
+        unsigned long long v1 = OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P2;
+        unsigned long long v2 = OPENCSTL_XXH64_P2;
+        unsigned long long v3 = 0ULL;
+        unsigned long long v4 = 0ULL - OPENCSTL_XXH64_P1;
+        const unsigned char *limit = end - 32;
+
+        do {
+            memcpy(&k, p, 8);
+            v1 += k * OPENCSTL_XXH64_P2;
+            v1 = OPENCSTL_XXH_ROTL64(v1, 31) * OPENCSTL_XXH64_P1;
+            p += 8;
+            memcpy(&k, p, 8);
+            v2 += k * OPENCSTL_XXH64_P2;
+            v2 = OPENCSTL_XXH_ROTL64(v2, 31) * OPENCSTL_XXH64_P1;
+            p += 8;
+            memcpy(&k, p, 8);
+            v3 += k * OPENCSTL_XXH64_P2;
+            v3 = OPENCSTL_XXH_ROTL64(v3, 31) * OPENCSTL_XXH64_P1;
+            p += 8;
+            memcpy(&k, p, 8);
+            v4 += k * OPENCSTL_XXH64_P2;
+            v4 = OPENCSTL_XXH_ROTL64(v4, 31) * OPENCSTL_XXH64_P1;
+            p += 8;
+        } while (p <= limit);
+
+        // merge accumulators
+        h64 = OPENCSTL_XXH_ROTL64(v1, 1)
+              + OPENCSTL_XXH_ROTL64(v2, 7)
+              + OPENCSTL_XXH_ROTL64(v3, 12)
+              + OPENCSTL_XXH_ROTL64(v4, 18);
+
+        v1 = OPENCSTL_XXH_ROTL64(v1, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= v1;
+        h64 = h64 * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+        v2 = OPENCSTL_XXH_ROTL64(v2, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= v2;
+        h64 = h64 * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+        v3 = OPENCSTL_XXH_ROTL64(v3, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= v3;
+        h64 = h64 * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+        v4 = OPENCSTL_XXH_ROTL64(v4, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= v4;
+        h64 = h64 * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+    } else {
+        h64 = OPENCSTL_XXH64_P5;
     }
-    return ret;
+
+    h64 += (unsigned long long) len;
+
+    // --- tail: 8-byte chunks ---
+    while (p + 8 <= end) {
+        memcpy(&k, p, 8);
+        k = OPENCSTL_XXH_ROTL64(k * OPENCSTL_XXH64_P2, 31) * OPENCSTL_XXH64_P1;
+        h64 ^= k;
+        h64 = OPENCSTL_XXH_ROTL64(h64, 27) * OPENCSTL_XXH64_P1 + OPENCSTL_XXH64_P4;
+        p += 8;
+    }
+
+    // --- tail: 4-byte chunk ---
+    if (p + 4 <= end) {
+        unsigned int k32;
+        memcpy(&k32, p, 4);
+        h64 ^= (unsigned long long) k32 * OPENCSTL_XXH64_P1;
+        h64 = OPENCSTL_XXH_ROTL64(h64, 23) * OPENCSTL_XXH64_P2 + OPENCSTL_XXH64_P3;
+        p += 4;
+    }
+
+    // --- tail: remaining bytes ---
+    while (p < end) {
+        h64 ^= (unsigned long long) (*p) * OPENCSTL_XXH64_P5;
+        h64 = OPENCSTL_XXH_ROTL64(h64, 11) * OPENCSTL_XXH64_P1;
+        p++;
+    }
+
+    // --- final avalanche ---
+    h64 ^= h64 >> 33;
+    h64 *= OPENCSTL_XXH64_P2;
+    h64 ^= h64 >> 29;
+    h64 *= OPENCSTL_XXH64_P3;
+    h64 ^= h64 >> 32;
+
+    return (size_t) h64;
 }
+
+// OPENCSTL_FUNC size_t hash32(void *_key) {
+//     unsigned int h = *(unsigned int *) _key;
+//     h ^= h >> 16;
+//     h *= 0x85ebca6b;
+//     h ^= h >> 13;
+//     h *= 0xc2b2ae35;
+//     h ^= h >> 16;
+//     return (size_t) h;
+// }
+//
+// OPENCSTL_FUNC size_t hash64(void *_key) {
+//     unsigned long long x = *(unsigned long long *) _key;
+//     x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
+//     x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
+//     return (size_t) (x ^ (x >> 31));
+// }
+//
+// OPENCSTL_FUNC size_t hash(void *_key, size_t n) {
+//     unsigned char *key = (unsigned char *) _key;
+//     size_t ret = 0xCBF29CE484222325ULL;
+//     while (n >= sizeof(size_t)) {
+//         ret ^= (sizeof(size_t) == 8) ? hash64(key) : hash32(key);
+//         ret *= 0x100000001b3ULL;
+//         key += sizeof(size_t);
+//         n -= sizeof(size_t);
+//     }
+//     return ret;
+// }
 
 static inline uint64_t __ht_mum(uint64_t a, uint64_t b) {
 #ifdef __SIZEOF_INT128__
@@ -2578,7 +3265,17 @@ static inline uint64_t __ht_mum(uint64_t a, uint64_t b) {
 #endif
 }
 
-OPENCSTL_FUNC size_t hash_mixer(void *key, size_t n) {
+#if defined(__GNUC__) || defined(__clang__)
+#define OPENCSTL_ALWAYS_INLINE static inline __attribute__((always_inline))
+#define OPENCSTL_LIKELY(x)   __builtin_expect(!!(x), 1)
+#define OPENCSTL_UNLIKELY(x) __builtin_expect(!!(x), 0)
+#else
+#define OPENCSTL_ALWAYS_INLINE static inline
+#define OPENCSTL_LIKELY(x)   (x)
+#define OPENCSTL_UNLIKELY(x) (x)
+#endif
+
+OPENCSTL_ALWAYS_INLINE size_t hash_mixer(void *key, size_t n) {
     static const uint64_t s0 = 0xa0761d6478bd642fULL;
     static const uint64_t s1 = 0xe7037ed1a0b428dbULL;
     if (n == 4) {
@@ -2624,21 +3321,25 @@ OPENCSTL_FUNC size_t hash_mixer(void *key, size_t n) {
     return (size_t) __ht_mum(s1 ^ (uint64_t) n, __ht_mum(a ^ s1, b ^ s0));
 }
 
-static inline bool __ht_find_empty(
+OPENCSTL_ALWAYS_INLINE bool __ht_find_empty(
     uint16_t *meta, size_t cap_mask, size_t home,
     size_t *empty, uint16_t *disp
 ) {
-    *disp = 1;
+    uint16_t d = 1;
     size_t linear = 1;
     while (true) {
-        *empty = (home + linear) & cap_mask;
-        if (meta[*empty] == HT_EMPTY) return true;
-        if (++(*disp) == HT_DISP_END) return false;
-        linear += *disp;
+        size_t slot = (home + linear) & cap_mask;
+        if (meta[slot] == HT_EMPTY) {
+            *empty = slot;
+            *disp = d;
+            return true;
+        }
+        if (++d == HT_DISP_END) return false;
+        linear += d;
     }
 }
 
-static inline size_t __ht_find_chain_pos(
+OPENCSTL_ALWAYS_INLINE size_t __ht_find_chain_pos(
     uint16_t *meta, size_t cap_mask, size_t home, uint16_t disp_to_empty
 ) {
     size_t candidate = home;
@@ -2703,6 +3404,8 @@ static inline bool __ht_reinsert(
     return true;
 }
 
+// HTMVEB *htm = NULL;
+
 #define HTM_SIZE 1024
 
 typedef struct {
@@ -2727,7 +3430,7 @@ void __htm_append(void *ptr, size_t sz, char *tombstone, int type_size) {
 #define __HASHTABLE_DEFAULT_SIZE__ HT_MIN_CAP
 
 static uint16_t *__ht_alloc_meta(size_t cap) {
-    uint16_t *m = (uint16_t *) calloc(cap + 4, sizeof(uint16_t));
+    uint16_t *m = (uint16_t *) zalloc(cap + 4, sizeof(uint16_t));
     if (!m)
         cstl_error("Allocation failed (metadata)");
     m[cap] = 0x0001;
@@ -2738,11 +3441,11 @@ static void __ht_do_rehash(
     void **container, size_t header_sz,
     size_t key_size, size_t value_size, size_t type_size,
     size_t length, size_t old_cap_mask,
-    uint16_t *old_meta, int htm_index
+    uint16_t *old_meta, size_t htm_index
 ) {
     size_t new_cap = (old_cap_mask + 1) * 2;
     while (true) {
-        void *new_raw = calloc(header_sz + new_cap * type_size, 1);
+        void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
         if (!new_raw)
             cstl_error("Allocation failed (rehash)");
         memcpy(new_raw, (char *)*container - header_sz, header_sz);
@@ -2760,16 +3463,20 @@ static void __ht_do_rehash(
             }
         }
         if (done < length) {
-            free(new_raw);
-            free(new_meta);
+            zfree(new_raw);
+            zfree(new_meta);
             new_cap *= 2;
             continue;
         }
-        free((char *) *container - header_sz);
-        free(old_meta);
+        zfree((char *) *container - header_sz);
+        zfree(old_meta);
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
+        // chtm->p1 = *container;
+        // chtm->p2 = (char *) *container + type_size * new_cap;
+        // chtm->tombstone = (char *) new_meta;
+        // chtm->type_size = (int) type_size;
         htm[htm_index].p1 = *container;
         htm[htm_index].p2 = (char *) *container + type_size * new_cap;
         htm[htm_index].tombstone = (char *) new_meta;
@@ -2816,7 +3523,7 @@ OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *va
     while (true) {
         size_t cap = cap_mask + 1;
         size_t home = key_hash & cap_mask;
-        if (length + 1 > (size_t) (HT_LOAD * (double) cap)) goto do_rehash;
+        if (length + 1 > HT_THRESHOLD(cap)) goto do_rehash;
         if (!(meta[home] & HT_IN_HOME)) {
             if (meta[home] != HT_EMPTY &&
                 !__ht_evict(*container, meta, cap_mask, home, type_size, key_size))
@@ -2843,6 +3550,9 @@ OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *va
             return;
         }
     do_rehash:;
+
+        //HashtableManager* chtm = htm_find(htm,*container);
+
         int htm_index = -1;
         for (int i = 0; i < (int) htm_length; i++)
             if (htm[i].p1 == *container) {
@@ -2984,27 +3694,41 @@ OPENCSTL_FUNC size_t __cstl_hashtable_capacity(void **container) {
 }
 
 OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
+    //HashtableManager* chtm = htm_find(htm,it);
     int idx = -1;
     for (int i = 0; i < (int) htm_length; i++)
         if (htm[i].p1 <= it && it < htm[i].p2) {
             idx = i;
             break;
         }
+
+
     if (idx == -1)
         cstl_error("Unregistered hashtable");
+
+    // size_t ts = (size_t)chtm->type_size;
+    // size_t cap = ((char *) chtm->p2 - (char *) chtm->p1) / ts;
+    // uint16_t *meta = (uint16_t *) chtm->tombstone;
+    //
     size_t ts = (size_t) htm[idx].type_size;
     size_t cap = ((char *) htm[idx].p2 - (char *) htm[idx].p1) / ts;
     uint16_t *meta = (uint16_t *) htm[idx].tombstone;
     if (n == -1) {
         size_t pos = ((char *) it - (char *) htm[idx].p1) / ts + 1;
+        //size_t pos = ((char*)it - (char*)chtm->p1)/ts + 1;
         for (; pos < cap; pos++)
-            if (meta[pos] != HT_EMPTY)
+            if (meta[pos] != HT_EMPTY) {
                 return (char *) htm[idx].p1 + pos * ts;
+                //return (char *) chtm->p1 + pos * ts;
+            }
+
         return NULL;
     }
     if (n == -2) {
         size_t pos = ((char *) it - (char *) htm[idx].p1) / ts;
+        //size_t pos = ((char *) it - (char *) chtm->p1) / ts;
         if (pos == 0) return (char *) htm[idx].p1 - ts;
+
         for (size_t i = pos - 1; ; i--) {
             if (meta[i] != HT_EMPTY)
                 return (char *) htm[idx].p1 + i * ts;
@@ -3028,18 +3752,70 @@ OPENCSTL_FUNC void __cstl_hashtable_free(void **container) {
         memmove(&htm[fi], &htm[fi + 1], (htm_length - fi) * sizeof(HashtableManager));
         htm_length--;
     }
-    free(meta);
-    free((char *) (*container) - header_sz);
+    zfree(meta);
+    zfree((char *) (*container) - header_sz);
     *container = NULL;
 }
 
 OPENCSTL_FUNC void __cstl_hashtable_reserve(void **container, size_t n) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t cap = __HASHTABLE_DEFAULT_SIZE__;
-    if (n > cap) cap = n;
-    uint16_t *meta = __ht_alloc_meta(cap);
-    OPENCSTL_NIDX(container, -7) = cap - 1;
-    OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) meta;
+    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t value_size = OPENCSTL_NIDX(container, -4);
+    size_t type_size = key_size + value_size;
+    size_t length = OPENCSTL_NIDX(container, -1);
+    size_t cap_mask_old = OPENCSTL_NIDX(container, -7);
+    uint16_t *old_meta = (uint16_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
+    /* Required cap so that length+n fits comfortably under the load factor */
+    size_t want = length + n;
+    size_t min_cap = (want * 8 + 6) / 7; /* inverse of 7/8 load */
+    if (min_cap < __HASHTABLE_DEFAULT_SIZE__) min_cap = __HASHTABLE_DEFAULT_SIZE__;
+    size_t new_cap = __ht_next_pow2(min_cap);
+    if (new_cap <= cap_mask_old + 1) return; /* already big enough */
+
+    int htm_index = -1;
+    for (int i = 0; i < (int) htm_length; i++)
+        if (htm[i].p1 == *container) {
+            htm_index = i;
+            break;
+        }
+    if (htm_index == -1)
+        cstl_error("Unregistered hashtable");
+
+    while (true) {
+        void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
+        if (!new_raw)
+            cstl_error("Allocation failed (reserve)");
+        memcpy(new_raw, (char *) *container - header_sz, header_sz);
+        uint16_t *new_meta = __ht_alloc_meta(new_cap);
+        void *nb = (char *) new_raw + header_sz;
+        size_t new_mask = new_cap - 1;
+        size_t done = 0;
+        for (size_t i = 0; i <= cap_mask_old; i++) {
+            if (old_meta[i] != HT_EMPTY) {
+                void *ok = (char *) *container + i * type_size;
+                void *ov = value_size > 0 ? (char *) ok + key_size : NULL;
+                size_t h = hash_mixer(ok, key_size);
+                if (__ht_reinsert(nb, new_meta, new_mask, ok, ov, key_size, value_size, h))
+                    done++;
+            }
+        }
+        if (done < length) {
+            zfree(new_raw);
+            zfree(new_meta);
+            new_cap *= 2;
+            continue;
+        }
+        zfree((char *) *container - header_sz);
+        zfree(old_meta);
+        *container = nb;
+        OPENCSTL_NIDX(container, -7) = new_mask;
+        OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
+        htm[htm_index].p1 = *container;
+        htm[htm_index].p2 = (char *) *container + type_size * new_cap;
+        htm[htm_index].tombstone = (char *) new_meta;
+        htm[htm_index].type_size = (int) type_size;
+        return;
+    }
 }
 
 // ██╗░░░██╗███╗░░██╗░█████╗░██████╗░██████╗░███████╗██████╗░███████╗██████╗░░░░░░░░██████╗███████╗████████╗
@@ -3055,7 +3831,7 @@ OPENCSTL_FUNC void __cstl_hashtable_reserve(void **container, size_t n) {
 OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     size_t cap = __HASHTABLE_DEFAULT_SIZE__;
-    void *ptr = (char *) calloc(header_sz + key_size * cap, 1) + header_sz;
+    void *ptr = (char *) zalloc(header_sz + key_size * cap, 1) + header_sz;
     void **c = &ptr;
     uint16_t *meta = __ht_alloc_meta(cap);
     OPENCSTL_NIDX(c, NIDX_CTYPE) = OPENCSTL_UNORDERED_SET;
@@ -3070,6 +3846,10 @@ OPENCSTL_FUNC void *__cstl_unordered_set(size_t key_size, const char *type_key, 
     OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
     OPENCSTL_NIDX(c, -1) = 0;
     OPENCSTL_NIDX(c, 0) = 0;
+    // if (htm == NULL) {
+    //     htm = htm_new();
+    // }
+    // htm_insert(htm, ptr, (char *) ptr + (key_size * cap), (char *) meta, (int) key_size);
     __htm_append(ptr, key_size * cap, (char *) meta, (int) key_size);
     return ptr;
 }
@@ -3089,7 +3869,7 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     size_t type_size = key_size + value_size;
     size_t cap = __HASHTABLE_DEFAULT_SIZE__;
-    void *ptr = (char *) calloc(header_sz + type_size * cap, 1) + header_sz;
+    void *ptr = (char *) zalloc(header_sz + type_size * cap, 1) + header_sz;
     void **c = &ptr;
     uint16_t *meta = __ht_alloc_meta(cap);
     OPENCSTL_NIDX(c, NIDX_CTYPE) = OPENCSTL_UNORDERED_MAP;
@@ -3104,9 +3884,11 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
     OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
     OPENCSTL_NIDX(c, -1) = 0;
     OPENCSTL_NIDX(c, 0) = 0;
+    //htm_insert(htm, ptr, (char *) ptr + (type_size * cap), (char *) meta, (int) type_size);
     __htm_append(ptr, type_size * cap, (char *) meta, (int) type_size);
     return ptr;
 }
+#endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    hashtable.h */
@@ -3123,6 +3905,10 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
 
 #if !defined(_OPENCSTL_C_ALGORITHM_H)
 #define _OPENCSTL_C_ALGORITHM_H
+
+
+/* [already included: defines.h] */
+
 #ifndef MAX
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
@@ -3130,6 +3916,19 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #endif
 
+OPENCSTL_FUNC void fill(void *container, ...) {
+    va_list vl;
+    void *va_ptr = NULL;
+    __cstl_va_start(vl, container, va_ptr);
+#if CSTL_USE_VAARG
+    void *param1 = __cstl_va_arg_next(vl);
+#else
+    void *param1 = __cstl_va_arg(va_ptr);
+#endif
+
+
+    __cstl_va_end(vl);
+}
 
 
 #endif //_OPENCSTL_C_ALGORITHM_H
@@ -3367,13 +4166,16 @@ static void cstl_rand_seed64(unsigned long long seed) {
     _seed64 = seed;
 }
 
-static unsigned long long cstl_rand64() {
+static unsigned long long cstl_rand64(void) {
     _seed64 = (_seed64 * 6364136223846793005ULL) + 1442695040888963407ULL;
     return (unsigned long long) _seed64;
 }
 
 #define rand32              cstl_rand32
 #define rand64              cstl_rand64
+
+
+// shuffle
 
 #endif //_OPENCSTL_C_RANDOM_H
 
@@ -3382,7 +4184,7 @@ static unsigned long long cstl_rand64() {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  watch.h                        (depth 1) */
+/* BEGIN  chrono.h                       (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -3431,33 +4233,33 @@ static unsigned long long cstl_rand64() {
 
 typedef LARGE_INTEGER watch;
 
-static watch now() {
+static watch _now() {
     watch t;
     QueryPerformanceCounter(&t);
     return t;
 }
 
-static double duration(const watch t_beg, const watch t_end) {
+static double _duration(const watch t_beg, const watch t_end) {
+    LARGE_INTEGER freq;
+    QueryPerformanceFrequency(&freq);
     double ms = (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
     return ms > 0 ? ms : -ms;
 }
 
-
 #elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
 
-
-#include <sys/time.h>
+#include <sys/time.h>w
 #include <time.h>
 
 typedef struct timeval watch;
 
-static watch now() {
+static watch _now(void) {
     watch tv;
     gettimeofday(&tv, NULL);
     return tv;
 }
 
-static double duration(const watch t_beg, const watch t_end) {
+static double _duration(const watch t_beg, const watch t_end) {
     double ms = (t_end.tv_sec - t_beg.tv_sec) * 1000.0 +
                 (t_end.tv_usec - t_beg.tv_usec) / 1000.0;
     return ms > 0 ? ms : -ms;
@@ -3467,11 +4269,23 @@ static double duration(const watch t_beg, const watch t_end) {
 #else
 #error Unsupported compiler/platform
 #endif
+typedef watch (*now_fn)(void);
 
+typedef double (*duration_fn)(const watch, const watch);
+
+typedef struct {
+    now_fn now;
+    duration_fn duration;
+} CHRONO;
+
+static CHRONO chrono = {
+    _now,
+    _duration,
+};
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* END    watch.h */
+/* END    chrono.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -3479,9 +4293,41 @@ static double duration(const watch t_beg, const watch t_end) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 3/29/2026.
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
-
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
 #if !defined(_OPENCSTL_CSTL_FILE_H)
 #define _OPENCSTL_CSTL_FILE_H
 #include <stdio.h>
@@ -3489,7 +4335,9 @@ static double duration(const watch t_beg, const watch t_end) {
 
 FILE *__cstl_fopen(const char *filename, const char *mode) {
     FILE *fp = NULL;
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(__TINYC__)
+    fp = fopen(filename, mode);
+#elif defined(_WIN32) || defined(_WIN64)
     fopen_s(&fp, filename, mode);
 #else
     fp = fopen(filename, mode);
@@ -3566,7 +4414,40 @@ FSTREAM fstream = {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 2026. 4. 12..
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
 //
 
 #if !defined(_OPENCSTL_SORT_H)
@@ -3662,6 +4543,15 @@ FSTREAM fstream = {
 //
 #if !defined(_OPENCSTL_ISORT_H)
 #define _OPENCSTL_ISORT_H
+
+#if defined(__cplusplus)
+extern "C" {
+
+
+
+#endif
+
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -3683,6 +4573,9 @@ static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const
     }
     if (tmp != sbuf) free(tmp);
 }
+#if defined(__cplusplus)
+}
+#endif
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -3739,7 +4632,7 @@ static void msort(void *base, size_t nmemb, size_t size,
         if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
         isort(arr + i * sz, blk, sz, compar);
     }
-    char *buf = (char *) malloc(((nmemb + 1) / 2) * sz);
+    char *buf = (char *) salloc(((nmemb + 1) / 2) * sz);
     if (!buf) return;
     for (size_t width = MSORT_ISORT_THRESH; width < nmemb; width *= 2) {
         for (size_t i = 0; i + width < nmemb; i += 2 * width) {
@@ -3749,7 +4642,7 @@ static void msort(void *base, size_t nmemb, size_t size,
             merge(arr + i * sz, len1, len2, sz, compar, buf);
         }
     }
-    free(buf);
+    //free(buf);
 }
 #undef MSORT_ISORT_THRESH
 #endif
@@ -4071,16 +4964,406 @@ void tsort(void *mem, const size_t len, const size_t size_elem,
 /* END    tsort.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  pdqsort.h                      (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
 
-#define sort qsort
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_PDQSORT_H)
+#define _OPENCSTL_PDQSORT_H
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#define PDQ_ISORT_THRESH      24
+#define PDQ_NINTHER_THRESH   128
+#define PDQ_PARTIAL_LIMIT      8
+#define PDQ_MAX_STACK         64
+
+
+#if defined(_MSC_VER)
+    #define PDQ_LIKELY(x)   (x)
+    #define PDQ_UNLIKELY(x) (x)
+#else
+    #define PDQ_LIKELY(x)   __builtin_expect(!!(x), 1)
+    #define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
+#endif
+
+static inline void pdq__swap(unsigned char *a, unsigned char *b, size_t n) {
+    if (PDQ_LIKELY(n == 8)) {
+        uint64_t t;
+        memcpy(&t, a, 8);
+        memcpy(a, b, 8);
+        memcpy(b, &t, 8);
+    } else if (PDQ_UNLIKELY(n == 4)) {
+        uint32_t t;
+        memcpy(&t, a, 4);
+        memcpy(a, b, 4);
+        memcpy(b, &t, 4);
+    } else {
+        unsigned char t;
+        for (size_t i = 0; i < n; ++i) {
+            t = a[i];
+            a[i] = b[i];
+            b[i] = t;
+        }
+    }
+}
+
+#define PDQ_ELEM(base, i) ((base) + (i) * sz)
+
+static inline size_t pdq_log2(size_t n) {
+    size_t r = 0;
+    while (n > 1) {
+        n >>= 1;
+        ++r;
+    }
+    return r;
+}
+
+static void pdq_isort(unsigned char *base, size_t n, size_t sz,
+                      int (*cmp)(const void *, const void *), unsigned char *tmp) {
+    if (n < 2) return;
+    for (size_t i = 1; i < n; ++i)
+        if (cmp(PDQ_ELEM(base, i), base) < 0)
+            pdq__swap(PDQ_ELEM(base, i), base, sz);
+    for (size_t i = 2; i < n; ++i) {
+        unsigned char *c = PDQ_ELEM(base, i);
+        if (cmp(c - sz, c) <= 0) continue;
+        memcpy(tmp, c, sz);
+        unsigned char *j = c;
+        do {
+            memcpy(j, j - sz, sz);
+            j -= sz;
+        } while (cmp(j - sz, tmp) > 0);
+        memcpy(j, tmp, sz);
+    }
+}
+
+static void pdq_isort_unguard(unsigned char *base, size_t n, size_t sz,
+                              int (*cmp)(const void *, const void *), unsigned char *tmp) {
+    for (size_t i = 1; i < n; ++i) {
+        unsigned char *c = PDQ_ELEM(base, i);
+        if (cmp(c - sz, c) <= 0) continue;
+        memcpy(tmp, c, sz);
+        unsigned char *j = c;
+        do {
+            memcpy(j, j - sz, sz);
+            j -= sz;
+        } while (j > base && cmp(j - sz, tmp) > 0);
+        memcpy(j, tmp, sz);
+    }
+}
+
+static int pdq_partial_isort(unsigned char *base, size_t n, size_t sz,
+                             int (*cmp)(const void *, const void *), unsigned char *tmp) {
+    if (n < 2) return 1;
+    size_t cnt = 0;
+    for (size_t i = 1; i < n; ++i) {
+        unsigned char *c = PDQ_ELEM(base, i);
+        if (cmp(c - sz, c) <= 0) continue;
+        memcpy(tmp, c, sz);
+        unsigned char *j = c;
+        do {
+            memcpy(j, j - sz, sz);
+            j -= sz;
+            if (++cnt > PDQ_PARTIAL_LIMIT) return 0;
+        } while (j > base && cmp(j - sz, tmp) > 0);
+        memcpy(j, tmp, sz);
+    }
+    return 1;
+}
+
+static inline int pdq_s2(unsigned char *base, size_t a, size_t b,
+                         size_t sz, int (*cmp)(const void *, const void *)) {
+    if (cmp(PDQ_ELEM(base, b), PDQ_ELEM(base, a)) < 0) {
+        pdq__swap(PDQ_ELEM(base, a), PDQ_ELEM(base, b), sz);
+        return 1;
+    }
+    return 0;
+}
+
+static inline int pdq_s3(unsigned char *base, size_t a, size_t b, size_t c,
+                         size_t sz, int (*cmp)(const void *, const void *)) {
+    int s = pdq_s2(base, a, b, sz, cmp);
+    s += pdq_s2(base, b, c, sz, cmp);
+    s += pdq_s2(base, a, b, sz, cmp);
+    return s;
+}
+
+static int pdq_pick_pivot(unsigned char *base, size_t n, size_t sz,
+                          int (*cmp)(const void *, const void *)) {
+    size_t mid = n >> 1;
+    int sw = 0;
+    if (n >= PDQ_NINTHER_THRESH) {
+        size_t s = n >> 3;
+        sw += pdq_s3(base, 0, s, s * 2, sz, cmp);
+        sw += pdq_s3(base, mid - s, mid, mid + s, sz, cmp);
+        sw += pdq_s3(base, n - 1 - s * 2, n - 1 - s, n - 1, sz, cmp);
+        sw += pdq_s3(base, s, mid, n - 1 - s, sz, cmp);
+    } else {
+        sw += pdq_s3(base, 0, mid, n - 1, sz, cmp);
+    }
+    pdq__swap(base, PDQ_ELEM(base, mid), sz);
+    return sw;
+}
+
+static void pdq_sift(unsigned char *base, size_t root, size_t n,
+                     size_t sz, int (*cmp)(const void *, const void *)) {
+    for (;;) {
+        size_t c = root * 2 + 1;
+        if (c >= n) break;
+        size_t mx = root;
+        if (cmp(PDQ_ELEM(base, mx), PDQ_ELEM(base, c)) < 0) mx = c;
+        if (c + 1 < n && cmp(PDQ_ELEM(base, mx), PDQ_ELEM(base, c + 1)) < 0)
+            mx = c + 1;
+        if (mx == root) break;
+        pdq__swap(PDQ_ELEM(base, root), PDQ_ELEM(base, mx), sz);
+        root = mx;
+    }
+}
+
+static void pdq_heap(unsigned char *base, size_t n, size_t sz, int (*cmp)(const void *, const void *)) {
+    if (n < 2) return;
+    for (size_t i = n / 2; i-- > 0;) pdq_sift(base, i, n, sz, cmp);
+    for (size_t e = n; e-- > 1;) {
+        pdq__swap(base, PDQ_ELEM(base, e), sz);
+        pdq_sift(base, 0, e, sz, cmp);
+    }
+}
+
+static inline uint64_t pdq_rng(uint64_t *s) {
+    uint64_t x = *s;
+    x ^= x << 13;
+    x ^= x >> 7;
+    x ^= x << 17;
+    return (*s = x);
+}
+
+static void pdq_break(unsigned char *base, size_t n, size_t sz, uint64_t *rs) {
+    if (n < 8) return;
+    size_t h = n >> 1, q = n >> 2;
+    pdq__swap(PDQ_ELEM(base, q), PDQ_ELEM(base, q + pdq_rng(rs) % (h?h:1)), sz);
+    pdq__swap(PDQ_ELEM(base, h), PDQ_ELEM(base, q + pdq_rng(rs) % (h?h:1)), sz);
+    pdq__swap(PDQ_ELEM(base, q + h), PDQ_ELEM(base, q + pdq_rng(rs) % (h?h:1)), sz);
+}
+
+static inline size_t pdq_part_r(unsigned char *base, size_t n, size_t sz,
+                                int (*cmp)(const void *, const void *), unsigned char *piv,
+                                int *ap) {
+    unsigned char *lo = base + sz;
+    unsigned char *hi = base + (n - 1) * sz;
+    while (lo <= hi && cmp(lo, piv) < 0) lo += sz;
+    while (lo <= hi && cmp(hi, piv) >= 0) hi -= sz;
+    int was_partitioned = (lo > hi);
+    while (lo < hi) {
+        pdq__swap(lo, hi, sz);
+        lo += sz;
+        hi -= sz;
+        while (cmp(lo, piv) < 0) lo += sz;
+        while (cmp(hi, piv) >= 0) hi -= sz;
+    }
+    unsigned char *pp = lo - sz;
+    if (pp > base)
+        memcpy(base, pp, sz);
+    memcpy(pp, piv, sz);
+    *ap = was_partitioned;
+    return (size_t) (pp - base) / sz;
+}
+
+static inline size_t pdq_part_l(unsigned char *base, size_t n, size_t sz,
+                                int (*cmp)(const void *, const void *), unsigned char *piv) {
+    memcpy(piv, base, sz);
+    unsigned char *lo = base + sz;
+    unsigned char *hi = base + (n - 1) * sz;
+    while (lo <= hi && cmp(piv, hi) < 0) hi -= sz;
+    while (lo <= hi && cmp(lo, piv) <= 0) lo += sz;
+    while (lo < hi) {
+        pdq__swap(lo, hi, sz);
+        lo += sz;
+        hi -= sz;
+        while (cmp(lo, piv) <= 0) lo += sz;
+        while (cmp(piv, hi) < 0) hi -= sz;
+    }
+    if (hi > base)
+        memcpy(base, hi, sz);
+    memcpy(hi, piv, sz);
+    return (size_t) (hi - base) / sz;
+}
+
+void pdqsort(void *__base, size_t __nel, size_t __width,
+             int (*__compar)(const void *, const void *)) {
+    if (!__base || !__compar || __width == 0 || __nel < 2) return;
+    const size_t sz = __width;
+    int (*cmp)(const void *, const void *) = __compar;
+    unsigned char *arr = (unsigned char *) __base;
+    unsigned char sbuf[512];
+    unsigned char *scratch;
+    size_t need = sz * 2;
+    scratch = (need <= sizeof(sbuf)) ? sbuf : (unsigned char *) malloc(need);
+    if (!scratch) return;
+    unsigned char *tmp = scratch;
+    unsigned char *piv = scratch + sz;
+    uint64_t rs = (uint64_t) __nel ^ 0x517cc1b727220a95ULL;
+    struct pdq_frame {
+        unsigned char *base;
+        size_t n;
+        size_t bad;
+        int left;
+    };
+    struct pdq_frame stk[PDQ_MAX_STACK];
+    int sp = 0;
+    stk[sp].base = arr;
+    stk[sp].n = __nel;
+    stk[sp].bad = pdq_log2(__nel) * 2 + 1;
+    stk[sp].left = 1;
+    ++sp;
+    while (sp > 0) {
+        --sp;
+        unsigned char *base = stk[sp].base;
+        size_t n = stk[sp].n;
+        size_t bad = stk[sp].bad;
+        int leftmost = stk[sp].left;
+    again:
+        if (n <= PDQ_ISORT_THRESH) {
+            if (leftmost)
+                pdq_isort(base, n, sz, cmp, tmp);
+            else
+                pdq_isort_unguard(base, n, sz, cmp, tmp);
+            continue;
+        }
+        if (bad == 0) {
+            pdq_heap(base, n, sz, cmp);
+            continue;
+        }
+        if (!leftmost && cmp(base - sz, base) >= 0) {
+            size_t pp = pdq_part_l(base, n, sz, cmp, piv);
+            base += (pp + 1) * sz;
+            n -= pp + 1;
+            goto again;
+        }
+        pdq_pick_pivot(base, n, sz, cmp);
+        memcpy(piv, base, sz);
+        int ap = 0;
+        size_t pp = pdq_part_r(base, n, sz, cmp, piv, &ap);
+        size_t lsz = pp;
+        size_t rsz = n - pp - 1;
+        int unbal = (lsz < n / 8 || rsz < n / 8);
+        if (unbal) {
+            bad--;
+            if (lsz >= PDQ_ISORT_THRESH) pdq_break(base, lsz, sz, &rs);
+            if (rsz >= PDQ_ISORT_THRESH) pdq_break(base + (pp + 1) * sz, rsz, sz, &rs);
+        } else if (ap) {
+            int lok = pdq_partial_isort(base, lsz, sz, cmp, tmp);
+            int rok = pdq_partial_isort(base + (pp + 1) * sz, rsz, sz, cmp, tmp);
+            if (lok && rok) continue;
+        }
+        unsigned char *rbase = base + (pp + 1) * sz;
+        if (lsz < rsz) {
+            if (rsz > 1 && sp < PDQ_MAX_STACK) {
+                stk[sp].base = rbase;
+                stk[sp].n = rsz;
+                stk[sp].bad = bad;
+                stk[sp].left = 0;
+                ++sp;
+            }
+            n = lsz;
+        } else {
+            if (lsz > 1 && sp < PDQ_MAX_STACK) {
+                stk[sp].base = base;
+                stk[sp].n = lsz;
+                stk[sp].bad = bad;
+                stk[sp].left = leftmost;
+                ++sp;
+            }
+            base = rbase;
+            n = rsz;
+            leftmost = 0;
+        }
+        goto again;
+    }
+    if (scratch != sbuf) free(scratch);
+}
+#undef PDQ_ELEM
+#undef PDQ_ISORT_THRESH
+#undef PDQ_NINTHER_THRESH
+#undef PDQ_PARTIAL_LIMIT
+#undef PDQ_MAX_STACK
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    pdqsort.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
 
 #if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_CLANG)
 #define stable_sort msort
+#define sort pdqsort
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_GCC)
 #define stable_sort tsort
+#define sort pdqsort
 #elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
 #define stable_sort tsort
+#define sort qsort
 
+#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_CLANG)
+#define stable_sort msort
+#define sort pdqsort
+#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_GCC)
+#define stable_sort tsort
+#define sort pdqsort
+#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_TCC)
+#define stable_sort tsort
+#define sort qsort
+
+
+#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_CLANG)
+#define stable_sort tsort
+#define sort pdqsort
+#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_GCC)
+#define stable_sort tsort
+#define sort pdqsort
+#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_TCC)
+#define stable_sort tsort
+#define sort pdqsort
+#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_MSVC)
+#define stable_sort tsort
+#define sort pdqsort
 #endif
 
 
@@ -4089,232 +5372,7 @@ void tsort(void *mem, const size_t len, const size_t size_elem,
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    sort.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  logging.h                      (depth 1) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-
-
-/* [already included: crossplatform.h] */
-
-#ifdef OCSTL_OS_WINDOWS
-#include <windows.h>
-#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
-#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
-#endif
-#endif
-
-const char *__red = "\033[31m";
-const char *__green = "\033[32m";
-const char *__yellow = "\033[33m";
-const char *__blue = "\033[34m";
-const char *__magenta = "\033[35m";
-const char *__cyan = "\033[36m";
-const char *__white = "\033[37m";
-const char *__reset = "\033[0m";
-
-#ifdef OCSTL_OS_WINDOWS
-
-static int s_ansi_enabled = -1;
-
-static int try_enable_ansi(void) {
-    if (s_ansi_enabled == -1) {
-        HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-        DWORD mode = 0;
-        if (!GetConsoleMode(h, &mode)) {
-            s_ansi_enabled = 0;
-        } else {
-            s_ansi_enabled = SetConsoleMode(h, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING) ? 1 : 0;
-        }
-    }
-    return s_ansi_enabled;
-}
-
-static WORD ansi_to_winattr(const char *color) {
-    if (color == __red) return FOREGROUND_RED | FOREGROUND_INTENSITY;
-    if (color == __green) return FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-    if (color == __yellow) return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-    if (color == __blue) return FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-    if (color == __magenta) return FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-    if (color == __cyan) return FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-    if (color == __white) return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-    return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-}
-
-#endif // OCSTL_OS_WINDOWS
-
-static int __vcprintln(const char *color, const char *format, va_list args) {
-    int ret;
-
-#ifdef OCSTL_OS_WINDOWS
-    if (try_enable_ansi()) {
-        printf("%s", color);
-        ret = vprintf(format, args);
-        printf("%s\n", __reset);
-    } else {
-        HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-        SetConsoleTextAttribute(h, ansi_to_winattr(color));
-        ret = vprintf(format, args);
-        SetConsoleTextAttribute(h, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-        printf("\n");
-    }
-#elif defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS)
-    printf("%s", color);
-    ret = vprintf(format, args);
-    printf("%s\n", __reset);
-#else
-    ret = vprintf(format, args);
-    printf("\n");
-#endif
-
-    return ret;
-}
-
-static char *__vcsprintf(const char *format, ...) {
-    static char buf[1024] = {0};
-    va_list args;
-    va_start(args, format);
-    vsprintf(buf, format, args);
-    va_end(args);
-    return buf;
-}
-
-#if defined(OCSTL_OS_MACOS)
-
-void __fatal_message_box(const char *msg) {
-    char cmd[512];
-    snprintf(cmd, sizeof(cmd),
-             "osascript -e 'display dialog \"%s\" with title \"FATAL\" with icon stop buttons {\"OK\"} default button \"OK\"' > /dev/null 2>&1",
-             msg);
-    system(cmd);
-}
-#elif defined(OCSTL_OS_WINDOWS)
-void __fatal_message_box(const char *msg) {
-    MessageBoxA(NULL, msg, "FATAL", MB_OK| MB_ICONERROR);
-}
-#elif defined(OCSTL_OS_LINUX)
-void __fatal_message_box(const char *msg) {
-    char cmd[512];
-    // zenity 없으면 kdialog, 둘 다 없으면 stderr
-    snprintf(cmd, sizeof(cmd),
-             "zenity --error --title=\"FATAL\" --text=\"%s\" 2>/dev/null"
-             " || kdialog --error \"%s\" --title \"FATAL\" 2>/dev/null",
-             msg, msg);
-    if (system(cmd) != 0)
-        fprintf(stderr, "[FATAL] %s\n", msg);
-}
-#endif
-
-int __clogging(const char *color, const char *format, ...) {
-    va_list args;
-    int ret;
-    va_start(args, format);
-    ret = __vcprintln(color, format, args);
-    va_end(args);
-    return ret;
-}
-
-static int _logging_error(const char *format, ...) {
-    va_list args;
-    int ret;
-    va_start(args, format);
-    ret = __vcprintln(__red, format, args);
-    va_end(args);
-    return ret;
-}
-
-static int _logging_debug(const char *format, ...) {
-#if defined(OCSTL_DEBUG)
-    va_list args;
-    int ret;
-    va_start(args, format);
-    ret = __vcprintln(__green, format, args);
-    va_end(args);
-    return ret;
-#else
-    return 0;
-#endif
-}
-
-static int _logging_warning(const char *format, ...) {
-    va_list args;
-    int ret;
-    va_start(args, format);
-    ret = __vcprintln(__yellow, format, args);
-    va_end(args);
-    return ret;
-}
-
-static int _logging_info(const char *format, ...) {
-    va_list args;
-    int ret;
-    va_start(args, format);
-    ret = __vcprintln(__blue, format, args);
-    va_end(args);
-    return ret;
-}
-
-static int _logging_critical(const char *format, ...) {
-    va_list args;
-    int ret;
-    va_start(args, format);
-    ret = __vcprintln(__magenta, format, args);
-    va_end(args);
-    exit(EXIT_FAILURE);
-    
-    return ret;
-}
-
-static int _logging_fatal(const char *format, ...) {
-    va_list args;
-    char *ret;
-    va_start(args, format);
-    ret = __vcsprintf(format, args);
-    va_end(args);
-    __fatal_message_box(ret);
-    exit(EXIT_FAILURE);
-    return -1;
-}
-
-static int _logging_message(const char *format, ...) {
-    va_list args;
-    int ret;
-    va_start(args, format);
-    ret = __vcprintln(__white, format, args);
-    va_end(args);
-    return ret;
-}
-
-typedef int (*logging_fn)(const char *format, ...);
-
-typedef struct LOGGING {
-    logging_fn debug;
-    logging_fn info;
-    logging_fn warning;
-    logging_fn error;
-    logging_fn critical;
-    logging_fn fatal;
-
-    logging_fn message;
-} LOGGING;
-
-static LOGGING logging = {
-    _logging_debug,
-    _logging_info,
-    _logging_warning,
-    _logging_error,
-    _logging_critical,
-
-    _logging_fatal,
-
-    _logging_message
-};
-
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    logging.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
+/* [already included: logging.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  version.h                      (depth 1) */
@@ -4359,15 +5417,15 @@ static LOGGING logging = {
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 /* [already included: crossplatform.h] */
-static char *OPENCSTL_VERSION = "1.2.1";
+static char *OPENCSTL_VERSION = "v1.2.3";
 
-static char *opencstl_version() {
+static char *opencstl_version(void) {
     return OPENCSTL_VERSION;
 }
 
 static char __opencstl_env_str[512] = {0};
 
-char *opencstl_env() {
+char *opencstl_env(void) {
     sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
     return __opencstl_env_str;
 }
@@ -4434,7 +5492,7 @@ char *opencstl_env() {
 
 
 #define first(IT)                   (*IT)
-#define second(IT, TYPE)            cstl_value(IT, TYPE)
+#define second(IT, TYPE)            ((TYPE)cstl_value(IT, TYPE))
 #endif
 
 OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
@@ -4444,13 +5502,18 @@ OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
 }
 
 OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
-    for (int i = 0; i < htm_length; i++) {
+    // if (htm == NULL) {
+    //     return false;
+    // }
+    // return htm_find(htm, it) != NULL;
+    for (size_t i = 0; i < htm_length; i++) {
         if (htm[i].p1 <= it && it < htm[i].p2) {
             return true;
         }
     }
     return false;
 }
+
 
 OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     va_list vl;
@@ -4746,6 +5809,12 @@ OPENCSTL_FUNC void *_cstl_next(void *it) {
     if (__is_hashtable_iter(it)) {
         return __cstl_hashtable_next_prev(it, -1);
     }
+    // Interval *iv = iveb_find(iveb, it);
+    // if (iv != NULL) {
+    //     if (iv->ctype == CT_VECTOR) {
+    //         return __cstl_vector_next(it, iv->type_size);
+    //     }
+    // }
     size_t node_type = OPENCSTL_NIDX(&it, -3);
     switch (node_type) {
         case OPENCSTL_LIST: {
@@ -4774,6 +5843,12 @@ OPENCSTL_FUNC void *_cstl_prev(void *it) {
     if (__is_hashtable_iter(it)) {
         return __cstl_hashtable_next_prev(it, -2);
     }
+    // Interval *iv = iveb_find(iveb, it);
+    // if (iv != NULL) {
+    //     if (iv->ctype == CT_VECTOR) {
+    //         return __cstl_vector_prev(it, iv->type_size);
+    //     }
+    // }
     size_t node_type = OPENCSTL_NIDX(&it, -3);
     switch (node_type) {
         case OPENCSTL_LIST: {
@@ -5310,9 +6385,9 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
     size_t container_type;
     if (__is_deque((void **) container)) {
         cstl_error("Invalid operation");
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
+    container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             if (argc == 1) {
@@ -5328,15 +6403,70 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
         }
         break;
 
-        default: cstl_error("Invalid operation");
+        default: {
+            cstl_error("Invalid operation");
+        }
+        break;
+    }
+    __cstl_va_end(vl);
+}
+
+
+OPENCSTL_FUNC void _cstl_sort(void *container, int argc, ...) {
+    va_list vl;
+    void *va_ptr = NULL;
+    __cstl_va_start(vl, argc, va_ptr);
+#if CSTL_USE_VAARG
+    void *param1 = __cstl_va_arg_next(vl);
+    void *param2 = __cstl_va_arg_next(vl);
+#else
+    void *param1 = __cstl_va_arg(va_ptr);
+    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
+#endif
+
+
+    size_t container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_LIST: {
+            if (argc == 1) {
+#if CSTL_USE_VAARG
+                __cstl_list_sort((void **) container, param1);
+#else
+                __cstl_list_sort((void **) container, *(void **) param1);
+#endif
+            }
+        }
+        break;
+
+        default: cstl_error("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
 }
+
 #if defined(__linux__) || defined(__APPLE__)
 // #if !defined(__8cc__ )
 // #pragma GCC pop_options
 // #endif
+
+
+#if defined(OCSTL_CC_CLANG)
+#pragma clang diagnostic pop
+#pragma clang diagnostic ignored "-Wgnu-auto-type"
+#pragma clang diagnostic ignored "-Wgnu-statement-expression-from-macro-expansion"
+#pragma clang diagnostic ignored "-Wvariadic-macro-arguments-omitted"
+#endif
+#if defined(OCSTL_CC_GCC)
+#pragma GCC diagnostic pop
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */

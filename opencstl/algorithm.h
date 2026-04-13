@@ -4,8 +4,11 @@
 
 #pragma once
 #if !defined(_OPENCSTL_C_ALGORITHM_H)
-#include "defines.h"
 #define _OPENCSTL_C_ALGORITHM_H
+
+
+#include "defines.h"
+
 #ifndef MAX
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
@@ -22,7 +25,7 @@ OPENCSTL_FUNC void fill(void *container, ...) {
 #else
     void *param1 = __cstl_va_arg(va_ptr);
 #endif
-    
+
 
     __cstl_va_end(vl);
 }

@@ -101,9 +101,15 @@ void __fatal_message_box(const char *msg) {
     system(cmd);
 }
 #elif defined(OCSTL_OS_WINDOWS)
+#if !defined(OCSTL_CC_TCC)
 void __fatal_message_box(const char *msg) {
-    //MessageBoxA(NULL, msg, "FATAL", MB_OK| MB_ICONERROR);
+    MessageBoxA(NULL, msg, "FATAL", MB_OK | MB_ICONERROR);
 }
+#else
+void __fatal_message_box(const char *msg) {
+    fprintf(stderr, "[FATAL] %s\n", msg);
+}
+#endif
 #elif defined(OCSTL_OS_LINUX)
 void __fatal_message_box(const char *msg) {
     char cmd[512];

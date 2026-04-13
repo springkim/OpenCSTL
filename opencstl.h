@@ -73,65 +73,8 @@
 #ifndef OPENCSTL_TRACER_H
 #define OPENCSTL_TRACER_H
 #include <stdio.h>
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  salloc.h                       (depth 2) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2026, Kim Bomm, Woo Cheol, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_C_ALLOCA_H)
-#define _OPENCSTL_C_ALLOCA_H
-
-#if defined(__linux__) || defined(__APPLE__)
-#include <alloca.h>
-#define salloc(size) (void*)alloca(size)
-#elif defined(_WIN32) || defined(_WIN64)
-#include <malloc.h>
-#define salloc(size) _alloca(size)
-#else
-#error "No Alloca Function"
-#endif
-
-
-#endif //_OPENCSTL_C_ALLOCA_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    salloc.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
+#include <stdlib.h>
+#include <string.h>
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  logging.h                      (depth 2) */
@@ -253,7 +196,7 @@ const char *__yellow = "\033[33m";
 const char *__blue = "\033[34m";
 const char *__magenta = "\033[35m";
 const char *__cyan = "\033[36m";
-const char *__white = "\033[37m";
+// const char *__white = "\033[37m";
 const char *__reset = "\033[0m";
 
 #ifdef OCSTL_OS_WINDOWS
@@ -280,7 +223,7 @@ static WORD ansi_to_winattr(const char *color) {
     if (color == __blue) return FOREGROUND_BLUE | FOREGROUND_INTENSITY;
     if (color == __magenta) return FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
     if (color == __cyan) return FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-    if (color == __white) return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+    //if (color == __white) return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
     return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 }
 
@@ -332,9 +275,15 @@ void __fatal_message_box(const char *msg) {
     system(cmd);
 }
 #elif defined(OCSTL_OS_WINDOWS)
+#if !defined(OCSTL_CC_TCC)
 void __fatal_message_box(const char *msg) {
-    MessageBoxA(NULL, msg, "FATAL", MB_OK| MB_ICONERROR);
+    MessageBoxA(NULL, msg, "FATAL", MB_OK | MB_ICONERROR);
 }
+#else
+void __fatal_message_box(const char *msg) {
+    fprintf(stderr, "[FATAL] %s\n", msg);
+}
+#endif
 #elif defined(OCSTL_OS_LINUX)
 void __fatal_message_box(const char *msg) {
     char cmd[512];
@@ -404,7 +353,7 @@ static int _logging_critical(const char *format, ...) {
     ret = __vcprintln(__magenta, format, args);
     va_end(args);
     exit(EXIT_FAILURE);
-    
+
     return ret;
 }
 
@@ -419,14 +368,14 @@ static int _logging_fatal(const char *format, ...) {
     return -1;
 }
 
-static int _logging_message(const char *format, ...) {
-    va_list args;
-    int ret;
-    va_start(args, format);
-    ret = __vcprintln(__white, format, args);
-    va_end(args);
-    return ret;
-}
+// static int _logging_message(const char *format, ...) {
+//     va_list args;
+//     int ret;
+//     va_start(args, format);
+//     ret = __vcprintln(__white, format, args);
+//     va_end(args);
+//     return ret;
+// }
 
 typedef int (*logging_fn)(const char *format, ...);
 
@@ -438,7 +387,7 @@ typedef struct LOGGING {
     logging_fn critical;
     logging_fn fatal;
 
-    logging_fn message;
+    //logging_fn message;
 } LOGGING;
 
 static LOGGING logging = {
@@ -450,7 +399,7 @@ static LOGGING logging = {
 
     _logging_fatal,
 
-    _logging_message
+    //_logging_message
 };
 
 
@@ -459,13 +408,12 @@ static LOGGING logging = {
 /* ////////////////////////////////////////////////////////////////////////////// */
 //#include "van_emde_boas_tree.h"
 #define _1MB (1024*1024)
+#define _512KB (1024*512)
 
 #ifdef OPENCSTL_TRACER
-void **zalloc_vector = NULL;
+void *zalloc_vector[_512KB] = {0};
 size_t zalloc_size = 0;
 size_t zalloc_count = 0;
-
-void *galloc_vector[_1MB] = {0};
 
 
 static void zappend(void *ptr) {
@@ -476,45 +424,47 @@ static void zappend(void *ptr) {
 static void zerase(void *ptr) {
     for (size_t i = 0; i < zalloc_size; i++) {
         if (zalloc_vector[i] == ptr) {
-            memcpy(zalloc_vector+i, zalloc_vector+i+1, (zalloc_size-i-1)*sizeof(void*));
+            memcpy(zalloc_vector + i, zalloc_vector + i + 1, (zalloc_size - i - 1) * sizeof(void *));
             zalloc_size--;
             zalloc_vector[zalloc_size] = NULL;
             return;
         }
     }
 }
-
-void opencstl_exit(void) {
+#endif
+static void opencstl_exit(void) {
+#ifdef OPENCSTL_TRACER
     if (zalloc_size > 0) {
         logging.warning("%d memory blocks were not released", zalloc_size);
     }
-    logging.info("opencstl_exit");
-    logging.info("zalloc_count: %d", zalloc_count);
+    logging.debug("opencstl_exit");
+    logging.debug("zalloc_count: %d", zalloc_count);
+#endif
 }
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
-int opencstl_init(void) {
-    size_t SZ = _1MB; //1MB
-    zalloc_vector = salloc(SZ);
-    memset(zalloc_vector, 0, SZ);
+static int opencstl_init(void) {
+#ifdef OPENCSTL_TRACER
+    //size_t SZ = _512KB;
+    //zalloc_vector = salloc(SZ);
+    //memset(zalloc_vector, 0, SZ);
 
     logging.info("opencstl_init");
 
     //htm = htm_new();
-    
+#endif
     atexit(opencstl_exit);
     return 0;
 }
 #if defined(_MSC_VER)
 # pragma section(".CRT$XCU",read)
-__declspec(allocate(".CRT$XCU"))static int (*p)(void)= opencstl_init;
+__declspec(allocate(".CRT$XCU")) static int (*p)(void) = opencstl_init;
 # pragma data_seg()
 #endif
 
 #endif
-#endif //OPENCSTL_PREMAIN_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    tracer.h */
@@ -1024,7 +974,7 @@ OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, const char *fu
     char err_msg[1024] = {0};
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
     sprintf_s(err_msg, 1024, "[%s] in %s , %s , %d\n", msg, file, function, line);
-    MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
+    //MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
 #else
     sprintf(err_msg, "[%s] in %s , %s , %d\n", msg, file, function, line);
     puts(err_msg);
@@ -1040,7 +990,7 @@ OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, int line) {
 
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
 sprintf_s(err_msg, 1024, "[%s] in %s , %d\n", msg, file, line);
-MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
+//MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
 #else
 sprintf(err_msg, "[%s] in %s , %d\n", msg, file, line);
 //Other platform msg box...
@@ -1852,7 +1802,7 @@ OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
 #define NTAIL(N)	(N==-1?-2:N)
 OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zalloc(header_sz + sizeof(size_t),1);
+    void *block = zalloc(header_sz + sizeof(size_t), 1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for list");
     }
@@ -2087,296 +2037,7 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
         it = (void *) OPENCSTL_NIDX(&it, -1);
     }
     return NULL;
-} //
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_LIST_H)
-#define _OPENCSTL_LIST_H
-/* [already included: error.h] */
-#define cstl_list(TYPE)		__cstl_list(sizeof(TYPE),#TYPE)
-#define NTAIL(N)	(N==-1?-2:N)
-OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
-    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zmalloc(header_sz + sizeof(size_t));
-    if (block == NULL) {
-        cstl_error("Failed to allocate memory for list");
-    }
-    void *ptr = ((char *) block) + header_sz;
-    void **container = &ptr;
-    OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_LIST;
-    OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
-    OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
-    OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
-    OPENCSTL_NIDX(container, -4) = (size_t) type;
-    OPENCSTL_NIDX(container, -2) = 0; //tail
-    OPENCSTL_NIDX(container, -1) = 0; //length
-    OPENCSTL_NIDX(container, 0) = 0; //head
-    return ptr;
 }
-
-OPENCSTL_FUNC void *__cstl_list_node(size_t type_size) {
-    //[node type][prev][next] ↘ [data]
-    size_t header_sz = sizeof(void *) * NIDX_LIST_NODE_SIZE;
-    size_t node_sz = type_size + header_sz;
-    void *ptr = (char *) zalloc(node_sz, 1) + header_sz;
-    void **node = &ptr;
-    OPENCSTL_NIDX(node, -3) = OPENCSTL_LIST;
-    return ptr;
-}
-
-OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, int ntail, int nhead) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail)); //-1 , 0
-    void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
-    void *n = __cstl_list_node(type_size);
-//char *type = (char *) OPENCSTL_NIDX(container, -4);
-
-#if !defined(__linux__) && !defined(__APPLE__)
-size_t is_float = OPENCSTL_NIDX(container, -8);
-float valuef = 0.0F;
-    if (is_float) {
-    valuef = (float) *(double *) value;
-    value = &valuef;
-}
-#endif
-if (value)
-memcpy(n, value, type_size);
-    if (*head== NULL&&  *tail== NULL) {
-        *head = *tail = n;
-    } else {
-        OPENCSTL_NIDX(tail, -(ntail + 2)) = (size_t) n;
-        OPENCSTL_NIDX(&n, -(nhead + 2)) = (size_t) *tail;
-        *tail = n;
-    }
-OPENCSTL_NIDX(container, -1)++;
-}
-
-OPENCSTL_FUNC void __cstl_list_pop_back_front(void **container, int ntail, int nhead) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    //size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail)); //-1 , 0
-    void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
-    if (*head == NULL || *tail == NULL) {
-        cstl_error("No elements in cstl_list");
-    }
-    if (*head == *tail) {
-        zfree(&OPENCSTL_NIDX(tail, -3)); //fix
-        *head = *tail = 0;
-    } else {
-        *tail = (void *) OPENCSTL_NIDX(tail, -(nhead + 2));
-        void *fb = (void *) OPENCSTL_NIDX(tail, -(ntail + 2));
-        zfree(&OPENCSTL_NIDX(&fb, -3));
-        OPENCSTL_NIDX(tail, -(ntail + 2)) = 0;
-    }
-
-    OPENCSTL_NIDX(container, -1)--;
-}
-
-OPENCSTL_FUNC void *__cstl_list_next_prev(void *it, int n) {
-    //next(-1), prev(-2)
-    return (void *) OPENCSTL_NIDX(&it, n);
-}
-
-OPENCSTL_FUNC size_type __cstl_list_size(void **container) {
-    return (size_type) OPENCSTL_NIDX(container, -1);
-}
-
-OPENCSTL_FUNC void __cstl_list_resize(void **container, size_t n, void *value) {
-    size_t length = OPENCSTL_NIDX(container, -1);
-    if (n < length) {
-        while (n < length) {
-            __cstl_list_pop_back_front((void **) container, -1, 0);
-            length--;
-        }
-    } else {
-        while (n >= length) {
-            __cstl_list_push_back_front((void **) container, value, -1, 0);
-            length++;
-        }
-    }
-    OPENCSTL_NIDX(container, -1) = n;
-}
-
-OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_t N, void *value) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
-    void **head = (void **) &OPENCSTL_NIDX(container, 0);
-//char *type = (char *) OPENCSTL_NIDX(container, -4);
-
-#if !defined(__linux__) && !defined(__APPLE__)
-size_t is_float = OPENCSTL_NIDX(container, -8);
-float valuef = 0.0F;
-    if (is_float) {
-    valuef = (float) *(double *) value;
-    value = &valuef;
-}
-#endif
-void *nhead = __cstl_list_node(type_size);
-memcpy(nhead, value, type_size);
-void *ntail = nhead;
-    for (size_t i =1; i<N; i++) {
-        void *n = __cstl_list_node(type_size);
-        memcpy(n, value, type_size);
-        OPENCSTL_NIDX(&n, -2) = (size_t) ntail; //n->prev=tail
-        OPENCSTL_NIDX(&ntail, -1) = (size_t) n; //tail->next=n;
-        ntail = n;
-    }
-OPENCSTL_NIDX(&ntail, -1) = (size_t) *iter; //n->next=iter
-    if (*head== NULL&&  *tail== NULL) {
-        *head = nhead;
-        *tail = ntail;
-    } else if (*iter!= NULL) {
-        if (OPENCSTL_NIDX(iter, -2) != 0) {
-            OPENCSTL_NIDX(&(OPENCSTL_NIDX(iter, -2)), -1) = (size_t) nhead; //iter->prev->next=n;
-        }
-        OPENCSTL_NIDX(&nhead, -2) = OPENCSTL_NIDX(iter, -2); //n->prev=iter->prev
-        OPENCSTL_NIDX(iter, -2) = (size_t) ntail; //iter->prev=n;
-        if (*iter == *head) {
-            *head = nhead;
-        }
-    } else {
-        OPENCSTL_NIDX(tail, -1) = (size_t) nhead; //tail->next=n;
-        OPENCSTL_NIDX(&nhead, -2) = (size_t) *tail; //n->prev=tail;
-        *tail = ntail;
-    }
-OPENCSTL_NIDX(container, -1)+= N;
-}
-
-OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void **iter_end) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    //size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
-    void **head = (void **) &OPENCSTL_NIDX(container, 0);
-    if (*iter_begin == NULL) {
-        cstl_error("iter_begin could not be NULL");
-    }
-    if (*iter_begin == *head) {
-        *head = *iter_end;
-        if (*head != NULL) {
-            OPENCSTL_NIDX(head, -2) = 0;
-        }
-    } else {
-        OPENCSTL_NIDX(&OPENCSTL_NIDX(iter_begin, -2), -1) = (size_t) * iter_end; //begin->prev->next=end;
-        if (*iter_end != NULL) {
-            OPENCSTL_NIDX(iter_end, -2) = OPENCSTL_NIDX(iter_begin, -2); //end->prev=begin->prev
-        }
-    }
-    void *it = *iter_begin;
-    while (it != *iter_end) {
-        void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        zfree(&OPENCSTL_NIDX(&it, -3));
-        OPENCSTL_NIDX(container, -1)--;
-        it = tmp;
-    }
-    if (*iter_end == NULL) {
-        *tail = 0;
-    }
-}
-
-OPENCSTL_FUNC void *__cstl_list_begin(void **container) {
-    return (void *) OPENCSTL_NIDX(container, 0);
-}
-
-OPENCSTL_FUNC void *__cstl_list_end_rend(void **container) {
-    (void) container;
-    return NULL;
-}
-
-OPENCSTL_FUNC void *__cstl_list_rbegin(void **container) {
-    return (void *) OPENCSTL_NIDX(container, -2);
-}
-
-OPENCSTL_FUNC void __cstl_list_clear(void **container) {
-    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
-    void **head = (void **) &OPENCSTL_NIDX(container, 0);
-
-    void *it = *head;
-    while (it != NULL) {
-        void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        zfree(&OPENCSTL_NIDX(&it, -3));
-        it = tmp;
-    }
-    *head = *tail = NULL;
-    OPENCSTL_NIDX(container, -1) = 0;
-}
-
-OPENCSTL_FUNC void __cstl_list_free(void **container) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    __cstl_list_clear(container);
-    zfree((char *) (*container) - header_sz);
-    *container = NULL;
-}
-
-OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *value) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-//void **tail = (void **) &OPENCSTL_NIDX(container, -2);
-//void **head = (void **) &OPENCSTL_NIDX(container, 0);
-//char *type = (char *) OPENCSTL_NIDX(container, -4);
-
-#if !defined(__linux__) && !defined(__APPLE__)
-size_t is_float = OPENCSTL_NIDX(container, -8);
-float valuef = 0.0F;
-    if (is_float) {
-    valuef = (float) *(double *) value;
-    value = &valuef;
-}
-#endif
-void *it = *iter_begin;
-    while (it!= NULL) {
-        if (memcmp(it, value, type_size) == 0) {
-            return it;
-        }
-        it = (void *) OPENCSTL_NIDX(&it, -1);
-    }
-    return NULL;
-}
-
-OPENCSTL_FUNC void __cstl_list_sort(void **container, int (*cmp)(const void *, const void *)) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
-    void **head = (void **) &OPENCSTL_NIDX(container, 0);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-    // Linked List
-}
-#endif
-
 
 OPENCSTL_FUNC void __cstl_list_sort(void **container, int (*cmp)(const void *, const void *)) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
@@ -3189,7 +2850,65 @@ OPENCSTL_FUNC void *__cstl_stack(size_t type_size, char *type) {
 
 /* [already included: vector.h] */
 /* [already included: error.h] */
-/* [already included: salloc.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  salloc.h                       (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, Woo Cheol, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_C_ALLOCA_H)
+#define _OPENCSTL_C_ALLOCA_H
+
+#if defined(__linux__) || defined(__APPLE__)
+#include <alloca.h>
+#define salloc(size) (void*)alloca(size)
+#elif defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#define salloc(size) _alloca(size)
+#else
+#error "No Alloca Function"
+#endif
+
+
+#endif //_OPENCSTL_C_ALLOCA_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    salloc.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 
 
 #define cstl_queue(TYPE)	__cstl_queue(sizeof(TYPE),#TYPE)
@@ -3833,7 +3552,7 @@ OPENCSTL_FUNC void __cstl_hashtable_insert(void **container, void *key, void *va
     do_rehash:;
 
         //HashtableManager* chtm = htm_find(htm,*container);
-        
+
         int htm_index = -1;
         for (int i = 0; i < (int) htm_length; i++)
             if (htm[i].p1 == *container) {
@@ -3975,7 +3694,6 @@ OPENCSTL_FUNC size_t __cstl_hashtable_capacity(void **container) {
 }
 
 OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
-    
     //HashtableManager* chtm = htm_find(htm,it);
     int idx = -1;
     for (int i = 0; i < (int) htm_length; i++)
@@ -3983,11 +3701,11 @@ OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
             idx = i;
             break;
         }
-    
-    
+
+
     if (idx == -1)
         cstl_error("Unregistered hashtable");
-    
+
     // size_t ts = (size_t)chtm->type_size;
     // size_t cap = ((char *) chtm->p2 - (char *) chtm->p1) / ts;
     // uint16_t *meta = (uint16_t *) chtm->tombstone;
@@ -4003,14 +3721,14 @@ OPENCSTL_FUNC void *__cstl_hashtable_next_prev(void *it, int n) {
                 return (char *) htm[idx].p1 + pos * ts;
                 //return (char *) chtm->p1 + pos * ts;
             }
-                
+
         return NULL;
     }
     if (n == -2) {
         size_t pos = ((char *) it - (char *) htm[idx].p1) / ts;
         //size_t pos = ((char *) it - (char *) chtm->p1) / ts;
         if (pos == 0) return (char *) htm[idx].p1 - ts;
-        
+
         for (size_t i = pos - 1; ; i--) {
             if (meta[i] != HT_EMPTY)
                 return (char *) htm[idx].p1 + i * ts;
@@ -4186,8 +3904,11 @@ OPENCSTL_FUNC void *__cstl_unordered_map(size_t key_size, size_t value_size,
 //
 
 #if !defined(_OPENCSTL_C_ALGORITHM_H)
-/* [already included: defines.h] */
 #define _OPENCSTL_C_ALGORITHM_H
+
+
+/* [already included: defines.h] */
+
 #ifndef MAX
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
@@ -4204,7 +3925,7 @@ OPENCSTL_FUNC void fill(void *container, ...) {
 #else
     void *param1 = __cstl_va_arg(va_ptr);
 #endif
-    
+
 
     __cstl_va_end(vl);
 }
@@ -4512,24 +4233,22 @@ static unsigned long long cstl_rand64(void) {
 
 typedef LARGE_INTEGER watch;
 
-static watch now() {
+static watch _now() {
     watch t;
     QueryPerformanceCounter(&t);
     return t;
 }
 
-static double duration(const watch t_beg, const watch t_end) {
+static double _duration(const watch t_beg, const watch t_end) {
     LARGE_INTEGER freq;
     QueryPerformanceFrequency(&freq);
     double ms = (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
     return ms > 0 ? ms : -ms;
 }
 
-
 #elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
 
-
-#include <sys/time.h>
+#include <sys/time.h>w
 #include <time.h>
 
 typedef struct timeval watch;
@@ -4546,6 +4265,10 @@ static double _duration(const watch t_beg, const watch t_end) {
     return ms > 0 ? ms : -ms;
 }
 
+
+#else
+#error Unsupported compiler/platform
+#endif
 typedef watch (*now_fn)(void);
 
 typedef double (*duration_fn)(const watch, const watch);
@@ -4559,11 +4282,6 @@ static CHRONO chrono = {
     _now,
     _duration,
 };
-
-#else
-#error Unsupported compiler/platform
-#endif
-
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -4617,7 +4335,9 @@ static CHRONO chrono = {
 
 FILE *__cstl_fopen(const char *filename, const char *mode) {
     FILE *fp = NULL;
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(__TINYC__)
+    fp = fopen(filename, mode);
+#elif defined(_WIN32) || defined(_WIN64)
     fopen_s(&fp, filename, mode);
 #else
     fp = fopen(filename, mode);
@@ -4823,6 +4543,15 @@ FSTREAM fstream = {
 //
 #if !defined(_OPENCSTL_ISORT_H)
 #define _OPENCSTL_ISORT_H
+
+#if defined(__cplusplus)
+extern "C" {
+
+
+
+#endif
+
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -4844,6 +4573,9 @@ static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const
     }
     if (tmp != sbuf) free(tmp);
 }
+#if defined(__cplusplus)
+}
+#endif
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -5685,7 +5417,7 @@ void pdqsort(void *__base, size_t __nel, size_t __width,
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 /* [already included: crossplatform.h] */
-static char *OPENCSTL_VERSION = "1.2.3";
+static char *OPENCSTL_VERSION = "v1.2.3";
 
 static char *opencstl_version(void) {
     return OPENCSTL_VERSION;
@@ -6671,8 +6403,10 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
         }
         break;
 
-        default: cstl_error("Invalid operation");
-            break;
+        default: {
+            cstl_error("Invalid operation");
+        }
+        break;
     }
     __cstl_va_end(vl);
 }
@@ -6701,7 +6435,11 @@ OPENCSTL_FUNC void _cstl_sort(void *container, int argc, ...) {
     switch (container_type) {
         case OPENCSTL_LIST: {
             if (argc == 1) {
+#if CSTL_USE_VAARG
                 __cstl_list_sort((void **) container, param1);
+#else
+                __cstl_list_sort((void **) container, *(void **) param1);
+#endif
             }
         }
         break;

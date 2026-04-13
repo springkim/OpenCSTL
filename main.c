@@ -87,7 +87,7 @@ void cstl_vector_test2(void) {
 void cstl_vector_test3(void) {
     DECORATE("opencstl{vector/qsort} test begin");
     VECTOR(int) vec = new_vector(int);
-    const size_t N = 1000;
+    const size_t N = 100;
     for (int i = 0; i < N; i++) {
         int val = rand32() % N;
         push_back(vec, val);

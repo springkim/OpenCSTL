@@ -60,7 +60,7 @@ static double _duration(const watch t_beg, const watch t_end) {
 
 #elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
 
-#include <sys/time.h>
+#include <sys/time.h>w
 #include <time.h>
 
 typedef struct timeval watch;
