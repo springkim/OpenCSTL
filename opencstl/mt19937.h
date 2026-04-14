@@ -37,7 +37,7 @@
 #if !defined(OPENCSTL_MT19937_H)
 #define OPENCSTL_MT19937_H
 #include <stdint.h>
-
+#include <time.h>
 
 #define MT64_N          312
 #define MT64_M          156

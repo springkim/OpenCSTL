@@ -4,7 +4,22 @@
 
 #include <stdio.h>
 #include <ctype.h>
+#include "crossplatform.h"
 
+#if defined(OCSTL_CC_MSVC)
+static void lprint(const char *text) {
+    int len = strlen(text);
+    for (int i = 0; i < len; i++) {
+        putchar('=');
+    }
+    putchar('\n');
+    puts(text);
+    for (int i = 0; i < len; i++) {
+        putchar('=');
+    }
+    putchar('\n');
+}
+#else
 #define LPRINT_ROWS 6
 
 typedef struct {
@@ -575,7 +590,12 @@ static const lprint_glyph_t *lprint_find(char c) {
 }
 
 static void lprint(const char *text) {
-    for (int row = 0; row < LPRINT_ROWS; row++) {
+
+#ifdef OCSTL_OS_WINDOWS
+UINT old_cp = GetConsoleOutputCP();
+SetConsoleOutputCP(CP_UTF8);
+#endif
+for (int row = 0; row<LPRINT_ROWS; row++) {
         for (const char *p = text; *p; p++) {
             char c = (char) toupper((unsigned char) *p);
             const lprint_glyph_t *g = lprint_find(c);
@@ -585,7 +605,10 @@ static void lprint(const char *text) {
         }
         putchar('\n');
     }
+#ifdef OCSTL_OS_WINDOWS
+SetConsoleOutputCP(old_cp);
+#endif
 }
-
+#endif
 
 #endif //OPENCSTL_LPRINT_H

@@ -56,4 +56,12 @@ typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
 
 typedef int size_type;
 
+
+typedef int int32_x;
+typedef long long int64_x;
+typedef unsigned int uint32_x;
+typedef unsigned long long uint64_x;
+
+typedef unsigned char ubyte_x;
+
 #endif
