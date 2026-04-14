@@ -95,6 +95,7 @@
 #include "logging.h"
 #include "version.h"
 #include "lprint.h"
+#include "bitset.h"
 
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**
@@ -444,7 +445,6 @@ OPENCSTL_FUNC size_type _cstl_capacity(void *container) {
     }
     return sz;
 }
-
 
 
 OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {

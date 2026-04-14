@@ -74,6 +74,7 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
 | ![](./assets/codes/sample05_deque.c.webp) |  ![](./assets/codes/sample05_deque.cpp.webp)     |
 | ![](./assets/codes/sample06_map.c.webp) |  ![](./assets/codes/sample06_map.cpp.webp)     |
 | ![](./assets/codes/sample07_priority_queue.c.webp) |  ![](./assets/codes/sample07_priority_queue.cpp.webp)     |
+| ![](./assets/codes/sample08_bitset.c.webp)|![](./assets/codes/sample08_bitset.cpp.webp) |
 
 
 
@@ -192,6 +193,7 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
           H(hashtable.h)
       end
 
+			B(bitset.h) --> OCSTL(opencstl.h)
       V(vector.h) --> OCSTL(opencstl.h)
       LST(list.h) --> OCSTL(opencstl.h)
       TREE(tree.h) --> OCSTL(opencstl.h)
