@@ -73,8 +73,8 @@ static void opencstl_exit(void) {
     if (zalloc_size > 0) {
         logging.warning("%d memory blocks were not released", zalloc_size);
     }
-    logging.debug("opencstl_exit");
-    logging.debug("zalloc_count: %d", zalloc_count);
+    logging.debug("opencstl trace exit");
+    logging.debug("zalloc count: %d", zalloc_count);
 }
 #endif
 #ifdef OPENCSTL_TRACER
@@ -86,7 +86,7 @@ static int opencstl_init(void) {
     //zalloc_vector = salloc(SZ);
     //memset(zalloc_vector, 0, SZ);
 
-    logging.info("opencstl_init");
+    logging.debug("opencstl tracer init");
 
     //htm = htm_new();
 
@@ -97,7 +97,7 @@ static int opencstl_init(void) {
 
 #if defined(_MSC_VER)
 # pragma section(".CRT$XCU",read)
-__declspec(allocate(".CRT$XCU")) static int (*__p)(void)= opencstl_init;
+__declspec(allocate(".CRT$XCU")) static int (*__p)(void) = opencstl_init;
 # pragma data_seg()
 #endif
 #endif

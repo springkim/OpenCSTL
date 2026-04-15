@@ -35,7 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-
+#include "zalloc.h"
+#include "verify.h"
 #include "tracer.h"
 #include "crossplatform.h"
 #if defined(OCSTL_CC_CLANG)
@@ -49,6 +50,8 @@
 #pragma clang diagnostic ignored "-Wpedantic"
 #pragma clang diagnostic ignored "-Wgnu-auto-type"
 #pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+#pragma clang diagnostic ignored "-Wuse-after-free"
+
 #endif
 
 #if defined(OCSTL_CC_GCC)
@@ -60,6 +63,7 @@
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wuse-after-free"
 #endif
 
 
@@ -96,6 +100,8 @@
 #include "version.h"
 #include "lprint.h"
 #include "bitset.h"
+
+#include "string.h"
 
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**
@@ -838,43 +844,43 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
 }
 
 
-OPENCSTL_FUNC void ___cstl_sort(void *container, int argc, ...) {
-    va_list vl;
-    void *va_ptr = NULL;
-    __cstl_va_start(vl, argc, va_ptr);
-#if CSTL_USE_VAARG
-    void *param1 = __cstl_va_arg_next(vl);
-    void *param2 = __cstl_va_arg_next(vl);
-#else
-    void *param1 = __cstl_va_arg(va_ptr);
-    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
-#endif
-
-
-    size_t container_type;
-    if (__is_deque((void **) container)) {
-        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
-    }
-    switch (container_type) {
-        case OPENCSTL_LIST: {
-            if (argc == 1) {
-#if CSTL_USE_VAARG
-                __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) param1);
-#else
-                __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) *(void **) param1);
-#endif
-            }
-        }
-        break;
-
-        default: cstl_error("Invalid operator");
-            break;
-    }
-    __cstl_va_end(vl);
-}
+// OPENCSTL_FUNC void ___cstl_sort(void *container, int argc, ...) {
+//     va_list vl;
+//     void *va_ptr = NULL;
+//     __cstl_va_start(vl, argc, va_ptr);
+// #if CSTL_USE_VAARG
+//     void *param1 = __cstl_va_arg_next(vl);
+//     void *param2 = __cstl_va_arg_next(vl);
+// #else
+//     void *param1 = __cstl_va_arg(va_ptr);
+//     void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
+// #endif
+//
+//
+//     size_t container_type;
+//     if (__is_deque((void **) container)) {
+//         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+//         container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
+//     } else {
+//         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+//     }
+//     switch (container_type) {
+//         case OPENCSTL_LIST: {
+//             if (argc == 1) {
+// #if CSTL_USE_VAARG
+//                 __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) param1);
+// #else
+//                 __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) *(void **) param1);
+// #endif
+//             }
+//         }
+//         break;
+//
+//         default: cstl_error("Invalid operator");
+//             break;
+//     }
+//     __cstl_va_end(vl);
+// }
 
 #if defined(__linux__) || defined(__APPLE__)
 // #if !defined(__8cc__ )

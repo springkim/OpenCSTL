@@ -43,7 +43,7 @@
 #define NTAIL(N)	(N==-1?-2:N)
 OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zalloc(header_sz + sizeof(size_t), 1);
+    void *block = calloc(header_sz + sizeof(size_t), 1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for list");
     }
@@ -64,7 +64,7 @@ OPENCSTL_FUNC void *__cstl_list_node(size_t type_size) {
     //[node type][prev][next] ↘ [data]
     size_t header_sz = sizeof(void *) * NIDX_LIST_NODE_SIZE;
     size_t node_sz = type_size + header_sz;
-    void *ptr = (char *) zalloc(node_sz, 1) + header_sz;
+    void *ptr = (char *) calloc(node_sz, 1) + header_sz;
     void **node = &ptr;
     OPENCSTL_NIDX(node, -3) = OPENCSTL_LIST;
     return ptr;
@@ -107,12 +107,12 @@ OPENCSTL_FUNC void __cstl_list_pop_back_front(void **container, int ntail, int n
         cstl_error("No elements in cstl_list");
     }
     if (*head == *tail) {
-        zfree(&OPENCSTL_NIDX(tail, -3)); //fix
+        free(&OPENCSTL_NIDX(tail, -3)); //fix
         *head = *tail = 0;
     } else {
         *tail = (void *) OPENCSTL_NIDX(tail, -(nhead + 2));
         void *fb = (void *) OPENCSTL_NIDX(tail, -(ntail + 2));
-        zfree(&OPENCSTL_NIDX(&fb, -3));
+        free(&OPENCSTL_NIDX(&fb, -3));
         OPENCSTL_NIDX(tail, -(ntail + 2)) = 0;
     }
 
@@ -212,7 +212,7 @@ OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void *
     void *it = *iter_begin;
     while (it != *iter_end) {
         void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        zfree(&OPENCSTL_NIDX(&it, -3));
+        free(&OPENCSTL_NIDX(&it, -3));
         OPENCSTL_NIDX(container, -1)--;
         it = tmp;
     }
@@ -241,7 +241,7 @@ OPENCSTL_FUNC void __cstl_list_clear(void **container) {
     void *it = *head;
     while (it != NULL) {
         void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        zfree(&OPENCSTL_NIDX(&it, -3));
+        free(&OPENCSTL_NIDX(&it, -3));
         it = tmp;
     }
     *head = *tail = NULL;
@@ -251,7 +251,7 @@ OPENCSTL_FUNC void __cstl_list_clear(void **container) {
 OPENCSTL_FUNC void __cstl_list_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     __cstl_list_clear(container);
-    zfree((char *) (*container) - header_sz);
+    free((char *) (*container) - header_sz);
     *container = NULL;
 }
 
@@ -376,7 +376,7 @@ typedef struct {
 
 OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_t n) {
     unsigned char buf[128];
-    unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) zalloc(n, 1);
+    unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) calloc(n, 1);
     if (tmp == NULL) {
         cstl_error("Failed to allocate memory for swap");
     }
@@ -384,7 +384,7 @@ OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_t n) {
     memcpy(a, b, n);
     memcpy(b, tmp, n);
     if (tmp != buf)
-        zfree(tmp);
+        free(tmp);
 }
 
 OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
@@ -446,7 +446,7 @@ OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, 
         return;
     }
     size_t stack_cap = 64;
-    __cstl_qsort_range *stack = (__cstl_qsort_range *) zalloc(sizeof(__cstl_qsort_range), stack_cap);
+    __cstl_qsort_range *stack = (__cstl_qsort_range *) calloc(sizeof(__cstl_qsort_range), stack_cap);
     if (stack == NULL) {
         cstl_error("Failed to allocate memory for qsort stack");
     }
@@ -523,7 +523,7 @@ OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, 
             }
         }
     }
-    zfree(stack);
+    free(stack);
 }
 
 

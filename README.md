@@ -193,7 +193,8 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
           H(hashtable.h)
       end
 
-			B(bitset.h) --> OCSTL(opencstl.h)
+	  B(bitset.h) --> OCSTL(opencstl.h)
+	  STR(string.h) --> OCSTL(opencstl.h)
       V(vector.h) --> OCSTL(opencstl.h)
       LST(list.h) --> OCSTL(opencstl.h)
       TREE(tree.h) --> OCSTL(opencstl.h)

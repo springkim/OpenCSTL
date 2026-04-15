@@ -38,7 +38,7 @@
 
 #if !defined(_OPENCSTL_HASHTABLE_H)
 #define _OPENCSTL_HASHTABLE_H
-#include"zalloc.h"
+#include "zalloc.h"
 #include "van_emde_boas_tree.h"
 /* [already included: error.h] */
 #define HT_EMPTY     0x0000U
@@ -410,7 +410,7 @@ static inline bool __ht_reinsert(
 #define __HASHTABLE_DEFAULT_SIZE__ HT_MIN_CAP
 
 static uint16_t *__ht_alloc_meta(size_t cap) {
-    uint16_t *m = (uint16_t *) zalloc(cap + 4, sizeof(uint16_t));
+    uint16_t *m = (uint16_t *) calloc(cap + 4, sizeof(uint16_t));
     if (!m)
         cstl_error("Allocation failed (metadata)");
     m[cap] = 0x0001;
@@ -425,7 +425,7 @@ static void __ht_do_rehash(
 ) {
     size_t new_cap = (old_cap_mask + 1) * 2;
     while (true) {
-        void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
+        void *new_raw = calloc(header_sz + new_cap * type_size, 1);
         if (!new_raw)
             cstl_error("Allocation failed (rehash)");
         memcpy(new_raw, (char *) *container - header_sz, header_sz);
@@ -443,14 +443,14 @@ static void __ht_do_rehash(
             }
         }
         if (done < length) {
-            zfree(new_raw);
-            zfree(new_meta);
+            free(new_raw);
+            free(new_meta);
             new_cap *= 2;
             continue;
         }
         void *old_ptr = *container;
-        zfree((char *) *container - header_sz);
-        zfree(old_meta);
+        free((char *) *container - header_sz);
+        free(old_meta);
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
@@ -748,8 +748,8 @@ void __cstl_hashtable_free(void **container) {
     //     memmove(&htm[fi], &htm[fi + 1], (htm_length - fi) * sizeof(HashtableManager));
     //     htm_length--;
     //}
-    zfree(meta);
-    zfree((char *) (*container) - header_sz);
+    free(meta);
+    free((char *) (*container) - header_sz);
     *container = NULL;
 }
 
@@ -771,7 +771,7 @@ void __cstl_hashtable_reserve(void **container, size_t n) {
     if (new_cap <= cap_mask_old + 1) return; /* already big enough */
 
     while (true) {
-        void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
+        void *new_raw = calloc(header_sz + new_cap * type_size, 1);
         if (!new_raw)
             cstl_error("Allocation failed (reserve)");
         memcpy(new_raw, (char *) *container - header_sz, header_sz);
@@ -789,14 +789,14 @@ void __cstl_hashtable_reserve(void **container, size_t n) {
             }
         }
         if (done < length) {
-            zfree(new_raw);
-            zfree(new_meta);
+            free(new_raw);
+            free(new_meta);
             new_cap *= 2;
             continue;
         }
         void *old_ptr = *container;
-        zfree((char *) *container - header_sz);
-        zfree(old_meta);
+        free((char *) *container - header_sz);
+        free(old_meta);
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
@@ -827,7 +827,7 @@ OPENCSTL_FUNC
 void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     size_t cap = __HASHTABLE_DEFAULT_SIZE__;
-    void *ptr = (char *) zalloc(header_sz + key_size * cap, 1) + header_sz;
+    void *ptr = (char *) calloc(header_sz + key_size * cap, 1) + header_sz;
     void **c = &ptr;
     uint16_t *meta = __ht_alloc_meta(cap);
     OPENCSTL_NIDX(c, NIDX_CTYPE) = OPENCSTL_UNORDERED_SET;
@@ -873,7 +873,7 @@ void *__cstl_unordered_map(size_t key_size, size_t value_size,
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     size_t type_size = key_size + value_size;
     size_t cap = __HASHTABLE_DEFAULT_SIZE__;
-    void *ptr = (char *) zalloc(header_sz + type_size * cap, 1) + header_sz;
+    void *ptr = (char *) calloc(header_sz + type_size * cap, 1) + header_sz;
     void **c = &ptr;
     uint16_t *meta = __ht_alloc_meta(cap);
     OPENCSTL_NIDX(c, NIDX_CTYPE) = OPENCSTL_UNORDERED_MAP;

@@ -103,8 +103,8 @@ BITSET __cstl_bitset(size_type n) {
     size_type cap = __cstl_bitset_capacity(n);
     BITSET b;
     b.nbits = n;
-    b.bits = zalloc(cap, 1);
-    b.str = (char *) zalloc(b.nbits + 1, 1);
+    b.bits = calloc(cap, 1);
+    b.str = (char *) calloc(b.nbits + 1, 1);
     return b;
 }
 
@@ -266,8 +266,8 @@ char *__cstl_bitset_to_string(BITSET b) {
 }
 
 void __cstl_bitset_free(BITSET b) {
-    zfree(b.bits);
-    zfree(b.str);
+    free(b.bits);
+    free(b.str);
 }
 
 typedef struct {

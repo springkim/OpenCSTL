@@ -65,7 +65,7 @@ struct cstl_arena_chunk {
 };
 
 OPENCSTL_FUNC cstl_arena_chunk *__cstl_arena_new_chunk(size_t node_size, size_t capacity) {
-    cstl_arena_chunk *chunk = (cstl_arena_chunk *) zalloc(
+    cstl_arena_chunk *chunk = (cstl_arena_chunk *) calloc(
         sizeof(cstl_arena_chunk) + node_size * capacity, 1
     );
     chunk->next = NULL;
@@ -105,7 +105,7 @@ OPENCSTL_FUNC void __cstl_arena_free_all(cstl_arena_chunk **arena, void **freeli
     cstl_arena_chunk *c = *arena;
     while (c != NULL) {
         cstl_arena_chunk *next = c->next;
-        zfree(c);
+        free(c);
         c = next;
     }
     *arena = NULL;
@@ -118,7 +118,7 @@ OPENCSTL_FUNC void *__cstl_tree_node(size_t type_size, size_t node_type) {
     // [color][parent][node type][left][right] -> [data]
     size_t node_sz = type_size + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     node_sz = (node_sz + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
-    void *ptr = (char *) zalloc(node_sz, 1) + sizeof(void *) * NIDX_TREE_NODE_SIZE;
+    void *ptr = (char *) calloc(node_sz, 1) + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     OPENCSTL_NIDX(&ptr, -3) = node_type;
     COLOR(ptr) = BLACK;
     return ptr;
@@ -158,7 +158,7 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, void *compare) {
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = (char *) zalloc(header_sz + sizeof(size_t), 1) + header_sz;
+    void *ptr = (char *) calloc(header_sz + sizeof(size_t), 1) + header_sz;
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_SET;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
@@ -190,7 +190,7 @@ OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_ke
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = (char *) zalloc(header_sz + sizeof(size_t), 1) + header_sz;
+    void *ptr = (char *) calloc(header_sz + sizeof(size_t), 1) + header_sz;
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_MAP;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
@@ -546,7 +546,7 @@ OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
 OPENCSTL_FUNC void __cstl_tree_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     __cstl_tree_clear(container);
-    zfree((char *) (*container) - header_sz);
+    free((char *) (*container) - header_sz);
     *container = NULL;
 }
 

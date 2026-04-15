@@ -37,45 +37,46 @@
 #define _OPENCSTL_ZALLOC_H
 #include <stdlib.h>
 #include "tracer.h"
-#ifdef OPENCSTL_TRACER
-static void zfree(void *ptr) {
-    zerase(ptr);
-    free(ptr);
-}
-#else
-#define zfree free
-#endif
+
 
 #ifdef OPENCSTL_TRACER
-static inline void *_zalloc(size_t sz) {
-    void *ptr = calloc(sz, 1);
+typedef void (*free_fn)(void *ptr);
+
+typedef void *(*malloc_fn)(size_t sz);
+
+typedef void *(*realloc_fn)(void *ptr, size_t new_size);
+
+typedef void * (*calloc_fn)(size_t cnt, size_t sz);
+
+static free_fn ofree = free;
+static malloc_fn omalloc = malloc;
+static realloc_fn orealloc = realloc;
+static calloc_fn ocalloc = calloc;
+
+static void zfree(void *ptr) {
+    zerase(ptr);
+    ofree(ptr);
+}
+
+static void *zcalloc(size_t cnt, size_t sz) {
+    void *ptr = ocalloc(cnt, sz);
     if (ptr) {
         zappend(ptr);
     }
     return ptr;
 }
 
-static inline void *zalloc(size_t count, size_t size) {
-    return _zalloc(count * size);
+static void *zmalloc(size_t sz) {
+    void *ptr = omalloc(sz);
+    if (ptr) {
+        zappend(ptr);
+    }
+    return ptr;
 }
-#else
-#define zalloc calloc
-#endif
 
-// static void *zmalloc(size_t n) {
-//     return _zalloc(n);
-// }
-
-
-//
-// #define ZALLOC_GET_MACRO(_1,_2,NAME,...) NAME
-// #define zalloc(...) ZALLOC_GET_MACRO(__VA_ARGS__, zcalloc, zmalloc)(__VA_ARGS__)
-
-
-#ifdef OPENCSTL_TRACER
 static void *zrealloc(void *ptr, size_t new_size) {
     if (ptr == NULL) {
-        return _zalloc(new_size);
+        return zmalloc(new_size);
     }
 
     if (new_size == 0) {
@@ -83,7 +84,7 @@ static void *zrealloc(void *ptr, size_t new_size) {
         return NULL;
     }
 
-    void *new_ptr = realloc(ptr, new_size);
+    void *new_ptr = orealloc(ptr, new_size);
     if (new_ptr == NULL) {
         return NULL;
     }
@@ -95,7 +96,15 @@ static void *zrealloc(void *ptr, size_t new_size) {
 
     return new_ptr;
 }
-#else
-#define zrealloc realloc
+
+
+#define free(ptr) zfree(ptr)
+#define calloc(cnt, sz) zcalloc(cnt, sz)
+#define malloc(sz) zmalloc(sz)
+#define realloc(ptr, new_size) zrealloc(ptr, new_size)
+
+
 #endif
+
+
 #endif //_OPENCSTL_ZALLOC_H

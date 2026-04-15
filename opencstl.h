@@ -61,9 +61,50 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  zalloc.h                       (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or
+#if !defined(_OPENCSTL_ZALLOC_H)
+#define _OPENCSTL_ZALLOC_H
+#include <stdlib.h>
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  tracer.h                       (depth 1) */
+/* BEGIN  tracer.h                       (depth 2) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -110,14 +151,14 @@
 #include <string.h>
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  logging.h                      (depth 2) */
+/* BEGIN  logging.h                      (depth 3) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 
 
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  crossplatform.h                (depth 3) */
+/* BEGIN  crossplatform.h                (depth 4) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -446,7 +487,7 @@ static LOGGING logging = {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  mt19937.h                      (depth 2) */
+/* BEGIN  mt19937.h                      (depth 3) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -968,8 +1009,8 @@ static void opencstl_exit(void) {
     if (zalloc_size > 0) {
         logging.warning("%d memory blocks were not released", zalloc_size);
     }
-    logging.debug("opencstl_exit");
-    logging.debug("zalloc_count: %d", zalloc_count);
+    logging.debug("opencstl trace exit");
+    logging.debug("zalloc count: %d", zalloc_count);
 }
 #endif
 #ifdef OPENCSTL_TRACER
@@ -981,7 +1022,7 @@ static int opencstl_init(void) {
     //zalloc_vector = salloc(SZ);
     //memset(zalloc_vector, 0, SZ);
 
-    logging.info("opencstl_init");
+    logging.debug("opencstl tracer init");
 
     //htm = htm_new();
 
@@ -992,7 +1033,7 @@ static int opencstl_init(void) {
 
 #if defined(_MSC_VER)
 # pragma section(".CRT$XCU",read)
-__declspec(allocate(".CRT$XCU")) static int (*__p)(void)= opencstl_init;
+__declspec(allocate(".CRT$XCU")) static int (*__p)(void) = opencstl_init;
 # pragma data_seg()
 #endif
 #endif
@@ -1001,6 +1042,108 @@ __declspec(allocate(".CRT$XCU")) static int (*__p)(void)= opencstl_init;
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    tracer.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+
+
+#ifdef OPENCSTL_TRACER
+typedef void (*free_fn)(void *ptr);
+
+typedef void *(*malloc_fn)(size_t sz);
+
+typedef void *(*realloc_fn)(void *ptr, size_t new_size);
+
+typedef void * (*calloc_fn)(size_t cnt, size_t sz);
+
+static free_fn ofree = free;
+static malloc_fn omalloc = malloc;
+static realloc_fn orealloc = realloc;
+static calloc_fn ocalloc = calloc;
+
+static void zfree(void *ptr) {
+    zerase(ptr);
+    ofree(ptr);
+}
+
+static void *zcalloc(size_t cnt, size_t sz) {
+    void *ptr = ocalloc(cnt, sz);
+    if (ptr) {
+        zappend(ptr);
+    }
+    return ptr;
+}
+
+static void *zmalloc(size_t sz) {
+    void *ptr = omalloc(sz);
+    if (ptr) {
+        zappend(ptr);
+    }
+    return ptr;
+}
+
+static void *zrealloc(void *ptr, size_t new_size) {
+    if (ptr == NULL) {
+        return zmalloc(new_size);
+    }
+
+    if (new_size == 0) {
+        zfree(ptr);
+        return NULL;
+    }
+
+    void *new_ptr = orealloc(ptr, new_size);
+    if (new_ptr == NULL) {
+        return NULL;
+    }
+
+    if (new_ptr != ptr) {
+        zerase(ptr);
+        zappend(new_ptr);
+    }
+
+    return new_ptr;
+}
+
+
+#define free(ptr) zfree(ptr)
+#define calloc(cnt, sz) zcalloc(cnt, sz)
+#define malloc(sz) zmalloc(sz)
+#define realloc(ptr, new_size) zrealloc(ptr, new_size)
+
+
+#endif
+
+
+#endif //_OPENCSTL_ZALLOC_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    zalloc.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  verify.h                       (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/15/2026.
+//
+
+#ifndef OPENCSTL_VERIFY_H
+#define OPENCSTL_VERIFY_H
+#include <assert.h>
+/* [already included: logging.h] */
+
+#define verify(EXPR) do { if(!(EXPR)) __verify(#EXPR,__FILE__,__LINE__); } while(0)
+
+int __verify(char *expression, char *file, int line) {
+    logging.error("Verification failed: %s, file %s, line %d",
+                  expression, file, line);
+    abort();
+}
+#endif //OPENCSTL_VERIFY_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    verify.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* [already included: tracer.h] */
 /* [already included: crossplatform.h] */
 #if defined(OCSTL_CC_CLANG)
 #pragma clang diagnostic push
@@ -1013,6 +1156,8 @@ __declspec(allocate(".CRT$XCU")) static int (*__p)(void)= opencstl_init;
 #pragma clang diagnostic ignored "-Wpedantic"
 #pragma clang diagnostic ignored "-Wgnu-auto-type"
 #pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+#pragma clang diagnostic ignored "-Wuse-after-free"
+
 #endif
 
 #if defined(OCSTL_CC_GCC)
@@ -1024,6 +1169,7 @@ __declspec(allocate(".CRT$XCU")) static int (*__p)(void)= opencstl_init;
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wuse-after-free"
 #endif
 
 
@@ -1594,115 +1740,7 @@ exit(EXIT_FAILURE);
 #if !defined(_OPENCSTL_DEQUE_H)
 #define _OPENCSTL_DEQUE_H
 /* [already included: error.h] */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  zalloc.h                       (depth 2) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or
-#if !defined(_OPENCSTL_ZALLOC_H)
-#define _OPENCSTL_ZALLOC_H
-#include <stdlib.h>
-/* [already included: tracer.h] */
-#ifdef OPENCSTL_TRACER
-static void zfree(void *ptr) {
-    zerase(ptr);
-    free(ptr);
-}
-#else
-#define zfree free
-#endif
-
-#ifdef OPENCSTL_TRACER
-static inline void *_zalloc(size_t sz) {
-    void *ptr = calloc(sz, 1);
-    if (ptr) {
-        zappend(ptr);
-    }
-    return ptr;
-}
-
-static inline void *zalloc(size_t count, size_t size) {
-    return _zalloc(count * size);
-}
-#else
-#define zalloc calloc
-#endif
-
-// static void *zmalloc(size_t n) {
-//     return _zalloc(n);
-// }
-
-
-//
-// #define ZALLOC_GET_MACRO(_1,_2,NAME,...) NAME
-// #define zalloc(...) ZALLOC_GET_MACRO(__VA_ARGS__, zcalloc, zmalloc)(__VA_ARGS__)
-
-
-#ifdef OPENCSTL_TRACER
-static void *zrealloc(void *ptr, size_t new_size) {
-    if (ptr == NULL) {
-        return _zalloc(new_size);
-    }
-
-    if (new_size == 0) {
-        zfree(ptr);
-        return NULL;
-    }
-
-    void *new_ptr = realloc(ptr, new_size);
-    if (new_ptr == NULL) {
-        return NULL;
-    }
-
-    if (new_ptr != ptr) {
-        zerase(ptr);
-        zappend(new_ptr);
-    }
-
-    return new_ptr;
-}
-#else
-#define zrealloc realloc
-#endif
-#endif //_OPENCSTL_ZALLOC_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    zalloc.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
+/* [already included: zalloc.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  van_emde_boas_tree.h           (depth 2) */
@@ -2182,7 +2220,7 @@ OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
 #define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zalloc(header_sz + type_size * 2, 1);
+    void *block = calloc(header_sz + type_size * 2, 1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for deque");
     }
@@ -2229,9 +2267,9 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_t n, void *value) 
 
     capacity = n;
     iveb_erase(iveb, (char *) *container + distance);
-    void *b = zalloc(1, header_sz + capacity * type_size);
+    void *b = calloc(1, header_sz + capacity * type_size);
     memcpy(b, (char *) *container - header_sz + distance, header_sz);
-    zfree(((char *) *container) - header_sz + distance);
+    free(((char *) *container) - header_sz + distance);
     *container = ((char *) b) + header_sz;
     OPENCSTL_NIDX(container, -1) = -1;
     distance = 0;
@@ -2269,11 +2307,11 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
         size_t distance_sz = -distance;
         size_t new_capacity = capacity * 2;
         iveb_erase(iveb, (char *) *container + distance);
-        void *b = zalloc(1, header_sz + new_capacity * type_size);
+        void *b = calloc(1, header_sz + new_capacity * type_size);
         memcpy(b, (char *) *container - (header_sz + distance_sz), header_sz);
         distance = new_capacity / 4;
         memcpy((char *) b + header_sz + distance * type_size, *container, length * type_size);
-        zfree((char *) *container - (header_sz + distance_sz));
+        free((char *) *container - (header_sz + distance_sz));
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) *= 2;
@@ -2305,11 +2343,11 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     if (distance == 0) {
         size_t new_capacity = capacity * 2;
         iveb_erase(iveb, (char *) *container);
-        void *b = zalloc(1, header_sz + new_capacity * type_size);
+        void *b = calloc(1, header_sz + new_capacity * type_size);
         memcpy(b, (char *) *container - header_sz, header_sz);
         distance = new_capacity / 4;
         memcpy((char *) b + header_sz + distance * type_size, *container, length * type_size);
-        zfree((char *) *container - header_sz);
+        free((char *) *container - header_sz);
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
         *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) *= 2;
@@ -2422,10 +2460,10 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
     if (capacity + distance / (ptrdiff_t) type_size < n) {
         capacity = n;
         iveb_erase(iveb, (char *) *container + distance);
-        void *b = zalloc(1, header_sz + capacity * type_size);
+        void *b = calloc(1, header_sz + capacity * type_size);
         memcpy(b, (char *) *container - header_sz + distance, header_sz);
         memcpy((char *) b + header_sz, *container, length * type_size);
-        zfree((char *) *container - header_sz + distance);
+        free((char *) *container - header_sz + distance);
         *container = (char *) b + header_sz;
         OPENCSTL_NIDX(container, -1) = -1;
         distance = 0;
@@ -2482,7 +2520,7 @@ OPENCSTL_FUNC void __cstl_deque_free(void **container) {
     size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
 
     iveb_erase(iveb, (char *) *container + distance);
-    zfree((char *) *container - (header_sz - distance));
+    free((char *) *container - (header_sz - distance));
 }
 
 OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *value) {
@@ -2570,7 +2608,7 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
 #define cstl_vector(TYPE)	__cstl_vector(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zalloc(header_sz + type_size, 1);
+    void *block = calloc(header_sz + type_size, 1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for vector");
     }
@@ -2616,7 +2654,7 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value)
 #endif
     if (capacity < n) {
         iveb_erase(iveb, *container);
-        void *b = zrealloc((char *) *container - header_sz, header_sz + n * type_size);
+        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector assign");
         }
@@ -2652,7 +2690,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     if (length == capacity) {
         iveb_erase(iveb, *container);
         size_t new_capaciy = capacity * 2;
-        void *b = zrealloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
+        void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector push_back");
         }
@@ -2698,7 +2736,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
     if (length + N >= capacity) {
         iveb_erase(iveb, *container);
         size_t new_capaciy = (capacity + N) * 2;
-        void *b = zrealloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
+        void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector insert");
         }
@@ -2763,7 +2801,7 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
 #endif
     if (capacity < n) {
         iveb_erase(iveb, *container);
-        void *b = zrealloc((char *) *container - header_sz, header_sz + n * type_size);
+        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector resize");
         }
@@ -2814,7 +2852,7 @@ OPENCSTL_FUNC void __cstl_vector_clear(void **container) {
 OPENCSTL_FUNC void __cstl_vector_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     iveb_erase(iveb, *container);
-    zfree((char *) (*container) - header_sz);
+    free((char *) (*container) - header_sz);
     *container = NULL;
 }
 
@@ -2826,13 +2864,13 @@ OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
     char *type = (char *) OPENCSTL_NIDX(container, -4);
     if (capacity < n) {
         iveb_erase(iveb, *container);
-        void *b = zrealloc((char *) *container - header_sz, header_sz + n * type_size);
+        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
             cstl_error("Reallocation failed at vector reserve");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
-        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size,type);
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size, type);
     }
 }
 
@@ -2897,7 +2935,7 @@ OPENCSTL_FUNC void *__cstl_vector_prev(void *it, size_t type_size) {
 #define NTAIL(N)	(N==-1?-2:N)
 OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = zalloc(header_sz + sizeof(size_t), 1);
+    void *block = calloc(header_sz + sizeof(size_t), 1);
     if (block == NULL) {
         cstl_error("Failed to allocate memory for list");
     }
@@ -2918,7 +2956,7 @@ OPENCSTL_FUNC void *__cstl_list_node(size_t type_size) {
     //[node type][prev][next] ↘ [data]
     size_t header_sz = sizeof(void *) * NIDX_LIST_NODE_SIZE;
     size_t node_sz = type_size + header_sz;
-    void *ptr = (char *) zalloc(node_sz, 1) + header_sz;
+    void *ptr = (char *) calloc(node_sz, 1) + header_sz;
     void **node = &ptr;
     OPENCSTL_NIDX(node, -3) = OPENCSTL_LIST;
     return ptr;
@@ -2961,12 +2999,12 @@ OPENCSTL_FUNC void __cstl_list_pop_back_front(void **container, int ntail, int n
         cstl_error("No elements in cstl_list");
     }
     if (*head == *tail) {
-        zfree(&OPENCSTL_NIDX(tail, -3)); //fix
+        free(&OPENCSTL_NIDX(tail, -3)); //fix
         *head = *tail = 0;
     } else {
         *tail = (void *) OPENCSTL_NIDX(tail, -(nhead + 2));
         void *fb = (void *) OPENCSTL_NIDX(tail, -(ntail + 2));
-        zfree(&OPENCSTL_NIDX(&fb, -3));
+        free(&OPENCSTL_NIDX(&fb, -3));
         OPENCSTL_NIDX(tail, -(ntail + 2)) = 0;
     }
 
@@ -3066,7 +3104,7 @@ OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void *
     void *it = *iter_begin;
     while (it != *iter_end) {
         void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        zfree(&OPENCSTL_NIDX(&it, -3));
+        free(&OPENCSTL_NIDX(&it, -3));
         OPENCSTL_NIDX(container, -1)--;
         it = tmp;
     }
@@ -3095,7 +3133,7 @@ OPENCSTL_FUNC void __cstl_list_clear(void **container) {
     void *it = *head;
     while (it != NULL) {
         void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        zfree(&OPENCSTL_NIDX(&it, -3));
+        free(&OPENCSTL_NIDX(&it, -3));
         it = tmp;
     }
     *head = *tail = NULL;
@@ -3105,7 +3143,7 @@ OPENCSTL_FUNC void __cstl_list_clear(void **container) {
 OPENCSTL_FUNC void __cstl_list_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     __cstl_list_clear(container);
-    zfree((char *) (*container) - header_sz);
+    free((char *) (*container) - header_sz);
     *container = NULL;
 }
 
@@ -3230,7 +3268,7 @@ typedef struct {
 
 OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_t n) {
     unsigned char buf[128];
-    unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) zalloc(n, 1);
+    unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) calloc(n, 1);
     if (tmp == NULL) {
         cstl_error("Failed to allocate memory for swap");
     }
@@ -3238,7 +3276,7 @@ OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_t n) {
     memcpy(a, b, n);
     memcpy(b, tmp, n);
     if (tmp != buf)
-        zfree(tmp);
+        free(tmp);
 }
 
 OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
@@ -3300,7 +3338,7 @@ OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, 
         return;
     }
     size_t stack_cap = 64;
-    __cstl_qsort_range *stack = (__cstl_qsort_range *) zalloc(sizeof(__cstl_qsort_range), stack_cap);
+    __cstl_qsort_range *stack = (__cstl_qsort_range *) calloc(sizeof(__cstl_qsort_range), stack_cap);
     if (stack == NULL) {
         cstl_error("Failed to allocate memory for qsort stack");
     }
@@ -3377,7 +3415,7 @@ OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, 
             }
         }
     }
-    zfree(stack);
+    free(stack);
 }
 
 
@@ -3458,7 +3496,7 @@ struct cstl_arena_chunk {
 };
 
 OPENCSTL_FUNC cstl_arena_chunk *__cstl_arena_new_chunk(size_t node_size, size_t capacity) {
-    cstl_arena_chunk *chunk = (cstl_arena_chunk *) zalloc(
+    cstl_arena_chunk *chunk = (cstl_arena_chunk *) calloc(
         sizeof(cstl_arena_chunk) + node_size * capacity, 1
     );
     chunk->next = NULL;
@@ -3498,7 +3536,7 @@ OPENCSTL_FUNC void __cstl_arena_free_all(cstl_arena_chunk **arena, void **freeli
     cstl_arena_chunk *c = *arena;
     while (c != NULL) {
         cstl_arena_chunk *next = c->next;
-        zfree(c);
+        free(c);
         c = next;
     }
     *arena = NULL;
@@ -3511,7 +3549,7 @@ OPENCSTL_FUNC void *__cstl_tree_node(size_t type_size, size_t node_type) {
     // [color][parent][node type][left][right] -> [data]
     size_t node_sz = type_size + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     node_sz = (node_sz + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
-    void *ptr = (char *) zalloc(node_sz, 1) + sizeof(void *) * NIDX_TREE_NODE_SIZE;
+    void *ptr = (char *) calloc(node_sz, 1) + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     OPENCSTL_NIDX(&ptr, -3) = node_type;
     COLOR(ptr) = BLACK;
     return ptr;
@@ -3551,7 +3589,7 @@ OPENCSTL_FUNC void *__cstl_set(size_t key_size, char *type_key, void *compare) {
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = (char *) zalloc(header_sz + sizeof(size_t), 1) + header_sz;
+    void *ptr = (char *) calloc(header_sz + sizeof(size_t), 1) + header_sz;
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_SET;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
@@ -3583,7 +3621,7 @@ OPENCSTL_FUNC void *__cstl_map(size_t key_size, size_t value_size, char *type_ke
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_t) nil;
     }
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *ptr = (char *) zalloc(header_sz + sizeof(size_t), 1) + header_sz;
+    void *ptr = (char *) calloc(header_sz + sizeof(size_t), 1) + header_sz;
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_MAP;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
@@ -3939,7 +3977,7 @@ OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
 OPENCSTL_FUNC void __cstl_tree_free(void **container) {
     size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     __cstl_tree_clear(container);
-    zfree((char *) (*container) - header_sz);
+    free((char *) (*container) - header_sz);
     *container = NULL;
 }
 
@@ -4679,7 +4717,7 @@ static inline bool __ht_reinsert(
 #define __HASHTABLE_DEFAULT_SIZE__ HT_MIN_CAP
 
 static uint16_t *__ht_alloc_meta(size_t cap) {
-    uint16_t *m = (uint16_t *) zalloc(cap + 4, sizeof(uint16_t));
+    uint16_t *m = (uint16_t *) calloc(cap + 4, sizeof(uint16_t));
     if (!m)
         cstl_error("Allocation failed (metadata)");
     m[cap] = 0x0001;
@@ -4694,7 +4732,7 @@ static void __ht_do_rehash(
 ) {
     size_t new_cap = (old_cap_mask + 1) * 2;
     while (true) {
-        void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
+        void *new_raw = calloc(header_sz + new_cap * type_size, 1);
         if (!new_raw)
             cstl_error("Allocation failed (rehash)");
         memcpy(new_raw, (char *) *container - header_sz, header_sz);
@@ -4712,14 +4750,14 @@ static void __ht_do_rehash(
             }
         }
         if (done < length) {
-            zfree(new_raw);
-            zfree(new_meta);
+            free(new_raw);
+            free(new_meta);
             new_cap *= 2;
             continue;
         }
         void *old_ptr = *container;
-        zfree((char *) *container - header_sz);
-        zfree(old_meta);
+        free((char *) *container - header_sz);
+        free(old_meta);
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
@@ -5017,8 +5055,8 @@ void __cstl_hashtable_free(void **container) {
     //     memmove(&htm[fi], &htm[fi + 1], (htm_length - fi) * sizeof(HashtableManager));
     //     htm_length--;
     //}
-    zfree(meta);
-    zfree((char *) (*container) - header_sz);
+    free(meta);
+    free((char *) (*container) - header_sz);
     *container = NULL;
 }
 
@@ -5040,7 +5078,7 @@ void __cstl_hashtable_reserve(void **container, size_t n) {
     if (new_cap <= cap_mask_old + 1) return; /* already big enough */
 
     while (true) {
-        void *new_raw = zalloc(header_sz + new_cap * type_size, 1);
+        void *new_raw = calloc(header_sz + new_cap * type_size, 1);
         if (!new_raw)
             cstl_error("Allocation failed (reserve)");
         memcpy(new_raw, (char *) *container - header_sz, header_sz);
@@ -5058,14 +5096,14 @@ void __cstl_hashtable_reserve(void **container, size_t n) {
             }
         }
         if (done < length) {
-            zfree(new_raw);
-            zfree(new_meta);
+            free(new_raw);
+            free(new_meta);
             new_cap *= 2;
             continue;
         }
         void *old_ptr = *container;
-        zfree((char *) *container - header_sz);
-        zfree(old_meta);
+        free((char *) *container - header_sz);
+        free(old_meta);
         *container = nb;
         OPENCSTL_NIDX(container, -7) = new_mask;
         OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_meta;
@@ -5096,7 +5134,7 @@ OPENCSTL_FUNC
 void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_func) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     size_t cap = __HASHTABLE_DEFAULT_SIZE__;
-    void *ptr = (char *) zalloc(header_sz + key_size * cap, 1) + header_sz;
+    void *ptr = (char *) calloc(header_sz + key_size * cap, 1) + header_sz;
     void **c = &ptr;
     uint16_t *meta = __ht_alloc_meta(cap);
     OPENCSTL_NIDX(c, NIDX_CTYPE) = OPENCSTL_UNORDERED_SET;
@@ -5142,7 +5180,7 @@ void *__cstl_unordered_map(size_t key_size, size_t value_size,
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     size_t type_size = key_size + value_size;
     size_t cap = __HASHTABLE_DEFAULT_SIZE__;
-    void *ptr = (char *) zalloc(header_sz + type_size * cap, 1) + header_sz;
+    void *ptr = (char *) calloc(header_sz + type_size * cap, 1) + header_sz;
     void **c = &ptr;
     uint16_t *meta = __ht_alloc_meta(cap);
     OPENCSTL_NIDX(c, NIDX_CTYPE) = OPENCSTL_UNORDERED_MAP;
@@ -5940,6 +5978,7 @@ OPENCSTL_FUNC void *_cstl_rend(void *container) {
 /* [already included: van_emde_boas_tree.h] */
 
 bool is_even(void *it) {
+    return true;
 }
 
 #define fill(_First, _Last, _Value) _cstl_fill(_First, _Last, &(__typeof__(_Value)){_Value}, sizeof(_Value))
@@ -5951,12 +5990,12 @@ OPENCSTL_FUNC void _cstl_fill(void *_begin, void *_end, void *_value, size_t _va
     }
 }
 
-// ███╗░░░███╗██╗███╗░░██╗░░░░██╗███╗░░░███╗░█████╗░██╗░░██╗
-// ████╗░████║██║████╗░██║░░░██╔╝████╗░████║██╔══██╗╚██╗██╔╝
-// ██╔████╔██║██║██╔██╗██║░░██╔╝░██╔████╔██║███████║░╚███╔╝░
-// ██║╚██╔╝██║██║██║╚████║░██╔╝░░██║╚██╔╝██║██╔══██║░██╔██╗░
-// ██║░╚═╝░██║██║██║░╚███║██╔╝░░░██║░╚═╝░██║██║░░██║██╔╝╚██╗
-// ╚═╝░░░░░╚═╝╚═╝╚═╝░░╚══╝╚═╝░░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░╚═╝
+// ███╗░░░███╗██╗███╗░░██╗░░░░░░░░░░░██╗░░░░░░░███╗░░░███╗░█████╗░██╗░░██╗
+// ████╗░████║██║████╗░██║░░░░░░░░░░██╔╝░░░░░░░████╗░████║██╔══██╗╚██╗██╔╝
+// ██╔████╔██║██║██╔██╗██║░░░░░░░░░██╔╝░░░░░░░░██╔████╔██║███████║░╚███╔╝░
+// ██║╚██╔╝██║██║██║╚████║░░░░░░░░██╔╝░░░░░░░░░██║╚██╔╝██║██╔══██║░██╔██╗░
+// ██║░╚═╝░██║██║██║░╚███║░░░░░░░██╔╝░░░░░░░░░░██║░╚═╝░██║██║░░██║██╔╝╚██╗
+// ╚═╝░░░░░╚═╝╚═╝╚═╝░░╚══╝░░░░░░░╚═╝░░░░░░░░░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░╚═╝
 
 #ifndef MAX
 #define MAX(a,b) ((a)>(b)?(a):(b))
@@ -6567,7 +6606,7 @@ static void msort(void *base, size_t nmemb, size_t size,
         if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
         isort(arr + i * sz, blk, sz, compar);
     }
-    char *buf = (char *) zalloc(((nmemb + 1) / 2), sz);
+    char *buf = (char *) calloc(((nmemb + 1) / 2), sz);
     if (!buf) return;
     for (size_t width = MSORT_ISORT_THRESH; width < nmemb; width *= 2) {
         for (size_t i = 0; i + width < nmemb; i += 2 * width) {
@@ -6577,7 +6616,7 @@ static void msort(void *base, size_t nmemb, size_t size,
             merge(arr + i * sz, len1, len2, sz, compar, buf);
         }
     }
-    zfree(buf);
+    free(buf);
 }
 #undef MSORT_ISORT_THRESH
 #endif
@@ -8878,8 +8917,8 @@ BITSET __cstl_bitset(size_type n) {
     size_type cap = __cstl_bitset_capacity(n);
     BITSET b;
     b.nbits = n;
-    b.bits = zalloc(cap, 1);
-    b.str = (char *) zalloc(b.nbits + 1, 1);
+    b.bits = calloc(cap, 1);
+    b.str = (char *) calloc(b.nbits + 1, 1);
     return b;
 }
 
@@ -9041,8 +9080,8 @@ char *__cstl_bitset_to_string(BITSET b) {
 }
 
 void __cstl_bitset_free(BITSET b) {
-    zfree(b.bits);
-    zfree(b.str);
+    free(b.bits);
+    free(b.str);
 }
 
 typedef struct {
@@ -9081,6 +9120,304 @@ static __BITSET bitset = {
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    bitset.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  string.h                       (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/15/2026.
+//
+
+#ifndef OPENCSTL_STRING_H
+#define OPENCSTL_STRING_H
+
+/* [already included: zalloc.h] */
+/* [already included: verify.h] */
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+// ============================================================
+// string function implementations
+// ============================================================
+
+char *__cstl_string_substr(char *src, int pos, int len) {
+    verify(strlen(src) >= pos + len);
+    char *ret = (char *) calloc(len + 1, sizeof(char));
+    memcpy(ret, src + pos, len);
+    return ret;
+}
+
+char **__cstl_string_split(char *src, char delim, int *n) {
+    int len = strlen(src);
+
+    int count = 1;
+    for (int i = 0; i < len; i++) {
+        if (src[i] == delim) {
+            count += 1;
+        }
+    }
+
+    char **ret = (char **) malloc(count * sizeof(char *) + (len + 1));
+    char *buf = (char *) ret + count * sizeof(char *);
+    memcpy(buf, src, len + 1);
+
+    int idx = 0;
+    ret[idx++] = buf;
+    for (int i = 0; i < len; i++) {
+        if (buf[i] == delim) {
+            buf[i] = '\0';
+            ret[idx++] = buf + i + 1;
+        }
+    }
+
+    *n = count;
+    return ret;
+}
+
+char *__cstl_string_replace(char *src, char *from, char *to) {
+    int len = strlen(src);
+    int from_len = strlen(from);
+    int to_len = strlen(to);
+
+    int count = 0;
+    char *p = src;
+    while ((p = strstr(p, from)) != NULL) {
+        count++;
+        p += from_len;
+    }
+
+    char *ret = (char *) malloc(len + count * (to_len - from_len) + 1);
+    char *dst = ret;
+    p = src;
+    while (*p) {
+        if (strncmp(p, from, from_len) == 0) {
+            memcpy(dst, to, to_len);
+            dst += to_len;
+            p += from_len;
+        } else {
+            *dst++ = *p++;
+        }
+    }
+    *dst = '\0';
+
+    return ret;
+}
+
+char *__cstl_string_ltrim(const char *src) {
+    const char *p = src;
+    while (*p && isspace((unsigned char) *p)) p++;
+    size_t len = strlen(p);
+    char *ret = (char *) malloc(len + 1);
+    memcpy(ret, p, len + 1);
+    return ret;
+}
+
+char *__cstl_string_rtrim(const char *src) {
+    size_t len = strlen(src);
+    while (len > 0 && isspace((unsigned char) src[len - 1])) len--;
+    char *ret = (char *) malloc(len + 1);
+    memcpy(ret, src, len);
+    ret[len] = '\0';
+    return ret;
+}
+
+char *__cstl_string_trim(const char *src) {
+    const char *begin = src;
+    while (*begin && isspace((unsigned char) *begin)) begin++;
+    const char *end = src + strlen(src);
+    while (end > begin && isspace((unsigned char) *(end - 1))) end--;
+    size_t len = end - begin;
+    char *ret = (char *) malloc(len + 1);
+    memcpy(ret, begin, len);
+    ret[len] = '\0';
+    return ret;
+}
+
+char *__cstl_string_to_upper(const char *src) {
+    size_t len = strlen(src);
+    char *ret = (char *) malloc(len + 1);
+    for (size_t i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
+    ret[len] = '\0';
+    return ret;
+}
+
+char *__cstl_string_to_lower(const char *src) {
+    size_t len = strlen(src);
+    char *ret = (char *) malloc(len + 1);
+    for (size_t i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
+    ret[len] = '\0';
+    return ret;
+}
+
+bool __cstl_string_starts_with(const char *src, const char *prefix) {
+    size_t plen = strlen(prefix);
+    return strncmp(src, prefix, plen) == 0;
+}
+
+bool __cstl_string_ends_with(const char *src, const char *suffix) {
+    size_t slen = strlen(src);
+    size_t flen = strlen(suffix);
+    if (flen > slen) return false;
+    return memcmp(src + slen - flen, suffix, flen) == 0;
+}
+
+int __cstl_string_count(const char *src, const char *sub) {
+    int count = 0;
+    size_t sub_len = strlen(sub);
+    if (sub_len == 0) return 0;
+    const char *p = src;
+    while ((p = strstr(p, sub)) != NULL) {
+        count++;
+        p += sub_len;
+    }
+    return count;
+}
+
+char *__cstl_string_join(char **parts, int n, const char *delim) {
+    if (n <= 0) {
+        char *empty = (char *) malloc(1);
+        *empty = '\0';
+        return empty;
+    }
+    size_t dlen = strlen(delim);
+    size_t total = 0;
+    for (int i = 0; i < n; i++) total += strlen(parts[i]);
+    total += dlen * (n - 1) + 1;
+
+    char *ret = (char *) malloc(total);
+    char *dst = ret;
+    for (int i = 0; i < n; i++) {
+        if (i > 0) {
+            memcpy(dst, delim, dlen);
+            dst += dlen;
+        }
+        size_t len = strlen(parts[i]);
+        memcpy(dst, parts[i], len);
+        dst += len;
+    }
+    *dst = '\0';
+    return ret;
+}
+
+char *__cstl_string_concat(const char *a, const char *b) {
+    size_t alen = strlen(a);
+    size_t blen = strlen(b);
+    char *ret = (char *) malloc(alen + blen + 1);
+    memcpy(ret, a, alen);
+    memcpy(ret + alen, b, blen + 1);
+    return ret;
+}
+
+char *__cstl_string_reverse(const char *src) {
+    size_t len = strlen(src);
+    char *ret = (char *) malloc(len + 1);
+    for (size_t i = 0; i < len; i++) ret[i] = src[len - 1 - i];
+    ret[len] = '\0';
+    return ret;
+}
+
+bool __cstl_string_is_digit(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isdigit((unsigned char) *p)) return false;
+    return true;
+}
+
+bool __cstl_string_is_alpha(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isalpha((unsigned char) *p)) return false;
+    return true;
+}
+
+bool __cstl_string_is_alnum(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isalnum((unsigned char) *p)) return false;
+    return true;
+}
+
+bool __cstl_string_is_space(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isspace((unsigned char) *p)) return false;
+    return true;
+}
+
+// ============================================================
+// function pointer types
+// ============================================================
+typedef char *(*string_substr_fn)(char *, int, int);
+
+typedef char **(*string_split_fn)(char *, char, int *);
+
+typedef char *(*string_replace_fn)(char *, char *, char *);
+
+typedef char *(*string_unary_fn)(const char *);
+
+typedef bool (*string_match_fn)(const char *, const char *);
+
+typedef int (*string_count_fn)(const char *, const char *);
+
+typedef char *(*string_join_fn)(char **, int, const char *);
+
+typedef char *(*string_concat_fn)(const char *, const char *);
+
+typedef bool (*string_pred_fn)(const char *);
+
+// ============================================================
+// string namespace struct
+// ============================================================
+typedef struct {
+    string_substr_fn substr;
+    string_split_fn split;
+    string_replace_fn replace;
+    string_unary_fn ltrim;
+    string_unary_fn rtrim;
+    string_unary_fn trim;
+    string_unary_fn to_upper;
+    string_unary_fn to_lower;
+    string_match_fn starts_with;
+    string_match_fn ends_with;
+    string_count_fn count;
+    string_join_fn join;
+    string_concat_fn concat;
+    string_unary_fn reverse;
+    string_pred_fn is_digit;
+    string_pred_fn is_alpha;
+    string_pred_fn is_alnum;
+    string_pred_fn is_space;
+} __STRING;
+
+static __STRING string = {
+    __cstl_string_substr,
+    __cstl_string_split,
+    __cstl_string_replace,
+    __cstl_string_ltrim,
+    __cstl_string_rtrim,
+    __cstl_string_trim,
+    __cstl_string_to_upper,
+    __cstl_string_to_lower,
+    __cstl_string_starts_with,
+    __cstl_string_ends_with,
+    __cstl_string_count,
+    __cstl_string_join,
+    __cstl_string_concat,
+    __cstl_string_reverse,
+    __cstl_string_is_digit,
+    __cstl_string_is_alpha,
+    __cstl_string_is_alnum,
+    __cstl_string_is_space
+};
+
+#endif //OPENCSTL_STRING_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    string.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 #define VECTOR(TYPE)            TYPE*
@@ -9824,43 +10161,43 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
 }
 
 
-OPENCSTL_FUNC void ___cstl_sort(void *container, int argc, ...) {
-    va_list vl;
-    void *va_ptr = NULL;
-    __cstl_va_start(vl, argc, va_ptr);
-#if CSTL_USE_VAARG
-    void *param1 = __cstl_va_arg_next(vl);
-    void *param2 = __cstl_va_arg_next(vl);
-#else
-    void *param1 = __cstl_va_arg(va_ptr);
-    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
-#endif
-
-
-    size_t container_type;
-    if (__is_deque((void **) container)) {
-        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
-    }
-    switch (container_type) {
-        case OPENCSTL_LIST: {
-            if (argc == 1) {
-#if CSTL_USE_VAARG
-                __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) param1);
-#else
-                __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) *(void **) param1);
-#endif
-            }
-        }
-        break;
-
-        default: cstl_error("Invalid operator");
-            break;
-    }
-    __cstl_va_end(vl);
-}
+// OPENCSTL_FUNC void ___cstl_sort(void *container, int argc, ...) {
+//     va_list vl;
+//     void *va_ptr = NULL;
+//     __cstl_va_start(vl, argc, va_ptr);
+// #if CSTL_USE_VAARG
+//     void *param1 = __cstl_va_arg_next(vl);
+//     void *param2 = __cstl_va_arg_next(vl);
+// #else
+//     void *param1 = __cstl_va_arg(va_ptr);
+//     void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
+// #endif
+//
+//
+//     size_t container_type;
+//     if (__is_deque((void **) container)) {
+//         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+//         container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
+//     } else {
+//         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+//     }
+//     switch (container_type) {
+//         case OPENCSTL_LIST: {
+//             if (argc == 1) {
+// #if CSTL_USE_VAARG
+//                 __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) param1);
+// #else
+//                 __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) *(void **) param1);
+// #endif
+//             }
+//         }
+//         break;
+//
+//         default: cstl_error("Invalid operator");
+//             break;
+//     }
+//     __cstl_va_end(vl);
+// }
 
 #if defined(__linux__) || defined(__APPLE__)
 // #if !defined(__8cc__ )
