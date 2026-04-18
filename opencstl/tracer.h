@@ -90,7 +90,7 @@ static int opencstl_init(void) {
 
     //htm = htm_new();
 
-    mt19937.seed(time(NULL));
+    //mt19937.seed(time(NULL));
     atexit(opencstl_exit);
     return 0;
 }

@@ -22,34 +22,47 @@ char *__cstl_string_substr(char *src, int pos, int len) {
     return ret;
 }
 
-char **__cstl_string_split(char *src, char delim, int *n) {
-    int len = strlen(src);
+char **__cstl_string_split(const char *src, const char *sep, int *n) {
+    int len = (int) strlen(src);
+    int sep_len = (int) strlen(sep);
 
+    if (sep_len == 0) {
+        char **ret = (char **) malloc(sizeof(char *) + (len + 1));
+        char *buf = (char *) ret + sizeof(char *);
+        memcpy(buf, src, len + 1);
+        ret[0] = buf;
+        *n = 1;
+        return ret;
+    }
+
+    // separator 개수 세기
     int count = 1;
-    for (int i = 0; i < len; i++) {
-        if (src[i] == delim) {
-            count += 1;
-        }
+    const char *p = src;
+    while ((p = strstr(p, sep)) != NULL) {
+        count++;
+        p += sep_len;
     }
 
     char **ret = (char **) malloc(count * sizeof(char *) + (len + 1));
     char *buf = (char *) ret + count * sizeof(char *);
     memcpy(buf, src, len + 1);
 
+
     int idx = 0;
     ret[idx++] = buf;
-    for (int i = 0; i < len; i++) {
-        if (buf[i] == delim) {
-            buf[i] = '\0';
-            ret[idx++] = buf + i + 1;
-        }
+    char *s = buf;
+    while ((s = strstr(s, sep)) != NULL) {
+        *s = '\0';
+        s += sep_len;
+        ret[idx++] = s;
     }
 
     *n = count;
     return ret;
 }
 
-char *__cstl_string_replace(char *src, char *from, char *to) {
+
+char *__cstl_string_replace(const char *src, const char *from, char *to) {
     int len = strlen(src);
     int from_len = strlen(from);
     int to_len = strlen(to);
@@ -61,7 +74,7 @@ char *__cstl_string_replace(char *src, char *from, char *to) {
         p += from_len;
     }
 
-    char *ret = (char *) malloc(len + count * (to_len - from_len) + 1);
+    char *ret = (char *) calloc(len + count * (to_len - from_len) + 1, 1);
     char *dst = ret;
     p = src;
     while (*p) {
@@ -224,9 +237,9 @@ bool __cstl_string_is_space(const char *src) {
 // ============================================================
 typedef char *(*string_substr_fn)(char *, int, int);
 
-typedef char **(*string_split_fn)(char *, char, int *);
+typedef char **(*string_split_fn)(const char *, const char *, int *);
 
-typedef char *(*string_replace_fn)(char *, char *, char *);
+typedef char *(*string_replace_fn)(const char *, const char *, char *);
 
 typedef char *(*string_unary_fn)(const char *);
 

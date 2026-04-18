@@ -43,7 +43,7 @@ extern "C" {
 
 #endif
 #include "crossplatform.h"
-#if defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_TCC))
+#if defined(OCSTL_OS_WINDOWS)
 
 #include<windows.h>
 #include<process.h>
