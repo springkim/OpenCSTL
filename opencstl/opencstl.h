@@ -76,6 +76,7 @@
 // #pragma GCC optimize("O0")
 // #endif
 // #endif
+#include "zalloc.h"
 #include "error.h"
 #include "string.h"
 // Contaner

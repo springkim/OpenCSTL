@@ -592,6 +592,9 @@ static const lprint_glyph_t *lprint_find(char c) {
 static void lprint(const char *text) {
 
 #ifdef OCSTL_OS_WINDOWS
+#ifndef CP_UTF8
+#define CP_UTF8 65001
+#endif
 UINT old_cp = GetConsoleOutputCP();
 SetConsoleOutputCP(CP_UTF8);
 #endif

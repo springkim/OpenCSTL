@@ -189,7 +189,7 @@ GUARD = '_OPENCSTL_AMALGAMATED_H'
 
 
 def write_output(out_path, amalg, body_lines):
-    with out_path.open('w', encoding='utf-8-sig', newline='\n') as f:
+    with out_path.open('w', encoding='utf-8', newline='\n') as f:
         f.write(BANNER)
         f.write('\n')
         f.write(f'#pragma once\n')

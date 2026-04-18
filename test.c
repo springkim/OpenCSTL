@@ -15,10 +15,10 @@ int main() {
         puts(datas[i]);
     }
 
-    char *new_str = string.replace(str, "-", "==s");
+    char *new_str = string.replace(str, "-", "==");
     puts(new_str);
 
-
+    free(str);
     free(new_str);
     free(datas);
     free(s);
