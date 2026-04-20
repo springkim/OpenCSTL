@@ -16,7 +16,7 @@ int sort_test() {
     DTYPE N = 5000000;
 
     size_t ALGORITHMS = 6;
-    size_t REPEAT = 5;
+    size_t REPEAT = 10;
     DTYPE *arr = (DTYPE *) calloc(N, sizeof(DTYPE));
     for (int i = 0; i < N; i++) {
         //arr[i] = rand() * 1.0 * rand();
@@ -90,16 +90,21 @@ int sort_test() {
             puts("Not sorted");
         }
     }
-    printf("qsort: %.2fms\n", q_diff);
-    printf("msort: %.2fms\n", m_diff);
+    printf("|ENV/SORTING|%s|%s|%s|%s|%s|%s|\n", "qsort", "msort", "tsort", "pdqsort", "rsort","pmsort");
+    printf("|-|-|-|-|-|-|-|\n");
+    printf("|%s/%s|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|\n",OCSTL_OS_STR,OCSTL_CC_STR,
+        q_diff,m_diff,t_diff,p_diff,r_diff,pm_diff);
 
-    printf("tsort: %.2fms\n", t_diff);
-    printf("pdqsort: %.2fms\n", p_diff);
-    printf("rsort: %.2fms\n", r_diff);
-
-    printf("pmsort: %.2fms\n", pm_diff);
-
-    printf("|%.2f|%.2f|%.2f|%.2f|\n", q_diff, m_diff, t_diff, p_diff);
+    // printf("qsort: %.2fms\n", q_diff);
+    // printf("msort: %.2fms\n", m_diff);
+    //
+    // printf("tsort: %.2fms\n", t_diff);
+    // printf("pdqsort: %.2fms\n", p_diff);
+    // printf("rsort: %.2fms\n", r_diff);
+    //
+    // printf("pmsort: %.2fms\n", pm_diff);
+    //
+    // printf("|%.2f|%.2f|%.2f|%.2f|\n", q_diff, m_diff, t_diff, p_diff);
     return 0;
 }
 
