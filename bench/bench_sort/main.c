@@ -134,44 +134,50 @@ int sort_test() {
     double r_diff = 0;
     double pm_diff = 0;
     for (int i = 0; i < ALGORITHMS * REPEAT; i++) {
-        memcpy(target, arr, N * sizeof(int));
-        bgn = now();
+        memcpy(target, arr, N * sizeof(int));;
         switch (i % ALGORITHMS) {
             case 0: {
+                bgn = now();
                 qsort(target, N, sizeof(DTYPE), compare);
                 end = now();
                 q_diff += duration(bgn, end);
             };
                 break;
             case 1: {
+                bgn = now();
                 msort(target, N, sizeof(DTYPE), compare);
                 end = now();
                 m_diff += duration(bgn, end);
             };
                 break;
             case 2: {
+                bgn = now();
                 tsort(target, N, sizeof(DTYPE), compare);
                 end = now();
                 t_diff += duration(bgn, end);
             };
                 break;
             case 3: {
+                bgn = now();
                 pdqsort(target, N, sizeof(DTYPE), compare);
                 end = now();
                 p_diff += duration(bgn, end);
             }
             break;
             case 4: {
-                rsort64(target, N);
+                bgn = now();
+                rsort(target, N);
                 end = now();
                 r_diff += duration(bgn, end);
             }
             break;
             case 5: {
+                bgn = now();
                 pmsort(target, N, sizeof(DTYPE), compare);
                 end = now();
                 pm_diff += duration(bgn, end);
-            }break;
+            }
+            break;
             default: {
                 exit(-1);
             };

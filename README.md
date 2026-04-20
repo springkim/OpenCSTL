@@ -1,7 +1,3 @@
-
-
-
-
 <p align="center">
   <img width="1024" src="assets/blogo.png">
 </p>
@@ -63,21 +59,76 @@
 
 ## Preview
 
-OpenCSTL과 대응하는 C++ STL 코드입니다.
-
-| OpenCSTL을 사용한 C 코드                                | C++ STL 코드  |
-| ----------------------------------------- | ---- |
-| ![](./assets/codes/sample01_vector.c.webp) |  ![](./assets/codes/sample01_vector.cpp.webp)     |
-| ![](./assets/codes/sample02_vector.c.webp) |  ![](./assets/codes/sample02_vector.cpp.webp)     |
-| ![](./assets/codes/sample03_list.c.webp) |  ![](./assets/codes/sample03_list.cpp.webp)     |
-| ![](./assets/codes/sample04_stack_queue.c.webp) |  ![](./assets/codes/sample04_stack_queue.cpp.webp)     |
-| ![](./assets/codes/sample05_deque.c.webp) |  ![](./assets/codes/sample05_deque.cpp.webp)     |
-| ![](./assets/codes/sample06_map.c.webp) |  ![](./assets/codes/sample06_map.cpp.webp)     |
-| ![](./assets/codes/sample07_priority_queue.c.webp) |  ![](./assets/codes/sample07_priority_queue.cpp.webp)     |
-| ![](./assets/codes/sample08_bitset.c.webp)|![](./assets/codes/sample08_bitset.cpp.webp) |
+> [!NOTE]  
+> OpenCSTL과 대응하는 C++ STL 코드입니다.
 
 
 
+<table>
+  <thead>
+    <tr>
+      <th>OpenCSTL을 사용한 C 코드</th>
+      <th>C++ STL 코드</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><img src="./assets/codes/sample01_vector.c.webp" alt=""></td>
+      <td><img src="./assets/codes/sample01_vector.cpp.webp" alt=""></td>
+    </tr>
+    <tr>
+      <td><img src="./assets/codes/sample02_vector.c.webp" alt=""></td>
+      <td><img src="./assets/codes/sample02_vector.cpp.webp" alt=""></td>
+    </tr>
+    <tr>
+      <td><img src="./assets/codes/sample03_list.c.webp" alt=""></td>
+      <td><img src="./assets/codes/sample03_list.cpp.webp" alt=""></td>
+    </tr>
+    <tr>
+      <td><img src="./assets/codes/sample04_stack_queue.c.webp" alt=""></td>
+      <td><img src="./assets/codes/sample04_stack_queue.cpp.webp" alt=""></td>
+    </tr>
+    <tr>
+      <td><img src="./assets/codes/sample05_deque.c.webp" alt=""></td>
+      <td><img src="./assets/codes/sample05_deque.cpp.webp" alt=""></td>
+    </tr>
+    <tr>
+      <td><img src="./assets/codes/sample06_map.c.webp" alt=""></td>
+      <td><img src="./assets/codes/sample06_map.cpp.webp" alt=""></td>
+    </tr>
+    <tr>
+      <td><img src="./assets/codes/sample07_priority_queue.c.webp" alt=""></td>
+      <td><img src="./assets/codes/sample07_priority_queue.cpp.webp" alt=""></td>
+    </tr>
+    <tr>
+      <td><img src="./assets/codes/sample08_bitset.c.webp" alt=""></td>
+      <td><img src="./assets/codes/sample08_bitset.cpp.webp" alt=""></td>
+    </tr>
+  </tbody>
+</table>
+
+
+> [!NOTE]  
+> OpenCSTL과 대응하는 Python 코드입니다.
+
+<table>
+  <thead>
+    <tr>
+      <th>OpenCSTL을 사용한 C 코드</th>
+      <th>Python코드</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><img src="./assets/codes/sample_20_string.c.webp" alt=""></td>
+      <td><img src="./assets/codes/sample_20_string.py.webp" alt=""></td>
+    </tr>
+     <tr>
+      <td><img src="./assets/codes/sample_21_logging.c.webp" alt=""></td>
+      <td><img src="./assets/codes/sample_21_logging.py.webp" alt=""></td>
+    </tr>
+  </tbody>
+</table>
 
 
 ## Comparison
@@ -205,9 +256,11 @@ OpenCSTL과 대응하는 C++ STL 코드입니다.
       ISORT(isort.h) --> MSORT(msort.h)
       TSORT(tsort.h) --> SORT(sort.h)
       MSORT(msort.h) --> SORT(sort.h)
+      RSORT(rsort.h) --> SORT(sort.h)
       PTHREADCC(pthread_cc.h) --> PMSORT(pmsort.h)
       MSORT(msort.h) --> PMSORT(pmsort.h)
       PMSORT(pmsort.h) --> SORT(sort.h)
+      BSORT(bestsort.h) --> SORT(sort.h)
       ITER(iterator.h) --> SORT(sort.h)
       ITER(iterator.h) --> ALGO(algorithm.h)
       PDQSORT(pdqsort.h) --> SORT(sort.h)
@@ -236,9 +289,9 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
 ## Supported Platforms
 
 <p align="center">
-    <img width="128" height="128" src="assets/windows11.png" >
-    <img width="128" height="128" src="assets/macos.png" >
-    <img width="128" height="128" src="assets/ubuntu_logo.png" >
+    <img width="96" height="96" src="assets/windows11.png" >
+    <img width="96" height="96" src="assets/macos.png" >
+    <img width="96" height="96" src="assets/ubuntu_logo.png" >
 </p>
 
 <p align="center">
@@ -255,7 +308,7 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
 | GNU / MinGW64 (gcc) | ✅ | ✅ | ✅ |
 | LLVM (clang) | ✅ | ✅ | ✅ |
 | Intel (icx-cc) | ✅ | ❌ | ✅ |
-|  Tiny C Compiler (tcc) | ✅ | ✅ | ✅ |
+| Tiny C Compiler  (tcc) | ✅ | ✅ | ✅ |
 
 ## Document
 

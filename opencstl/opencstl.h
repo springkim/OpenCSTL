@@ -36,7 +36,7 @@
 //
 #pragma once
 #include "zalloc.h"
-#include "verify.h"
+
 #include "tracer.h"
 #include "zalloc.h"
 #include "crossplatform.h"
@@ -83,7 +83,7 @@
 #include "deque.h"
 #include "vector.h"
 #include "list.h"
-#include "tree.h"
+#include "rbtree.h"
 #include "stack.h"
 #include "queue.h"
 #include "hashtable.h"
@@ -128,7 +128,6 @@
 #define resize          cstl_resize
 #define assign          cstl_assign
 #define find            cstl_find
-#define capacity        cstl_capacity
 #if defined(OPENCSTL_USE_LENGTH)
 #define length          cstl_size
 #else
@@ -147,6 +146,7 @@
 #define front           cstl_front
 #define back            cstl_back
 #define reserve         cstl_reserve
+#define max_capacity        cstl_max_capacity
 
 #define new_deque           cstl_deque
 #define new_list            cstl_list
@@ -163,7 +163,8 @@
 
 #endif
 
-
+#include "types.h"
+#include "verify.h"
 OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -362,6 +363,71 @@ OPENCSTL_FUNC void _cstl_pop_back(void *container) {
         break;
     }
 }
+
+OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
+    size_t container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    size_type sz = 0;
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            sz = __cstl_vector_max_size((void **) container);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            sz = __cstl_list_max_size((void **) container);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            sz = __cstl_deque_max_size((void **) container);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            sz = __cstl_hashtable_capacity((void **) container);
+        }
+        break;
+        default: {
+            verify("Invalid operator");
+        }
+
+    }
+     return sz;
+
+}
+
+// OPENCSTL_FUNC size_type _cst_shrink_to_fit(void *container) {
+//     size_t container_type;
+//     if (__is_deque((void **) container)) {
+//         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+//         container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
+//     } else {
+//         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+//     }
+//     size_type sz = 0;
+//     switch (container_type) {
+//         case OPENCSTL_VECTOR: {
+//            sz =  __cstl_vector_shrink_to_fit((void **) container);
+//         }
+//         break;
+//         case OPENCSTL_LIST: {
+//            sz =  __cstl_list_max_size((void **) container);
+//         }
+//         break;
+//         case OPENCSTL_DEQUE: {
+//             sz = __cstl_deque_shrink_to_fit((void **) container);
+//         }
+//         break;
+//         default: {
+//             verify("Invalid operator");
+//         }
+//     }
+//     return es;
+// }
 
 OPENCSTL_FUNC void _cstl_pop_front(void *container) {
     size_t container_type;

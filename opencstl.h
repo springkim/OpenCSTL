@@ -155,6 +155,8 @@
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 
+
+
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  crossplatform.h                (depth 4) */
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -915,7 +917,7 @@ static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
 
 char *__mt19937_uuid(void) {
     __mt19937_64_seed(time(NULL));
-    char *buf = (char *) calloc(37, 1);
+    static char buf[37];
     static const char hex[] = "0123456789abcdef";
 
     uint64_t hi = __mt19937_64_next();
@@ -1116,31 +1118,6 @@ static void *zrealloc(void *ptr, size_t new_size) {
 /* END    zalloc.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  verify.h                       (depth 1) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-// Created by spring on 4/15/2026.
-//
-
-#ifndef OPENCSTL_VERIFY_H
-#define OPENCSTL_VERIFY_H
-#include <assert.h>
-/* [already included: logging.h] */
-
-#define verify(EXPR) do { if(!(EXPR)) __verify(#EXPR,__FILE__,__LINE__); } while(0)
-
-int __verify(char *expression, char *file, int line) {
-    logging.error("Verification failed: %s, file %s, line %d",
-                  expression, file, line);
-    abort();
-}
-#endif //OPENCSTL_VERIFY_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    verify.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
 /* [already included: tracer.h] */
 /* [already included: zalloc.h] */
 /* [already included: crossplatform.h] */
@@ -1180,6 +1157,7 @@ int __verify(char *expression, char *file, int line) {
 // #pragma GCC optimize("O0")
 // #endif
 // #endif
+/* [already included: zalloc.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  error.h                        (depth 1) */
@@ -1266,7 +1244,6 @@ int __verify(char *expression, char *file, int line) {
 //
 #if !defined(_OPENCSTL_TYPES_H)
 #define _OPENCSTL_TYPES_H
-
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -1452,6 +1429,7 @@ typedef unsigned char ubyte_x;
 #define cstl_clear(container)	    _cstl_clear(&(container))
 #define cstl_empty(container)	    _cstl_empty(&(container))
 #define cstl_free(container)	    _cstl_free(&(container))
+#define cstl_max_capacity(container) _cstl_max_size(&(container))
 //Macro only functions
 
 #define _cstl_deque_type(container) (*(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
@@ -1506,7 +1484,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define cstl_resize(container,...)	_cstl_resize(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 #define cstl_assign(container,...)	_cstl_assign(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 #define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-
+#define cstl_max_capacity(container,...) _cstl_max_size(&container)
 #elif defined(__linux__) || defined(__APPLE__)
 
 // TCC supports typeof but not __auto_type; GCC/Clang support both.
@@ -1622,6 +1600,22 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define _cstl_push_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
 #define _cstl_push_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 
+
+#define cstl_max_size(C,...) ({void* _() {_linux_cstl_max_size(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)}_;});
+#define _linux_cstl_max_size(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_max_size ## _ ## N
+#define _cstl_max_size_0#define _cstl_max_size_1#define _cstl_max_size_2#define _cstl_max_size_3#define _cstl_max_size_4#define _cstl_max_size_5#define _cstl_max_size_6#define _cstl_max_size_7#define _cstl_max_size_8#define _cstl_max_size_9#define _cstl_max_size_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {
+_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;
+_CSTL_TYPEOF(_2) __2=_2;
+_CSTL_TYPEOF(_3) __3=_3;
+_CSTL_TYPEOF(_4) __4=_4;
+_CSTL_TYPEOF(_5) __5=_5;
+_CSTL_TYPEOF(_6) __6=_6;
+_CSTL_TYPEOF(_7) __7=_7;
+_CSTL_TYPEOF(_8) __8=_8;
+_CSTL_TYPEOF(_9) __9=_9;
+_CSTL_TYPEOF(_10) __10=_10;
+return _cstl_max_size(__0, &__1, &__2, &__3, &__4, &__5, &__6, &__7, &__8, &__9, &__10);}
+
 #endif
 
 
@@ -1635,7 +1629,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    defines.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
-
+#include <limits.h>
 
 // ██████╗░██╗░░░██╗███╗░░██╗████████╗██╗███╗░░░███╗███████╗░░░░░░███████╗██████╗░██████╗░░█████╗░██████╗░
 // ██╔══██╗██║░░░██║████╗░██║╚══██╔══╝██║████╗░████║██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗██╔══██╗██╔══██╗
@@ -1656,14 +1650,14 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, const char *function, int line) {
     char err_msg[1024] = {0};
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
-sprintf_s(err_msg, 1024, "[%s] in %s , %s , %d\n", msg, file, function, line);
-//MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
+    sprintf_s(err_msg, 1024, "[%s] in %s , %s , %d\n", msg, file, function, line);
+    //MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
 #else
-sprintf(err_msg, "[%s] in %s , %s , %d\n", msg, file, function, line);
-puts(err_msg);
-//Other platform msg box...
+    sprintf(err_msg, "[%s] in %s , %s , %d\n", msg, file, function, line);
+    puts(err_msg);
+    //Other platform msg box...
 #endif
-exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
     return 0;
 }
 #else
@@ -1672,13 +1666,13 @@ OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, int line) {
     char err_msg[1024] = {0};
 
 #if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
-    sprintf_s(err_msg, 1024, "[%s] in %s , %d\n", msg, file, line);
-    //MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
+sprintf_s(err_msg, 1024, "[%s] in %s , %d\n", msg, file, line);
+//MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
 #else
-    sprintf(err_msg, "[%s] in %s , %d\n", msg, file, line);
-    //Other platform msg box...
+sprintf(err_msg, "[%s] in %s , %d\n", msg, file, line);
+//Other platform msg box...
 #endif
-    exit(EXIT_FAILURE);
+exit(EXIT_FAILURE);
     return 0;
 }
 #endif
@@ -1709,7 +1703,32 @@ OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, int line) {
 #define OPENCSTL_STRING_H
 
 /* [already included: zalloc.h] */
-/* [already included: verify.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  verify.h                       (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/15/2026.
+//
+
+#ifndef OPENCSTL_VERIFY_H
+#define OPENCSTL_VERIFY_H
+#include <assert.h>
+/* [already included: logging.h] */
+
+#define verify(EXPR) do { if(!(EXPR)) __verify(#EXPR,__FILE__,__LINE__); } while(0)
+
+int __verify(char *expression, char *file, int line) {
+    logging.error("Verification failed: %s, file %s, line %d",
+                  expression, file, line);
+    abort();
+}
+#endif //OPENCSTL_VERIFY_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    verify.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -1765,7 +1784,8 @@ char **__cstl_string_split(const char *src, const char *sep, int *n) {
 }
 
 
-char *__cstl_string_replace(const char *src, const char *from, char *to) {
+
+char *__cstl_string_replace(const char *src, const char *from,  char *to) {
     int len = strlen(src);
     int from_len = strlen(from);
     int to_len = strlen(to);
@@ -2409,8 +2429,7 @@ HTMVEB *htm_new(void) {
 
 void htm_free(HTMVEB *iv) {
     for (size_t i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used)
-            free(iv->data->e[i].val);
+        if (iv->data->e[i].used) free(iv->data->e[i].val);
     hm_free(iv->data);
     veb_free(iv->veb);
     free(iv);
@@ -2462,8 +2481,7 @@ IntervalVEB *iveb_new(void) {
 
 void iveb_free(IntervalVEB *iv) {
     for (size_t i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used)
-            free(iv->data->e[i].val);
+        if (iv->data->e[i].used) free(iv->data->e[i].val);
     hm_free(iv->data);
     veb_free(iv->veb);
     free(iv);
@@ -2859,6 +2877,46 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
     }
     return NULL;
 }
+
+OPENCSTL_FUNC size_type __cstl_deque_max_size(void **container) {
+    return INT_MAX;
+}
+
+OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
+    ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
+    size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
+    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
+    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+    size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
+    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+
+    // 이미 꽉 차있고 앞쪽 여유도 없으면 아무것도 안 함
+    if (length == capacity && distance == 0) {
+        return;
+    }
+
+    size_t new_capacity = length > 0 ? length : 1;
+
+    iveb_erase(iveb, (char *) *container + distance);
+    void *b = calloc(1, header_sz + new_capacity * type_size);
+    if (b == NULL) {
+        cstl_error("Failed to allocate memory for deque shrink_to_fit");
+    }
+    // 헤더 복사
+    memcpy(b, (char *) *container - header_sz + distance, header_sz);
+    // 원소들을 새 버퍼의 맨 앞(distance=0)으로 복사
+    memcpy((char *) b + header_sz, *container, length * type_size);
+    free((char *) *container - header_sz + distance);
+
+    *container = (char *) b + header_sz;
+    OPENCSTL_NIDX(container, -1) = -1; // distance = 0
+    OPENCSTL_NIDX(container, -3) = new_capacity;
+    OPENCSTL_NIDX(container, -2) = length;
+
+    iveb_insert(iveb, *container,
+                (char *) *container + (type_size * new_capacity),
+                CT_DEQUE, type_size, type);
+}
 #endif // if !defined(_OPENCSTL_DEQUE_H)
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -3192,6 +3250,32 @@ OPENCSTL_FUNC void *__cstl_vector_next(void *it, size_t type_size) {
 
 OPENCSTL_FUNC void *__cstl_vector_prev(void *it, size_t type_size) {
     return (char *) it - type_size;
+}
+
+OPENCSTL_FUNC size_type __cstl_vector_max_size(void **container) {
+    return INT_MAX;
+}
+
+OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    size_t capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+    if (capacity == length) {
+        return;
+    }
+    size_t new_capacity = length > 0 ? length : 1;
+
+    iveb_erase(iveb, *container);
+    void *b = realloc((char *) *container - header_sz, header_sz + new_capacity * type_size);
+    if (b == NULL) {
+        cstl_error("Reallocation failed at vector shrink_to_fit");
+    }
+    *container = ((char *) b + header_sz);
+    OPENCSTL_NIDX(container, -2) = new_capacity;
+    iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capacity), CT_VECTOR, type_size, type);
 }
 #endif
 
@@ -3728,6 +3812,10 @@ OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, 
         }
     }
     free(stack);
+}
+
+OPENCSTL_FUNC size_type __cstl_list_max_size(void **container) {
+    return INT_MAX;
 }
 
 
@@ -6693,6 +6781,7 @@ FSTREAM fstream = {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 
+
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  sort.h                         (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -6855,8 +6944,7 @@ static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const
             memcpy(arr + lo * sz, tmp, sz);
         }
     }
-    if (tmp != sbuf)
-        free(tmp);
+    if (tmp != sbuf) free(tmp);
 }
 #if defined(__cplusplus)
 }
@@ -6888,7 +6976,7 @@ static void merge(char *arr, size_t len1, size_t len2, size_t sz,
             d += sz;
         }
         if (c1 < e1)
-            memcpy(d, c1, (size_t) (e1 - c1));
+            memcpy(d, c1, (size_t)(e1 - c1));
     } else {
         memcpy(buf, arr + len1 * sz, len2 * sz);
         size_t i = len1, j = len2, k = len1 + len2;
@@ -7016,8 +7104,7 @@ static void ts_binsort(char *arr, size_t lo, size_t hi, size_t start,
             memcpy(arr + left * sz, tmp, sz);
         }
     }
-    if (tmp != sbuf)
-        free(tmp);
+    if (tmp != sbuf) free(tmp);
 }
 
 static size_t ts_count_run(char *arr, size_t lo, size_t hi,
@@ -7039,8 +7126,7 @@ static size_t ts_count_run(char *arr, size_t lo, size_t hi,
             a++;
             b--;
         }
-        if (t != rbuf)
-            free(t);
+        if (t != rbuf) free(t);
     } else {
         while (run_hi + 1 < hi &&
                cmp(arr + (run_hi + 1) * sz, arr + run_hi * sz) >= 0)
@@ -7141,7 +7227,7 @@ static void ts_merge_lo(char *base, size_t len1, size_t len2,
     }
 tail_lo:
     if (c1 < e1)
-        memcpy(d, c1, (size_t) (e1 - c1));
+        memcpy(d, c1, (size_t)(e1 - c1));
 }
 
 static void ts_merge_hi(char *base, size_t len1, size_t len2,
@@ -7304,11 +7390,11 @@ void tsort(void *mem, const size_t len, const size_t size_elem,
 
 
 #if defined(_MSC_VER)
-#define PDQ_LIKELY(x)   (x)
-#define PDQ_UNLIKELY(x) (x)
+    #define PDQ_LIKELY(x)   (x)
+    #define PDQ_UNLIKELY(x) (x)
 #else
-#define PDQ_LIKELY(x)   __builtin_expect(!!(x), 1)
-#define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
+    #define PDQ_LIKELY(x)   __builtin_expect(!!(x), 1)
+    #define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
 #endif
 
 static inline void pdq__swap(unsigned char *a, unsigned char *b, size_t n) {
@@ -7604,8 +7690,7 @@ void pdqsort(void *__base, size_t __nel, size_t __width,
         }
         goto again;
     }
-    if (scratch != sbuf)
-        free(scratch);
+    if (scratch != sbuf) free(scratch);
 }
 #undef PDQ_ELEM
 #undef PDQ_ISORT_THRESH
@@ -7749,8 +7834,8 @@ typedef struct _pthread_cleanup_stack {
     struct _pthread_cleanup_stack *next;
 } _pthread_cleanup_stack;
 
-__declspec(selectany) _pthread_cleanup_stack *_pthread_cleanup_stack_head = NULL;
-__declspec(selectany) HANDLE _pthread_cleanup_mutex = NULL;
+__declspec(selectany) _pthread_cleanup_stack *_pthread_cleanup_stack_head= NULL;
+__declspec(selectany) HANDLE _pthread_cleanup_mutex= NULL;
 
 inline int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg) {
     DWORD dwThreadId = 1;
@@ -8509,6 +8594,7 @@ char *opencstl_env(void) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 
+
 /* [already included: crossplatform.h] */
 
 #if defined(OCSTL_CC_MSVC)
@@ -9096,7 +9182,6 @@ static const lprint_glyph_t *lprint_find(char c) {
 
 static void lprint(const char *text) {
 
-
 #ifdef OCSTL_OS_WINDOWS
 #ifndef CP_UTF8
 #define CP_UTF8 65001
@@ -9464,7 +9549,6 @@ static __BITSET bitset = {
 #define resize          cstl_resize
 #define assign          cstl_assign
 #define find            cstl_find
-#define capacity        cstl_capacity
 #if defined(OPENCSTL_USE_LENGTH)
 #define length          cstl_size
 #else
@@ -9483,6 +9567,7 @@ static __BITSET bitset = {
 #define front           cstl_front
 #define back            cstl_back
 #define reserve         cstl_reserve
+#define max_capacity        cstl_max_capacity
 
 #define new_deque           cstl_deque
 #define new_list            cstl_list
@@ -9499,7 +9584,8 @@ static __BITSET bitset = {
 
 #endif
 
-
+/* [already included: types.h] */
+/* [already included: verify.h] */
 OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -9698,6 +9784,71 @@ OPENCSTL_FUNC void _cstl_pop_back(void *container) {
         break;
     }
 }
+
+OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
+    size_t container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    size_type sz = 0;
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            sz = __cstl_vector_max_size((void **) container);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            sz = __cstl_list_max_size((void **) container);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            sz = __cstl_deque_max_size((void **) container);
+        }
+        break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP: {
+            sz = __cstl_hashtable_capacity((void **) container);
+        }
+        break;
+        default: {
+            verify("Invalid operator");
+        }
+
+    }
+     return sz;
+
+}
+
+// OPENCSTL_FUNC size_type _cst_shrink_to_fit(void *container) {
+//     size_t container_type;
+//     if (__is_deque((void **) container)) {
+//         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+//         container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
+//     } else {
+//         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+//     }
+//     size_type sz = 0;
+//     switch (container_type) {
+//         case OPENCSTL_VECTOR: {
+//            sz =  __cstl_vector_shrink_to_fit((void **) container);
+//         }
+//         break;
+//         case OPENCSTL_LIST: {
+//            sz =  __cstl_list_max_size((void **) container);
+//         }
+//         break;
+//         case OPENCSTL_DEQUE: {
+//             sz = __cstl_deque_shrink_to_fit((void **) container);
+//         }
+//         break;
+//         default: {
+//             verify("Invalid operator");
+//         }
+//     }
+//     return es;
+// }
 
 OPENCSTL_FUNC void _cstl_pop_front(void *container) {
     size_t container_type;

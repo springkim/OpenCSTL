@@ -37,7 +37,7 @@
 #if !defined(_OPENCSTL_CSTL_FILE_H)
 #define _OPENCSTL_CSTL_FILE_H
 #include <stdio.h>
-
+#include "fileio.h"
 
 FILE *__cstl_fopen(const char *filename, const char *mode) {
     FILE *fp = NULL;
@@ -75,6 +75,26 @@ char *__cstl_get_line(FILE *fp) {
     return ret;
 }
 
+wchar_t *__cstl_get_line_w(FILE *fp) {
+#define _MAX_LINE_SIZE 65536*2*2 // 256KB
+    wchar_t line[_MAX_LINE_SIZE] = {0};
+    wint_t c = 0;
+    size_t i = 0;
+    while ((c = fgetwc(fp)) != EOF) {
+        if (c == L'\n') break;
+        if (i + 1 < _MAX_LINE_SIZE) {
+            line[i++] = (wchar_t) c;
+        }
+    }
+    if (i == 0) {
+        return NULL;
+    }
+    line[i] = L'\0';
+    wchar_t *ret = (wchar_t *) calloc(i + 1, sizeof(wchar_t));
+    memcpy(ret, line, i * sizeof(wchar_t));
+    return ret;
+}
+
 char *__cstl_fread_all(FILE *fp) {
     fseek(fp, 0, SEEK_END);
     size_t total_size = ftell(fp);
@@ -92,6 +112,8 @@ typedef char *(*cstl_getline_fn)(FILE *fp);
 
 typedef char *(*cstl_fread_all_fn)(FILE *fp);
 
+typedef char *(*cstl_readall_fn)(FILE *fp, size_t *outsize);
+
 typedef struct FSTREAM {
     cstl_fopen_fn open;
     cstl_fclose_fn close;
@@ -104,6 +126,7 @@ FSTREAM fstream = {
     __cstl_fclose,
     __cstl_get_line,
     __cstl_fread_all,
+   // fread_all
 };
 
 

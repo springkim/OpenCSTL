@@ -40,7 +40,7 @@
 #include "error.h"
 #include "vector.h"
 #include "list.h"
-#include "tree.h"
+#include "rbtree.h"
 
 #define first(IT)                   (*IT)
 #define second(IT, TYPE)            ((TYPE)cstl_value(IT, TYPE))

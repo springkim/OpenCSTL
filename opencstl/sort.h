@@ -50,6 +50,7 @@
 
 #include "compare.h"
 #include "bestsort.h"
+#include "rsort.h"
 // #if !defined(cstl_stable_sort)
 // #define cstl_stable_sort tsort
 // #endif
@@ -67,14 +68,9 @@
 #define _cstl_sort_func(CONTAINER,...) _CSTL_SORT_DISPATCH(CONTAINER, ##__VA_ARGS__, NULL)
 #define _CSTL_SORT_DISPATCH(CONTAINER, FUNC, ...) _cstl_sort(CONTAINER, (void*)(FUNC))
 OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
-    size_t container_type;
     ptrdiff_t distance = 0;
-    if (__is_deque((void **) &container)) {
-        distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
-    }
+    size_t container_type = __opencstl_container_type((void **) &container, &distance);
+    if (container_type == 0) return;
 
     switch (container_type) {
         case OPENCSTL_VECTOR: {
@@ -144,14 +140,9 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
 #define _cstl_stable_sort_func(CONTAINER,...) _CSTL_STABLE_SORT_DISPATCH(CONTAINER, ##__VA_ARGS__, NULL)
 #define _CSTL_STABLE_SORT_DISPATCH(CONTAINER, FUNC, ...) _cstl_stable_sort(CONTAINER, (void*)(FUNC))
 OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
-    size_t container_type;
     ptrdiff_t distance = 0;
-    if (__is_deque((void **) &container)) {
-        distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
-    }
+    size_t container_type = __opencstl_container_type((void **) &container, &distance);
+    if (container_type == 0) return;
 
     switch (container_type) {
         case OPENCSTL_VECTOR: {
@@ -267,14 +258,9 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
 #define _cstl_is_sorted_func(CONTAINER,...) _CSTL_IS_SORTED_DISPATCH(CONTAINER, ##__VA_ARGS__, NULL)
 #define _CSTL_IS_SORTED_DISPATCH(CONTAINER, FUNC, ...) _cstl_is_sorted(CONTAINER, (void*)(FUNC))
 OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
-    size_t container_type;
     ptrdiff_t distance = 0;
-    if (__is_deque((void **) &container)) {
-        distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
-    }
+    size_t container_type = __opencstl_container_type((void **) &container, &distance);
+    if (container_type == 0) return 0;
 
     switch (container_type) {
         case OPENCSTL_VECTOR: {

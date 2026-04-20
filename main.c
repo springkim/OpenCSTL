@@ -108,6 +108,7 @@ void cstl_vector_test3(void) {
 void cstl_list_test02(void) {
     DECORATE("opencstl{list} test begin");
     LIST(int) list = new_list(int);
+
     for (int i = 0; i < 10; i++) {
         push_back(list, i);
     }
@@ -357,7 +358,8 @@ void cstl_hash_test(void) {
         insert(h, i);
     }
 
-    size_t capacity_max = capacity(h);
+    size_t capacity_max = max_capacity(h);
+
     for (int i = 0; i < (int) capacity_max; i++) {
         int k = h[i];
         if (k == 0) {
@@ -417,7 +419,7 @@ void test02(void) {
     fill(begin(v), end(v), 777);
     double ms = chrono.duration(t_beg, t_end);
     for (int i = 0; i < size(v); i++) {
-        printf("[%4d]\n", v[i]);
+        printf("[%4d]", v[i]);
     }
     printf("duration : %f ms\n", ms);
     printf("%s\n", opencstl_version());

@@ -42,7 +42,7 @@
 #include <string.h>
 #include "msort.h"
 #ifndef PS_MAX_DEPTH
-#define PS_MAX_DEPTH 4
+#define PS_MAX_DEPTH 8
 #endif
 
 #ifndef PS_SEQ_CUTOFF

@@ -323,4 +323,30 @@ OPENCSTL_FUNC void *__cstl_vector_next(void *it, size_t type_size) {
 OPENCSTL_FUNC void *__cstl_vector_prev(void *it, size_t type_size) {
     return (char *) it - type_size;
 }
+
+OPENCSTL_FUNC size_type __cstl_vector_max_size(void **container) {
+    return INT_MAX;
+}
+
+OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    size_t capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+    if (capacity == length) {
+        return;
+    }
+    size_t new_capacity = length > 0 ? length : 1;
+
+    iveb_erase(iveb, *container);
+    void *b = realloc((char *) *container - header_sz, header_sz + new_capacity * type_size);
+    if (b == NULL) {
+        cstl_error("Reallocation failed at vector shrink_to_fit");
+    }
+    *container = ((char *) b + header_sz);
+    OPENCSTL_NIDX(container, -2) = new_capacity;
+    iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capacity), CT_VECTOR, type_size, type);
+}
 #endif

@@ -63,5 +63,6 @@ typedef unsigned int uint32_x;
 typedef unsigned long long uint64_x;
 
 typedef unsigned char ubyte_x;
+typedef wchar_t wchar;
 
 #endif

@@ -47,9 +47,22 @@
 
 
 OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
-    if (OPENCSTL_NIDX(container, -1) > INT_MAX)
+    if (OPENCSTL_NIDX(container, -1) > (size_t)INT_MAX)
         return 1;
     return 0;
+}
+
+// Safe container type detection for sort dispatch functions.
+// Returns 0 if ptr is not an OpenCSTL container. Sets *distance for deque.
+OPENCSTL_FUNC size_t __opencstl_container_type(void **container, ptrdiff_t *distance) {
+    *distance = 0;
+    if (iveb == NULL) return 0;
+    Interval *it = iveb_find(iveb, *container);
+    if (it == NULL) return 0;  // Not an OpenCSTL container
+    if (it->ctype == CT_DEQUE) {
+        *distance = OPENCSTL_NIDX(container, -1) + 1;
+    }
+    return *(size_t *) ((char *) *container + NIDX_CTYPE * sizeof(size_t) + *distance);
 }
 
 #define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
@@ -381,5 +394,45 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
         }
     }
     return NULL;
+}
+
+OPENCSTL_FUNC size_type __cstl_deque_max_size(void **container) {
+    return INT_MAX;
+}
+
+OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
+    ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
+    size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
+    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
+    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+    size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
+    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+
+    // 이미 꽉 차있고 앞쪽 여유도 없으면 아무것도 안 함
+    if (length == capacity && distance == 0) {
+        return;
+    }
+
+    size_t new_capacity = length > 0 ? length : 1;
+
+    iveb_erase(iveb, (char *) *container + distance);
+    void *b = calloc(1, header_sz + new_capacity * type_size);
+    if (b == NULL) {
+        cstl_error("Failed to allocate memory for deque shrink_to_fit");
+    }
+    // 헤더 복사
+    memcpy(b, (char *) *container - header_sz + distance, header_sz);
+    // 원소들을 새 버퍼의 맨 앞(distance=0)으로 복사
+    memcpy((char *) b + header_sz, *container, length * type_size);
+    free((char *) *container - header_sz + distance);
+
+    *container = (char *) b + header_sz;
+    OPENCSTL_NIDX(container, -1) = -1; // distance = 0
+    OPENCSTL_NIDX(container, -3) = new_capacity;
+    OPENCSTL_NIDX(container, -2) = length;
+
+    iveb_insert(iveb, *container,
+                (char *) *container + (type_size * new_capacity),
+                CT_DEQUE, type_size, type);
 }
 #endif // if !defined(_OPENCSTL_DEQUE_H)

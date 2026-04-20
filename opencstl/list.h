@@ -57,6 +57,15 @@ OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, -2) = 0; //tail
     OPENCSTL_NIDX(container, -1) = 0; //length
     OPENCSTL_NIDX(container, 0) = 0; //head
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, ptr, (char *) ptr + sizeof(size_t), CT_LIST, type_size, type);
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return ptr;
 }
 
@@ -524,6 +533,10 @@ OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, 
         }
     }
     free(stack);
+}
+
+OPENCSTL_FUNC size_type __cstl_list_max_size(void **container) {
+    return INT_MAX;
 }
 
 
