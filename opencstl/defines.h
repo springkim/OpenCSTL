@@ -321,18 +321,17 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 
 #define cstl_max_size(C,...) ({void* _() {_linux_cstl_max_size(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)}_;});
 #define _linux_cstl_max_size(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_max_size ## _ ## N
-#define _cstl_max_size_0#define _cstl_max_size_1#define _cstl_max_size_2#define _cstl_max_size_3#define _cstl_max_size_4#define _cstl_max_size_5#define _cstl_max_size_6#define _cstl_max_size_7#define _cstl_max_size_8#define _cstl_max_size_9#define _cstl_max_size_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {
-_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;
-_CSTL_TYPEOF(_2) __2=_2;
-_CSTL_TYPEOF(_3) __3=_3;
-_CSTL_TYPEOF(_4) __4=_4;
-_CSTL_TYPEOF(_5) __5=_5;
-_CSTL_TYPEOF(_6) __6=_6;
-_CSTL_TYPEOF(_7) __7=_7;
-_CSTL_TYPEOF(_8) __8=_8;
-_CSTL_TYPEOF(_9) __9=_9;
-_CSTL_TYPEOF(_10) __10=_10;
-return _cstl_max_size(__0, &__1, &__2, &__3, &__4, &__5, &__6, &__7, &__8, &__9, &__10);}
+#define _cstl_max_size_0(C) _cstl_max_size(&C)
+#define _cstl_max_size_1(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_2(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_3(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_4(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_5(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_6(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_7(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_8(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_9(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_10(C,...) _cstl_max_size(&C)
 
 #endif
 

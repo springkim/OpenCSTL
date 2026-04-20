@@ -37,6 +37,7 @@
 #if !defined(_OPENCSTL_CSTL_FILE_H)
 #define _OPENCSTL_CSTL_FILE_H
 #include <stdio.h>
+#include <wchar.h>
 #include "fileio.h"
 
 FILE *__cstl_fopen(const char *filename, const char *mode) {

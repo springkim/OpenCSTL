@@ -15,4 +15,5 @@ int main() {
     char *buffer = fstream.read(fp);
 
     printf("%s", buffer);
+    abort();
 }
