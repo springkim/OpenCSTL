@@ -1,11 +1,39 @@
 <p align="center">
   <img width="1024" src="assets/blogo.png">
 </p>
+# OpenCSTL
+
+**C++ STL containers, in pure C.**
+
+Same `push_back`, `insert`, `begin`/`end`, same semantics.
+Header-only, no templates, no per-type macro dance.
+
+```c
+#include <opencstl/opencstl.h>
+
+VECTOR(int) v = cstl_vector(int);
+cstl_push_back(v, 1);
+cstl_push_back(v, 2);
+cstl_push_back(v, 3);
+
+for (int* it = cstl_begin(v); it != cstl_end(v); it = cstl_next(it))
+    printf("%d ", *it);
+
+cstl_free(v);
+```
+
+## Why OpenCSTL?
+
+- **You already know the API.** If you've written C++, you've written OpenCSTL.
+- **One include, every container.** `#include "opencstl.h"` — no code-gen, no `#define TYPE int` ritual.
+- **One function name, every container.** `push_back` works on `vector`, `list`, `deque` — variadic macros handle dispatch, just like C++ overloads.
+- **Cross-platform.** MSVC, MinGW64, GCC, Clang. Windows, Linux, macOS.
+- **The full set.** `vector`, `list`, `set`, `map`, `deque`, `stack`, `queue`, `priority_queue`, 'unordered_set','unordered_map'.
 
 
-
-
-
+> [!IMPORTANT]  
+> OpenCSTL brings C++ STL containers and Python's standard library to C.
+> If you know C++ `std::vector` and Python `random.choice`, you already know OpenCSTL.
 ---
 
 
@@ -227,7 +255,7 @@
       SALLOC(salloc.h) --> Q(queue.h)
       E(error.h) --> Q(queue.h)
       V(vector.h) --> Q(queue.h)
-      E(error.h) --> TREE(tree.h)
+      E(error.h) --> TREE(rbtree.h)
       E(error.h) --> DQ(deque.h)
       E(error.h) --> H(hashtable.h)
       VEBT(van_emde_boas_tree.h) --> H(hashtable.h)
@@ -243,12 +271,21 @@
           DQ(deque.h)
           H(hashtable.h)
       end
+      
+      subgraph SORT[Sort]
+      	ISORT(isort.h)
+      	TSORT(tsort.h)
+      	MSORT(msort.h)
+      	RSORT(rsort.h)
+      	PMSORT(pmsort.h)
+      	PDQSORT(pdqsort.h)
+      end
 
 	  B(bitset.h) --> OCSTL(opencstl.h)
 	  STR(string.h) --> OCSTL(opencstl.h)
       V(vector.h) --> OCSTL(opencstl.h)
       LST(list.h) --> OCSTL(opencstl.h)
-      TREE(tree.h) --> OCSTL(opencstl.h)
+      TREE(rbtree.h) --> OCSTL(opencstl.h)
       S(stack.h) --> OCSTL(opencstl.h)
       Q(queue.h) --> OCSTL(opencstl.h)
       DQ(deque.h) --> OCSTL(opencstl.h)
@@ -265,6 +302,7 @@
       ITER(iterator.h) --> ALGO(algorithm.h)
       PDQSORT(pdqsort.h) --> SORT(sort.h)
       C(crossplatform.h) --> SORT(sort.h)
+      GLOB(glob.h) --> OCSTL(opencstl.h)
       SORT(sort.h) --> OCSTL(opencstl.h)
       VER(version.h) --> OCSTL(opencstl.h)
       FS(fstream.h) --> OCSTL(opencstl.h)
@@ -272,6 +310,10 @@
       WATCH(chrono.h) --> OCSTL(opencstl.h)
       L(logging.h) --> OCSTL(opencstl.h)
       MT(mt19937.h) --> OCSTL(opencstl.h)
+      SWAP(swap.h) --> MT(mt19937.h)
+      C(crossplatform.h) --> FS(filesystem.h)
+      FS(filesystem.h) --> OCSTL(opencstl.h)
+      GLOB(glob.h) --> OCSTL(opencstl.h)
 ```
 
 

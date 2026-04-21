@@ -17,6 +17,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <ctype.h>
 
 
@@ -531,754 +532,8 @@ static LOGGING logging = {
 #include <stdint.h>
 #include <time.h>
 
-#define MT64_N          312
-#define MT64_M          156
-#define MT64_MATRIX_A   0xB5026F5AA96619E9ULL
-#define MT64_UPPER_MASK 0xFFFFFFFF80000000ULL
-#define MT64_LOWER_MASK 0x7FFFFFFFULL
-
-typedef struct {
-    uint64_t mt[MT64_N];
-    int index;
-} __mt19937_64_t;
-
-__mt19937_64_t __rng64 = {
-    {
-        1776098118,
-        4095968591,
-        2489032677,
-        2495002180,
-        1521698085,
-        3468952409,
-        1098923224,
-        2876365311,
-        3875427246,
-        2303920453,
-        3481655941,
-        3656246169,
-        3488737099,
-        1911217468,
-        3072370164,
-        54539853,
-        2100673779,
-        3365782472,
-        3678642746,
-        3156232773,
-        423872610,
-        384980604,
-        14136892,
-        1456753616,
-        237535746,
-        3636975731,
-        2024840138,
-        2028378269,
-        1647654370,
-        3507099562,
-        2984247251,
-        2709726729,
-        4136871816,
-        2050550537,
-        819447735,
-        3874448673,
-        1342874910,
-        2832492440,
-        2016583134,
-        124576301,
-        1384715537,
-        3530629926,
-        671516421,
-        2761930297,
-        648433457,
-        1017100791,
-        1981299097,
-        3101820692,
-        2950834868,
-        1756679637,
-        584964515,
-        4081098669,
-        1775854538,
-        3437182948,
-        1020220836,
-        341993995,
-        3408141005,
-        2904582044,
-        94705709,
-        1395954468,
-        2723919850,
-        4100156421,
-        4019124044,
-        1842129442,
-        4079666746,
-        3677560224,
-        3999536271,
-        2893025081,
-        4228019062,
-        3210991107,
-        1390517408,
-        662431847,
-        1090909027,
-        1852368304,
-        1200827841,
-        521259154,
-        2855284515,
-        202287130,
-        1068495373,
-        2234023621,
-        3282764785,
-        323567790,
-        3148296635,
-        391185413,
-        3058708111,
-        3342934558,
-        3443548783,
-        2861981824,
-        2794386527,
-        142350258,
-        2955638948,
-        3162968156,
-        3760718351,
-        3871919616,
-        1645458827,
-        1497555060,
-        3613359691,
-        458681097,
-        2981316388,
-        713218878,
-        3450818032,
-        1431683567,
-        1600366697,
-        1714270684,
-        1544611227,
-        941048232,
-        2087772914,
-        907867291,
-        4128335230,
-        2840844480,
-        1774507957,
-        2264249920,
-        1258670090,
-        1947410483,
-        2037348156,
-        3228252038,
-        1761066031,
-        2293032587,
-        4078238904,
-        3236442710,
-        2705458281,
-        2303876801,
-        1926326119,
-        3998075151,
-        2811251186,
-        930843956,
-        1144233212,
-        3332349131,
-        97732309,
-        3849002316,
-        2915293496,
-        2810737890,
-        1149413950,
-        1535291243,
-        3360025429,
-        3421309515,
-        3433858864,
-        1712656768,
-        2497877002,
-        28081018,
-        1500134564,
-        1291223784,
-        2088311216,
-        678941823,
-        4050017251,
-        804407025,
-        3248654108,
-        3933873068,
-        4007401725,
-        2277599457,
-        1076301181,
-        2622448272,
-        3748282735,
-        1821610946,
-        817739489,
-        2234696578,
-        1210669987,
-        2701425175,
-        2214421026,
-        486743705,
-        761055154,
-        2043636369,
-        1639492383,
-        2540008982,
-        892906626,
-        3301593260,
-        2463924540,
-        2304834400,
-        2865483490,
-        4019518352,
-        3388450644,
-        2519700470,
-        2378632848,
-        3859218429,
-        41583399,
-        3551979613,
-        455310134,
-        1784672860,
-        2439363685,
-        1129068494,
-        1190855146,
-        1219423658,
-        1519984024,
-        2292587420,
-        457621073,
-        26485539,
-        44862599,
-        4036930934,
-        1752500768,
-        500049802,
-        3842075558,
-        3846522605,
-        1330514793,
-        296294288,
-        1509560985,
-        3534138747,
-        871597155,
-        3371132114,
-        3468519555,
-        3117276577,
-        771937135,
-        879279391,
-        1934008381,
-        1167355102,
-        3585722021,
-        2714912251,
-        1754911891,
-        726519327,
-        1643748675,
-        3770213438,
-        3328598245,
-        2760155758,
-        2639634685,
-        2778091809,
-        1699423094,
-        659540027,
-        2343729207,
-        2118446589,
-        74406227,
-        218555160,
-        30856212,
-        1167930465,
-        3467170840,
-        4084379716,
-        2016327892,
-        1786161279,
-        1516085301,
-        1338537268,
-        530933512,
-        3684209364,
-        2513271217,
-        1475130583,
-        4151669683,
-        1501144793,
-        1340046562,
-        2965836453,
-        1148330311,
-        417665896,
-        2097316195,
-        2645187881,
-        1399929080,
-        2659323017,
-        1490103303,
-        363804462,
-        3465020727,
-        3639391603,
-        1334768429,
-        2136970163,
-        58803944,
-        2115603995,
-        1159651724,
-        3891861745,
-        3070456198,
-        142601912,
-        3549937283,
-        1064205062,
-        1475451662,
-        1811199306,
-        3691353348,
-        2849091044,
-        3302207000,
-        4132176068,
-        989617620,
-        51194066,
-        717904882,
-        4168333670,
-        2453975333,
-        2041085414,
-        4005969440,
-        3758836276,
-        3903149919,
-        4189289922,
-        548363216,
-        973394894,
-        1839689710,
-        1896955670,
-        1636598469,
-        1933293750,
-        3097838145,
-        3857376222,
-        2039165214,
-        2629174834,
-        4288046775,
-        3240581823,
-        1710208853,
-        337962299,
-        3788182518,
-        2090635011,
-        1721836154,
-        2416252352,
-        3422851855,
-        2488421740,
-        1397862477,
-        1477292673,
-        1997234387,
-        2430055230,
-        2579580596,
-        1704015956,
-        2216497525,
-        2313035196,
-        610434450,
-        4230676740,
-        1885612770,
-        3439405078,
-        2028271374,
-        3388301479,
-        3283245152,
-        3050416026,
-        2302106739,
-        2730938597,
-        1762153169,
-        3610328820
-    },
-    MT64_N
-};
-
-static void __mt19937_64_seed(uint64_t seed) {
-    __rng64.mt[0] = seed;
-    for (int i = 1; i < MT64_N; i++) {
-        __rng64.mt[i] = 6364136223846793005ULL * (__rng64.mt[i - 1] ^ (__rng64.mt[i - 1] >> 62)) + (uint64_t) i;
-    }
-    __rng64.index = MT64_N;
-}
-
-
-// [0, 2^64 - 1]
-static inline uint64_t __mt19937_64_next() {
-    uint64_t y;
-
-    if (__rng64.index >= MT64_N) {
-        static const uint64_t mag01[2] = {0ULL, MT64_MATRIX_A};
-        uint64_t y;
-        int i;
-
-        for (i = 0; i < MT64_N - MT64_M; i++) {
-            y = (__rng64.mt[i] & MT64_UPPER_MASK) | (__rng64.mt[i + 1] & MT64_LOWER_MASK);
-            __rng64.mt[i] = __rng64.mt[i + MT64_M] ^ (y >> 1) ^ mag01[y & 1ULL];
-        }
-        for (; i < MT64_N - 1; i++) {
-            y = (__rng64.mt[i] & MT64_UPPER_MASK) | (__rng64.mt[i + 1] & MT64_LOWER_MASK);
-            __rng64.mt[i] = __rng64.mt[i + (MT64_M - MT64_N)] ^ (y >> 1) ^ mag01[y & 1ULL];
-        }
-        y = (__rng64.mt[MT64_N - 1] & MT64_UPPER_MASK) | (__rng64.mt[0] & MT64_LOWER_MASK);
-        __rng64.mt[MT64_N - 1] = __rng64.mt[MT64_M - 1] ^ (y >> 1) ^ mag01[y & 1ULL];
-
-        __rng64.index = 0;
-    }
-
-    y = __rng64.mt[__rng64.index++];
-
-    // tempering
-    y ^= (y >> 29) & 0x5555555555555555ULL;
-    y ^= (y << 17) & 0x71D67FFFEDA60000ULL;
-    y ^= (y << 37) & 0xFFF7EEE000000000ULL;
-    y ^= (y >> 43);
-
-    return y;
-}
-
-// [0, 1) uniform real
-static double __mt19937_random(void) {
-    return (double) (__mt19937_64_next() >> 11) * (1.0 / 9007199254740992.0);
-}
-
-
-// [lo, hi] inclusive integer range (supports negative)
-static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
-    uint64_t range = (uint64_t) (hi - lo) + 1ULL;
-    return lo + (int64_t) (__mt19937_64_next() % range);
-}
-
-char *__mt19937_uuid(void) {
-    __mt19937_64_seed(time(NULL));
-    static char buf[37];
-    static const char hex[] = "0123456789abcdef";
-
-    uint64_t hi = __mt19937_64_next();
-    uint64_t lo = __mt19937_64_next();
-
-    hi = (hi & ~((uint64_t) 0xF << 12)) | ((uint64_t) 0x4 << 12);
-    lo = (lo & ~((uint64_t) 0x3 << 62)) | ((uint64_t) 0x2 << 62);
-
-    int p = 0;
-    // time_low: 8자 (hi >> 32)
-    for (int i = 60; i >= 32; i -= 4)
-        buf[p++] = hex[(hi >> i) & 0xF];
-    buf[p++] = '-';
-    // time_mid: 4자 (hi >> 16)
-    for (int i = 28; i >= 16; i -= 4)
-        buf[p++] = hex[(hi >> i) & 0xF];
-    buf[p++] = '-';
-    // time_hi_and_version: 4자 (hi >> 0)
-    for (int i = 12; i >= 0; i -= 4)
-        buf[p++] = hex[(hi >> i) & 0xF];
-    buf[p++] = '-';
-    // clock_seq: 4자 (lo >> 48)
-    for (int i = 60; i >= 48; i -= 4)
-        buf[p++] = hex[(lo >> i) & 0xF];
-    buf[p++] = '-';
-    // node: 12자 (lo >> 0)
-    for (int i = 44; i >= 0; i -= 4)
-        buf[p++] = hex[(lo >> i) & 0xF];
-
-    buf[36] = '\0';
-    return buf;
-}
-
-typedef void (*seed_fn)(uint64_t);
-
-typedef double (*random_fn)(void);
-
-typedef int64_t (*randint_fn)(int64_t, int64_t);
-
-typedef char *(*uuid_fn)(void);
-
-typedef struct {
-    random_fn random;
-    randint_fn randint;
-    seed_fn seed;
-    uuid_fn uuid;
-} RANDOM;
-
-RANDOM mt19937 = {
-    __mt19937_random,
-    __mt19937_randint,
-    __mt19937_64_seed,
-    __mt19937_uuid
-};
-
-#endif //OPENCSTL_MT19937_H
-
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* END    mt19937.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-//#include "van_emde_boas_tree.h"
-#define _1MB (1024*1024)
-#define _512KB (1024*512)
-
-#ifdef OPENCSTL_TRACER
-void *zalloc_vector[_512KB] = {0};
-size_t zalloc_size = 0;
-size_t zalloc_count = 0;
-
-
-static void zappend(void *ptr) {
-    zalloc_vector[zalloc_size++] = ptr;
-    zalloc_count++;
-}
-
-static void zerase(void *ptr) {
-    for (size_t i = 0; i < zalloc_size; i++) {
-        if (zalloc_vector[i] == ptr) {
-            memcpy(zalloc_vector + i, zalloc_vector + i + 1, (zalloc_size - i - 1) * sizeof(void *));
-            zalloc_size--;
-            zalloc_vector[zalloc_size] = NULL;
-            return;
-        }
-    }
-}
-#endif
-#ifdef OPENCSTL_TRACER
-static void opencstl_exit(void) {
-    if (zalloc_size > 0) {
-        logging.warning("%d memory blocks were not released", zalloc_size);
-    }
-    logging.debug("opencstl trace exit");
-    logging.debug("zalloc count: %d", zalloc_count);
-}
-#endif
-#ifdef OPENCSTL_TRACER
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-#endif
-static int opencstl_init(void) {
-    //size_t SZ = _512KB;
-    //zalloc_vector = salloc(SZ);
-    //memset(zalloc_vector, 0, SZ);
-
-    logging.debug("opencstl tracer init");
-
-    //htm = htm_new();
-
-    //mt19937.seed(time(NULL));
-    atexit(opencstl_exit);
-    return 0;
-}
-
-#if defined(_MSC_VER)
-# pragma section(".CRT$XCU",read)
-__declspec(allocate(".CRT$XCU")) static int (*__p)(void) = opencstl_init;
-# pragma data_seg()
-#endif
-#endif
-#endif
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    tracer.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-
-#ifdef OPENCSTL_TRACER
-typedef void (*free_fn)(void *ptr);
-
-typedef void *(*malloc_fn)(size_t sz);
-
-typedef void *(*realloc_fn)(void *ptr, size_t new_size);
-
-typedef void * (*calloc_fn)(size_t cnt, size_t sz);
-
-static free_fn ofree = free;
-static malloc_fn omalloc = malloc;
-static realloc_fn orealloc = realloc;
-static calloc_fn ocalloc = calloc;
-
-static void zfree(void *ptr) {
-    zerase(ptr);
-    ofree(ptr);
-}
-
-static void *zcalloc(size_t cnt, size_t sz) {
-    void *ptr = ocalloc(cnt, sz);
-    if (ptr) {
-        zappend(ptr);
-    }
-    return ptr;
-}
-
-static void *zmalloc(size_t sz) {
-    void *ptr = omalloc(sz);
-    if (ptr) {
-        zappend(ptr);
-    }
-    return ptr;
-}
-
-static void *zrealloc(void *ptr, size_t new_size) {
-    if (ptr == NULL) {
-        return zmalloc(new_size);
-    }
-
-    if (new_size == 0) {
-        zfree(ptr);
-        return NULL;
-    }
-
-    void *new_ptr = orealloc(ptr, new_size);
-    if (new_ptr == NULL) {
-        return NULL;
-    }
-
-    if (new_ptr != ptr) {
-        zerase(ptr);
-        zappend(new_ptr);
-    }
-
-    return new_ptr;
-}
-
-
-#define free(ptr) zfree(ptr)
-#define calloc(cnt, sz) zcalloc(cnt, sz)
-#define malloc(sz) zmalloc(sz)
-#define realloc(ptr, new_size) zrealloc(ptr, new_size)
-
-
-#endif
-
-
-#endif //_OPENCSTL_ZALLOC_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    zalloc.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-/* [already included: tracer.h] */
-/* [already included: zalloc.h] */
-/* [already included: crossplatform.h] */
-#if defined(OCSTL_CC_CLANG)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat"
-#pragma clang diagnostic ignored "-Wunused-parameter"
-#pragma clang diagnostic ignored "-Wunused-variable"
-#pragma clang diagnostic ignored "-Wunused-function"
-#pragma clang diagnostic ignored "-Wunused-value"
-#pragma clang diagnostic ignored "-Wsign-compare"
-#pragma clang diagnostic ignored "-Wpedantic"
-#pragma clang diagnostic ignored "-Wgnu-auto-type"
-#pragma clang diagnostic ignored "-Wsometimes-uninitialized"
-#pragma clang diagnostic ignored "-Wuse-after-free"
-
-#endif
-
-#if defined(OCSTL_CC_GCC)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wunused-function"
-#pragma GCC diagnostic ignored "-Wunused-value"
-#pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wpedantic"
-#pragma GCC diagnostic ignored "-Wformat"
-#pragma GCC diagnostic ignored "-Wuse-after-free"
-#endif
-
-
-#define USE_CSTL_FUNC
-
-// #if defined(__linux__) || defined(__APPLE__)
-// #if !defined(__8cc__ )
-// #pragma GCC push_options
-// #pragma GCC optimize("O0")
-// #endif
-// #endif
-/* [already included: zalloc.h] */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  error.h                        (depth 1) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_ERROR_H)
-#define _OPENCSTL_ERROR_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  types.h                        (depth 2) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_TYPES_H)
-#define _OPENCSTL_TYPES_H
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<stdarg.h>
-#include<stdint.h>
-#include<limits.h>
-#include<stddef.h>
-#include<stdbool.h>
-#include<assert.h>
-
-typedef int (*cstl_compare)(const void *, const void *);
-
-typedef size_t cstl_ptr;
-
-typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
-
-
-typedef int size_type;
-
-
-typedef int int32_x;
-typedef long long int64_x;
-typedef unsigned int uint32_x;
-typedef unsigned long long uint64_x;
-
-typedef unsigned char ubyte_x;
-
-#endif
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    types.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  defines.h                      (depth 2) */
+/* BEGIN  defines.h                      (depth 4) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -1484,7 +739,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define cstl_resize(container,...)	_cstl_resize(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 #define cstl_assign(container,...)	_cstl_assign(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 #define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_max_capacity(container,...) _cstl_max_size(&container)
+//#define cstl_max_capacity(container,...) _cstl_max_size(&container)
 #elif defined(__linux__) || defined(__APPLE__)
 
 // TCC supports typeof but not __auto_type; GCC/Clang support both.
@@ -1603,18 +858,17 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 
 #define cstl_max_size(C,...) ({void* _() {_linux_cstl_max_size(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)}_;});
 #define _linux_cstl_max_size(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_max_size ## _ ## N
-#define _cstl_max_size_0#define _cstl_max_size_1#define _cstl_max_size_2#define _cstl_max_size_3#define _cstl_max_size_4#define _cstl_max_size_5#define _cstl_max_size_6#define _cstl_max_size_7#define _cstl_max_size_8#define _cstl_max_size_9#define _cstl_max_size_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {
-_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;
-_CSTL_TYPEOF(_2) __2=_2;
-_CSTL_TYPEOF(_3) __3=_3;
-_CSTL_TYPEOF(_4) __4=_4;
-_CSTL_TYPEOF(_5) __5=_5;
-_CSTL_TYPEOF(_6) __6=_6;
-_CSTL_TYPEOF(_7) __7=_7;
-_CSTL_TYPEOF(_8) __8=_8;
-_CSTL_TYPEOF(_9) __9=_9;
-_CSTL_TYPEOF(_10) __10=_10;
-return _cstl_max_size(__0, &__1, &__2, &__3, &__4, &__5, &__6, &__7, &__8, &__9, &__10);}
+#define _cstl_max_size_0(C) _cstl_max_size(&C)
+#define _cstl_max_size_1(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_2(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_3(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_4(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_5(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_6(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_7(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_8(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_9(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_10(C,...) _cstl_max_size(&C)
 
 #endif
 
@@ -1629,6 +883,168 @@ return _cstl_max_size(__0, &__1, &__2, &__3, &__4, &__5, &__6, &__7, &__8, &__9,
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    defines.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  deque.h                        (depth 4) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, Woo Cheol, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_DEQUE_H)
+#define _OPENCSTL_DEQUE_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  error.h                        (depth 5) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_ERROR_H)
+#define _OPENCSTL_ERROR_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  types.h                        (depth 6) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_TYPES_H)
+#define _OPENCSTL_TYPES_H
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<stdarg.h>
+#include<stdint.h>
+#include<limits.h>
+#include<stddef.h>
+#include<stdbool.h>
+#include<assert.h>
+
+typedef int (*cstl_compare)(const void *, const void *);
+
+typedef size_t cstl_ptr;
+
+typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
+
+
+typedef int size_type;
+
+
+typedef int int32_x;
+typedef long long int64_x;
+typedef unsigned int uint32_x;
+typedef unsigned long long uint64_x;
+
+typedef unsigned char ubyte_x;
+typedef wchar_t wchar;
+
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    types.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* [already included: defines.h] */
 #include <limits.h>
 
 // ██████╗░██╗░░░██╗███╗░░██╗████████╗██╗███╗░░░███╗███████╗░░░░░░███████╗██████╗░██████╗░░█████╗░██████╗░
@@ -1690,390 +1106,10 @@ exit(EXIT_FAILURE);
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    error.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  string.h                       (depth 1) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-// Created by spring on 4/15/2026.
-//
-
-#ifndef OPENCSTL_STRING_H
-#define OPENCSTL_STRING_H
-
 /* [already included: zalloc.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  verify.h                       (depth 2) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-// Created by spring on 4/15/2026.
-//
-
-#ifndef OPENCSTL_VERIFY_H
-#define OPENCSTL_VERIFY_H
-#include <assert.h>
-/* [already included: logging.h] */
-
-#define verify(EXPR) do { if(!(EXPR)) __verify(#EXPR,__FILE__,__LINE__); } while(0)
-
-int __verify(char *expression, char *file, int line) {
-    logging.error("Verification failed: %s, file %s, line %d",
-                  expression, file, line);
-    abort();
-}
-#endif //OPENCSTL_VERIFY_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    verify.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-
-// ============================================================
-// string function implementations
-// ============================================================
-
-char *__cstl_string_substr(char *src, int pos, int len) {
-    verify(strlen(src) >= pos + len);
-    char *ret = (char *) calloc(len + 1, sizeof(char));
-    memcpy(ret, src + pos, len);
-    return ret;
-}
-
-char **__cstl_string_split(const char *src, const char *sep, int *n) {
-    int len = (int) strlen(src);
-    int sep_len = (int) strlen(sep);
-
-    if (sep_len == 0) {
-        char **ret = (char **) malloc(sizeof(char *) + (len + 1));
-        char *buf = (char *) ret + sizeof(char *);
-        memcpy(buf, src, len + 1);
-        ret[0] = buf;
-        *n = 1;
-        return ret;
-    }
-
-    // separator 개수 세기
-    int count = 1;
-    const char *p = src;
-    while ((p = strstr(p, sep)) != NULL) {
-        count++;
-        p += sep_len;
-    }
-
-    char **ret = (char **) malloc(count * sizeof(char *) + (len + 1));
-    char *buf = (char *) ret + count * sizeof(char *);
-    memcpy(buf, src, len + 1);
-
-
-    int idx = 0;
-    ret[idx++] = buf;
-    char *s = buf;
-    while ((s = strstr(s, sep)) != NULL) {
-        *s = '\0';
-        s += sep_len;
-        ret[idx++] = s;
-    }
-
-    *n = count;
-    return ret;
-}
-
-
-
-char *__cstl_string_replace(const char *src, const char *from,  char *to) {
-    int len = strlen(src);
-    int from_len = strlen(from);
-    int to_len = strlen(to);
-
-    int count = 0;
-    char *p = src;
-    while ((p = strstr(p, from)) != NULL) {
-        count++;
-        p += from_len;
-    }
-
-    char *ret = (char *) calloc(len + count * (to_len - from_len) + 1, 1);
-    char *dst = ret;
-    p = src;
-    while (*p) {
-        if (strncmp(p, from, from_len) == 0) {
-            memcpy(dst, to, to_len);
-            dst += to_len;
-            p += from_len;
-        } else {
-            *dst++ = *p++;
-        }
-    }
-    *dst = '\0';
-
-    return ret;
-}
-
-char *__cstl_string_ltrim(const char *src) {
-    const char *p = src;
-    while (*p && isspace((unsigned char) *p)) p++;
-    size_t len = strlen(p);
-    char *ret = (char *) malloc(len + 1);
-    memcpy(ret, p, len + 1);
-    return ret;
-}
-
-char *__cstl_string_rtrim(const char *src) {
-    size_t len = strlen(src);
-    while (len > 0 && isspace((unsigned char) src[len - 1])) len--;
-    char *ret = (char *) malloc(len + 1);
-    memcpy(ret, src, len);
-    ret[len] = '\0';
-    return ret;
-}
-
-char *__cstl_string_trim(const char *src) {
-    const char *begin = src;
-    while (*begin && isspace((unsigned char) *begin)) begin++;
-    const char *end = src + strlen(src);
-    while (end > begin && isspace((unsigned char) *(end - 1))) end--;
-    size_t len = end - begin;
-    char *ret = (char *) malloc(len + 1);
-    memcpy(ret, begin, len);
-    ret[len] = '\0';
-    return ret;
-}
-
-char *__cstl_string_to_upper(const char *src) {
-    size_t len = strlen(src);
-    char *ret = (char *) malloc(len + 1);
-    for (size_t i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
-    ret[len] = '\0';
-    return ret;
-}
-
-char *__cstl_string_to_lower(const char *src) {
-    size_t len = strlen(src);
-    char *ret = (char *) malloc(len + 1);
-    for (size_t i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
-    ret[len] = '\0';
-    return ret;
-}
-
-bool __cstl_string_starts_with(const char *src, const char *prefix) {
-    size_t plen = strlen(prefix);
-    return strncmp(src, prefix, plen) == 0;
-}
-
-bool __cstl_string_ends_with(const char *src, const char *suffix) {
-    size_t slen = strlen(src);
-    size_t flen = strlen(suffix);
-    if (flen > slen) return false;
-    return memcmp(src + slen - flen, suffix, flen) == 0;
-}
-
-int __cstl_string_count(const char *src, const char *sub) {
-    int count = 0;
-    size_t sub_len = strlen(sub);
-    if (sub_len == 0) return 0;
-    const char *p = src;
-    while ((p = strstr(p, sub)) != NULL) {
-        count++;
-        p += sub_len;
-    }
-    return count;
-}
-
-char *__cstl_string_join(char **parts, int n, const char *delim) {
-    if (n <= 0) {
-        char *empty = (char *) malloc(1);
-        *empty = '\0';
-        return empty;
-    }
-    size_t dlen = strlen(delim);
-    size_t total = 0;
-    for (int i = 0; i < n; i++) total += strlen(parts[i]);
-    total += dlen * (n - 1) + 1;
-
-    char *ret = (char *) malloc(total);
-    char *dst = ret;
-    for (int i = 0; i < n; i++) {
-        if (i > 0) {
-            memcpy(dst, delim, dlen);
-            dst += dlen;
-        }
-        size_t len = strlen(parts[i]);
-        memcpy(dst, parts[i], len);
-        dst += len;
-    }
-    *dst = '\0';
-    return ret;
-}
-
-char *__cstl_string_concat(const char *a, const char *b) {
-    size_t alen = strlen(a);
-    size_t blen = strlen(b);
-    char *ret = (char *) malloc(alen + blen + 1);
-    memcpy(ret, a, alen);
-    memcpy(ret + alen, b, blen + 1);
-    return ret;
-}
-
-char *__cstl_string_reverse(const char *src) {
-    size_t len = strlen(src);
-    char *ret = (char *) malloc(len + 1);
-    for (size_t i = 0; i < len; i++) ret[i] = src[len - 1 - i];
-    ret[len] = '\0';
-    return ret;
-}
-
-bool __cstl_string_is_digit(const char *src) {
-    if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isdigit((unsigned char) *p)) return false;
-    return true;
-}
-
-bool __cstl_string_is_alpha(const char *src) {
-    if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isalpha((unsigned char) *p)) return false;
-    return true;
-}
-
-bool __cstl_string_is_alnum(const char *src) {
-    if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isalnum((unsigned char) *p)) return false;
-    return true;
-}
-
-bool __cstl_string_is_space(const char *src) {
-    if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isspace((unsigned char) *p)) return false;
-    return true;
-}
-
-// ============================================================
-// function pointer types
-// ============================================================
-typedef char *(*string_substr_fn)(char *, int, int);
-
-typedef char **(*string_split_fn)(const char *, const char *, int *);
-
-typedef char *(*string_replace_fn)(const char *, const char *, char *);
-
-typedef char *(*string_unary_fn)(const char *);
-
-typedef bool (*string_match_fn)(const char *, const char *);
-
-typedef int (*string_count_fn)(const char *, const char *);
-
-typedef char *(*string_join_fn)(char **, int, const char *);
-
-typedef char *(*string_concat_fn)(const char *, const char *);
-
-typedef bool (*string_pred_fn)(const char *);
-
-// ============================================================
-// string namespace struct
-// ============================================================
-typedef struct {
-    string_substr_fn substr;
-    string_split_fn split;
-    string_replace_fn replace;
-    string_unary_fn ltrim;
-    string_unary_fn rtrim;
-    string_unary_fn trim;
-    string_unary_fn to_upper;
-    string_unary_fn to_lower;
-    string_match_fn starts_with;
-    string_match_fn ends_with;
-    string_count_fn count;
-    string_join_fn join;
-    string_concat_fn concat;
-    string_unary_fn reverse;
-    string_pred_fn is_digit;
-    string_pred_fn is_alpha;
-    string_pred_fn is_alnum;
-    string_pred_fn is_space;
-} __STRING;
-
-static __STRING string = {
-    __cstl_string_substr,
-    __cstl_string_split,
-    __cstl_string_replace,
-    __cstl_string_ltrim,
-    __cstl_string_rtrim,
-    __cstl_string_trim,
-    __cstl_string_to_upper,
-    __cstl_string_to_lower,
-    __cstl_string_starts_with,
-    __cstl_string_ends_with,
-    __cstl_string_count,
-    __cstl_string_join,
-    __cstl_string_concat,
-    __cstl_string_reverse,
-    __cstl_string_is_digit,
-    __cstl_string_is_alpha,
-    __cstl_string_is_alnum,
-    __cstl_string_is_space
-};
-
-#endif //OPENCSTL_STRING_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    string.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-// Contaner
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  deque.h                        (depth 1) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, Woo Cheol, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_DEQUE_H)
-#define _OPENCSTL_DEQUE_H
-/* [already included: error.h] */
-/* [already included: zalloc.h] */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  van_emde_boas_tree.h           (depth 2) */
+/* BEGIN  van_emde_boas_tree.h           (depth 5) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -2542,9 +1578,22 @@ void __opencstl_iveb_destroy(void) {
 
 
 OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
-    if (OPENCSTL_NIDX(container, -1) > INT_MAX)
+    if (OPENCSTL_NIDX(container, -1) > (size_t)INT_MAX)
         return 1;
     return 0;
+}
+
+// Safe container type detection for sort dispatch functions.
+// Returns 0 if ptr is not an OpenCSTL container. Sets *distance for deque.
+OPENCSTL_FUNC size_t __opencstl_container_type(void **container, ptrdiff_t *distance) {
+    *distance = 0;
+    if (iveb == NULL) return 0;
+    Interval *it = iveb_find(iveb, *container);
+    if (it == NULL) return 0;  // Not an OpenCSTL container
+    if (it->ctype == CT_DEQUE) {
+        *distance = OPENCSTL_NIDX(container, -1) + 1;
+    }
+    return *(size_t *) ((char *) *container + NIDX_CTYPE * sizeof(size_t) + *distance);
 }
 
 #define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
@@ -2924,6 +1973,1678 @@ OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  list.h                         (depth 4) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_LIST_H)
+#define _OPENCSTL_LIST_H
+/* [already included: error.h] */
+/* [already included: zalloc.h] */
+#define cstl_list(TYPE)		__cstl_list(sizeof(TYPE),#TYPE)
+#define NTAIL(N)	(N==-1?-2:N)
+OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
+    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
+    void *block = calloc(header_sz + sizeof(size_t), 1);
+    if (block == NULL) {
+        cstl_error("Failed to allocate memory for list");
+    }
+    void *ptr = ((char *) block) + header_sz;
+    void **container = &ptr;
+    OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_LIST;
+    OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
+    OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
+    OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
+    OPENCSTL_NIDX(container, -4) = (size_t) type;
+    OPENCSTL_NIDX(container, -2) = 0; //tail
+    OPENCSTL_NIDX(container, -1) = 0; //length
+    OPENCSTL_NIDX(container, 0) = 0; //head
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, ptr, (char *) ptr + sizeof(size_t), CT_LIST, type_size, type);
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
+    return ptr;
+}
+
+OPENCSTL_FUNC void *__cstl_list_node(size_t type_size) {
+    //[node type][prev][next] ↘ [data]
+    size_t header_sz = sizeof(void *) * NIDX_LIST_NODE_SIZE;
+    size_t node_sz = type_size + header_sz;
+    void *ptr = (char *) calloc(node_sz, 1) + header_sz;
+    void **node = &ptr;
+    OPENCSTL_NIDX(node, -3) = OPENCSTL_LIST;
+    return ptr;
+}
+
+OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, int ntail, int nhead) {
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail)); //-1 , 0
+    void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
+    void *n = __cstl_list_node(type_size);
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    if (value)
+        memcpy(n, value, type_size);
+    if (*head == NULL && *tail == NULL) {
+        *head = *tail = n;
+    } else {
+        OPENCSTL_NIDX(tail, -(ntail + 2)) = (size_t) n;
+        OPENCSTL_NIDX(&n, -(nhead + 2)) = (size_t) *tail;
+        *tail = n;
+    }
+    OPENCSTL_NIDX(container, -1)++;
+}
+
+OPENCSTL_FUNC void __cstl_list_pop_back_front(void **container, int ntail, int nhead) {
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail)); //-1 , 0
+    void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
+    if (*head == NULL || *tail == NULL) {
+        cstl_error("No elements in cstl_list");
+    }
+    if (*head == *tail) {
+        free(&OPENCSTL_NIDX(tail, -3)); //fix
+        *head = *tail = 0;
+    } else {
+        *tail = (void *) OPENCSTL_NIDX(tail, -(nhead + 2));
+        void *fb = (void *) OPENCSTL_NIDX(tail, -(ntail + 2));
+        free(&OPENCSTL_NIDX(&fb, -3));
+        OPENCSTL_NIDX(tail, -(ntail + 2)) = 0;
+    }
+
+    OPENCSTL_NIDX(container, -1)--;
+}
+
+OPENCSTL_FUNC void *__cstl_list_next_prev(void *it, int n) {
+    //next(-1), prev(-2)
+    return (void *) OPENCSTL_NIDX(&it, n);
+}
+
+OPENCSTL_FUNC size_type __cstl_list_size(void **container) {
+    return (size_type) OPENCSTL_NIDX(container, -1);
+}
+
+OPENCSTL_FUNC void __cstl_list_resize(void **container, size_t n, void *value) {
+    size_t length = OPENCSTL_NIDX(container, -1);
+    if (n < length) {
+        while (n < length) {
+            __cstl_list_pop_back_front((void **) container, -1, 0);
+            length--;
+        }
+    } else {
+        while (n >= length) {
+            __cstl_list_push_back_front((void **) container, value, -1, 0);
+            length++;
+        }
+    }
+    OPENCSTL_NIDX(container, -1) = n;
+}
+
+OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_t N, void *value) {
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
+    void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    void *nhead = __cstl_list_node(type_size);
+    memcpy(nhead, value, type_size);
+    void *ntail = nhead;
+    for (size_t i = 1; i < N; i++) {
+        void *n = __cstl_list_node(type_size);
+        memcpy(n, value, type_size);
+        OPENCSTL_NIDX(&n, -2) = (size_t) ntail; //n->prev=tail
+        OPENCSTL_NIDX(&ntail, -1) = (size_t) n; //tail->next=n;
+        ntail = n;
+    }
+    OPENCSTL_NIDX(&ntail, -1) = (size_t) *iter; //n->next=iter
+    if (*head == NULL && *tail == NULL) {
+        *head = nhead;
+        *tail = ntail;
+    } else if (*iter != NULL) {
+        if (OPENCSTL_NIDX(iter, -2) != 0) {
+            OPENCSTL_NIDX(&(OPENCSTL_NIDX(iter, -2)), -1) = (size_t) nhead; //iter->prev->next=n;
+        }
+        OPENCSTL_NIDX(&nhead, -2) = OPENCSTL_NIDX(iter, -2); //n->prev=iter->prev
+        OPENCSTL_NIDX(iter, -2) = (size_t) ntail; //iter->prev=n;
+        if (*iter == *head) {
+            *head = nhead;
+        }
+    } else {
+        OPENCSTL_NIDX(tail, -1) = (size_t) nhead; //tail->next=n;
+        OPENCSTL_NIDX(&nhead, -2) = (size_t) *tail; //n->prev=tail;
+        *tail = ntail;
+    }
+    OPENCSTL_NIDX(container, -1) += N;
+}
+
+OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void **iter_end) {
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
+    void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    if (*iter_begin == NULL) {
+        cstl_error("iter_begin could not be NULL");
+    }
+    if (*iter_begin == *head) {
+        *head = *iter_end;
+        if (*head != NULL) {
+            OPENCSTL_NIDX(head, -2) = 0;
+        }
+    } else {
+        OPENCSTL_NIDX(&OPENCSTL_NIDX(iter_begin, -2), -1) = (size_t) *iter_end; //begin->prev->next=end;
+        if (*iter_end != NULL) {
+            OPENCSTL_NIDX(iter_end, -2) = OPENCSTL_NIDX(iter_begin, -2); //end->prev=begin->prev
+        }
+    }
+    void *it = *iter_begin;
+    while (it != *iter_end) {
+        void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
+        free(&OPENCSTL_NIDX(&it, -3));
+        OPENCSTL_NIDX(container, -1)--;
+        it = tmp;
+    }
+    if (*iter_end == NULL) {
+        *tail = 0;
+    }
+}
+
+OPENCSTL_FUNC void *__cstl_list_begin(void **container) {
+    return (void *) OPENCSTL_NIDX(container, 0);
+}
+
+OPENCSTL_FUNC void *__cstl_list_end_rend(void **container) {
+    (void) container;
+    return NULL;
+}
+
+OPENCSTL_FUNC void *__cstl_list_rbegin(void **container) {
+    return (void *) OPENCSTL_NIDX(container, -2);
+}
+
+OPENCSTL_FUNC void __cstl_list_clear(void **container) {
+    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
+    void **head = (void **) &OPENCSTL_NIDX(container, 0);
+
+    void *it = *head;
+    while (it != NULL) {
+        void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
+        free(&OPENCSTL_NIDX(&it, -3));
+        it = tmp;
+    }
+    *head = *tail = NULL;
+    OPENCSTL_NIDX(container, -1) = 0;
+}
+
+OPENCSTL_FUNC void __cstl_list_free(void **container) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    __cstl_list_clear(container);
+    free((char *) (*container) - header_sz);
+    *container = NULL;
+}
+
+OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *value) {
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //void **tail = (void **) &OPENCSTL_NIDX(container, -2);
+    //void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    void *it = *iter_begin;
+    while (it != NULL) {
+        if (memcmp(it, value, type_size) == 0) {
+            return it;
+        }
+        it = (void *) OPENCSTL_NIDX(&it, -1);
+    }
+    return NULL;
+}
+
+// ██╗░░░░░██╗░██████╗████████╗░░░░░░░███╗░░░███╗███████╗██████╗░░██████╗░███████╗░░░░░░░░██████╗░█████╗░██████╗░████████╗
+// ██║░░░░░██║██╔════╝╚══██╔══╝░░░░░░░████╗░████║██╔════╝██╔══██╗██╔════╝░██╔════╝░░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝
+// ██║░░░░░██║╚█████╗░░░░██║░░░░░░░░░░██╔████╔██║█████╗░░██████╔╝██║░░██╗░█████╗░░░░░░░░░╚█████╗░██║░░██║██████╔╝░░░██║░░░
+// ██║░░░░░██║░╚═══██╗░░░██║░░░░░░░░░░██║╚██╔╝██║██╔══╝░░██╔══██╗██║░░╚██╗██╔══╝░░░░░░░░░░╚═══██╗██║░░██║██╔══██╗░░░██║░░░
+// ███████╗██║██████╔╝░░░██║░░░░░░░░░░██║░╚═╝░██║███████╗██║░░██║╚██████╔╝███████╗░░░░░░░██████╔╝╚█████╔╝██║░░██║░░░██║░░░
+// ╚══════╝╚═╝╚═════╝░░░░╚═╝░░░░░░░░░░╚═╝░░░░░╚═╝╚══════╝╚═╝░░╚═╝░╚═════╝░╚══════╝░░░░░░░╚═════╝░░╚════╝░╚═╝░░╚═╝░░░╚═╝░░░
+OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, const void *)) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
+    void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+    size_t length = OPENCSTL_NIDX(container, -1);
+
+    (void) header_sz;
+    (void) type_size;
+    (void) type;
+
+    if (cmp == NULL) {
+        cstl_error("cmp could not be NULL");
+    }
+    if (*head == NULL || *tail == NULL || length < 2) {
+        return;
+    }
+
+    for (size_t width = 1; width < length; width <<= 1) {
+        void *curr = *head;
+        void *new_head = NULL;
+        void *new_tail = NULL;
+
+        while (curr != NULL) {
+            void *left = curr;
+            void *right = NULL;
+            void *next_run = NULL;
+
+            size_t left_count = 0;
+            size_t right_count = 0;
+
+            for (; curr != NULL && left_count < width; ++left_count) {
+                curr = (void *) OPENCSTL_NIDX(&curr, -1);
+            }
+
+            right = curr;
+
+            for (; curr != NULL && right_count < width; ++right_count) {
+                curr = (void *) OPENCSTL_NIDX(&curr, -1);
+            }
+
+
+            next_run = curr;
+
+            while (left_count > 0 || right_count > 0) {
+                void *pick = NULL;
+
+                if (left_count == 0) {
+                    pick = right;
+                    right = (void *) OPENCSTL_NIDX(&right, -1);
+                    --right_count;
+                } else if (right_count == 0 || right == NULL) {
+                    pick = left;
+                    left = (void *) OPENCSTL_NIDX(&left, -1);
+                    --left_count;
+                } else if (cmp(left, right) <= 0) {
+                    pick = left;
+                    left = (void *) OPENCSTL_NIDX(&left, -1);
+                    --left_count;
+                } else {
+                    pick = right;
+                    right = (void *) OPENCSTL_NIDX(&right, -1);
+                    --right_count;
+                }
+
+                if (new_tail == NULL) {
+                    new_head = pick;
+                    OPENCSTL_NIDX(&pick, -2) = 0;
+                } else {
+                    OPENCSTL_NIDX(&new_tail, -1) = (size_t) pick;
+                    OPENCSTL_NIDX(&pick, -2) = (size_t) new_tail;
+                }
+                new_tail = pick;
+            }
+
+            if (new_tail != NULL) {
+                OPENCSTL_NIDX(&new_tail, -1) = 0;
+            }
+
+            curr = next_run;
+        }
+
+        *head = new_head;
+        *tail = new_tail;
+    }
+}
+
+// ██╗░░░░░██╗░██████╗████████╗░░░░░░░░██████╗░██╗░░░██╗██╗░█████╗░██╗░░██╗░░░░░░░░██████╗░█████╗░██████╗░████████╗
+// ██║░░░░░██║██╔════╝╚══██╔══╝░░░░░░░██╔═══██╗██║░░░██║██║██╔══██╗██║░██╔╝░░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝
+// ██║░░░░░██║╚█████╗░░░░██║░░░░░░░░░░██║██╗██║██║░░░██║██║██║░░╚═╝█████═╝░░░░░░░░╚█████╗░██║░░██║██████╔╝░░░██║░░░
+// ██║░░░░░██║░╚═══██╗░░░██║░░░░░░░░░░╚██████╔╝██║░░░██║██║██║░░██╗██╔═██╗░░░░░░░░░╚═══██╗██║░░██║██╔══██╗░░░██║░░░
+// ███████╗██║██████╔╝░░░██║░░░░░░░░░░░╚═██╔═╝░╚██████╔╝██║╚█████╔╝██║░╚██╗░░░░░░░██████╔╝╚█████╔╝██║░░██║░░░██║░░░
+// ╚══════╝╚═╝╚═════╝░░░░╚═╝░░░░░░░░░░░░░╚═╝░░░░╚═════╝░╚═╝░╚════╝░╚═╝░░╚═╝░░░░░░░╚═════╝░░╚════╝░╚═╝░░╚═╝░░░╚═╝░░░
+typedef struct {
+    void *low;
+    void *high;
+} __cstl_qsort_range;
+
+OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_t n) {
+    unsigned char buf[128];
+    unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) calloc(n, 1);
+    if (tmp == NULL) {
+        cstl_error("Failed to allocate memory for swap");
+    }
+    memcpy(tmp, a, n);
+    memcpy(a, b, n);
+    memcpy(b, tmp, n);
+    if (tmp != buf)
+        free(tmp);
+}
+
+OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
+    void *slow = low;
+    void *fast = low;
+    while (fast != high) {
+        fast = (void *) OPENCSTL_NIDX(&fast, -1);
+        if (fast == high) break;
+        fast = (void *) OPENCSTL_NIDX(&fast, -1);
+        slow = (void *) OPENCSTL_NIDX(&slow, -1);
+    }
+    return slow;
+}
+
+OPENCSTL_FUNC void __cstl_list_median_of_three(void *low, void *high, size_t type_size,
+                                               int (*cmp)(const void *, const void *)) {
+    void *mid = __cstl_list_mid_node(low, high);
+    if (mid == low || mid == high) return;
+    if (cmp(low, mid) > 0) __cstl_list_swap_data(low, mid, type_size);
+    if (cmp(low, high) > 0) __cstl_list_swap_data(low, high, type_size);
+    if (cmp(mid, high) > 0) __cstl_list_swap_data(mid, high, type_size);
+    __cstl_list_swap_data(mid, high, type_size);
+}
+
+OPENCSTL_FUNC void *__cstl_list_partition(void *low, void *high, size_t type_size,
+                                          int (*cmp)(const void *, const void *)) {
+    void *i = NULL;
+    void *j = low;
+    while (j != high) {
+        if (cmp(j, high) <= 0) {
+            i = (i == NULL) ? low : (void *) OPENCSTL_NIDX(&i, -1);
+            if (i != j) {
+                __cstl_list_swap_data(i, j, type_size);
+            }
+        }
+        j = (void *) OPENCSTL_NIDX(&j, -1);
+    }
+    i = (i == NULL) ? low : (void *) OPENCSTL_NIDX(&i, -1);
+    if (i != high) {
+        __cstl_list_swap_data(i, high, type_size);
+    }
+    return i;
+}
+
+OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, const void *)) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
+    void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    (void) header_sz;
+    (void) type_size;
+    (void) type;
+    if (cmp == NULL) {
+        cstl_error("cmp could not be NULL");
+    }
+    if (*head == NULL || *tail == NULL || length < 2) {
+        return;
+    }
+    size_t stack_cap = 64;
+    __cstl_qsort_range *stack = (__cstl_qsort_range *) calloc(sizeof(__cstl_qsort_range), stack_cap);
+    if (stack == NULL) {
+        cstl_error("Failed to allocate memory for qsort stack");
+    }
+    size_t top = 0;
+    stack[top].low = *head;
+    stack[top].high = *tail;
+    top++;
+    while (top > 0) {
+        top--;
+        void *lo = stack[top].low;
+        void *hi = stack[top].high;
+        if (lo == NULL || hi == NULL || lo == hi) {
+            continue;
+        }
+        __cstl_list_median_of_three(lo, hi, type_size, cmp);
+        void *pivot = __cstl_list_partition(lo, hi, type_size, cmp);
+        void *left_lo = NULL;
+        void *left_hi = NULL;
+        if (pivot != lo) {
+            void *pp = (void *) OPENCSTL_NIDX(&pivot, -2);
+            if (pp != NULL) {
+                left_lo = lo;
+                left_hi = pp;
+            }
+        }
+        void *right_lo = NULL;
+        void *right_hi = NULL;
+        if (pivot != hi) {
+            void *pn = (void *) OPENCSTL_NIDX(&pivot, -1);
+            if (pn != NULL) {
+                right_lo = pn;
+                right_hi = hi;
+            }
+        }
+        size_t left_cnt = 0;
+        size_t right_cnt = 0;
+        if (left_lo != NULL) {
+            void *it = left_lo;
+            while (it != left_hi) {
+                left_cnt++;
+                it = (void *) OPENCSTL_NIDX(&it, -1);
+            }
+            left_cnt++;
+        }
+        if (right_lo != NULL) {
+            void *it = right_lo;
+            while (it != right_hi) {
+                right_cnt++;
+                it = (void *) OPENCSTL_NIDX(&it, -1);
+            }
+            right_cnt++;
+        }
+        if (left_cnt >= right_cnt) {
+            if (left_lo != NULL && left_cnt >= 2) {
+                stack[top].low = left_lo;
+                stack[top].high = left_hi;
+                top++;
+            }
+            if (right_lo != NULL && right_cnt >= 2) {
+                stack[top].low = right_lo;
+                stack[top].high = right_hi;
+                top++;
+            }
+        } else {
+            if (right_lo != NULL && right_cnt >= 2) {
+                stack[top].low = right_lo;
+                stack[top].high = right_hi;
+                top++;
+            }
+            if (left_lo != NULL && left_cnt >= 2) {
+                stack[top].low = left_lo;
+                stack[top].high = left_hi;
+                top++;
+            }
+        }
+    }
+    free(stack);
+}
+
+OPENCSTL_FUNC size_type __cstl_list_max_size(void **container) {
+    return INT_MAX;
+}
+
+
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    list.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  swap.h                         (depth 4) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/21/2026.
+//
+
+#ifndef OPENCSTL_SWAP_H
+#define OPENCSTL_SWAP_H
+#include <stddef.h>
+#include <string.h>
+
+#define SWAP_STACK_BUF_SIZE 256
+
+void swap(void *a, void *b, size_t sz) {
+    unsigned char stack_buf[SWAP_STACK_BUF_SIZE];
+    unsigned char *tmp;
+    size_t i;
+
+    if (a == NULL || b == NULL || a == b || sz == 0) {
+        return;
+    }
+
+    /*
+     * 작은 크기는 stack buffer 사용
+     * 큰 크기는 byte-wise swap (malloc 없이)
+     */
+    if (sz <= SWAP_STACK_BUF_SIZE) {
+        tmp = stack_buf;
+
+        memcpy(tmp, a, sz);
+        memcpy(a, b, sz);
+        memcpy(b, tmp, sz);
+    } else {
+        unsigned char *pa = (unsigned char *) a;
+        unsigned char *pb = (unsigned char *) b;
+
+        for (i = 0; i < sz; ++i) {
+            unsigned char t = pa[i];
+            pa[i] = pb[i];
+            pb[i] = t;
+        }
+    }
+}
+#endif //OPENCSTL_SWAP_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    swap.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+#define MT64_N          312
+#define MT64_M          156
+#define MT64_MATRIX_A   0xB5026F5AA96619E9ULL
+#define MT64_UPPER_MASK 0xFFFFFFFF80000000ULL
+#define MT64_LOWER_MASK 0x7FFFFFFFULL
+
+typedef struct {
+    uint64_t mt[MT64_N];
+    int index;
+} __mt19937_64_t;
+
+__mt19937_64_t __rng64 = {
+    {
+        1776098118,
+        4095968591,
+        2489032677,
+        2495002180,
+        1521698085,
+        3468952409,
+        1098923224,
+        2876365311,
+        3875427246,
+        2303920453,
+        3481655941,
+        3656246169,
+        3488737099,
+        1911217468,
+        3072370164,
+        54539853,
+        2100673779,
+        3365782472,
+        3678642746,
+        3156232773,
+        423872610,
+        384980604,
+        14136892,
+        1456753616,
+        237535746,
+        3636975731,
+        2024840138,
+        2028378269,
+        1647654370,
+        3507099562,
+        2984247251,
+        2709726729,
+        4136871816,
+        2050550537,
+        819447735,
+        3874448673,
+        1342874910,
+        2832492440,
+        2016583134,
+        124576301,
+        1384715537,
+        3530629926,
+        671516421,
+        2761930297,
+        648433457,
+        1017100791,
+        1981299097,
+        3101820692,
+        2950834868,
+        1756679637,
+        584964515,
+        4081098669,
+        1775854538,
+        3437182948,
+        1020220836,
+        341993995,
+        3408141005,
+        2904582044,
+        94705709,
+        1395954468,
+        2723919850,
+        4100156421,
+        4019124044,
+        1842129442,
+        4079666746,
+        3677560224,
+        3999536271,
+        2893025081,
+        4228019062,
+        3210991107,
+        1390517408,
+        662431847,
+        1090909027,
+        1852368304,
+        1200827841,
+        521259154,
+        2855284515,
+        202287130,
+        1068495373,
+        2234023621,
+        3282764785,
+        323567790,
+        3148296635,
+        391185413,
+        3058708111,
+        3342934558,
+        3443548783,
+        2861981824,
+        2794386527,
+        142350258,
+        2955638948,
+        3162968156,
+        3760718351,
+        3871919616,
+        1645458827,
+        1497555060,
+        3613359691,
+        458681097,
+        2981316388,
+        713218878,
+        3450818032,
+        1431683567,
+        1600366697,
+        1714270684,
+        1544611227,
+        941048232,
+        2087772914,
+        907867291,
+        4128335230,
+        2840844480,
+        1774507957,
+        2264249920,
+        1258670090,
+        1947410483,
+        2037348156,
+        3228252038,
+        1761066031,
+        2293032587,
+        4078238904,
+        3236442710,
+        2705458281,
+        2303876801,
+        1926326119,
+        3998075151,
+        2811251186,
+        930843956,
+        1144233212,
+        3332349131,
+        97732309,
+        3849002316,
+        2915293496,
+        2810737890,
+        1149413950,
+        1535291243,
+        3360025429,
+        3421309515,
+        3433858864,
+        1712656768,
+        2497877002,
+        28081018,
+        1500134564,
+        1291223784,
+        2088311216,
+        678941823,
+        4050017251,
+        804407025,
+        3248654108,
+        3933873068,
+        4007401725,
+        2277599457,
+        1076301181,
+        2622448272,
+        3748282735,
+        1821610946,
+        817739489,
+        2234696578,
+        1210669987,
+        2701425175,
+        2214421026,
+        486743705,
+        761055154,
+        2043636369,
+        1639492383,
+        2540008982,
+        892906626,
+        3301593260,
+        2463924540,
+        2304834400,
+        2865483490,
+        4019518352,
+        3388450644,
+        2519700470,
+        2378632848,
+        3859218429,
+        41583399,
+        3551979613,
+        455310134,
+        1784672860,
+        2439363685,
+        1129068494,
+        1190855146,
+        1219423658,
+        1519984024,
+        2292587420,
+        457621073,
+        26485539,
+        44862599,
+        4036930934,
+        1752500768,
+        500049802,
+        3842075558,
+        3846522605,
+        1330514793,
+        296294288,
+        1509560985,
+        3534138747,
+        871597155,
+        3371132114,
+        3468519555,
+        3117276577,
+        771937135,
+        879279391,
+        1934008381,
+        1167355102,
+        3585722021,
+        2714912251,
+        1754911891,
+        726519327,
+        1643748675,
+        3770213438,
+        3328598245,
+        2760155758,
+        2639634685,
+        2778091809,
+        1699423094,
+        659540027,
+        2343729207,
+        2118446589,
+        74406227,
+        218555160,
+        30856212,
+        1167930465,
+        3467170840,
+        4084379716,
+        2016327892,
+        1786161279,
+        1516085301,
+        1338537268,
+        530933512,
+        3684209364,
+        2513271217,
+        1475130583,
+        4151669683,
+        1501144793,
+        1340046562,
+        2965836453,
+        1148330311,
+        417665896,
+        2097316195,
+        2645187881,
+        1399929080,
+        2659323017,
+        1490103303,
+        363804462,
+        3465020727,
+        3639391603,
+        1334768429,
+        2136970163,
+        58803944,
+        2115603995,
+        1159651724,
+        3891861745,
+        3070456198,
+        142601912,
+        3549937283,
+        1064205062,
+        1475451662,
+        1811199306,
+        3691353348,
+        2849091044,
+        3302207000,
+        4132176068,
+        989617620,
+        51194066,
+        717904882,
+        4168333670,
+        2453975333,
+        2041085414,
+        4005969440,
+        3758836276,
+        3903149919,
+        4189289922,
+        548363216,
+        973394894,
+        1839689710,
+        1896955670,
+        1636598469,
+        1933293750,
+        3097838145,
+        3857376222,
+        2039165214,
+        2629174834,
+        4288046775,
+        3240581823,
+        1710208853,
+        337962299,
+        3788182518,
+        2090635011,
+        1721836154,
+        2416252352,
+        3422851855,
+        2488421740,
+        1397862477,
+        1477292673,
+        1997234387,
+        2430055230,
+        2579580596,
+        1704015956,
+        2216497525,
+        2313035196,
+        610434450,
+        4230676740,
+        1885612770,
+        3439405078,
+        2028271374,
+        3388301479,
+        3283245152,
+        3050416026,
+        2302106739,
+        2730938597,
+        1762153169,
+        3610328820
+    },
+    MT64_N
+};
+
+__mt19937_64_t __uuid64 = {0};
+
+static void __mt19937_64_uuid_seed(uint64_t seed) {
+    __uuid64.mt[0] = seed;
+    for (int i = 1; i < MT64_N; i++) {
+        __uuid64.mt[i] = 6364136223846793005ULL * (__uuid64.mt[i - 1] ^ (__uuid64.mt[i - 1] >> 62)) + (uint64_t) i;
+    }
+    __uuid64.index = MT64_N;
+}
+
+static void __mt19937_64_seed(uint64_t seed) {
+    __rng64.mt[0] = seed;
+    for (int i = 1; i < MT64_N; i++) {
+        __rng64.mt[i] = 6364136223846793005ULL * (__rng64.mt[i - 1] ^ (__rng64.mt[i - 1] >> 62)) + (uint64_t) i;
+    }
+    __rng64.index = MT64_N;
+}
+
+
+// [0, 2^64 - 1]
+static inline uint64_t __mt19937_64_next() {
+    uint64_t y;
+
+    if (__rng64.index >= MT64_N) {
+        static const uint64_t mag01[2] = {0ULL, MT64_MATRIX_A};
+        uint64_t y;
+        int i;
+
+        for (i = 0; i < MT64_N - MT64_M; i++) {
+            y = (__rng64.mt[i] & MT64_UPPER_MASK) | (__rng64.mt[i + 1] & MT64_LOWER_MASK);
+            __rng64.mt[i] = __rng64.mt[i + MT64_M] ^ (y >> 1) ^ mag01[y & 1ULL];
+        }
+        for (; i < MT64_N - 1; i++) {
+            y = (__rng64.mt[i] & MT64_UPPER_MASK) | (__rng64.mt[i + 1] & MT64_LOWER_MASK);
+            __rng64.mt[i] = __rng64.mt[i + (MT64_M - MT64_N)] ^ (y >> 1) ^ mag01[y & 1ULL];
+        }
+        y = (__rng64.mt[MT64_N - 1] & MT64_UPPER_MASK) | (__rng64.mt[0] & MT64_LOWER_MASK);
+        __rng64.mt[MT64_N - 1] = __rng64.mt[MT64_M - 1] ^ (y >> 1) ^ mag01[y & 1ULL];
+
+        __rng64.index = 0;
+    }
+
+    y = __rng64.mt[__rng64.index++];
+
+    // tempering
+    y ^= (y >> 29) & 0x5555555555555555ULL;
+    y ^= (y << 17) & 0x71D67FFFEDA60000ULL;
+    y ^= (y << 37) & 0xFFF7EEE000000000ULL;
+    y ^= (y >> 43);
+
+    return y;
+}
+
+// [0, 1) uniform real
+static double __mt19937_random(void) {
+    return (double) (__mt19937_64_next() >> 11) * (1.0 / 9007199254740992.0);
+}
+
+
+// [lo, hi] inclusive integer range (supports negative)
+static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
+    uint64_t range = (uint64_t) (hi - lo) + 1ULL;
+    return lo + (int64_t) (__mt19937_64_next() % range);
+}
+
+char *__mt19937_uuid(void) {
+    __mt19937_64_uuid_seed(time(NULL));
+    static char buf[37];
+    static const char hex[] = "0123456789abcdef";
+
+    uint64_t hi = __mt19937_64_next();
+    uint64_t lo = __mt19937_64_next();
+
+    hi = (hi & ~((uint64_t) 0xF << 12)) | ((uint64_t) 0x4 << 12);
+    lo = (lo & ~((uint64_t) 0x3 << 62)) | ((uint64_t) 0x2 << 62);
+
+    int p = 0;
+    // time_low: 8자 (hi >> 32)
+    for (int i = 60; i >= 32; i -= 4)
+        buf[p++] = hex[(hi >> i) & 0xF];
+    buf[p++] = '-';
+    // time_mid: 4자 (hi >> 16)
+    for (int i = 28; i >= 16; i -= 4)
+        buf[p++] = hex[(hi >> i) & 0xF];
+    buf[p++] = '-';
+    // time_hi_and_version: 4자 (hi >> 0)
+    for (int i = 12; i >= 0; i -= 4)
+        buf[p++] = hex[(hi >> i) & 0xF];
+    buf[p++] = '-';
+    // clock_seq: 4자 (lo >> 48)
+    for (int i = 60; i >= 48; i -= 4)
+        buf[p++] = hex[(lo >> i) & 0xF];
+    buf[p++] = '-';
+    // node: 12자 (lo >> 0)
+    for (int i = 44; i >= 0; i -= 4)
+        buf[p++] = hex[(lo >> i) & 0xF];
+
+    buf[36] = '\0';
+    return buf;
+}
+
+OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+
+    for (size_t i = length - 1; i > 0; i--) {
+        size_t rng_idx = __mt19937_64_next() % (i + 1);
+        swap((char *)(*container) + i * type_size, (char *)(*container) + rng_idx * type_size, type_size);
+    }
+}
+
+OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
+    ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
+    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
+    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+
+    for (size_t i = length - 1; i > 0; i--) {
+        size_t rng_idx = __mt19937_64_next() % (i + 1);
+        swap((char *)(*container) + i * type_size, (char *)(*container) + rng_idx * type_size, type_size);
+    }
+}
+
+OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    size_type length = (size_type) OPENCSTL_NIDX(container, -1);
+    if (length <= 1) return;
+
+    // Copy list data to flat array
+    void *ptr = malloc(type_size * length);
+    void *it = *head;
+    for (size_type i = 0; i < length; i++) {
+        memcpy((char *) ptr + (i * type_size), it, type_size);
+        it = __cstl_list_next_prev(it, -1);
+    }
+    // Fisher-Yates shuffle on flat array
+    for (size_type i = length - 1; i > 0; i--) {
+        size_type rng_idx = __mt19937_64_next() % (i + 1);
+        swap((char *) ptr + i * type_size, (char *) ptr + rng_idx * type_size, type_size);
+    }
+    // Copy shuffled data back to list nodes
+    it = *head;
+    for (size_type i = 0; i < length; i++) {
+        memcpy(it, (char *) ptr + (i * type_size), type_size);
+        it = __cstl_list_next_prev(it, -1);
+    }
+    free(ptr);
+}
+
+
+
+void __mt19937_shuffle(void *container) {
+    size_t container_type;
+    if (__is_deque((void **) &container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            __cstl_vector_shuffle((void **) &container);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            __cstl_deque_shuffle((void **) &container);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            __cstl_list_shuffle((void **) &container);
+        }
+        break;
+        default: cstl_error("Invalid operator");
+            break;
+    }
+}
+
+typedef void (*seed_fn)(uint64_t);
+
+typedef double (*random_fn)(void);
+
+typedef int64_t (*randint_fn)(int64_t, int64_t);
+
+typedef char *(*uuid_fn)(void);
+
+typedef void (*shuffle_fn)(void *);
+
+typedef struct {
+    random_fn random;
+    randint_fn randint;
+    seed_fn seed;
+    uuid_fn uuid;
+    shuffle_fn shuffle;
+} RANDOM;
+
+RANDOM mt19937 = {
+    __mt19937_random,
+    __mt19937_randint,
+    __mt19937_64_seed,
+    __mt19937_uuid,
+    __mt19937_shuffle
+};
+
+#endif //OPENCSTL_MT19937_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    mt19937.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+//#include "van_emde_boas_tree.h"
+#define _1MB (1024*1024)
+#define _512KB (1024*512)
+
+#ifdef OPENCSTL_TRACER
+void *zalloc_vector[_512KB] = {0};
+size_t zalloc_size = 0;
+size_t zalloc_count = 0;
+
+
+static void zappend(void *ptr) {
+    zalloc_vector[zalloc_size++] = ptr;
+    zalloc_count++;
+}
+
+static void zerase(void *ptr) {
+    for (size_t i = 0; i < zalloc_size; i++) {
+        if (zalloc_vector[i] == ptr) {
+            memcpy(zalloc_vector + i, zalloc_vector + i + 1, (zalloc_size - i - 1) * sizeof(void *));
+            zalloc_size--;
+            zalloc_vector[zalloc_size] = NULL;
+            return;
+        }
+    }
+}
+#endif
+#ifdef OPENCSTL_TRACER
+static void opencstl_exit(void) {
+    if (zalloc_size > 0) {
+        logging.warning("%d memory blocks were not released", zalloc_size);
+    }
+    logging.debug("opencstl trace exit");
+    logging.debug("zalloc count: %d", zalloc_count);
+}
+#endif
+#ifdef OPENCSTL_TRACER
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((constructor))
+#endif
+static int opencstl_init(void) {
+    //size_t SZ = _512KB;
+    //zalloc_vector = salloc(SZ);
+    //memset(zalloc_vector, 0, SZ);
+
+    logging.debug("opencstl tracer init");
+
+    //htm = htm_new();
+
+    //mt19937.seed(time(NULL));
+    atexit(opencstl_exit);
+    return 0;
+}
+
+#if defined(_MSC_VER)
+# pragma section(".CRT$XCU",read)
+__declspec(allocate(".CRT$XCU")) static int (*__p)(void) = opencstl_init;
+# pragma data_seg()
+#endif
+#endif
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    tracer.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+
+#ifdef OPENCSTL_TRACER
+typedef void (*free_fn)(void *ptr);
+
+typedef void *(*malloc_fn)(size_t sz);
+
+typedef void *(*realloc_fn)(void *ptr, size_t new_size);
+
+typedef void * (*calloc_fn)(size_t cnt, size_t sz);
+
+static free_fn ofree = free;
+static malloc_fn omalloc = malloc;
+static realloc_fn orealloc = realloc;
+static calloc_fn ocalloc = calloc;
+
+static void zfree(void *ptr) {
+    zerase(ptr);
+    ofree(ptr);
+}
+
+static void *zcalloc(size_t cnt, size_t sz) {
+    void *ptr = ocalloc(cnt, sz);
+    if (ptr) {
+        zappend(ptr);
+    }
+    return ptr;
+}
+
+static void *zmalloc(size_t sz) {
+    void *ptr = omalloc(sz);
+    if (ptr) {
+        zappend(ptr);
+    }
+    return ptr;
+}
+
+static void *zrealloc(void *ptr, size_t new_size) {
+    if (ptr == NULL) {
+        return zmalloc(new_size);
+    }
+
+    if (new_size == 0) {
+        zfree(ptr);
+        return NULL;
+    }
+
+    void *new_ptr = orealloc(ptr, new_size);
+    if (new_ptr == NULL) {
+        return NULL;
+    }
+
+    if (new_ptr != ptr) {
+        zerase(ptr);
+        zappend(new_ptr);
+    }
+
+    return new_ptr;
+}
+
+
+#define free(ptr) zfree(ptr)
+#define calloc(cnt, sz) zcalloc(cnt, sz)
+#define malloc(sz) zmalloc(sz)
+#define realloc(ptr, new_size) zrealloc(ptr, new_size)
+
+
+#endif
+
+
+#endif //_OPENCSTL_ZALLOC_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    zalloc.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* [already included: tracer.h] */
+/* [already included: zalloc.h] */
+/* [already included: crossplatform.h] */
+
+#if defined(OCSTL_CC_CLANG)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic ignored "-Wunused-value"
+#pragma clang diagnostic ignored "-Wsign-compare"
+#pragma clang diagnostic ignored "-Wpedantic"
+#pragma clang diagnostic ignored "-Wgnu-auto-type"
+#pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+#pragma clang diagnostic ignored "-Wuse-after-free"
+
+#endif
+
+#if defined(OCSTL_CC_GCC)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wuse-after-free"
+#endif
+
+
+#define USE_CSTL_FUNC
+
+// #if defined(__linux__) || defined(__APPLE__)
+// #if !defined(__8cc__ )
+// #pragma GCC push_options
+// #pragma GCC optimize("O0")
+// #endif
+// #endif
+/* [already included: zalloc.h] */
+/* [already included: error.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  string.h                       (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/15/2026.
+//
+
+#ifndef OPENCSTL_STRING_H
+#define OPENCSTL_STRING_H
+
+/* [already included: zalloc.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  verify.h                       (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/15/2026.
+//
+
+#ifndef OPENCSTL_VERIFY_H
+#define OPENCSTL_VERIFY_H
+#include <assert.h>
+/* [already included: logging.h] */
+
+#define verify(EXPR) do { if(!(EXPR)) __verify(#EXPR,__FILE__,__LINE__); } while(0)
+
+int __verify(char *expression, char *file, int line) {
+    logging.error("Verification failed: %s, file %s, line %d",
+                  expression, file, line);
+    abort();
+}
+#endif //OPENCSTL_VERIFY_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    verify.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+// ============================================================
+// string function implementations
+// ============================================================
+
+char *__cstl_string_substr(char *src, int pos, int len) {
+    verify(strlen(src) >= pos + len);
+    char *ret = (char *) calloc(len + 1, sizeof(char));
+    memcpy(ret, src + pos, len);
+    return ret;
+}
+
+char **__cstl_string_split(const char *src, const char *sep, int *n) {
+    int len = (int) strlen(src);
+    int sep_len = (int) strlen(sep);
+
+    if (sep_len == 0) {
+        char **ret = (char **) malloc(sizeof(char *) + (len + 1));
+        char *buf = (char *) ret + sizeof(char *);
+        memcpy(buf, src, len + 1);
+        ret[0] = buf;
+        *n = 1;
+        return ret;
+    }
+
+    // separator 개수 세기
+    int count = 1;
+    const char *p = src;
+    while ((p = strstr(p, sep)) != NULL) {
+        count++;
+        p += sep_len;
+    }
+
+    char **ret = (char **) malloc(count * sizeof(char *) + (len + 1));
+    char *buf = (char *) ret + count * sizeof(char *);
+    memcpy(buf, src, len + 1);
+
+
+    int idx = 0;
+    ret[idx++] = buf;
+    char *s = buf;
+    while ((s = strstr(s, sep)) != NULL) {
+        *s = '\0';
+        s += sep_len;
+        ret[idx++] = s;
+    }
+
+    *n = count;
+    return ret;
+}
+
+
+char *__cstl_string_replace(char *src, char *from, char *to) {
+    int len = strlen(src);
+    int from_len = strlen(from);
+    int to_len = strlen(to);
+
+    int count = 0;
+    char *p = src;
+    while ((p = strstr(p, from)) != NULL) {
+        count++;
+        p += from_len;
+    }
+
+    char *ret = (char *) calloc(len + count * (to_len - from_len) + 1, 1);
+    char *dst = ret;
+    p = src;
+    while (*p) {
+        if (strncmp(p, from, from_len) == 0) {
+            memcpy(dst, to, to_len);
+            dst += to_len;
+            p += from_len;
+        } else {
+            *dst++ = *p++;
+        }
+    }
+    *dst = '\0';
+
+    return ret;
+}
+
+char *__cstl_string_ltrim(const char *src) {
+    const char *p = src;
+    while (*p && isspace((unsigned char) *p)) p++;
+    size_t len = strlen(p);
+    char *ret = (char *) malloc(len + 1);
+    memcpy(ret, p, len + 1);
+    return ret;
+}
+
+char *__cstl_string_rtrim(const char *src) {
+    size_t len = strlen(src);
+    while (len > 0 && isspace((unsigned char) src[len - 1])) len--;
+    char *ret = (char *) malloc(len + 1);
+    memcpy(ret, src, len);
+    ret[len] = '\0';
+    return ret;
+}
+
+char *__cstl_string_trim(const char *src) {
+    const char *begin = src;
+    while (*begin && isspace((unsigned char) *begin)) begin++;
+    const char *end = src + strlen(src);
+    while (end > begin && isspace((unsigned char) *(end - 1))) end--;
+    size_t len = end - begin;
+    char *ret = (char *) malloc(len + 1);
+    memcpy(ret, begin, len);
+    ret[len] = '\0';
+    return ret;
+}
+
+char *__cstl_string_to_upper(const char *src) {
+    size_t len = strlen(src);
+    char *ret = (char *) malloc(len + 1);
+    for (size_t i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
+    ret[len] = '\0';
+    return ret;
+}
+
+char *__cstl_string_to_lower(const char *src) {
+    size_t len = strlen(src);
+    char *ret = (char *) malloc(len + 1);
+    for (size_t i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
+    ret[len] = '\0';
+    return ret;
+}
+
+bool __cstl_string_starts_with(const char *src, const char *prefix) {
+    size_t plen = strlen(prefix);
+    return strncmp(src, prefix, plen) == 0;
+}
+
+bool __cstl_string_ends_with(const char *src, const char *suffix) {
+    size_t slen = strlen(src);
+    size_t flen = strlen(suffix);
+    if (flen > slen) return false;
+    return memcmp(src + slen - flen, suffix, flen) == 0;
+}
+
+int __cstl_string_count(const char *src, const char *sub) {
+    int count = 0;
+    size_t sub_len = strlen(sub);
+    if (sub_len == 0) return 0;
+    const char *p = src;
+    while ((p = strstr(p, sub)) != NULL) {
+        count++;
+        p += sub_len;
+    }
+    return count;
+}
+
+char *__cstl_string_join(char **parts, int n, const char *delim) {
+    if (n <= 0) {
+        char *empty = (char *) malloc(1);
+        *empty = '\0';
+        return empty;
+    }
+    size_t dlen = strlen(delim);
+    size_t total = 0;
+    for (int i = 0; i < n; i++) total += strlen(parts[i]);
+    total += dlen * (n - 1) + 1;
+
+    char *ret = (char *) malloc(total);
+    char *dst = ret;
+    for (int i = 0; i < n; i++) {
+        if (i > 0) {
+            memcpy(dst, delim, dlen);
+            dst += dlen;
+        }
+        size_t len = strlen(parts[i]);
+        memcpy(dst, parts[i], len);
+        dst += len;
+    }
+    *dst = '\0';
+    return ret;
+}
+
+char *__cstl_string_concat(const char *a, const char *b) {
+    size_t alen = strlen(a);
+    size_t blen = strlen(b);
+    char *ret = (char *) malloc(alen + blen + 1);
+    memcpy(ret, a, alen);
+    memcpy(ret + alen, b, blen + 1);
+    return ret;
+}
+
+char *__cstl_string_reverse(const char *src) {
+    size_t len = strlen(src);
+    char *ret = (char *) malloc(len + 1);
+    for (size_t i = 0; i < len; i++) ret[i] = src[len - 1 - i];
+    ret[len] = '\0';
+    return ret;
+}
+
+bool __cstl_string_is_digit(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isdigit((unsigned char) *p)) return false;
+    return true;
+}
+
+bool __cstl_string_is_alpha(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isalpha((unsigned char) *p)) return false;
+    return true;
+}
+
+bool __cstl_string_is_alnum(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isalnum((unsigned char) *p)) return false;
+    return true;
+}
+
+bool __cstl_string_is_space(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isspace((unsigned char) *p)) return false;
+    return true;
+}
+
+
+
+// ============================================================
+// function pointer types
+// ============================================================
+typedef char *(*string_substr_fn)(char *, int, int);
+
+typedef char **(*string_split_fn)(const char *, const char *, int *);
+
+typedef char *(*string_replace_fn)(char *, char *, char *);
+
+typedef char *(*string_unary_fn)(const char *);
+
+typedef bool (*string_match_fn)(const char *, const char *);
+
+typedef int (*string_count_fn)(const char *, const char *);
+
+typedef char *(*string_join_fn)(char **, int, const char *);
+
+typedef char *(*string_concat_fn)(const char *, const char *);
+
+typedef bool (*string_pred_fn)(const char *);
+
+// ============================================================
+// string namespace struct
+// ============================================================
+typedef struct {
+    string_substr_fn substr;
+    string_split_fn split;
+    string_replace_fn replace;
+    string_unary_fn ltrim;
+    string_unary_fn rtrim;
+    string_unary_fn trim;
+    string_unary_fn to_upper;
+    string_unary_fn to_lower;
+    string_match_fn starts_with;
+    string_match_fn ends_with;
+    string_count_fn count;
+    string_join_fn join;
+    string_concat_fn concat;
+    string_unary_fn reverse;
+    string_pred_fn is_digit;
+    string_pred_fn is_alpha;
+    string_pred_fn is_alnum;
+    string_pred_fn is_space;
+} __STRING;
+
+static __STRING string = {
+    __cstl_string_substr,
+    __cstl_string_split,
+    __cstl_string_replace,
+    __cstl_string_ltrim,
+    __cstl_string_rtrim,
+    __cstl_string_trim,
+    __cstl_string_to_upper,
+    __cstl_string_to_lower,
+    __cstl_string_starts_with,
+    __cstl_string_ends_with,
+    __cstl_string_count,
+    __cstl_string_join,
+    __cstl_string_concat,
+    __cstl_string_reverse,
+    __cstl_string_is_digit,
+    __cstl_string_is_alpha,
+    __cstl_string_is_alnum,
+    __cstl_string_is_space
+};
+
+#endif //OPENCSTL_STRING_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    string.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+// Contaner
+/* [already included: deque.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  vector.h                       (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
@@ -3277,556 +3998,17 @@ OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
     OPENCSTL_NIDX(container, -2) = new_capacity;
     iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capacity), CT_VECTOR, type_size, type);
 }
+
+
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    vector.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+/* [already included: list.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  list.h                         (depth 1) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_LIST_H)
-#define _OPENCSTL_LIST_H
-/* [already included: error.h] */
-/* [already included: zalloc.h] */
-#define cstl_list(TYPE)		__cstl_list(sizeof(TYPE),#TYPE)
-#define NTAIL(N)	(N==-1?-2:N)
-OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
-    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = calloc(header_sz + sizeof(size_t), 1);
-    if (block == NULL) {
-        cstl_error("Failed to allocate memory for list");
-    }
-    void *ptr = ((char *) block) + header_sz;
-    void **container = &ptr;
-    OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_LIST;
-    OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
-    OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
-    OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
-    OPENCSTL_NIDX(container, -4) = (size_t) type;
-    OPENCSTL_NIDX(container, -2) = 0; //tail
-    OPENCSTL_NIDX(container, -1) = 0; //length
-    OPENCSTL_NIDX(container, 0) = 0; //head
-    return ptr;
-}
-
-OPENCSTL_FUNC void *__cstl_list_node(size_t type_size) {
-    //[node type][prev][next] ↘ [data]
-    size_t header_sz = sizeof(void *) * NIDX_LIST_NODE_SIZE;
-    size_t node_sz = type_size + header_sz;
-    void *ptr = (char *) calloc(node_sz, 1) + header_sz;
-    void **node = &ptr;
-    OPENCSTL_NIDX(node, -3) = OPENCSTL_LIST;
-    return ptr;
-}
-
-OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, int ntail, int nhead) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail)); //-1 , 0
-    void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
-    void *n = __cstl_list_node(type_size);
-    //char *type = (char *) OPENCSTL_NIDX(container, -4);
-
-#if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
-    float valuef = 0.0F;
-    if (is_float) {
-        valuef = (float) *(double *) value;
-        value = &valuef;
-    }
-#endif
-    if (value)
-        memcpy(n, value, type_size);
-    if (*head == NULL && *tail == NULL) {
-        *head = *tail = n;
-    } else {
-        OPENCSTL_NIDX(tail, -(ntail + 2)) = (size_t) n;
-        OPENCSTL_NIDX(&n, -(nhead + 2)) = (size_t) *tail;
-        *tail = n;
-    }
-    OPENCSTL_NIDX(container, -1)++;
-}
-
-OPENCSTL_FUNC void __cstl_list_pop_back_front(void **container, int ntail, int nhead) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    //size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail)); //-1 , 0
-    void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
-    if (*head == NULL || *tail == NULL) {
-        cstl_error("No elements in cstl_list");
-    }
-    if (*head == *tail) {
-        free(&OPENCSTL_NIDX(tail, -3)); //fix
-        *head = *tail = 0;
-    } else {
-        *tail = (void *) OPENCSTL_NIDX(tail, -(nhead + 2));
-        void *fb = (void *) OPENCSTL_NIDX(tail, -(ntail + 2));
-        free(&OPENCSTL_NIDX(&fb, -3));
-        OPENCSTL_NIDX(tail, -(ntail + 2)) = 0;
-    }
-
-    OPENCSTL_NIDX(container, -1)--;
-}
-
-OPENCSTL_FUNC void *__cstl_list_next_prev(void *it, int n) {
-    //next(-1), prev(-2)
-    return (void *) OPENCSTL_NIDX(&it, n);
-}
-
-OPENCSTL_FUNC size_type __cstl_list_size(void **container) {
-    return (size_type) OPENCSTL_NIDX(container, -1);
-}
-
-OPENCSTL_FUNC void __cstl_list_resize(void **container, size_t n, void *value) {
-    size_t length = OPENCSTL_NIDX(container, -1);
-    if (n < length) {
-        while (n < length) {
-            __cstl_list_pop_back_front((void **) container, -1, 0);
-            length--;
-        }
-    } else {
-        while (n >= length) {
-            __cstl_list_push_back_front((void **) container, value, -1, 0);
-            length++;
-        }
-    }
-    OPENCSTL_NIDX(container, -1) = n;
-}
-
-OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_t N, void *value) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
-    void **head = (void **) &OPENCSTL_NIDX(container, 0);
-    //char *type = (char *) OPENCSTL_NIDX(container, -4);
-
-#if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
-    float valuef = 0.0F;
-    if (is_float) {
-        valuef = (float) *(double *) value;
-        value = &valuef;
-    }
-#endif
-    void *nhead = __cstl_list_node(type_size);
-    memcpy(nhead, value, type_size);
-    void *ntail = nhead;
-    for (size_t i = 1; i < N; i++) {
-        void *n = __cstl_list_node(type_size);
-        memcpy(n, value, type_size);
-        OPENCSTL_NIDX(&n, -2) = (size_t) ntail; //n->prev=tail
-        OPENCSTL_NIDX(&ntail, -1) = (size_t) n; //tail->next=n;
-        ntail = n;
-    }
-    OPENCSTL_NIDX(&ntail, -1) = (size_t) *iter; //n->next=iter
-    if (*head == NULL && *tail == NULL) {
-        *head = nhead;
-        *tail = ntail;
-    } else if (*iter != NULL) {
-        if (OPENCSTL_NIDX(iter, -2) != 0) {
-            OPENCSTL_NIDX(&(OPENCSTL_NIDX(iter, -2)), -1) = (size_t) nhead; //iter->prev->next=n;
-        }
-        OPENCSTL_NIDX(&nhead, -2) = OPENCSTL_NIDX(iter, -2); //n->prev=iter->prev
-        OPENCSTL_NIDX(iter, -2) = (size_t) ntail; //iter->prev=n;
-        if (*iter == *head) {
-            *head = nhead;
-        }
-    } else {
-        OPENCSTL_NIDX(tail, -1) = (size_t) nhead; //tail->next=n;
-        OPENCSTL_NIDX(&nhead, -2) = (size_t) *tail; //n->prev=tail;
-        *tail = ntail;
-    }
-    OPENCSTL_NIDX(container, -1) += N;
-}
-
-OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void **iter_end) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    //size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
-    void **head = (void **) &OPENCSTL_NIDX(container, 0);
-    if (*iter_begin == NULL) {
-        cstl_error("iter_begin could not be NULL");
-    }
-    if (*iter_begin == *head) {
-        *head = *iter_end;
-        if (*head != NULL) {
-            OPENCSTL_NIDX(head, -2) = 0;
-        }
-    } else {
-        OPENCSTL_NIDX(&OPENCSTL_NIDX(iter_begin, -2), -1) = (size_t) *iter_end; //begin->prev->next=end;
-        if (*iter_end != NULL) {
-            OPENCSTL_NIDX(iter_end, -2) = OPENCSTL_NIDX(iter_begin, -2); //end->prev=begin->prev
-        }
-    }
-    void *it = *iter_begin;
-    while (it != *iter_end) {
-        void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        free(&OPENCSTL_NIDX(&it, -3));
-        OPENCSTL_NIDX(container, -1)--;
-        it = tmp;
-    }
-    if (*iter_end == NULL) {
-        *tail = 0;
-    }
-}
-
-OPENCSTL_FUNC void *__cstl_list_begin(void **container) {
-    return (void *) OPENCSTL_NIDX(container, 0);
-}
-
-OPENCSTL_FUNC void *__cstl_list_end_rend(void **container) {
-    (void) container;
-    return NULL;
-}
-
-OPENCSTL_FUNC void *__cstl_list_rbegin(void **container) {
-    return (void *) OPENCSTL_NIDX(container, -2);
-}
-
-OPENCSTL_FUNC void __cstl_list_clear(void **container) {
-    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
-    void **head = (void **) &OPENCSTL_NIDX(container, 0);
-
-    void *it = *head;
-    while (it != NULL) {
-        void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        free(&OPENCSTL_NIDX(&it, -3));
-        it = tmp;
-    }
-    *head = *tail = NULL;
-    OPENCSTL_NIDX(container, -1) = 0;
-}
-
-OPENCSTL_FUNC void __cstl_list_free(void **container) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    __cstl_list_clear(container);
-    free((char *) (*container) - header_sz);
-    *container = NULL;
-}
-
-OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *value) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    //void **tail = (void **) &OPENCSTL_NIDX(container, -2);
-    //void **head = (void **) &OPENCSTL_NIDX(container, 0);
-    //char *type = (char *) OPENCSTL_NIDX(container, -4);
-
-#if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
-    float valuef = 0.0F;
-    if (is_float) {
-        valuef = (float) *(double *) value;
-        value = &valuef;
-    }
-#endif
-    void *it = *iter_begin;
-    while (it != NULL) {
-        if (memcmp(it, value, type_size) == 0) {
-            return it;
-        }
-        it = (void *) OPENCSTL_NIDX(&it, -1);
-    }
-    return NULL;
-}
-
-OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, const void *)) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
-    void **head = (void **) &OPENCSTL_NIDX(container, 0);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_t length = OPENCSTL_NIDX(container, -1);
-
-    (void) header_sz;
-    (void) type_size;
-    (void) type;
-
-    if (cmp == NULL) {
-        cstl_error("cmp could not be NULL");
-    }
-    if (*head == NULL || *tail == NULL || length < 2) {
-        return;
-    }
-
-    for (size_t width = 1; width < length; width <<= 1) {
-        void *curr = *head;
-        void *new_head = NULL;
-        void *new_tail = NULL;
-
-        while (curr != NULL) {
-            void *left = curr;
-            void *right = NULL;
-            void *next_run = NULL;
-
-            size_t left_count = 0;
-            size_t right_count = 0;
-
-            for (; curr != NULL && left_count < width; ++left_count) {
-                curr = (void *) OPENCSTL_NIDX(&curr, -1);
-            }
-
-            right = curr;
-
-            for (; curr != NULL && right_count < width; ++right_count) {
-                curr = (void *) OPENCSTL_NIDX(&curr, -1);
-            }
-
-
-            next_run = curr;
-
-            while (left_count > 0 || right_count > 0) {
-                void *pick = NULL;
-
-                if (left_count == 0) {
-                    pick = right;
-                    right = (void *) OPENCSTL_NIDX(&right, -1);
-                    --right_count;
-                } else if (right_count == 0 || right == NULL) {
-                    pick = left;
-                    left = (void *) OPENCSTL_NIDX(&left, -1);
-                    --left_count;
-                } else if (cmp(left, right) <= 0) {
-                    pick = left;
-                    left = (void *) OPENCSTL_NIDX(&left, -1);
-                    --left_count;
-                } else {
-                    pick = right;
-                    right = (void *) OPENCSTL_NIDX(&right, -1);
-                    --right_count;
-                }
-
-                if (new_tail == NULL) {
-                    new_head = pick;
-                    OPENCSTL_NIDX(&pick, -2) = 0;
-                } else {
-                    OPENCSTL_NIDX(&new_tail, -1) = (size_t) pick;
-                    OPENCSTL_NIDX(&pick, -2) = (size_t) new_tail;
-                }
-                new_tail = pick;
-            }
-
-            if (new_tail != NULL) {
-                OPENCSTL_NIDX(&new_tail, -1) = 0;
-            }
-
-            curr = next_run;
-        }
-
-        *head = new_head;
-        *tail = new_tail;
-    }
-}
-
-
-typedef struct {
-    void *low;
-    void *high;
-} __cstl_qsort_range;
-
-OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_t n) {
-    unsigned char buf[128];
-    unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) calloc(n, 1);
-    if (tmp == NULL) {
-        cstl_error("Failed to allocate memory for swap");
-    }
-    memcpy(tmp, a, n);
-    memcpy(a, b, n);
-    memcpy(b, tmp, n);
-    if (tmp != buf)
-        free(tmp);
-}
-
-OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
-    void *slow = low;
-    void *fast = low;
-    while (fast != high) {
-        fast = (void *) OPENCSTL_NIDX(&fast, -1);
-        if (fast == high) break;
-        fast = (void *) OPENCSTL_NIDX(&fast, -1);
-        slow = (void *) OPENCSTL_NIDX(&slow, -1);
-    }
-    return slow;
-}
-
-OPENCSTL_FUNC void __cstl_list_median_of_three(void *low, void *high, size_t type_size,
-                                               int (*cmp)(const void *, const void *)) {
-    void *mid = __cstl_list_mid_node(low, high);
-    if (mid == low || mid == high) return;
-    if (cmp(low, mid) > 0) __cstl_list_swap_data(low, mid, type_size);
-    if (cmp(low, high) > 0) __cstl_list_swap_data(low, high, type_size);
-    if (cmp(mid, high) > 0) __cstl_list_swap_data(mid, high, type_size);
-    __cstl_list_swap_data(mid, high, type_size);
-}
-
-OPENCSTL_FUNC void *__cstl_list_partition(void *low, void *high, size_t type_size,
-                                          int (*cmp)(const void *, const void *)) {
-    void *i = NULL;
-    void *j = low;
-    while (j != high) {
-        if (cmp(j, high) <= 0) {
-            i = (i == NULL) ? low : (void *) OPENCSTL_NIDX(&i, -1);
-            if (i != j) {
-                __cstl_list_swap_data(i, j, type_size);
-            }
-        }
-        j = (void *) OPENCSTL_NIDX(&j, -1);
-    }
-    i = (i == NULL) ? low : (void *) OPENCSTL_NIDX(&i, -1);
-    if (i != high) {
-        __cstl_list_swap_data(i, high, type_size);
-    }
-    return i;
-}
-
-OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, const void *)) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
-    void **head = (void **) &OPENCSTL_NIDX(container, 0);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    (void) header_sz;
-    (void) type_size;
-    (void) type;
-    if (cmp == NULL) {
-        cstl_error("cmp could not be NULL");
-    }
-    if (*head == NULL || *tail == NULL || length < 2) {
-        return;
-    }
-    size_t stack_cap = 64;
-    __cstl_qsort_range *stack = (__cstl_qsort_range *) calloc(sizeof(__cstl_qsort_range), stack_cap);
-    if (stack == NULL) {
-        cstl_error("Failed to allocate memory for qsort stack");
-    }
-    size_t top = 0;
-    stack[top].low = *head;
-    stack[top].high = *tail;
-    top++;
-    while (top > 0) {
-        top--;
-        void *lo = stack[top].low;
-        void *hi = stack[top].high;
-        if (lo == NULL || hi == NULL || lo == hi) {
-            continue;
-        }
-        __cstl_list_median_of_three(lo, hi, type_size, cmp);
-        void *pivot = __cstl_list_partition(lo, hi, type_size, cmp);
-        void *left_lo = NULL;
-        void *left_hi = NULL;
-        if (pivot != lo) {
-            void *pp = (void *) OPENCSTL_NIDX(&pivot, -2);
-            if (pp != NULL) {
-                left_lo = lo;
-                left_hi = pp;
-            }
-        }
-        void *right_lo = NULL;
-        void *right_hi = NULL;
-        if (pivot != hi) {
-            void *pn = (void *) OPENCSTL_NIDX(&pivot, -1);
-            if (pn != NULL) {
-                right_lo = pn;
-                right_hi = hi;
-            }
-        }
-        size_t left_cnt = 0;
-        size_t right_cnt = 0;
-        if (left_lo != NULL) {
-            void *it = left_lo;
-            while (it != left_hi) {
-                left_cnt++;
-                it = (void *) OPENCSTL_NIDX(&it, -1);
-            }
-            left_cnt++;
-        }
-        if (right_lo != NULL) {
-            void *it = right_lo;
-            while (it != right_hi) {
-                right_cnt++;
-                it = (void *) OPENCSTL_NIDX(&it, -1);
-            }
-            right_cnt++;
-        }
-        if (left_cnt >= right_cnt) {
-            if (left_lo != NULL && left_cnt >= 2) {
-                stack[top].low = left_lo;
-                stack[top].high = left_hi;
-                top++;
-            }
-            if (right_lo != NULL && right_cnt >= 2) {
-                stack[top].low = right_lo;
-                stack[top].high = right_hi;
-                top++;
-            }
-        } else {
-            if (right_lo != NULL && right_cnt >= 2) {
-                stack[top].low = right_lo;
-                stack[top].high = right_hi;
-                top++;
-            }
-            if (left_lo != NULL && left_cnt >= 2) {
-                stack[top].low = left_lo;
-                stack[top].high = left_hi;
-                top++;
-            }
-        }
-    }
-    free(stack);
-}
-
-OPENCSTL_FUNC size_type __cstl_list_max_size(void **container) {
-    return INT_MAX;
-}
-
-
-#endif
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    list.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  tree.h                         (depth 1) */
+/* BEGIN  rbtree.h                       (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -4427,7 +4609,7 @@ OPENCSTL_FUNC size_type __cstl_tree_size(void **container) {
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* END    tree.h */
+/* END    rbtree.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -6132,7 +6314,7 @@ _OpenCSTLCompareFunc _memcmp_funcs[128 + 1] = {
 /* [already included: error.h] */
 /* [already included: vector.h] */
 /* [already included: list.h] */
-/* [already included: tree.h] */
+/* [already included: rbtree.h] */
 
 #define first(IT)                   (*IT)
 #define second(IT, TYPE)            ((TYPE)cstl_value(IT, TYPE))
@@ -6704,8 +6886,61 @@ static CHRONO chrono = {
 #if !defined(_OPENCSTL_CSTL_FILE_H)
 #define _OPENCSTL_CSTL_FILE_H
 #include <stdio.h>
+#include <wchar.h>
 
+// ███████╗██╗██╗░░░░░███████╗░░░░░░░██████╗░░█████╗░██╗███╗░░██╗████████╗███████╗██████╗░░░░░░░░███╗░░░███╗░█████╗░███╗░░██╗░█████╗░░██████╗░███████╗██████╗░
+// ██╔════╝██║██║░░░░░██╔════╝░░░░░░░██╔══██╗██╔══██╗██║████╗░██║╚══██╔══╝██╔════╝██╔══██╗░░░░░░░████╗░████║██╔══██╗████╗░██║██╔══██╗██╔════╝░██╔════╝██╔══██╗
+// █████╗░░██║██║░░░░░█████╗░░░░░░░░░██████╔╝██║░░██║██║██╔██╗██║░░░██║░░░█████╗░░██████╔╝░░░░░░░██╔████╔██║███████║██╔██╗██║███████║██║░░██╗░█████╗░░██████╔╝
+// ██╔══╝░░██║██║░░░░░██╔══╝░░░░░░░░░██╔═══╝░██║░░██║██║██║╚████║░░░██║░░░██╔══╝░░██╔══██╗░░░░░░░██║╚██╔╝██║██╔══██║██║╚████║██╔══██║██║░░╚██╗██╔══╝░░██╔══██╗
+// ██║░░░░░██║███████╗███████╗░░░░░░░██║░░░░░╚█████╔╝██║██║░╚███║░░░██║░░░███████╗██║░░██║░░░░░░░██║░╚═╝░██║██║░░██║██║░╚███║██║░░██║╚██████╔╝███████╗██║░░██║
+// ╚═╝░░░░░╚═╝╚══════╝╚══════╝░░░░░░░╚═╝░░░░░░╚════╝░╚═╝╚═╝░░╚══╝░░░╚═╝░░░╚══════╝╚═╝░░╚═╝░░░░░░░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝░╚═════╝░╚══════╝╚═╝░░╚═╝
 
+typedef struct FPM {
+    FILE *fp;
+    char *filepath;
+} FPM;
+
+static FPM fpm[1024] = {0};
+static int fpm_size = 0;
+
+void fpm_append(FILE *fp, const char *filepath) {
+    verify(fpm_size < 1024);
+    fpm[fpm_size].fp = fp;
+    fpm[fpm_size].filepath = filepath;
+    fpm_size++;
+}
+
+void fpm_erase(FILE *fp) {
+    int idx = -1;
+    for (int i = 0; i < fpm_size; i++) {
+        if (fpm[i].fp == fp) {
+            idx = i;
+            break;
+        }
+    }
+    verify(idx != -1);
+    memcpy(fpm + idx, fpm + idx + 1, fpm_size - idx - 1);
+    fpm_size--;
+}
+
+char *fpm_get(FILE *fp) {
+    int idx = -1;
+    for (int i = 0; i < fpm_size; i++) {
+        if (fpm[i].fp == fp) {
+            idx = i;
+            break;
+        }
+    }
+    verify(idx != -1);
+    return fpm[idx].filepath;
+}
+
+// ███████╗░██████╗████████╗██████╗░███████╗░█████╗░███╗░░░███╗
+// ██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔══██╗████╗░████║
+// █████╗░░╚█████╗░░░░██║░░░██████╔╝█████╗░░███████║██╔████╔██║
+// ██╔══╝░░░╚═══██╗░░░██║░░░██╔══██╗██╔══╝░░██╔══██║██║╚██╔╝██║
+// ██║░░░░░██████╔╝░░░██║░░░██║░░██║███████╗██║░░██║██║░╚═╝░██║
+// ╚═╝░░░░░╚═════╝░░░░╚═╝░░░╚═╝
 FILE *__cstl_fopen(const char *filename, const char *mode) {
     FILE *fp = NULL;
 #if defined(__TINYC__)
@@ -6715,31 +6950,46 @@ FILE *__cstl_fopen(const char *filename, const char *mode) {
 #else
     fp = fopen(filename, mode);
 #endif
+    verify(fp != NULL);
+    fpm_append(fp, filename);
     return fp;
 }
 
 void __cstl_fclose(FILE *fp) {
+    fpm_erase(fp);
     fclose(fp);
 }
 
+
 char *__cstl_get_line(FILE *fp) {
-#define _MAX_LINE_SIZE 65536*2*2 // 256KB
-    char line[_MAX_LINE_SIZE] = {0};
-    int c = 0;
-    size_t i = 0;
+    long start = ftell(fp);
+    if (start < 0) return NULL;
+
+    size_t len = 0;
+    int c;
+    int found_any = 0;
     while ((c = fgetc(fp)) != EOF) {
+        found_any = 1;
         if (c == '\n') break;
-        if (i + 1 < _MAX_LINE_SIZE) {
-            line[i++] = (char) c;
+        len++;
+    }
+    if (!found_any && len == 0) return NULL;
+
+    if (fseek(fp, start, SEEK_SET) != 0) return NULL;
+
+    char *buf = (char *) calloc(len + 1, sizeof(char));
+    if (!buf) return NULL;
+
+    for (size_t i = 0; i < len; i++) {
+        int ch = fgetc(fp);
+        if (ch == EOF) {
+            free(buf);
+            return NULL;
         }
+        buf[i] = (char) ch;
     }
-    if (i == 0) {
-        return NULL;
-    }
-    line[i] = '\0';
-    char *ret = (char *) calloc(i + 1, sizeof(char));
-    memcpy(ret, line, i);
-    return ret;
+    (void) fgetc(fp);
+    return buf;
 }
 
 char *__cstl_fread_all(FILE *fp) {
@@ -6751,6 +7001,17 @@ char *__cstl_fread_all(FILE *fp) {
     return buf;
 }
 
+FILE *__cstl_fwrite_all(FILE *fp, const char *buf) {
+    char *filepath = fpm_get(fp);
+    __cstl_fclose(fp);
+    FILE *new_fp = __cstl_fopen(filepath, "wt");
+    fpm_append(new_fp, filepath);
+    if (!new_fp) return false;
+    size_t len = strlen(buf);
+    fwrite(buf, 1, len, new_fp) == len;
+    return new_fp;
+}
+
 typedef FILE *(*cstl_fopen_fn)(const char *filename, const char *mode);
 
 typedef void (*cstl_fclose_fn)(FILE *fp);
@@ -6759,11 +7020,16 @@ typedef char *(*cstl_getline_fn)(FILE *fp);
 
 typedef char *(*cstl_fread_all_fn)(FILE *fp);
 
+typedef char *(*cstl_readall_fn)(FILE *fp, size_t *outsize);
+
+typedef FILE * (*cstl_fwrite_all_fn)(FILE *fp, const char *buf);
+
 typedef struct FSTREAM {
     cstl_fopen_fn open;
     cstl_fclose_fn close;
     cstl_getline_fn getline;
     cstl_fread_all_fn read;
+    cstl_fwrite_all_fn write;
 } FSTREAM;
 
 FSTREAM fstream = {
@@ -6771,6 +7037,7 @@ FSTREAM fstream = {
     __cstl_fclose,
     __cstl_get_line,
     __cstl_fread_all,
+    __cstl_fwrite_all
 };
 
 
@@ -6780,6 +7047,368 @@ FSTREAM fstream = {
 /* END    fstream.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  filesystem.h                   (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+
+/* [already included: zalloc.h] */
+/* [already included: tracer.h] */
+/* [already included: crossplatform.h] */
+
+#if defined(OCSTL_OS_WINDOWS)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#define CSTL_PATH_SEP '\\'
+#else
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <limits.h>
+
+#define CSTL_PATH_SEP '/'
+#endif
+
+// Windows는 '/'와 '\\' 둘 다 구분자, POSIX는 '/'만
+static bool __cstl_is_sep(char c) {
+#if defined(OCSTL_OS_WINDOWS)
+    return c == '/' || c == '\\';
+#else
+    return c == '/';
+#endif
+}
+
+// Python: os.path.exists(path)
+static bool __cstl_exists(char *path) {
+#if defined(OCSTL_OS_WINDOWS)
+    DWORD attrs = GetFileAttributesA(path);
+    return attrs != INVALID_FILE_ATTRIBUTES;
+#else
+    struct stat st;
+    return stat(path, &st) == 0;
+#endif
+}
+
+// Python: os.path.join(path1, path2)
+// path2가 absolute면 path1은 버림
+static char *__cstl_join(char *path1, char *path2) {
+    if (!path1) path1 = "";
+    if (!path2) path2 = "";
+
+    // path2가 absolute인지 판정
+    bool p2_abs = false;
+    if (path2[0] != '\0') {
+        if (__cstl_is_sep(path2[0])) p2_abs = true;
+#if defined(OCSTL_OS_WINDOWS)
+        // Windows drive letter: "C:foo" 이런 형태도 absolute로 취급
+        if (isalpha((unsigned char) path2[0]) && path2[1] == ':') p2_abs = true;
+#endif
+    }
+    if (p2_abs) {
+        size_t l = strlen(path2);
+        char *ret = (char *) malloc(l + 1);
+        memcpy(ret, path2, l + 1);
+        return ret;
+    }
+
+    size_t l1 = strlen(path1);
+    size_t l2 = strlen(path2);
+
+    // 빈 path1이면 path2만
+    if (l1 == 0) {
+        char *ret = (char *) malloc(l2 + 1);
+        memcpy(ret, path2, l2 + 1);
+        return ret;
+    }
+
+    bool need_sep = !__cstl_is_sep(path1[l1 - 1]);
+    size_t total = l1 + (need_sep ? 1 : 0) + l2;
+    char *ret = (char *) malloc(total + 1);
+
+    memcpy(ret, path1, l1);
+    size_t pos = l1;
+    if (need_sep) ret[pos++] = CSTL_PATH_SEP;
+    memcpy(ret + pos, path2, l2);
+    ret[pos + l2] = '\0';
+    return ret;
+}
+
+// Python: os.path.basename(path)
+// "/foo/bar" -> "bar", "/foo/bar/" -> ""
+static char *__cstl_basename(char *path) {
+    size_t len = strlen(path);
+    size_t start = 0;
+    for (size_t i = 0; i < len; i++) {
+        if (__cstl_is_sep(path[i])) start = i + 1;
+    }
+    size_t base_len = len - start;
+    char *ret = (char *) malloc(base_len + 1);
+    memcpy(ret, path + start, base_len);
+    ret[base_len] = '\0';
+    return ret;
+}
+
+// Python: os.path.splitext(path)
+// "file.tar.gz" -> ("file.tar", ".gz")
+// "/path/.hidden" -> ("/path/.hidden", "")  (leading dot은 ext가 아님)
+// 반환값: ret[0]=root, ret[1]=ext. free(ret) 한 번이면 됨.
+static char **__cstl_splitext(char *path) {
+    size_t len = strlen(path);
+
+    // basename 시작 위치 찾기
+    size_t base_start = 0;
+    for (size_t i = 0; i < len; i++) {
+        if (__cstl_is_sep(path[i])) base_start = i + 1;
+    }
+
+    // basename의 leading dot 스킵
+    size_t nonleading = base_start;
+    while (nonleading < len && path[nonleading] == '.') nonleading++;
+
+    // 그 뒤로 마지막 '.' 찾기
+    size_t dot_pos = (size_t) -1;
+    for (size_t i = nonleading; i < len; i++) {
+        if (path[i] == '.') dot_pos = i;
+    }
+
+    size_t root_len = (dot_pos == (size_t) -1) ? len : dot_pos;
+    size_t ext_len = (dot_pos == (size_t) -1) ? 0 : (len - dot_pos);
+
+    // 단일 할당: 2 포인터 + root + '\0' + ext + '\0'
+    size_t total = 2 * sizeof(char *) + root_len + 1 + ext_len + 1;
+    char **ret = (char **) malloc(total);
+    char *buf = (char *) ret + 2 * sizeof(char *);
+
+    memcpy(buf, path, root_len);
+    buf[root_len] = '\0';
+    memcpy(buf + root_len + 1, path + root_len, ext_len);
+    buf[root_len + 1 + ext_len] = '\0';
+
+    ret[0] = buf;
+    ret[1] = buf + root_len + 1;
+    return ret;
+}
+
+// Python: os.path.getsize(path)
+// 에러 시 0 반환 (Python은 raise, 여기선 C 스타일)
+static size_t __cstl_getsize(char *path) {
+#if defined(OCSTL_OS_WINDOWS)
+    WIN32_FILE_ATTRIBUTE_DATA attr;
+    if (!GetFileAttributesExA(path, GetFileExInfoStandard, &attr)) return 0;
+    ULARGE_INTEGER sz;
+    sz.LowPart = attr.nFileSizeLow;
+    sz.HighPart = attr.nFileSizeHigh;
+    return (size_t) sz.QuadPart;
+#else
+    struct stat st;
+    if (stat(path, &st) != 0) return 0;
+    return (size_t) st.st_size;
+#endif
+}
+
+// Python: os.makedirs(path) with exist_ok=True
+// 중간 디렉토리 전부 생성, 이미 있어도 무시
+static void __cstl_makedirs(char *path) {
+    size_t len = strlen(path);
+    if (len == 0) return;
+
+    char *tmp = (char *) malloc(len + 1);
+    memcpy(tmp, path, len + 1);
+
+    // 각 구분자 위치에서 하나씩 mkdir 시도
+    for (size_t i = 1; i < len; i++) {
+        if (__cstl_is_sep(tmp[i])) {
+            char save = tmp[i];
+            tmp[i] = '\0';
+#if defined(OCSTL_OS_WINDOWS)
+            CreateDirectoryA(tmp, NULL);
+#else
+            mkdir(tmp, 0755);
+#endif
+            tmp[i] = save;
+        }
+    }
+
+    // 마지막 component
+#if defined(OCSTL_OS_WINDOWS)
+    CreateDirectoryA(tmp, NULL);
+#else
+    mkdir(tmp, 0755);
+#endif
+
+    free(tmp);
+}
+
+// Python: os.remove(path) - 파일만 삭제
+static void __cstl_remove(char *path) {
+#if defined(OCSTL_OS_WINDOWS)
+    DeleteFileA(path);
+#else
+    unlink(path);
+#endif
+}
+
+// Python: os.rename(old, new)
+static void __cstl_rename(char *oldpath, char *newpath) {
+    rename(oldpath, newpath);
+}
+
+static char *__cstl_dirname(char *path) {
+    size_t len = strlen(path);
+    // 마지막 separator 위치 찾기
+    size_t last_sep = (size_t) -1;
+    for (size_t i = 0; i < len; i++) {
+        if (__cstl_is_sep(path[i])) last_sep = i;
+    }
+
+    if (last_sep == (size_t) -1) {
+        // separator 없음 → 빈 문자열
+        char *ret = (char *) malloc(1);
+        ret[0] = '\0';
+        return ret;
+    }
+
+    // root 보존: "/" → "/", "C:\\" → "C:\\"
+    size_t dir_len = last_sep;
+    if (dir_len == 0) dir_len = 1; // POSIX root "/"
+#if defined(OCSTL_OS_WINDOWS)
+    // "C:\\foo" → last_sep=2, dir_len=3 ("C:\\")
+    if (last_sep == 2 && isalpha((unsigned char) path[0]) && path[1] == ':') {
+        dir_len = 3;
+    }
+#endif
+
+    char *ret = (char *) malloc(dir_len + 1);
+    memcpy(ret, path, dir_len);
+    ret[dir_len] = '\0';
+    return ret;
+}
+
+// Python: os.path.abspath(path)
+// 존재하지 않는 경로도 처리 (realpath는 NULL 반환하므로 fallback)
+static char *__cstl_abspath(char *path) {
+    if (!path) path = "";
+#if defined(OCSTL_OS_WINDOWS)
+    DWORD len = GetFullPathNameA(path, 0, NULL, NULL);
+    if (len == 0) {
+        char *ret = (char *) malloc(strlen(path) + 1);
+        memcpy(ret, path, strlen(path) + 1);
+        return ret;
+    }
+    char *ret = (char *) malloc(len);
+    GetFullPathNameA(path, len, ret, NULL);
+    return ret;
+#else
+    // realpath가 해결해주면 그걸 씀
+    char resolved[PATH_MAX];
+    if (realpath(path, resolved)) {
+        size_t l = strlen(resolved);
+        char *ret = (char *) malloc(l + 1);
+        memcpy(ret, resolved, l + 1);
+        return ret;
+    }
+    // Fallback: 경로가 존재하지 않는 경우
+    // - absolute면 그대로 복사
+    // - relative면 getcwd + join
+    if (path[0] == '/') {
+        size_t l = strlen(path);
+        char *ret = (char *) malloc(l + 1);
+        memcpy(ret, path, l + 1);
+        return ret;
+    }
+    char cwd[PATH_MAX];
+    if (!getcwd(cwd, sizeof cwd)) {
+        size_t l = strlen(path);
+        char *ret = (char *) malloc(l + 1);
+        memcpy(ret, path, l + 1);
+        return ret;
+    }
+    return __cstl_join(cwd, path);
+#endif
+}
+
+// Python: os.path.isdir(path)
+static bool __cstl_is_dir(char *path) {
+#if defined(OCSTL_OS_WINDOWS)
+    DWORD a = GetFileAttributesA(path);
+    return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY);
+#else
+    struct stat st;
+    if (stat(path, &st) != 0) return false;
+    return S_ISDIR(st.st_mode);
+#endif
+}
+
+// Python: os.path.isfile(path) - regular file만
+static bool __cstl_is_file(char *path) {
+#if defined(OCSTL_OS_WINDOWS)
+    DWORD a = GetFileAttributesA(path);
+    return a != INVALID_FILE_ATTRIBUTES && !(a & FILE_ATTRIBUTE_DIRECTORY);
+#else
+    struct stat st;
+    if (stat(path, &st) != 0) return false;
+    return S_ISREG(st.st_mode);
+#endif
+}
+
+typedef bool (*cstl_exists_fn)(char *path);
+
+typedef char *(*cstl_join_fn)(char *path1, char *path2);
+
+typedef char *(*cstl_basename_fn)(char *path);
+
+typedef char **(*cstl_splitext_fn)(char *path);
+
+typedef size_t (*cstl_getsize_fn)(char *path);
+
+typedef void (*cstl_makedirs_fn)(char *path);
+
+typedef void (*cstl_remove_fn)(char *path);
+
+typedef void (*cstl_rename_fn)(char *oldpath, char *newpath);
+
+typedef char *(*cstl_dirname_fn)(char *path);
+
+typedef char *(*cstl_abspath_fn)(char *path);
+
+typedef bool (*cstl_is_dir_fn)(char *path);
+
+typedef bool (*cstl_is_file_fn)(char *path);
+
+typedef struct {
+    cstl_exists_fn exists;
+    cstl_join_fn join;
+    cstl_basename_fn basename;
+    cstl_splitext_fn splitext;
+    cstl_getsize_fn getsize;
+    cstl_makedirs_fn makedirs;
+    cstl_remove_fn remove;
+    cstl_rename_fn rename;
+    cstl_dirname_fn dirname;
+    cstl_abspath_fn abspath;
+    cstl_is_dir_fn is_dir;
+    cstl_is_file_fn is_file;
+} FileSystem;
+
+static FileSystem fs = {
+    __cstl_exists,
+    __cstl_join,
+    __cstl_basename,
+    __cstl_splitext,
+    __cstl_getsize,
+    __cstl_makedirs,
+    __cstl_remove,
+    __cstl_rename,
+    __cstl_dirname,
+    __cstl_abspath,
+    __cstl_is_dir,
+    __cstl_is_file,
+};
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    filesystem.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -7914,7 +8543,7 @@ inline void pthread_cleanup_push(void (*routine)(void *), void *arg) {
     ReleaseMutex(_pthread_cleanup_mutex);
 }
 
-inline void pthread_cleanup_pop(int execute) {
+static void pthread_cleanup_pop(int execute) {
     if (!_pthread_cleanup_mutex)
         if (!_pthread_cleanup_mutex)
             _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
@@ -8203,6 +8832,136 @@ void pmsort(void *mem, const size_t len, const size_t size_elem,
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    bestsort.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  rsort.h                        (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/21/2026.
+//
+
+#ifndef OPENCSTL_RSORT_H
+#define OPENCSTL_RSORT_H
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <limits.h>
+
+static void rsort32(int32_t *__base, size_t n) {
+    if (__base == NULL || n <= 1) {
+        return;
+    }
+
+    int32_t *tmp = (int32_t *) malloc(n * sizeof(int32_t));
+    if (tmp == NULL) {
+        return;
+    }
+
+    {
+        size_t count[256];
+        size_t pass, i;
+        uint32_t sign_mask = (uint32_t) 1u << (sizeof(int32_t) * CHAR_BIT - 1);
+
+        for (pass = 0; pass < sizeof(int32_t); ++pass) {
+            size_t shift = pass * 8;
+
+            for (i = 0; i < 256; ++i) {
+                count[i] = 0;
+            }
+
+            for (i = 0; i < n; ++i) {
+                uint32_t key = ((uint32_t) __base[i]) ^ sign_mask;
+                uint32_t digit = (key >> shift) & 0xFFu;
+                count[digit]++;
+            }
+
+            for (i = 1; i < 256; ++i) {
+                count[i] += count[i - 1];
+            }
+
+            for (i = n; i > 0; --i) {
+                uint32_t key = ((uint32_t) __base[i - 1]) ^ sign_mask;
+                uint32_t digit = (key >> shift) & 0xFFu;
+                tmp[--count[digit]] = __base[i - 1];
+            }
+
+            for (i = 0; i < n; ++i) {
+                __base[i] = tmp[i];
+            }
+        }
+    }
+
+    free(tmp);
+}
+
+static void rsort64(int64_t *__base, size_t n) {
+    if (__base == NULL || n <= 1) {
+        return;
+    }
+
+    int64_t *tmp = (int64_t *) malloc(n * sizeof(int64_t));
+    if (tmp == NULL) {
+        return;
+    }
+
+    {
+        size_t count[256];
+        size_t pass, i;
+        uint64_t sign_mask = (uint64_t) 1ULL << (sizeof(int64_t) * CHAR_BIT - 1);
+
+        for (pass = 0; pass < sizeof(int64_t); ++pass) {
+            size_t shift = pass * 8;
+
+            for (i = 0; i < 256; ++i) {
+                count[i] = 0;
+            }
+
+            for (i = 0; i < n; ++i) {
+                uint64_t key = ((uint64_t) __base[i]) ^ sign_mask;
+                uint32_t digit = (uint32_t) ((key >> shift) & 0xFFULL);
+                count[digit]++;
+            }
+
+            for (i = 1; i < 256; ++i) {
+                count[i] += count[i - 1];
+            }
+
+            for (i = n; i > 0; --i) {
+                uint64_t key = ((uint64_t) __base[i - 1]) ^ sign_mask;
+                uint32_t digit = (uint32_t) ((key >> shift) & 0xFFULL);
+                tmp[--count[digit]] = __base[i - 1];
+            }
+
+            for (i = 0; i < n; ++i) {
+                __base[i] = tmp[i];
+            }
+        }
+    }
+
+    free(tmp);
+}
+
+
+#define RSORT_STATIC_TYPECHECK(base) \
+    ((void)sizeof(char[(sizeof(*(base)) == 4 || sizeof(*(base)) == 8) ? 1 : -1]))
+
+
+#define rsort(base, n)                                                     \
+    do {                                                                   \
+        RSORT_STATIC_TYPECHECK(base);                                      \
+        if (sizeof(*(base)) == sizeof(int32_t)) {                          \
+            rsort32((int32_t *)(base), (n));                               \
+        } else {                                                           \
+            rsort64((int64_t *)(base), (n));                               \
+        }                                                                  \
+    } while (0)
+
+#endif //OPENCSTL_RSORT_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    rsort.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 // #if !defined(cstl_stable_sort)
 // #define cstl_stable_sort tsort
 // #endif
@@ -8220,14 +8979,9 @@ void pmsort(void *mem, const size_t len, const size_t size_elem,
 #define _cstl_sort_func(CONTAINER,...) _CSTL_SORT_DISPATCH(CONTAINER, ##__VA_ARGS__, NULL)
 #define _CSTL_SORT_DISPATCH(CONTAINER, FUNC, ...) _cstl_sort(CONTAINER, (void*)(FUNC))
 OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
-    size_t container_type;
     ptrdiff_t distance = 0;
-    if (__is_deque((void **) &container)) {
-        distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
-    }
+    size_t container_type = __opencstl_container_type((void **) &container, &distance);
+    if (container_type == 0) return;
 
     switch (container_type) {
         case OPENCSTL_VECTOR: {
@@ -8297,14 +9051,9 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
 #define _cstl_stable_sort_func(CONTAINER,...) _CSTL_STABLE_SORT_DISPATCH(CONTAINER, ##__VA_ARGS__, NULL)
 #define _CSTL_STABLE_SORT_DISPATCH(CONTAINER, FUNC, ...) _cstl_stable_sort(CONTAINER, (void*)(FUNC))
 OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
-    size_t container_type;
     ptrdiff_t distance = 0;
-    if (__is_deque((void **) &container)) {
-        distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
-    }
+    size_t container_type = __opencstl_container_type((void **) &container, &distance);
+    if (container_type == 0) return;
 
     switch (container_type) {
         case OPENCSTL_VECTOR: {
@@ -8420,14 +9169,9 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
 #define _cstl_is_sorted_func(CONTAINER,...) _CSTL_IS_SORTED_DISPATCH(CONTAINER, ##__VA_ARGS__, NULL)
 #define _CSTL_IS_SORTED_DISPATCH(CONTAINER, FUNC, ...) _cstl_is_sorted(CONTAINER, (void*)(FUNC))
 OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
-    size_t container_type;
     ptrdiff_t distance = 0;
-    if (__is_deque((void **) &container)) {
-        distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
-    }
+    size_t container_type = __opencstl_container_type((void **) &container, &distance);
+    if (container_type == 0) return 0;
 
     switch (container_type) {
         case OPENCSTL_VECTOR: {
@@ -8571,7 +9315,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 /* [already included: crossplatform.h] */
-static char *OPENCSTL_VERSION = "v1.2.7";
+static char *OPENCSTL_VERSION = "v1.2.8";
 
 static char *opencstl_version(void) {
     return OPENCSTL_VERSION;
@@ -8587,627 +9331,6 @@ char *opencstl_env(void) {
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    version.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  lprint.h                       (depth 1) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-
-
-/* [already included: crossplatform.h] */
-
-#if defined(OCSTL_CC_MSVC)
-static void lprint(const char *text) {
-    int len = strlen(text);
-    for (int i = 0; i < len; i++) {
-        putchar('=');
-    }
-    putchar('\n');
-    puts(text);
-    for (int i = 0; i < len; i++) {
-        putchar('=');
-    }
-    putchar('\n');
-}
-#else
-#define LPRINT_ROWS 6
-
-typedef struct {
-    char key;
-    const char *rows[LPRINT_ROWS];
-} lprint_glyph_t;
-
-static const lprint_glyph_t lprint__glyphs[] = {
-    {
-        'A', {
-            "░█████╗░",
-            "██╔══██╗",
-            "███████║",
-            "██╔══██║",
-            "██║░░██║",
-            "╚═╝░░╚═╝"
-        }
-    },
-    {
-        'B', {
-            "██████╗░",
-            "██╔══██╗",
-            "██████╦╝",
-            "██╔══██╗",
-            "██████╦╝",
-            "╚═════╝░"
-        }
-    },
-    {
-        'C', {
-            "░█████╗░",
-            "██╔══██╗",
-            "██║░░╚═╝",
-            "██║░░██╗",
-            "╚█████╔╝",
-            "░╚════╝░"
-        }
-    },
-    {
-        'D', {
-            "██████╗░",
-            "██╔══██╗",
-            "██║░░██║",
-            "██║░░██║",
-            "██████╔╝",
-            "╚═════╝░"
-        }
-    },
-    {
-        'E', {
-            "███████╗",
-            "██╔════╝",
-            "█████╗░░",
-            "██╔══╝░░",
-            "███████╗",
-            "╚══════╝"
-        }
-    },
-    {
-        'F', {
-            "███████╗",
-            "██╔════╝",
-            "█████╗░░",
-            "██╔══╝░░",
-            "██║░░░░░",
-            "╚═╝░░░░░"
-        }
-    },
-    {
-        'G', {
-            "░██████╗░",
-            "██╔════╝░",
-            "██║░░██╗░",
-            "██║░░╚██╗",
-            "╚██████╔╝",
-            "░╚═════╝░"
-        }
-    },
-    {
-        'H', {
-            "██╗░░██╗",
-            "██║░░██║",
-            "███████║",
-            "██╔══██║",
-            "██║░░██║",
-            "╚═╝░░╚═╝"
-        }
-    },
-    {
-        'I', {
-            "██╗",
-            "██║",
-            "██║",
-            "██║",
-            "██║",
-            "╚═╝"
-        }
-    },
-    {
-        'J', {
-            "░░░░░██╗",
-            "░░░░░██║",
-            "░░░░░██║",
-            "██╗░░██║",
-            "╚█████╔╝",
-            "░╚════╝░"
-        }
-    },
-    {
-        'K', {
-            "██╗░░██╗",
-            "██║░██╔╝",
-            "█████═╝░",
-            "██╔═██╗░",
-            "██║░╚██╗",
-            "╚═╝░░╚═╝"
-        }
-    },
-    {
-        'L', {
-            "██╗░░░░░",
-            "██║░░░░░",
-            "██║░░░░░",
-            "██║░░░░░",
-            "███████╗",
-            "╚══════╝"
-        }
-    },
-    {
-        'M', {
-            "███╗░░░███╗",
-            "████╗░████║",
-            "██╔████╔██║",
-            "██║╚██╔╝██║",
-            "██║░╚═╝░██║",
-            "╚═╝░░░░░╚═╝"
-        }
-    },
-    {
-        'N', {
-            "███╗░░██╗",
-            "████╗░██║",
-            "██╔██╗██║",
-            "██║╚████║",
-            "██║░╚███║",
-            "╚═╝░░╚══╝"
-        }
-    },
-    {
-        'O', {
-            "░█████╗░",
-            "██╔══██╗",
-            "██║░░██║",
-            "██║░░██║",
-            "╚█████╔╝",
-            "░╚════╝░"
-        }
-    },
-    {
-        'P', {
-            "██████╗░",
-            "██╔══██╗",
-            "██████╔╝",
-            "██╔═══╝░",
-            "██║░░░░░",
-            "╚═╝░░░░░"
-        }
-    },
-    {
-        'Q', {
-            "░██████╗░",
-            "██╔═══██╗",
-            "██║██╗██║",
-            "╚██████╔╝",
-            "░╚═██╔═╝░",
-            "░░░╚═╝░░░"
-        }
-    },
-    {
-        'R', {
-            "██████╗░",
-            "██╔══██╗",
-            "██████╔╝",
-            "██╔══██╗",
-            "██║░░██║",
-            "╚═╝░░╚═╝"
-        }
-    },
-    {
-        'S', {
-            "░██████╗",
-            "██╔════╝",
-            "╚█████╗░",
-            "░╚═══██╗",
-            "██████╔╝",
-            "╚═════╝░"
-        }
-    },
-    {
-        'T', {
-            "████████╗",
-            "╚══██╔══╝",
-            "░░░██║░░░",
-            "░░░██║░░░",
-            "░░░██║░░░",
-            "░░░╚═╝░░░"
-        }
-    },
-    {
-        'U', {
-            "██╗░░░██╗",
-            "██║░░░██║",
-            "██║░░░██║",
-            "██║░░░██║",
-            "╚██████╔╝",
-            "░╚═════╝░"
-        }
-    },
-    {
-        'V', {
-            "██╗░░░██╗",
-            "██║░░░██║",
-            "╚██╗░██╔╝",
-            "░╚████╔╝░",
-            "░░╚██╔╝░░",
-            "░░░╚═╝░░░"
-        }
-    },
-    {
-        'W', {
-            "░██╗░░░░░░░██╗",
-            "░██║░░██╗░░██║",
-            "░╚██╗████╗██╔╝",
-            "░░████╔═████║░",
-            "░░╚██╔╝░╚██╔╝░",
-            "░░░╚═╝░░░╚═╝░░"
-        }
-    },
-    {
-        'X', {
-            "██╗░░██╗",
-            "╚██╗██╔╝",
-            "░╚███╔╝░",
-            "░██╔██╗░",
-            "██╔╝╚██╗",
-            "╚═╝░░╚═╝"
-        }
-    },
-    {
-        'Y', {
-            "██╗░░░██╗",
-            "╚██╗░██╔╝",
-            "░╚████╔╝░",
-            "░░╚██╔╝░░",
-            "░░░██║░░░",
-            "░░░╚═╝░░░"
-        }
-    },
-    {
-        'Z', {
-            "██████╗░",
-            "╚════██╗",
-            "░░███╔═╝",
-            "██╔══╝░░",
-            "███████╗",
-            "╚══════╝"
-        }
-    },
-    {
-        '0', {
-            "░█████╗░",
-            "██╔══██╗",
-            "██║░░██║",
-            "██║░░██║",
-            "╚█████╔╝",
-            "░╚════╝░"
-        }
-    },
-    {
-        '1', {
-            "░░███╗░░",
-            "░████║░░",
-            "██╔██║░░",
-            "╚═╝██║░░",
-            "███████╗",
-            "╚══════╝"
-        }
-    },
-    {
-        '2', {
-            "███████╗",
-            "╚════██║",
-            "███████║",
-            "██╔════╝░░",
-            "███████╗",
-            "╚══════╝"
-        }
-    },
-    {
-        '3', {
-            "██████╗░",
-            "╚════██╗",
-            "░█████╔╝",
-            "░╚═══██╗",
-            "██████╔╝",
-            "╚═════╝░"
-        }
-    },
-    {
-        '4', {
-            "░░██╗██╗",
-            "░██╔╝██║",
-            "██╔╝░██║",
-            "███████║",
-            "╚════██║",
-            "░░░░░╚═╝"
-        }
-    },
-    {
-        '5', {
-            "███████╗",
-            "██╔════╝",
-            "██████╗░",
-            "╚════██╗",
-            "██████╔╝",
-            "╚═════╝░"
-        }
-    },
-    {
-        '6', {
-            "░█████╗░",
-            "██╔═══╝░",
-            "██████╗░",
-            "██╔══██╗",
-            "╚█████╔╝",
-            "░╚════╝░"
-        }
-    },
-    {
-        '7', {
-            "███████╗",
-            "╚════██║",
-            "░░░░██╔╝",
-            "░░░██╔╝░",
-            "░░██╔╝░░",
-            "░░╚═╝░░░"
-        }
-    },
-    {
-        '8', {
-            "░█████╗░",
-            "██╔══██╗",
-            "╚█████╔╝",
-            "██╔══██╗",
-            "╚█████╔╝",
-            "░╚════╝░"
-        }
-    },
-    {
-        '9', {
-            "░█████╗░",
-            "██╔══██╗",
-            "╚██████║",
-            "░╚═══██║",
-            "░█████╔╝",
-            "░╚════╝░"
-        }
-    },
-    {
-        '!', {
-            "██╗",
-            "██║",
-            "██║",
-            "╚═╝",
-            "██╗",
-            "╚═╝"
-        }
-    },
-    {
-        '#', {
-            "░░░██╗░██╗░",
-            "██████████╗",
-            "╚═██╔═██╔═╝",
-            "██████████╗",
-            "╚██╔═██╔══╝",
-            "░╚═╝░╚═╝░░░"
-        }
-    },
-    {
-        '$', {
-            "░███████╗",
-            "██╔██╔══╝",
-            "╚██████╗░",
-            "░╚═██╔██╗",
-            "███████╔╝",
-            "╚══════╝░"
-        }
-    },
-    {
-        '%', {
-            "██╗░██╗",
-            "╚═╝██╔╝",
-            "░░██╔╝░",
-            "░██╔╝░░",
-            "██╔╝██╗",
-            "╚═╝░╚═╝"
-        }
-    },
-    {
-        '(', {
-            "░░██╗",
-            "░██╔╝",
-            "██╔╝░",
-            "╚██╗░",
-            "░╚██╗",
-            "░░╚═╝"
-        }
-    },
-    {
-        ')', {
-            "██╗░░",
-            "╚██╗░",
-            "░╚██╗",
-            "░██╔╝",
-            "██╔╝░",
-            "╚═╝░░"
-        }
-    },
-    {
-        '-', {
-            "░░░░░░",
-            "░░░░░░",
-            "█████╗",
-            "╚════╝",
-            "░░░░░░",
-            "░░░░░░"
-        }
-    },
-    {
-        '_', {
-            "░░░░░░",
-            "░░░░░░",
-            "░░░░░░",
-            "░░░░░░",
-            "█████╗",
-            "╚════╝"
-        }
-    },
-    {
-        '=', {
-            "░░░░░░░",
-            "██████╗",
-            "╚═════╝",
-            "██████╗",
-            "╚═════╝",
-            "░░░░░░░"
-        }
-    },
-    {
-        '+', {
-            "░░░░░░░",
-            "░░██╗░░",
-            "██████╗",
-            "╚═██╔═╝",
-            "░░╚═╝░░",
-            "░░░░░░░"
-        }
-    },
-    {
-        '[', {
-            "████╗",
-            "██╔═╝",
-            "██║░░",
-            "██║░░",
-            "████╗",
-            "╚═══╝"
-        }
-    },
-    {
-        ']', {
-            "████╗",
-            "╚═██║",
-            "░░██║",
-            "░░██║",
-            "████║",
-            "╚═══╝"
-        }
-    },
-    {
-        ':', {
-            "██╗",
-            "╚═╝",
-            "░░░",
-            "░░░",
-            "██╗",
-            "╚═╝"
-        }
-    },
-    {
-        ';', {
-            "██╗",
-            "╚═╝",
-            "░░░",
-            "██╗",
-            "╚█║",
-            "░╚╝"
-        }
-    },
-    {
-        '\"', {
-            "██╗██╗",
-            "╚█║╚█║",
-            "░╚╝░╚╝",
-            "░░░░░░",
-            "░░░░░░",
-            "░░░░░░"
-        }
-    },
-    {
-        '\'', {
-            "██╗",
-            "╚█║",
-            "░╚╝",
-            "░░░",
-            "░░░",
-            "░░░"
-        }
-    },
-    {
-        '?', {
-            "░█████╗░",
-            "██╔══██╗",
-            "╚═╝███╔╝",
-            "░░░╚══╝░",
-            "░░░██╗░░",
-            "░░░╚═╝░░"
-        }
-    },
-    {
-        '/', {
-            "░░░░██╗",
-            "░░░██╔╝",
-            "░░██╔╝░",
-            "░██╔╝░░",
-            "██╔╝░░░",
-            "╚═╝░░░░"
-        }
-    },
-    {
-        ' ', {
-            "       ",
-            "       ",
-            "       ",
-            "       ",
-            "       ",
-            "       "
-        }
-    },
-};
-
-#define LPRINT__GLYPH_COUNT (int)(sizeof(lprint__glyphs) / sizeof(lprint__glyphs[0]))
-
-static const lprint_glyph_t *lprint_find(char c) {
-    for (int i = 0; i < LPRINT__GLYPH_COUNT; i++) {
-        if (lprint__glyphs[i].key == c) return &lprint__glyphs[i];
-    }
-    return NULL;
-}
-
-static void lprint(const char *text) {
-
-#ifdef OCSTL_OS_WINDOWS
-#ifndef CP_UTF8
-#define CP_UTF8 65001
-#endif
-UINT old_cp = GetConsoleOutputCP();
-SetConsoleOutputCP(CP_UTF8);
-#endif
-for (int row = 0; row<LPRINT_ROWS; row++) {
-        for (const char *p = text; *p; p++) {
-            char c = (char) toupper((unsigned char) *p);
-            const lprint_glyph_t *g = lprint_find(c);
-            if (g) {
-                fputs(g->rows[row], stdout);
-            }
-        }
-        putchar('\n');
-    }
-#ifdef OCSTL_OS_WINDOWS
-SetConsoleOutputCP(old_cp);
-#endif
-}
-#endif
-
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    lprint.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -9526,6 +9649,392 @@ static __BITSET bitset = {
 
 /* [already included: string.h] */
 
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  glob.h                         (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// cstl_glob.h — Python-style glob for OpenCSTL
+// glob(pattern) or glob(pattern, recursive)
+//
+
+#ifndef OPENCSTL_GLOB_H
+#define OPENCSTL_GLOB_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <ctype.h>
+/* [already included: crossplatform.h] */
+
+#if defined(OCSTL_OS_WINDOWS)
+#include <windows.h>
+#else
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
+// ────────────────────────────────────────────────────────────
+// Filesystem helpers
+// ────────────────────────────────────────────────────────────
+
+static bool __cstl_glob_is_sep(char c) {
+#if defined(OCSTL_OS_WINDOWS)
+    return c == '/' || c == '\\';
+#else
+    return c == '/';
+#endif
+}
+
+static bool __cstl_glob_exists_(const char *path) {
+#if defined(OCSTL_OS_WINDOWS)
+    return GetFileAttributesA(path) != INVALID_FILE_ATTRIBUTES;
+#else
+    struct stat st;
+    return stat(path, &st) == 0;
+#endif
+}
+
+static bool __cstl_glob_isdir_(const char *path) {
+#if defined(OCSTL_OS_WINDOWS)
+    DWORD a = GetFileAttributesA(path);
+    return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY);
+#else
+    struct stat st;
+    if (stat(path, &st) != 0) return false;
+    return S_ISDIR(st.st_mode);
+#endif
+}
+
+static char *__cstl_glob_join_(const char *a, const char *b) {
+    size_t la = strlen(a), lb = strlen(b);
+    bool need_sep = la > 0 && !__cstl_glob_is_sep(a[la - 1]);
+    char *r = (char *) malloc(la + (need_sep ? 1 : 0) + lb + 1);
+    memcpy(r, a, la);
+    size_t pos = la;
+    if (need_sep) {
+        r[pos++] = '/';
+    }
+    memcpy(r + pos, b, lb);
+    r[pos + lb] = '\0';
+    return r;
+}
+
+// Returns malloc'd char** (each entry malloc'd). "." and ".." excluded.
+static char **__cstl_glob_listdir_(const char *path, int *n_out) {
+    int cap = 16, cnt = 0;
+    char **names = (char **) malloc(cap * sizeof(char *));
+    *n_out = 0;
+
+#if defined(OCSTL_OS_WINDOWS)
+    size_t plen = strlen(path);
+    char *pat = (char *) malloc(plen + 3);
+    memcpy(pat, path, plen);
+    size_t pos = plen;
+    if (plen > 0 && !__cstl_glob_is_sep(path[plen - 1])) pat[pos++] = '\\';
+    pat[pos++] = '*';
+    pat[pos] = '\0';
+
+    WIN32_FIND_DATAA data;
+    HANDLE h = FindFirstFileA(pat, &data);
+    free(pat);
+    if (h == INVALID_HANDLE_VALUE) return names;
+    do {
+        if (strcmp(data.cFileName, ".") == 0 || strcmp(data.cFileName, "..") == 0) continue;
+        if (cnt >= cap) { cap *= 2; names = (char **) realloc(names, cap * sizeof(char *)); }
+        size_t nl = strlen(data.cFileName);
+        names[cnt] = (char *) malloc(nl + 1);
+        memcpy(names[cnt], data.cFileName, nl + 1);
+        cnt++;
+    } while (FindNextFileA(h, &data));
+    FindClose(h);
+#else
+    DIR *d = opendir(path);
+    if (!d) return names;
+    struct dirent *e;
+    while ((e = readdir(d))) {
+        if (strcmp(e->d_name, ".") == 0 || strcmp(e->d_name, "..") == 0) continue;
+        if (cnt >= cap) { cap *= 2; names = (char **) realloc(names, cap * sizeof(char *)); }
+        size_t nl = strlen(e->d_name);
+        names[cnt] = (char *) malloc(nl + 1);
+        memcpy(names[cnt], e->d_name, nl + 1);
+        cnt++;
+    }
+    closedir(d);
+#endif
+
+    *n_out = cnt;
+    return names;
+}
+
+// ────────────────────────────────────────────────────────────
+// Internal: single-segment fnmatch (used by walker)
+// ────────────────────────────────────────────────────────────
+
+static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
+    while (*pat) {
+        if (*pat == '*') {
+            while (*pat == '*') pat++;
+            if (!*pat) return true;
+            while (*name) {
+                if (__cstl_glob_fnmatch_(pat, name)) return true;
+                name++;
+            }
+            return false;
+        }
+        if (!*name) return false;
+
+        if (*pat == '?') {
+            pat++; name++;
+        } else if (*pat == '[') {
+            const char *p = pat + 1;
+            bool negate = false;
+            if (*p == '!' || *p == '^') { negate = true; p++; }
+            bool matched = false;
+            if (*p == ']') {
+                if (*name == ']') matched = true;
+                p++;
+            }
+            while (*p && *p != ']') {
+                if (p[1] == '-' && p[2] && p[2] != ']') {
+                    unsigned char lo = (unsigned char) p[0], hi = (unsigned char) p[2];
+                    unsigned char c = (unsigned char) *name;
+                    if (c >= lo && c <= hi) matched = true;
+                    p += 3;
+                } else {
+                    if (*name == *p) matched = true;
+                    p++;
+                }
+            }
+            if (*p != ']') return false;
+            pat = p + 1;
+            if (matched == negate) return false;
+            name++;
+        } else {
+            if (*pat != *name) return false;
+            pat++; name++;
+        }
+    }
+    return !*name;
+}
+
+static bool __cstl_glob_has_magic_(const char *s) {
+    for (; *s; s++) {
+        if (*s == '*' || *s == '?' || *s == '[') return true;
+    }
+    return false;
+}
+
+// ────────────────────────────────────────────────────────────
+// Pattern parse: split "pattern" into base dir + segment list
+// ────────────────────────────────────────────────────────────
+
+static void __cstl_glob_parse_(const char *pat,
+                               char **base_out, char ***segs_out, int *n_out) {
+    size_t plen = strlen(pat);
+    const char *rest = pat;
+    char *base;
+
+#if defined(OCSTL_OS_WINDOWS)
+    if (plen >= 2 && isalpha((unsigned char) pat[0]) && pat[1] == ':') {
+        if (plen >= 3 && __cstl_glob_is_sep(pat[2])) {
+            base = (char *) malloc(4);
+            base[0] = pat[0]; base[1] = ':'; base[2] = '/'; base[3] = '\0';
+            rest = pat + 3;
+        } else {
+            base = (char *) malloc(3);
+            base[0] = pat[0]; base[1] = ':'; base[2] = '\0';
+            rest = pat + 2;
+        }
+    } else if (plen >= 1 && __cstl_glob_is_sep(pat[0])) {
+        base = (char *) malloc(2);
+        base[0] = '/'; base[1] = '\0';
+        rest = pat + 1;
+    } else {
+        base = (char *) malloc(2);
+        base[0] = '.'; base[1] = '\0';
+    }
+#else
+    if (plen >= 1 && pat[0] == '/') {
+        base = (char *) malloc(2);
+        base[0] = '/'; base[1] = '\0';
+        rest = pat + 1;
+    } else {
+        base = (char *) malloc(2);
+        base[0] = '.'; base[1] = '\0';
+    }
+#endif
+
+    int cap = 8, n = 0;
+    char **segs = (char **) malloc(cap * sizeof(char *));
+
+    const char *start = rest;
+    for (const char *p = rest; ; p++) {
+        if (__cstl_glob_is_sep(*p) || *p == '\0') {
+            size_t sl = (size_t) (p - start);
+            if (sl > 0) {
+                if (n >= cap) { cap *= 2; segs = (char **) realloc(segs, cap * sizeof(char *)); }
+                segs[n] = (char *) malloc(sl + 1);
+                memcpy(segs[n], start, sl);
+                segs[n][sl] = '\0';
+                n++;
+            }
+            if (*p == '\0') break;
+            start = p + 1;
+        }
+    }
+
+    *base_out = base;
+    *segs_out = segs;
+    *n_out = n;
+}
+
+// ────────────────────────────────────────────────────────────
+// Walker
+// ────────────────────────────────────────────────────────────
+
+typedef struct {
+    char **items;
+    int cnt;
+    int cap;
+} __cstl_glob_result_;
+
+static void __cstl_glob_push_(__cstl_glob_result_ *r, const char *s) {
+    // +1 for NULL terminator
+    if (r->cnt + 1 >= r->cap) {
+        r->cap = r->cap ? r->cap * 2 : 16;
+        r->items = (char **) realloc(r->items, r->cap * sizeof(char *));
+    }
+    size_t l = strlen(s);
+    r->items[r->cnt] = (char *) malloc(l + 1);
+    memcpy(r->items[r->cnt], s, l + 1);
+    r->cnt++;
+}
+
+static void __cstl_glob_walk_(const char *base,
+                              char **segs, int i, int n,
+                              bool recursive,
+                              __cstl_glob_result_ *out) {
+    if (i >= n) {
+        if (__cstl_glob_exists_(base)) __cstl_glob_push_(out, base);
+        return;
+    }
+    const char *seg = segs[i];
+
+    // ** — zero or more directories (recursive only)
+    if (recursive && strcmp(seg, "**") == 0) {
+        __cstl_glob_walk_(base, segs, i + 1, n, recursive, out);
+        int dn;
+        char **dnames = __cstl_glob_listdir_(base, &dn);
+        for (int k = 0; k < dn; k++) {
+            if (dnames[k][0] != '.') {
+                char *sub = __cstl_glob_join_(base, dnames[k]);
+                if (__cstl_glob_isdir_(sub)) {
+                    __cstl_glob_walk_(sub, segs, i, n, recursive, out);
+                }
+                free(sub);
+            }
+            free(dnames[k]);
+        }
+        free(dnames);
+        return;
+    }
+
+    bool is_last = (i == n - 1);
+
+    if (!__cstl_glob_has_magic_(seg)) {
+        char *full = __cstl_glob_join_(base, seg);
+        if (is_last) {
+            if (__cstl_glob_exists_(full)) __cstl_glob_push_(out, full);
+        } else if (__cstl_glob_isdir_(full)) {
+            __cstl_glob_walk_(full, segs, i + 1, n, recursive, out);
+        }
+        free(full);
+        return;
+    }
+
+    int dn;
+    char **dnames = __cstl_glob_listdir_(base, &dn);
+    bool pat_starts_dot = (seg[0] == '.');
+    for (int k = 0; k < dn; k++) {
+        if (dnames[k][0] == '.' && !pat_starts_dot) {
+            free(dnames[k]);
+            continue;
+        }
+        if (__cstl_glob_fnmatch_(seg, dnames[k])) {
+            char *full = __cstl_glob_join_(base, dnames[k]);
+            if (is_last) {
+                __cstl_glob_push_(out, full);
+            } else if (__cstl_glob_isdir_(full)) {
+                __cstl_glob_walk_(full, segs, i + 1, n, recursive, out);
+            }
+            free(full);
+        }
+        free(dnames[k]);
+    }
+    free(dnames);
+}
+
+// ────────────────────────────────────────────────────────────
+// Public API
+// ────────────────────────────────────────────────────────────
+
+// Returns a NULL-terminated char** array. Iterate until *p == NULL.
+// Free with glob_free().
+static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
+    char *base;
+    char **segs;
+    int n_segs;
+    __cstl_glob_parse_(pattern, &base, &segs, &n_segs);
+
+    __cstl_glob_result_ r = {0};
+    __cstl_glob_walk_(base, segs, 0, n_segs, recursive, &r);
+
+    for (int i = 0; i < n_segs; i++) free(segs[i]);
+    free(segs);
+    free(base);
+
+    // Ensure space for NULL sentinel
+    if (!r.items) {
+        r.items = (char **) malloc(sizeof(char *));
+    } else if (r.cnt + 1 > r.cap) {
+        r.items = (char **) realloc(r.items, (r.cnt + 1) * sizeof(char *));
+    }
+    r.items[r.cnt] = NULL;
+
+    // Normalize paths: backslash → forward slash, strip leading "./"
+    for (int i = 0; i < r.cnt; i++) {
+        char *s = r.items[i];
+        for (char *p = s; *p; p++) {
+            if (*p == '\\') *p = '/';
+        }
+        if (s[0] == '.' && s[1] == '/') {
+            size_t l = strlen(s);
+            memmove(s, s + 2, l - 1); // includes '\0'
+        }
+    }
+    return r.items;
+}
+
+static void glob_free(char **results) {
+    if (!results) return;
+    for (char **p = results; *p; p++) free(*p);
+    free(results);
+}
+
+// Overload dispatch: glob(p) or glob(p, recursive)
+#define __CSTL_GLOB_PICK(_1, _2, NAME, ...) NAME
+#define __CSTL_GLOB_1(p)    __cstl_glob_impl_((p), false)
+#define __CSTL_GLOB_2(p, r) __cstl_glob_impl_((p), (r))
+#define glob(...) __CSTL_GLOB_PICK(__VA_ARGS__, __CSTL_GLOB_2, __CSTL_GLOB_1)(__VA_ARGS__)
+
+#endif // OPENCSTL_GLOB_H
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    glob.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**
 #define SET(TYPE)               TYPE**
@@ -9815,10 +10324,8 @@ OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
         default: {
             verify("Invalid operator");
         }
-
     }
-     return sz;
-
+    return sz;
 }
 
 // OPENCSTL_FUNC size_type _cst_shrink_to_fit(void *container) {

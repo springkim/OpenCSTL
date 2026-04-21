@@ -40,6 +40,7 @@
 #include "tracer.h"
 #include "zalloc.h"
 #include "crossplatform.h"
+
 #if defined(OCSTL_CC_CLANG)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat"
@@ -79,6 +80,7 @@
 #include "zalloc.h"
 #include "error.h"
 #include "string.h"
+
 // Contaner
 #include "deque.h"
 #include "vector.h"
@@ -95,16 +97,15 @@
 #include"mt19937.h"
 #include "chrono.h"
 #include "fstream.h"
-
+#include "filesystem.h"
 
 #include "sort.h"
 #include "logging.h"
 #include "version.h"
-#include "lprint.h"
 #include "bitset.h"
 
 #include "string.h"
-
+#include "glob.h"
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**
 #define SET(TYPE)               TYPE**
@@ -394,10 +395,8 @@ OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
         default: {
             verify("Invalid operator");
         }
-
     }
-     return sz;
-
+    return sz;
 }
 
 // OPENCSTL_FUNC size_type _cst_shrink_to_fit(void *container) {

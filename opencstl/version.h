@@ -37,7 +37,7 @@
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 #include "crossplatform.h"
-static char *OPENCSTL_VERSION = "v1.2.7";
+static char *OPENCSTL_VERSION = "v1.2.8";
 
 static char *opencstl_version(void) {
     return OPENCSTL_VERSION;

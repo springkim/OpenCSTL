@@ -38,7 +38,10 @@
 #define OPENCSTL_MT19937_H
 #include <stdint.h>
 #include <time.h>
-
+#include "defines.h"
+#include "deque.h"
+#include "list.h"
+#include "swap.h"
 #define MT64_N          312
 #define MT64_M          156
 #define MT64_MATRIX_A   0xB5026F5AA96619E9ULL
@@ -368,6 +371,16 @@ __mt19937_64_t __rng64 = {
     MT64_N
 };
 
+__mt19937_64_t __uuid64 = {0};
+
+static void __mt19937_64_uuid_seed(uint64_t seed) {
+    __uuid64.mt[0] = seed;
+    for (int i = 1; i < MT64_N; i++) {
+        __uuid64.mt[i] = 6364136223846793005ULL * (__uuid64.mt[i - 1] ^ (__uuid64.mt[i - 1] >> 62)) + (uint64_t) i;
+    }
+    __uuid64.index = MT64_N;
+}
+
 static void __mt19937_64_seed(uint64_t seed) {
     __rng64.mt[0] = seed;
     for (int i = 1; i < MT64_N; i++) {
@@ -424,7 +437,7 @@ static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
 }
 
 char *__mt19937_uuid(void) {
-    __mt19937_64_seed(time(NULL));
+    __mt19937_64_uuid_seed(time(NULL));
     static char buf[37];
     static const char hex[] = "0123456789abcdef";
 
@@ -459,6 +472,82 @@ char *__mt19937_uuid(void) {
     return buf;
 }
 
+OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+
+    for (size_t i = length - 1; i > 0; i--) {
+        size_t rng_idx = __mt19937_64_next() % (i + 1);
+        swap((char *)(*container) + i * type_size, (char *)(*container) + rng_idx * type_size, type_size);
+    }
+}
+
+OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
+    ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
+    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
+    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+
+    for (size_t i = length - 1; i > 0; i--) {
+        size_t rng_idx = __mt19937_64_next() % (i + 1);
+        swap((char *)(*container) + i * type_size, (char *)(*container) + rng_idx * type_size, type_size);
+    }
+}
+
+OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    size_type length = (size_type) OPENCSTL_NIDX(container, -1);
+    if (length <= 1) return;
+
+    // Copy list data to flat array
+    void *ptr = malloc(type_size * length);
+    void *it = *head;
+    for (size_type i = 0; i < length; i++) {
+        memcpy((char *) ptr + (i * type_size), it, type_size);
+        it = __cstl_list_next_prev(it, -1);
+    }
+    // Fisher-Yates shuffle on flat array
+    for (size_type i = length - 1; i > 0; i--) {
+        size_type rng_idx = __mt19937_64_next() % (i + 1);
+        swap((char *) ptr + i * type_size, (char *) ptr + rng_idx * type_size, type_size);
+    }
+    // Copy shuffled data back to list nodes
+    it = *head;
+    for (size_type i = 0; i < length; i++) {
+        memcpy(it, (char *) ptr + (i * type_size), type_size);
+        it = __cstl_list_next_prev(it, -1);
+    }
+    free(ptr);
+}
+
+
+
+void __mt19937_shuffle(void *container) {
+    size_t container_type;
+    if (__is_deque((void **) &container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            __cstl_vector_shuffle((void **) &container);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            __cstl_deque_shuffle((void **) &container);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            __cstl_list_shuffle((void **) &container);
+        }
+        break;
+        default: cstl_error("Invalid operator");
+            break;
+    }
+}
+
 typedef void (*seed_fn)(uint64_t);
 
 typedef double (*random_fn)(void);
@@ -467,18 +556,22 @@ typedef int64_t (*randint_fn)(int64_t, int64_t);
 
 typedef char *(*uuid_fn)(void);
 
+typedef void (*shuffle_fn)(void *);
+
 typedef struct {
     random_fn random;
     randint_fn randint;
     seed_fn seed;
     uuid_fn uuid;
+    shuffle_fn shuffle;
 } RANDOM;
 
 RANDOM mt19937 = {
     __mt19937_random,
     __mt19937_randint,
     __mt19937_64_seed,
-    __mt19937_uuid
+    __mt19937_uuid,
+    __mt19937_shuffle
 };
 
 #endif //OPENCSTL_MT19937_H

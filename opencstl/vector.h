@@ -349,4 +349,6 @@ OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
     OPENCSTL_NIDX(container, -2) = new_capacity;
     iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capacity), CT_VECTOR, type_size, type);
 }
+
+
 #endif

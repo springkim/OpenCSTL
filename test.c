@@ -1,15 +1,31 @@
-#include <stdio.h>
-#include <gmp.h>
+#define OPENCSTL_TRACER
+#include "opencstl/opencstl.h"
 
-int main(void) {
-    mpz_t a, b, c;
-    mpz_init(a);                    // 0으로 초기화
-    mpz_init_set_ui(b, 12345);      // unsigned long로 초기화
-    mpz_init_set_str(c, "999999999999999999999999", 10); // 문자열 + base
+int main() {
+    // fs.makedirs("./test/folder");
+    // FILE *fp = fstream.open("./test/folder/a.txt", "wt");
+    // for (int i = 0; i < 10; i++) {
+    //     fprintf(fp, "%d\n", i);
+    // }
+    // fstream.close(fp);
+    //
+    // if (fs.exists("./test/folder/a.txt")) {
+    //     puts("Exists!!");
+    // }
+    // char *basename = fs.basename("./test/folder/a.txt");
+    // puts(basename);
+    // free(basename);
 
-    mpz_add(a, b, c);               // a = b + c
-    gmp_printf("%Zd\n", a);         // %Zd로 mpz_t 출력
 
-    mpz_clears(a, b, c, NULL);      // 반드시 해제 (NULL 종결)
-    return 0;
+    char **files = glob("../*.c");
+    for (char **p = files; *p; p++) {
+        printf("%s\n", *p);
+    }
+    glob_free(files);
+
+    char **all_c = glob("../opencstl/*.h", true);
+    for (char **p = all_c; *p; p++) {
+        printf("%s\n", *p);
+    }
+    glob_free(all_c);
 }

@@ -8,8 +8,8 @@
 
 
 void cstl_vector_test(void) {
-    //DECORATE("OPENCSTL{vector} test begin");
-    lprint("VECTOR_01");
+    DECORATE("OPENCSTL{vector} test begin");
+
     VECTOR(int) arr = new_vector(int);
 
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]

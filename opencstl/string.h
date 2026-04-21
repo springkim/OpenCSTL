@@ -62,8 +62,7 @@ char **__cstl_string_split(const char *src, const char *sep, int *n) {
 }
 
 
-
-char *__cstl_string_replace(char *src, char *from,  char *to) {
+char *__cstl_string_replace(char *src, char *from, char *to) {
     int len = strlen(src);
     int from_len = strlen(from);
     int to_len = strlen(to);
@@ -233,6 +232,8 @@ bool __cstl_string_is_space(const char *src) {
     return true;
 }
 
+
+
 // ============================================================
 // function pointer types
 // ============================================================
@@ -240,7 +241,7 @@ typedef char *(*string_substr_fn)(char *, int, int);
 
 typedef char **(*string_split_fn)(const char *, const char *, int *);
 
-typedef char *(*string_replace_fn)( char *,  char *, char *);
+typedef char *(*string_replace_fn)(char *, char *, char *);
 
 typedef char *(*string_unary_fn)(const char *);
 

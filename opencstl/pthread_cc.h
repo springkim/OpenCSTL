@@ -161,7 +161,7 @@ inline void pthread_cleanup_push(void (*routine)(void *), void *arg) {
     ReleaseMutex(_pthread_cleanup_mutex);
 }
 
-inline void pthread_cleanup_pop(int execute) {
+static void pthread_cleanup_pop(int execute) {
     if (!_pthread_cleanup_mutex)
         if (!_pthread_cleanup_mutex)
             _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);

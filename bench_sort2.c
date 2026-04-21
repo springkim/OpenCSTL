@@ -1,31 +1,37 @@
 #include "opencstl/opencstl.h"
 
-typedef long long DTYPE;
+typedef char *DTYPE;
 
 //typedef double DTYPE;
 
-#define COMPARE(TYPE) int cmp(const void* a, const void* b) {return *(TYPE *) a < *(TYPE *) b ? -1 : *(TYPE *) a > *(TYPE *) b;}
+int cmp(const void *a, const void *b) {
+    return strcmp(a, b);
+}
 
-COMPARE(DTYPE);
 
 typedef int (*CMPFUNC)(const void *, const void *);
 
 int sort_test() {
     CMPFUNC compare = cmp;
 
-    DTYPE N = 5000000;
 
-    size_t ALGORITHMS = 6;
+    size_t ALGORITHMS = 5;
     size_t REPEAT = 10;
-    DTYPE *arr = (DTYPE *) calloc(N, sizeof(DTYPE));
-    for (int i = 0; i < N; i++) {
-        //arr[i] = rand() * 1.0 * rand();
-        arr[i] = rand() * rand();
-        //printf("arr[%d] = %d\n", i, arr[i]);
+
+    FILE *fp = fstream.open("../names.txt", "rt");
+
+    char *buf = fstream.read(fp);
+    int n;
+    char **arr = string.split(buf, "\n", &n);
+
+
+    DTYPE *arr2 = (DTYPE *) calloc(n, sizeof(DTYPE));
+    for (int i = 0; i < n; i++) {
+        arr2[i] = arr[i];
     }
 
 
-    DTYPE *target = (DTYPE *) calloc(N, sizeof(DTYPE));
+    DTYPE *target = (DTYPE *) calloc(n, sizeof(DTYPE));
 
 
     watch t_beg;
@@ -34,49 +40,42 @@ int sort_test() {
     double q_diff = 0;
     double t_diff = 0;
     double p_diff = 0;
-    double r_diff = 0;
+    double r_diff = -1;
     double pm_diff = 0;
     for (int i = 0; i < ALGORITHMS * REPEAT; i++) {
-        memcpy(target, arr, N * sizeof(int));;
+        memcpy(target, arr, n * sizeof(char *));;
         switch (i % ALGORITHMS) {
             case 0: {
                 t_beg = chrono.now();
-                qsort(target, N, sizeof(DTYPE), compare);
+                qsort(target, n, sizeof(DTYPE), compare);
                 t_end = chrono.now();
                 q_diff += chrono.duration(t_beg, t_end);
             };
                 break;
             case 1: {
                 t_beg = chrono.now();
-                msort(target, N, sizeof(DTYPE), compare);
+                msort(target, n, sizeof(DTYPE), compare);
                 t_end = chrono.now();
                 m_diff += chrono.duration(t_beg, t_end);
             };
                 break;
             case 2: {
                 t_beg = chrono.now();
-                tsort(target, N, sizeof(DTYPE), compare);
+                tsort(target, n, sizeof(DTYPE), compare);
                 t_end = chrono.now();
                 t_diff += chrono.duration(t_beg, t_end);
             };
                 break;
             case 3: {
                 t_beg = chrono.now();
-                pdqsort(target, N, sizeof(DTYPE), compare);
+                pdqsort(target, n, sizeof(DTYPE), compare);
                 t_end = chrono.now();
                 p_diff += chrono.duration(t_beg, t_end);
             }
             break;
             case 4: {
                 t_beg = chrono.now();
-                rsort(target, N);
-                t_end = chrono.now();
-                r_diff += chrono.duration(t_beg, t_end);
-            }
-            break;
-            case 5: {
-                t_beg = chrono.now();
-                pmsort(target, N, sizeof(DTYPE), compare);
+                pmsort(target, n, sizeof(DTYPE), compare);
                 t_end = chrono.now();
                 pm_diff += chrono.duration(t_beg, t_end);
             }
@@ -86,7 +85,7 @@ int sort_test() {
             };
         }
 
-        if (is_sorted(target, N, sizeof(DTYPE), compare) == -1) {
+        if (is_sorted(target, n, sizeof(DTYPE), compare) == -1) {
             puts("Not sorted");
         }
     }
