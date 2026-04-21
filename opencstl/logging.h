@@ -117,7 +117,7 @@ void __fatal_message_box(const char *msg) {
 #elif defined(OCSTL_OS_LINUX)
 void __fatal_message_box(const char *msg) {
     char cmd[512];
-    // zenity 없으면 kdialog, 둘 다 없으면 stderr
+    // zenity ?놁쑝硫?kdialog, ?????놁쑝硫?stderr
     snprintf(cmd, sizeof(cmd),
              "zenity --error --title=\"FATAL\" --text=\"%s\" 2>/dev/null"
              " || kdialog --error \"%s\" --title \"FATAL\" 2>/dev/null",
@@ -187,13 +187,13 @@ static int _logging_critical(const char *format, ...) {
 
 static int _logging_fatal(const char *format, ...) {
     va_list args;
-    char *ret;
+    int ret;
     va_start(args, format);
-    ret = __vcsprintf(format, args);
+    ret = __vcprintln(__cyan, format, args);
     va_end(args);
-    __fatal_message_box(ret);
-    exit(EXIT_FAILURE);
-    return -1;
+    // __fatal_message_box(ret);
+    // exit(EXIT_FAILURE);
+    return ret;
 }
 
 // static int _logging_message(const char *format, ...) {
@@ -218,15 +218,13 @@ typedef struct LOGGING {
     //logging_fn message;
 } LOGGING;
 
-static LOGGING logging = {
+static const LOGGING logging = {
     _logging_debug,
     _logging_info,
     _logging_warning,
     _logging_error,
     _logging_critical,
-
     _logging_fatal,
-
     //_logging_message
 };
 

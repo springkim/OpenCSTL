@@ -37,7 +37,6 @@
 #pragma once
 #if !defined(_OPENCSTL_VECTOR_H)
 #define _OPENCSTL_VECTOR_H
-#include"error.h"
 #include"zalloc.h"
 #include "van_emde_boas_tree.h"
 // ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
@@ -52,7 +51,7 @@ OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *block = calloc(header_sz + type_size, 1);
     if (block == NULL) {
-        cstl_error("Failed to allocate memory for vector");
+        mistake("Failed to allocate memory for vector");
     }
     void *ptr = ((char *) block) + header_sz;
     void **container = &ptr;
@@ -98,7 +97,7 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value)
         iveb_erase(iveb, *container);
         void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
-            cstl_error("Reallocation failed at vector assign");
+            mistake("Reallocation failed at vector assign");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
@@ -134,7 +133,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
         size_t new_capaciy = capacity * 2;
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
-            cstl_error("Reallocation failed at vector push_back");
+            mistake("Reallocation failed at vector push_back");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = new_capaciy;
@@ -146,7 +145,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
 
 OPENCSTL_FUNC void __cstl_vector_pop_back(void **container) {
     if (OPENCSTL_NIDX(container, -1) <= 0) {
-        cstl_error("No elements in cstl_vector");
+        mistake("No elements in cstl_vector");
     }
     OPENCSTL_NIDX(container, -1)--;
 }
@@ -180,7 +179,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
         size_t new_capaciy = (capacity + N) * 2;
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
-            cstl_error("Reallocation failed at vector insert");
+            mistake("Reallocation failed at vector insert");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = new_capaciy;
@@ -245,7 +244,7 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
         iveb_erase(iveb, *container);
         void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
-            cstl_error("Reallocation failed at vector resize");
+            mistake("Reallocation failed at vector resize");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
@@ -308,7 +307,7 @@ OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
         iveb_erase(iveb, *container);
         void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
-            cstl_error("Reallocation failed at vector reserve");
+            mistake("Reallocation failed at vector reserve");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
@@ -343,7 +342,7 @@ OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
     iveb_erase(iveb, *container);
     void *b = realloc((char *) *container - header_sz, header_sz + new_capacity * type_size);
     if (b == NULL) {
-        cstl_error("Reallocation failed at vector shrink_to_fit");
+        mistake("Reallocation failed at vector shrink_to_fit");
     }
     *container = ((char *) b + header_sz);
     OPENCSTL_NIDX(container, -2) = new_capacity;

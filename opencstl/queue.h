@@ -81,7 +81,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
     __cstl_vector_push_back(container, value);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -3);
+    CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -3);
 
     void *tmp = salloc(type_size);
     size_t idx = length - 1;
@@ -98,12 +98,10 @@ OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
 }
 
 OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
-    if (OPENCSTL_NIDX(container, -1) <= 0) {
-        cstl_error("No elements in cstl_priority_queue");
-    }
+    verify(OPENCSTL_NIDX(container, -1) > 0);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -3);
+    CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -3);
     memcpy(*container, ((char *) *container) + type_size * (length - 1), type_size);
     OPENCSTL_NIDX(container, -1)--;
     length--;

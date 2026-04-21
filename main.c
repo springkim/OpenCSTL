@@ -4,11 +4,10 @@
 #include <time.h>
 #define OPENCSTL_TRACER
 #include "opencstl/opencstl.h"
-#define DECORATE(STR) {int padding = 70 - strlen(STR);int margin=0;if(padding%2==1)margin=1;else margin=0;for (int i = 0; i < padding/2; i++) { putchar('#');  } printf(STR); for (int i = 0; i < padding/2+margin; i++) { putchar('#'); } putchar('\n');}
 
 
-void cstl_vector_test(void) {
-    DECORATE("OPENCSTL{vector} test begin");
+void cstl_vector_test01(void) {
+    ConsoleMSG("OpenCSTL / VECTOR TEST01");
 
     VECTOR(int) arr = new_vector(int);
 
@@ -58,7 +57,7 @@ void cstl_vector_test(void) {
 }
 
 void cstl_vector_test2(void) {
-    DECORATE("opencstl{vector 2d} test begin");
+    ConsoleMSG("OpenCSTL / VECTOR TEST02");
     VECTOR(int*) matrix = new_vector(int*);
     const size_t sz = 7;
     assign(matrix, sz);
@@ -86,18 +85,21 @@ void cstl_vector_test2(void) {
 }
 
 void cstl_vector_test3(void) {
-    DECORATE("opencstl{vector/qsort} test begin");
+    ConsoleMSG("OpenCSTL / VECTOR TEST03");
     VECTOR(int) vec = new_vector(int);
     const size_type N = 100;
     for (int i = 0; i < N; i++) {
-        int val = mt19937.randint(-N, N);
-        push_back(vec, val);
+        push_back(vec, mt19937.randint(-N, N));
     }
-
 
     pmsort(vec, size(vec), sizeof(int), LESS(int));
     for (int i = 0; i < size(vec); i++) {
-        printf("Sorted: [%d]\n", vec[i]);
+        printf("[%d]", vec[i]);
+        if (i < size(vec) - 1) {
+            putchar(',');
+        } else {
+            putchar('\n');
+        }
     }
 
 
@@ -105,8 +107,8 @@ void cstl_vector_test3(void) {
 }
 
 
-void cstl_list_test02(void) {
-    DECORATE("opencstl{list} test begin");
+void cstl_list_test01(void) {
+    ConsoleMSG("OpenCSTL / LIST TEST01");
     LIST(int) list = new_list(int);
 
     for (int i = 0; i < 10; i++) {
@@ -137,7 +139,8 @@ void cstl_list_test02(void) {
     printf("list size: %d\n", size(list));
 
     for (int i = 0; i < 50; i++) {
-        push_back(list, rand32() % 1000);
+        int val = mt19937.randint(0, 1000);
+        push_back(list, val);
     }
 
 
@@ -154,8 +157,8 @@ void cstl_list_test02(void) {
 }
 
 
-void cstl_set_test(void) {
-    DECORATE("OPENCSTL{set} test begin");
+void cstl_set_test01(void) {
+    ConsoleMSG("OpenCSTL / SET TEST01");
     SET(float) tree = new_set(float);
     for (float i = 0; i < 100; i++) {
         insert(tree, i);
@@ -176,8 +179,8 @@ void cstl_set_test(void) {
     destroy(tree);
 }
 
-void cstl_map_test(void) {
-    DECORATE("OPENCSTL{map} test begin");
+void cstl_map_test01(void) {
+    ConsoleMSG("OpenCSTL / MAP TEST01");
     MAP(int) tree = new_map(int, double);
     for (int i = 0; i < 10; i++) {
         double d = (double) i * i;
@@ -197,8 +200,8 @@ void cstl_map_test(void) {
     destroy(tree);
 }
 
-void cstl_deque_test(void) {
-    DECORATE("OPENCSTL{deque} test begin");
+void cstl_deque_test01(void) {
+    ConsoleMSG("OpenCSTL / DEQUE TEST01");
     DEQUE(int) deque = new_deque(int);
     for (int i = 0; i < 10; i++) {
         push_back(deque, i);
@@ -216,9 +219,8 @@ void cstl_deque_test(void) {
     }
     puts("");
 
-    printf("front : %d\n", deque[0]);
     printf("front : %d\n", front(deque));
-    printf("back : %lld\n", back(deque));
+    printf("back : %d\n", back(deque));
 
 
     assign(deque, 5);
@@ -240,8 +242,8 @@ void cstl_deque_test(void) {
     destroy(deque);
 }
 
-void cstl_stack_test(void) {
-    DECORATE("OPENCSTL{stack} test begin");
+void cstl_stack_test01(void) {
+    ConsoleMSG("OpenCSTL / STACK TEST01");
     STACK(int) stack = new_stack(int);
     for (int i = 0; i < 10; i++) {
         push(stack, i);
@@ -254,8 +256,8 @@ void cstl_stack_test(void) {
     destroy(stack);
 }
 
-void cstl_queue_test(void) {
-    DECORATE("OPENCSTL{queue} test begin");
+void cstl_queue_test01(void) {
+    ConsoleMSG("OpenCSTL / QUEUE TEST01");
     QUEUE(int) queue = new_queue(int);
     for (int i = 0; i < 100; i++) {
         push(queue, i);
@@ -268,8 +270,8 @@ void cstl_queue_test(void) {
     destroy(queue);
 }
 
-void cstl_priority_queue_test(void) {
-    DECORATE("OPENCSTL{priority_queue} test begin");
+void cstl_priority_queue_test01(void) {
+    ConsoleMSG("OpenCSTL / PRIORITY_QUEUE TEST01");
     QUEUE(int) queue = new_priority_queue(int);
     for (int i = 0; i < 10; i++) {
         push(queue, i);
@@ -322,8 +324,8 @@ int *dijkstra(Edge **vec, int beg) {
     return d;
 }
 
-void cstl_priority_queue_test2(void) {
-    DECORATE("OPENCSTL{priority_queue/dijkstra} test begin");
+void cstl_priority_queue_test02(void) {
+    ConsoleMSG("OpenCSTL / PRIORITY_QUEUE TEST02");
     Edge **vec = new_vector(Edge*);
     assign(vec, 7);
     for (int i = 0; i < size(vec); i++) {
@@ -350,8 +352,8 @@ void cstl_priority_queue_test2(void) {
     destroy(vec);
 }
 
-void cstl_hash_test(void) {
-    DECORATE("OPENCSTL{unordered_set} test begin");
+void cstl_unordered_set_test01(void) {
+    ConsoleMSG("OpenCSTL / UNORDERED_SET TEST01");
     UNORDERED_SET(int) h = new_unordered_set(int);
 
     for (int i = 1; i < 100; i++) {
@@ -377,64 +379,42 @@ void cstl_hash_test(void) {
     destroy(h);
 }
 
-void test01(void) {
-    cstl_vector_test();
-    cstl_vector_test2();
-    cstl_list_test02();
-    cstl_set_test();
-    cstl_map_test();
-    cstl_deque_test();
-    cstl_stack_test();
-    cstl_queue_test();
-    cstl_priority_queue_test();
-     cstl_priority_queue_test2();
-     cstl_vector_test3();
-     cstl_hash_test();
-}
-
-void test02(void) {
-    VECTOR(int) v = new_vector(int);
-
-    watch t_beg = chrono.now();
-    for (int i = 0; i < 100; i++) {
-        push_back(v, rand32() % 1000);
-    }
-
-    int *max_ptr = max_element(begin(v), end(v));
-    printf("max_ptr : %d\n", *max_ptr);
-
-    int *min_ptr = min_element(begin(v), end(v));
-    printf("min_ptr : %d\n", *min_ptr);
-
-    qsort(v,size(v), sizeof(int),LESS(int));
-
-    watch t_end = chrono.now();
-
-    if (is_sorted(v)) {
-        puts("sorted");
-    }
-
-    int val = 888;
-    fill(begin(v), end(v), val);
-    fill(begin(v), end(v), 777);
-    double ms = chrono.duration(t_beg, t_end);
-    for (int i = 0; i < size(v); i++) {
-        printf("[%4d]", v[i]);
-    }
-    printf("duration : %f ms\n", ms);
-    printf("%s\n", opencstl_version());
-    destroy(v);
-}
-
-void test_opencstl_unordered_set(void) {
-    srand(21);
+void cstl_unordered_set_test02(void) {
+    ConsoleMSG("OpenCSTL / UNORDERED_SET TEST02");
     UNORDERED_SET(int) v = new_unordered_set(int);
-    for (int i = 0; i < 50000000; ++i) {
-        insert(v, rand());
+    watch t_beg = chrono.now();
+    for (int i = 0; i < 5000000; ++i) {
+        insert(v, mt19937.randint(0,10000000));
     }
+    watch t_end = chrono.now();
     printf("size: %d\n", size(v));
+    double ms = chrono.duration(t_beg, t_end);
+    printf("duration : %f ms\n", ms);
     destroy(v);
 }
+
+void test01(void) {
+    cstl_vector_test01();
+    cstl_vector_test2();
+    cstl_vector_test3();
+    cstl_list_test01();
+
+    cstl_set_test01();
+    cstl_map_test01();
+
+
+    cstl_deque_test01();
+    cstl_stack_test01();
+    cstl_queue_test01();
+    cstl_priority_queue_test01();
+
+
+    cstl_priority_queue_test02();
+
+    cstl_unordered_set_test01();
+    cstl_unordered_set_test02();
+}
+
 
 void test03(void) {
     FILE *fp = fstream.open("../words_random.txt", "r");
@@ -463,89 +443,20 @@ void test04(void) {
     free(file);
 }
 
-struct Point {
-    int x, y;
-};
-
-int cmp_point(const void *a, const void *b) {
-    struct Point *p = (struct Point *) a;
-    struct Point *q = (struct Point *) b;
-    return p->x - q->x;
-}
-
-void test_sort(void) {
-    //VECTOR(int) v = new_vector(int);
-    //DEQUE(int) v = new_deque(int);
-    //LIST(int) v = new_list(int);
-
-    VECTOR(struct Point) v = new_vector(struct Point);
-
-    for (int i = 0; i < 50; i++) {
-        //push_back(v, rand32() % 1000);
-        struct Point p = {
-            rand32() % 1000,
-            rand32() % 1000,
-        };
-        push_back(v, p);
-    }
-    stable_sort(v, cmp_point);
-    // for (int *it = begin(v); it != end(v); it= next(it)) {
-    //     printf("[%3d]", *it);
-    // }
-    // for (int *it = begin(v); it != end(v); it++) {
-    //     printf("[%3d]", *it);
-    // }
-    for (struct Point *it = begin(v); it != end(v); it++) {
-        printf("[%3d](%3d)", it->x, it->y);
-    }
-    puts("");
-    destroy(v);
-    exit(0);
-}
-
-// #include<limits.h>
-//
-//
-// #define numeric_limits(TYPE)    opencstl_nl_##TYPE
-//
-// typedef struct {
-//     int max;
-//     int min;
-// } opencstl_nl_int_t;
-//
-// opencstl_nl_int_t opencstl_nl_int = {
-//     INT_MAX,
-//     INT_MIN
-// };
 
 int main(void) {
-    // printf("%d\n",numeric_limits(int).max);
-    // return 0;
 
-    // test_sort();
-    // test02();
-    // return 0;
 
     logging.info(opencstl_env());
+    logging.info(opencstl_version());
 
-    //cstl_error("Error message");
+    //verify("Error message");
 
     test01();
-    //cstl_priority_queue_test();
-    test02();
-    // logging.debug("debug message");
-    // logging.info("info message");
-    // logging.warning("warning message");
-    // logging.error("error message");
-    //logging.critical("critical message");
-    //logging.fatal("fatal message");
-    logging.info("message");
-
-
-    puts(mt19937.uuid());
 
     // float a = 0;
     // __auto_type b = 1;
+    //auto b = 1;
 
     return 0;
 }

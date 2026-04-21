@@ -86,10 +86,7 @@ OPENCSTL_FUNC void *_cstl_max_element(void *_begin, void *_end, _OpenCSTLCompare
         if (_cmp == NULL) {
             _cmp = _memcmp_funcs[tm->type_size];
         }
-        if (_cmp == NULL) {
-            cstl_error("Compare function is NULL");
-            return _end;
-        }
+        verify(_cmp != NULL);
     }
 
     void *max_it = _begin;
@@ -117,10 +114,7 @@ OPENCSTL_FUNC void *_cstl_min_element(void *_begin, void *_end, _OpenCSTLCompare
         if (_cmp == NULL) {
             _cmp = _memcmp_funcs[tm->type_size];
         }
-        if (_cmp == NULL) {
-            cstl_error("Compare function is NULL");
-            return _end;
-        }
+        verify(_cmp != NULL);
     }
 
     void *min_it = _begin;

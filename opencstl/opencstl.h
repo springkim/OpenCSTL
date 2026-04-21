@@ -81,7 +81,6 @@ extern "C" {
 // #endif
 // #endif
 #include "zalloc.h"
-#include "error.h"
 #include "string.h"
 
 // Contaner
@@ -96,7 +95,6 @@ extern "C" {
 #include "algorithm.h"
 
 #include "compare.h"
-#include "random.h"
 #include"mt19937.h"
 #include "chrono.h"
 #include "fstream.h"
@@ -109,6 +107,8 @@ extern "C" {
 
 #include "string.h"
 #include "glob.h"
+#include "msg.h"
+#include "mt19937.h"
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**
 #define SET(TYPE)               TYPE**
@@ -192,7 +192,7 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             if (argc >= 3) {
-                cstl_error("Not implemented");
+                mistake("Not implemented");
             } else {
                 if (argc == 1) {
                     param2 = NULL;
@@ -200,16 +200,16 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
                 __cstl_vector_assign((void **) container, *(int *) param1, param2);
             }
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             if (argc == 1)param2 = NULL;
             __cstl_deque_assign((void **) container, *(int *) param1, param2);
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -236,12 +236,12 @@ OPENCSTL_FUNC void _cstl_push(void *container, ...) {
         case OPENCSTL_QUEUE: {
             __cstl_deque_push_back((void **) container, value);
         }
-            break;
+        break;
         case OPENCSTL_PRIORITY_QUEUE: {
             __cstl_priority_queue_push((void **) container, value);
         }
-            break;
-        default: cstl_error("Invalid operator");
+        break;
+        default: mistake("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
@@ -271,16 +271,16 @@ OPENCSTL_FUNC void _cstl_push_back(void *container, ...) {
         case OPENCSTL_VECTOR: {
             __cstl_vector_push_back((void **) container, param1);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             __cstl_list_push_back_front((void **) container, param1, -1, 0);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             __cstl_deque_push_back((void **) container, param1);
         }
-            break;
-        default: cstl_error("Invalid operator");
+        break;
+        default: mistake("Invalid operator");
             break;
     }
 
@@ -307,12 +307,12 @@ OPENCSTL_FUNC void _cstl_push_front(void *container, ...) {
         case OPENCSTL_LIST: {
             __cstl_list_push_back_front((void **) container, param1, 0, -1);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             __cstl_deque_push_front((void **) container, param1);
         }
-            break;
-        default: cstl_error("Invalid operator");
+        break;
+        default: mistake("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
@@ -330,16 +330,16 @@ OPENCSTL_FUNC void _cstl_pop(void *container) {
         case OPENCSTL_STACK: {
             __cstl_deque_pop_back((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_QUEUE: {
             __cstl_deque_pop_front((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_PRIORITY_QUEUE: {
             __cstl_priority_queue_pop((void **) container);
         }
-            break;
-        default: cstl_error("Invalid operator");
+        break;
+        default: mistake("Invalid operator");
             break;
     }
 }
@@ -356,15 +356,15 @@ OPENCSTL_FUNC void _cstl_pop_back(void *container) {
         case OPENCSTL_VECTOR: {
             __cstl_vector_pop_back((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             __cstl_list_pop_back_front((void **) container, -1, 0);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             __cstl_deque_pop_back((void **) container);
         }
-            break;
+        break;
     }
 }
 
@@ -381,22 +381,22 @@ OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_max_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             sz = __cstl_list_max_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_max_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             sz = __cstl_hashtable_capacity((void **) container);
         }
-            break;
+        break;
         default: {
-            verify("Invalid operator");
+            mistake("Invalid operator");
         }
     }
     return sz;
@@ -443,11 +443,11 @@ OPENCSTL_FUNC void _cstl_pop_front(void *container) {
         case OPENCSTL_LIST: {
             __cstl_list_pop_back_front((void **) container, 0, -1);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             __cstl_deque_pop_front((void **) container);
         }
-            break;
+        break;
     }
 }
 
@@ -465,26 +465,26 @@ OPENCSTL_FUNC size_type _cstl_size(void *container) {
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             sz = __cstl_list_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             sz = __cstl_tree_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             sz = __cstl_hashtable_size((void **) container);
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
     return sz;
@@ -506,17 +506,17 @@ OPENCSTL_FUNC size_type _cstl_capacity(void *container) {
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_capacity((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_capacity((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             sz = __cstl_hashtable_capacity((void **) container);
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
     return sz;
@@ -549,43 +549,43 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
             if (argc == 2)__cstl_vector_insert((void **) container, param1, 1, param2);
             else __cstl_vector_insert((void **) container, param1, *(int *) param2, param3);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             if (argc == 2)__cstl_list_insert((void **) container, (void **) param1, 1, param2);
             else __cstl_list_insert((void **) container, (void **) param1, *(int *) param2, param3);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             if (argc == 2)__cstl_deque_insert((void **) container, param1, 1, param2);
             else __cstl_deque_insert((void **) container, param1, *(int *) param2, param3);
         }
-            break;
+        break;
         case OPENCSTL_MAP: {
             if (argc == 2) __cstl_tree_insert((void **) container, param1, param2);
             else
-                cstl_error("Invalid operation");
+                mistake("Invalid operation");
         }
-            break;
+        break;
         case OPENCSTL_SET: {
             if (argc == 1) __cstl_tree_insert((void **) container, param1,NULL);
             else
-                cstl_error("Invalid operation");
+                mistake("Invalid operation");
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_MAP: {
             if (argc == 2)__cstl_hashtable_insert((void **) container, param1, param2);
             else
-                cstl_error("Invalid operation");
+                mistake("Invalid operation");
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET: {
             if (argc == 1) {
                 __cstl_hashtable_insert((void **) container, param1,NULL);
             } else
-                cstl_error("Invalid operation");
+                mistake("Invalid operation");
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
 
@@ -618,14 +618,14 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
                 __cstl_vector_erase((void **) container, param1, &param2);
             } else __cstl_vector_erase((void **) container, param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             if (argc == 1) {
                 param2 = cstl_next(*(void**)param1);
                 __cstl_list_erase((void **) container, (void **) param1, (void **) &param2);
             } else __cstl_list_erase((void **) container, (void **) param1, (void **) param2);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             if (argc == 1) {
                 param2 = (*(char **) param1) + OPENCSTL_NIDX((void**)container,
@@ -634,18 +634,18 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
                 __cstl_deque_erase((void **) container, param1, &param2);
             } else __cstl_deque_erase((void **) container, param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_MAP:
         case OPENCSTL_SET: {
             __cstl_tree_erase((void **) container, (void **) *(void **) param1);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             __cstl_hashtable_erase((void **) container, *(void **) param1);
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -675,18 +675,18 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
             if (argc == 1)param2 = NULL;
             __cstl_vector_resize((void **) container, *(int *) param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             if (argc == 1)param2 = NULL;
             __cstl_list_resize((void **) container, *(int *) param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             if (argc == 1)param2 = NULL;
             __cstl_deque_resize((void **) container, *(int *) param1, &param2);
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -705,31 +705,31 @@ OPENCSTL_FUNC void _cstl_clear(void *container) {
         case OPENCSTL_VECTOR: {
             __cstl_vector_clear((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             __cstl_list_clear((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_STACK:
         case OPENCSTL_QUEUE:
         case OPENCSTL_DEQUE: {
             __cstl_deque_clear((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             __cstl_tree_clear((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             __cstl_hashtable_clear((void **) container);
         }
-            break;
+        break;
         default: {
-            cstl_error("Invalid operation");
+            mistake("Invalid operation");
         }
-            break;
+        break;
     }
 }
 
@@ -747,29 +747,29 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             sz = __cstl_list_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             sz = __cstl_tree_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_STACK:
         case OPENCSTL_QUEUE:
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             sz = __cstl_hashtable_size((void **) container);
         }
-            break;
+        break;
         default: {
-            cstl_error("Invalid operation");
+            mistake("Invalid operation");
         };
     }
     return sz ? false : true;
@@ -787,32 +787,32 @@ OPENCSTL_FUNC void _cstl_free(void *container) {
         case OPENCSTL_VECTOR: {
             __cstl_vector_free((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             __cstl_list_free((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_STACK:
         case OPENCSTL_QUEUE:
         case OPENCSTL_DEQUE: {
             __cstl_deque_free((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             __cstl_tree_free((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_PRIORITY_QUEUE: {
             __cstl_vector_free((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             __cstl_hashtable_free((void **) container);
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
 }
@@ -842,30 +842,30 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
             if (argc == 1) return __cstl_vector_find((void **) container, container, param1);
             else return __cstl_vector_find((void **) container, param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             if (argc == 1)
                 return __cstl_list_find((void **) container, (void **) &OPENCSTL_NIDX((void**)container, 0),
                                         param1);
             else return __cstl_list_find((void **) container, (void **) param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             if (argc == 1) return __cstl_deque_find((void **) container, container, param1);
             else return __cstl_deque_find((void **) container, param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_MAP:
         case OPENCSTL_SET: {
             return __cstl_tree_find((void **) container, param1);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             return __cstl_hashtable_find((void **) container, param1);
         }
-            break;
-        default: cstl_error("Invalid operator");
+        break;
+        default: mistake("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
@@ -886,7 +886,7 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
 
     size_t container_type;
     if (__is_deque((void **) container)) {
-        cstl_error("Invalid operation");
+        mistake("Invalid operation");
     }
     container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 
@@ -896,19 +896,19 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
                 __cstl_vector_reserve((void **) container, *(size_t *) param1);
             }
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             if (argc == 1) {
                 __cstl_hashtable_reserve((void **) container, *(size_t *) param1);
             }
         }
-            break;
+        break;
 
         default: {
-            cstl_error("Invalid operation");
+            mistake("Invalid operation");
         }
-            break;
+        break;
     }
     __cstl_va_end(vl);
 }
@@ -946,7 +946,7 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
 //         }
 //         break;
 //
-//         default: cstl_error("Invalid operator");
+//         default: verify("Invalid operator");
 //             break;
 //     }
 //     __cstl_va_end(vl);

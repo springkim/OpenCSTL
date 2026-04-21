@@ -43,8 +43,8 @@
 #define MSORT_ISORT_THRESH 32
 
 
-static void merge(char *arr, size_t len1, size_t len2, size_t sz,
-                  int (*cmp)(const void *, const void *), char *buf) {
+static void msort_merge(char *arr, size_t len1, size_t len2, size_t sz,
+                        CSTL_COMPARE cmp, char *buf) {
     if (cmp(arr + (len1 - 1) * sz, arr + len1 * sz) <= 0) return;
     if (len1 <= len2) {
         memcpy(buf, arr, len1 * sz);
@@ -62,7 +62,7 @@ static void merge(char *arr, size_t len1, size_t len2, size_t sz,
             d += sz;
         }
         if (c1 < e1)
-            memcpy(d, c1, (size_t)(e1 - c1));
+            memcpy(d, c1, (size_t) (e1 - c1));
     } else {
         memcpy(buf, arr + len1 * sz, len2 * sz);
         size_t i = len1, j = len2, k = len1 + len2;
@@ -81,27 +81,26 @@ static void merge(char *arr, size_t len1, size_t len2, size_t sz,
     }
 }
 
-static void msort(void *base, size_t nmemb, size_t size,
-                  int (*compar)(const void *, const void *)) {
-    if (nmemb < 2) return;
+static void msort(void *base, size_t number, size_t width, CSTL_COMPARE compare) {
+    if (number < 2) return;
     char *arr = (char *) base;
-    size_t sz = size;
-    for (size_t i = 0; i < nmemb; i += MSORT_ISORT_THRESH) {
-        size_t blk = nmemb - i;
+    size_t sz = width;
+    for (size_t i = 0; i < number; i += MSORT_ISORT_THRESH) {
+        size_t blk = number - i;
         if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
-        isort(arr + i * sz, blk, sz, compar);
+        isort(arr + i * sz, blk, sz, compare);
     }
-    char *buf = (char *) calloc(((nmemb + 1) / 2), sz);
+    char *buf = (char *) calloc(((number + 1) / 2), sz);
     if (!buf) return;
-    for (size_t width = MSORT_ISORT_THRESH; width < nmemb; width *= 2) {
-        for (size_t i = 0; i + width < nmemb; i += 2 * width) {
-            size_t len1 = width;
-            size_t len2 = nmemb - i - width;
-            if (len2 > width) len2 = width;
-            merge(arr + i * sz, len1, len2, sz, compar, buf);
+    for (size_t mb = MSORT_ISORT_THRESH; mb < number; mb *= 2) {
+        for (size_t i = 0; i + mb < number; i += 2 * mb) {
+            size_t len1 = mb;
+            size_t len2 = number - i - mb;
+            if (len2 > mb) len2 = mb;
+            msort_merge(arr + i * sz, len1, len2, sz, compare, buf);
         }
     }
     free(buf);
 }
-#undef MSORT_ISORT_THRESH
+
 #endif

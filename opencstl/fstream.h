@@ -107,7 +107,7 @@ FILE *__cstl_fopen( char *filename, const char *mode) {
 }
 
 void __cstl_fclose(FILE *fp) {
-    
+
     fpm_erase(fp);
     fclose(fp);
 }

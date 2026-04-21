@@ -290,6 +290,7 @@ cstl_free(v);
       Q(queue.h) --> OCSTL(opencstl.h)
       DQ(deque.h) --> OCSTL(opencstl.h)
       H(hashtable.h) --> OCSTL(opencstl.h)
+      MSG(msg.h) --> OCSTL(opencstl.h)
       ISORT(isort.h) --> MSORT(msort.h)
       TSORT(tsort.h) --> SORT(sort.h)
       MSORT(msort.h) --> SORT(sort.h)

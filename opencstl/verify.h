@@ -14,4 +14,10 @@ int __verify(char *expression, char *file, int line) {
                   expression, file, line);
     abort();
 }
+
+#define mistake(STR) _mistake(STR,__FILE__,__LINE__)
+
+void _mistake(char *str, char *file, int line) {
+    logging.error("Mistake failed: %s, file %s, line %d");
+}
 #endif //OPENCSTL_VERIFY_H

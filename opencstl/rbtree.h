@@ -292,7 +292,7 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t value_size = OPENCSTL_NIDX(container, -4);
     size_t type_size = key_size + value_size;
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
+    CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -2);
 
     // char *type_key = (char *) OPENCSTL_NIDX(container, -3);
     // char *type_value = (char *) OPENCSTL_NIDX(container, -5);
@@ -477,7 +477,7 @@ OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
 #endif
 
 
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
+    CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -2);
     void ***root = (void ***) *container;
     while (*root != nil) {
         int r = compare ? compare(*root, key) : memcmp(*root, key, type_size);

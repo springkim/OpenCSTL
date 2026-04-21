@@ -59,8 +59,8 @@ static inline size_t ts_minrun(size_t n) {
 }
 
 static void ts_binsort(char *arr, size_t lo, size_t hi, size_t start,
-                       size_t sz, int (*cmp)(const void *, const void *)) {
-    char sbuf[256];
+                       size_t sz, CSTL_COMPARE cmp) {
+    char sbuf[1024];
     char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
     for (size_t i = start; i < hi; i++) {
         memcpy(tmp, arr + i * sz, sz);
@@ -75,11 +75,12 @@ static void ts_binsort(char *arr, size_t lo, size_t hi, size_t start,
             memcpy(arr + left * sz, tmp, sz);
         }
     }
-    if (tmp != sbuf) free(tmp);
+    if (tmp != sbuf)
+        free(tmp);
 }
 
 static size_t ts_count_run(char *arr, size_t lo, size_t hi,
-                           size_t sz, int (*cmp)(const void *, const void *)) {
+                           size_t sz, CSTL_COMPARE cmp) {
     if (hi - lo < 2) return hi - lo;
     size_t run_hi = lo + 1;
     if (cmp(arr + run_hi * sz, arr + lo * sz) < 0) {
@@ -87,7 +88,7 @@ static size_t ts_count_run(char *arr, size_t lo, size_t hi,
                cmp(arr + (run_hi + 1) * sz, arr + run_hi * sz) < 0)
             run_hi++;
         run_hi++;
-        char rbuf[256];
+        char rbuf[1024];
         char *t = (sz <= sizeof(rbuf)) ? rbuf : (char *) malloc(sz);
         size_t a = lo, b = run_hi - 1;
         while (a < b) {
@@ -97,7 +98,8 @@ static size_t ts_count_run(char *arr, size_t lo, size_t hi,
             a++;
             b--;
         }
-        if (t != rbuf) free(t);
+        if (t != rbuf)
+            free(t);
     } else {
         while (run_hi + 1 < hi &&
                cmp(arr + (run_hi + 1) * sz, arr + run_hi * sz) >= 0)
@@ -108,7 +110,7 @@ static size_t ts_count_run(char *arr, size_t lo, size_t hi,
 }
 
 static size_t ts_gallop_right(const char *key, const char *a, size_t n,
-                              size_t sz, int (*cmp)(const void *, const void *)) {
+                              size_t sz, CSTL_COMPARE cmp) {
     if (n == 0 || cmp(key, a) < 0) return 0;
     size_t last = 0, ofs = 1;
     while (ofs < n && cmp(key, a + ofs * sz) >= 0) {
@@ -126,7 +128,7 @@ static size_t ts_gallop_right(const char *key, const char *a, size_t n,
 }
 
 static size_t ts_gallop_left(const char *key, const char *a, size_t n,
-                             size_t sz, int (*cmp)(const void *, const void *)) {
+                             size_t sz, CSTL_COMPARE cmp) {
     if (n == 0 || cmp(key, a) <= 0) return 0;
     size_t last = 0, ofs = 1;
     while (ofs < n && cmp(key, a + ofs * sz) > 0) {
@@ -144,7 +146,7 @@ static size_t ts_gallop_left(const char *key, const char *a, size_t n,
 }
 
 static void ts_merge_lo(char *base, size_t len1, size_t len2,
-                        size_t sz, int (*cmp)(const void *, const void *), char *buf) {
+                        size_t sz, CSTL_COMPARE cmp, char *buf) {
     memcpy(buf, base, len1 * sz);
     char *c1 = buf, *e1 = buf + len1 * sz;
     char *c2 = base + len1 * sz, *e2 = c2 + len2 * sz;
@@ -198,11 +200,11 @@ static void ts_merge_lo(char *base, size_t len1, size_t len2,
     }
 tail_lo:
     if (c1 < e1)
-        memcpy(d, c1, (size_t)(e1 - c1));
+        memcpy(d, c1, (size_t) (e1 - c1));
 }
 
 static void ts_merge_hi(char *base, size_t len1, size_t len2,
-                        size_t sz, int (*cmp)(const void *, const void *), char *buf) {
+                        size_t sz, CSTL_COMPARE cmp, char *buf) {
     memcpy(buf, base + len1 * sz, len2 * sz);
     size_t i = len1, j = len2;
     size_t k = len1 + len2;
@@ -221,7 +223,7 @@ static void ts_merge_hi(char *base, size_t len1, size_t len2,
 }
 
 static inline void ts_do_merge(char *arr, size_t base1, size_t len1,
-                               size_t len2, size_t sz, int (*cmp)(const void *, const void *),
+                               size_t len2, size_t sz, CSTL_COMPARE cmp,
                                char *buf) {
     size_t mid = base1 + len1;
     if (cmp(arr + (mid - 1) * sz, arr + mid * sz) <= 0) return;
@@ -232,7 +234,7 @@ static inline void ts_do_merge(char *arr, size_t base1, size_t len1,
 }
 
 static void ts_merge_collapse(char *arr, struct ts_run *stk, size_t *sp,
-                              size_t sz, int (*cmp)(const void *, const void *), char *buf) {
+                              size_t sz, CSTL_COMPARE cmp, char *buf) {
     while (*sp > 1) {
         size_t n = *sp - 2;
         int need_merge = 0;
@@ -253,7 +255,7 @@ static void ts_merge_collapse(char *arr, struct ts_run *stk, size_t *sp,
 }
 
 static void ts_merge_force(char *arr, struct ts_run *stk, size_t *sp,
-                           size_t sz, int (*cmp)(const void *, const void *), char *buf) {
+                           size_t sz, CSTL_COMPARE cmp, char *buf) {
     while (*sp > 1) {
         size_t n = *sp - 2;
         if (n > 0 && stk[n - 1].len < stk[n + 1].len) n--;
@@ -266,26 +268,25 @@ static void ts_merge_force(char *arr, struct ts_run *stk, size_t *sp,
     }
 }
 
-void tsort(void *mem, const size_t len, const size_t size_elem,
-           int (*cmp)(const void *, const void *)) {
-    if (len < 2) return;
-    char *arr = (char *) mem;
-    size_t sz = size_elem;
-    if (len < TS_MIN_MERGE) {
-        size_t run = ts_count_run(arr, 0, len, sz, cmp);
-        ts_binsort(arr, 0, len, run, sz, cmp);
+static void tsort(void *base, const size_t number, const size_t width, CSTL_COMPARE cmp) {
+    if (number < 2) return;
+    char *arr = (char *) base;
+    size_t sz = width;
+    if (number < TS_MIN_MERGE) {
+        size_t run = ts_count_run(arr, 0, number, sz, cmp);
+        ts_binsort(arr, 0, number, run, sz, cmp);
         return;
     }
-    char *buf = (char *) malloc(len * sz);
+    char *buf = (char *) malloc(number * sz);
     if (!buf) return;
     struct ts_run stk[TS_MAX_STACK];
     size_t sp = 0;
-    size_t minrun = ts_minrun(len);
+    size_t minrun = ts_minrun(number);
     size_t lo = 0;
-    while (lo < len) {
-        size_t run_len = ts_count_run(arr, lo, len, sz, cmp);
+    while (lo < number) {
+        size_t run_len = ts_count_run(arr, lo, number, sz, cmp);
         if (run_len < minrun) {
-            size_t force = len - lo;
+            size_t force = number - lo;
             if (force > minrun) force = minrun;
             ts_binsort(arr, lo, lo + force, lo + run_len, sz, cmp);
             run_len = force;

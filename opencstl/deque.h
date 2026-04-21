@@ -36,7 +36,7 @@
 #pragma once
 #if !defined(_OPENCSTL_DEQUE_H)
 #define _OPENCSTL_DEQUE_H
-#include "error.h"
+
 #include "zalloc.h"
 #include "van_emde_boas_tree.h"
 #ifdef _MSC_VER
@@ -44,10 +44,10 @@
 #pragma warning(disable:4308)
 #pragma warning(disable:4307)
 #endif
-
-
+#include "defines.h"
+#include "types.h"
 OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
-    if (OPENCSTL_NIDX(container, -1) > (size_t)INT_MAX)
+    if (OPENCSTL_NIDX(container, -1) > (size_t) INT_MAX)
         return 1;
     return 0;
 }
@@ -58,7 +58,7 @@ OPENCSTL_FUNC size_t __opencstl_container_type(void **container, ptrdiff_t *dist
     *distance = 0;
     if (iveb == NULL) return 0;
     Interval *it = iveb_find(iveb, *container);
-    if (it == NULL) return 0;  // Not an OpenCSTL container
+    if (it == NULL) return 0; // Not an OpenCSTL container
     if (it->ctype == CT_DEQUE) {
         *distance = OPENCSTL_NIDX(container, -1) + 1;
     }
@@ -69,9 +69,7 @@ OPENCSTL_FUNC size_t __opencstl_container_type(void **container, ptrdiff_t *dist
 OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *block = calloc(header_sz + type_size * 2, 1);
-    if (block == NULL) {
-        cstl_error("Failed to allocate memory for deque");
-    }
+    verify(block != NULL);
     void *ptr = (char *) block + header_sz; // 2 = capacity
     void **container = &ptr;
 
@@ -213,9 +211,7 @@ OPENCSTL_FUNC void __cstl_deque_pop_back(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
 
-    if (length <= 0) {
-        cstl_error("No elements in cstl_deque");
-    }
+    verify(length > 0);
     *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) -= 1;
 }
 
@@ -223,9 +219,7 @@ OPENCSTL_FUNC void __cstl_deque_pop_front(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
 
-    if (*(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance - type_size) <= 0) {
-        cstl_error("No elements in cstl_deque");
-    }
+    verify(*(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance - type_size) > 0);
     memcpy(*container, (char *) *container - type_size, type_size);
     *container = (char *) *container + type_size;
     OPENCSTL_NIDX(container, -1) = distance - type_size - 1;
@@ -417,9 +411,7 @@ OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
 
     iveb_erase(iveb, (char *) *container + distance);
     void *b = calloc(1, header_sz + new_capacity * type_size);
-    if (b == NULL) {
-        cstl_error("Failed to allocate memory for deque shrink_to_fit");
-    }
+    verify(b != NULL);
     // 헤더 복사
     memcpy(b, (char *) *container - header_sz + distance, header_sz);
     // 원소들을 새 버퍼의 맨 앞(distance=0)으로 복사

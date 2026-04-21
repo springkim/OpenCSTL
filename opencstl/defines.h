@@ -165,7 +165,7 @@
 #endif
 
 #define _cstl_deref(P) (*(P))
-#define _cstl_err_ptr (void*)(size_t)cstl_error("Invalid Operation")
+#define _cstl_err_ptr (void*)(size_t)0
 
 #define cstl_front(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
 _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C):_cstl_err_ptr) :\
@@ -185,8 +185,8 @@ _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type
 #define _cstl_stack_top(container)   *container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
 // cstl_top: (void**)&container explicit cast for strict compilers (MinGW64, Windows Clang).
 #define cstl_top(container)   __is_deque((void**)&container)?\
-OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) : (container[cstl_error("Invalid Operation")]):\
-(OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[cstl_error("Invalid Operation")]))   //priority queue
+OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) : (container[0]):\
+(OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[0]))   //priority queue
 
 
 #define cstl_reserve(container,n)	_cstl_reserve(&(container),n)

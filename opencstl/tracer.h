@@ -37,6 +37,7 @@
 
 #ifndef OPENCSTL_TRACER_H
 #define OPENCSTL_TRACER_H
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -106,7 +107,7 @@ static void opencstl_exit(void) {
             logging.debug("%p: %s, %s, %d", zmem[i].ptr, zmem[i].file, zmem[i].func, zmem[i].line);
         }
     }
-    logging.debug("opencstl trace exit");
+    logging.debug("OpenCSTL tracer end");
     logging.debug("zalloc count: %d", zalloc_count);
 }
 #endif
@@ -119,7 +120,7 @@ static int opencstl_init(void) {
     //zalloc_vector = salloc(SZ);
     //memset(zalloc_vector, 0, SZ);
 
-    logging.debug("opencstl tracer init");
+    logging.debug("OpenCSTL tracer start");
 
     //htm = htm_new();
 

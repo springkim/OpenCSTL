@@ -411,8 +411,8 @@ static inline bool __ht_reinsert(
 
 static uint16_t *__ht_alloc_meta(size_t cap) {
     uint16_t *m = (uint16_t *) calloc(cap + 4, sizeof(uint16_t));
-    if (!m)
-        cstl_error("Allocation failed (metadata)");
+
+    verify(m!=NULL);
     m[cap] = 0x0001;
     return m;
 }
@@ -426,8 +426,7 @@ static void __ht_do_rehash(
     size_t new_cap = (old_cap_mask + 1) * 2;
     while (true) {
         void *new_raw = calloc(header_sz + new_cap * type_size, 1);
-        if (!new_raw)
-            cstl_error("Allocation failed (rehash)");
+        verify(new_raw!=NULL);
         memcpy(new_raw, (char *) *container - header_sz, header_sz);
         uint16_t *new_meta = __ht_alloc_meta(new_cap);
         void *nb = (char *) new_raw + header_sz;
@@ -681,16 +680,6 @@ OPENCSTL_FUNC
 
 void *__cstl_hashtable_next_prev(void *it, int n) {
     HashtableManager *chtm = htm_find(htm, it);
-    // int idx = -1;
-    // for (int i = 0; i < (int) htm_length; i++)
-    //     if (htm[i].p1 <= it && it < htm[i].p2) {
-    //         idx = i;
-    //         break;
-    //     }
-    //
-    //
-    // if (idx == -1)
-    //     cstl_error("Unregistered hashtable");
 
     size_t ts = (size_t) chtm->type_size;
     size_t cap = ((char *) chtm->p2 - (char *) chtm->p1) / ts;
@@ -772,8 +761,8 @@ void __cstl_hashtable_reserve(void **container, size_t n) {
 
     while (true) {
         void *new_raw = calloc(header_sz + new_cap * type_size, 1);
-        if (!new_raw)
-            cstl_error("Allocation failed (reserve)");
+
+        verify(new_raw!=NULL);
         memcpy(new_raw, (char *) *container - header_sz, header_sz);
         uint16_t *new_meta = __ht_alloc_meta(new_cap);
         void *nb = (char *) new_raw + header_sz;

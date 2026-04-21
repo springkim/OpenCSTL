@@ -17,8 +17,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include <ctype.h>
 
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -150,6 +148,7 @@ extern "C" {
 
 #ifndef OPENCSTL_TRACER_H
 #define OPENCSTL_TRACER_H
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -195,7 +194,10 @@ extern "C" {
 // ██║░░██╗██║░░██║██║╚██╔╝██║██╔═══╝░██║██║░░░░░██╔══╝░░██╔══██╗
 // ╚█████╔╝╚█████╔╝██║░╚═╝░██║██║░░░░░██║███████╗███████╗██║░░██║
 // ░╚════╝░░╚════╝░╚═╝░░░░░╚═╝╚═╝░░░░░╚═╝╚══════╝╚══════╝╚═╝░░╚═╝
-#if defined(__NVCC__)
+#if defined(__POCC__)
+#define OCSTL_CC_STR "PellesC"
+#define OCSTL_CC_POCC
+#elif defined(__NVCC__)
 #define OCSTL_CC_STR "NVCC"
 #define OCSTL_CC_NVCC
 #elif defined(__clang__)
@@ -372,7 +374,7 @@ void __fatal_message_box(const char *msg) {
 #elif defined(OCSTL_OS_LINUX)
 void __fatal_message_box(const char *msg) {
     char cmd[512];
-    // zenity 없으면 kdialog, 둘 다 없으면 stderr
+    // zenity ?놁쑝硫?kdialog, ?????놁쑝硫?stderr
     snprintf(cmd, sizeof(cmd),
              "zenity --error --title=\"FATAL\" --text=\"%s\" 2>/dev/null"
              " || kdialog --error \"%s\" --title \"FATAL\" 2>/dev/null",
@@ -442,13 +444,13 @@ static int _logging_critical(const char *format, ...) {
 
 static int _logging_fatal(const char *format, ...) {
     va_list args;
-    char *ret;
+    int ret;
     va_start(args, format);
-    ret = __vcsprintf(format, args);
+    ret = __vcprintln(__cyan, format, args);
     va_end(args);
-    __fatal_message_box(ret);
-    exit(EXIT_FAILURE);
-    return -1;
+    // __fatal_message_box(ret);
+    // exit(EXIT_FAILURE);
+    return ret;
 }
 
 // static int _logging_message(const char *format, ...) {
@@ -473,15 +475,13 @@ typedef struct LOGGING {
     //logging_fn message;
 } LOGGING;
 
-static LOGGING logging = {
+static const LOGGING logging = {
     _logging_debug,
     _logging_info,
     _logging_warning,
     _logging_error,
     _logging_critical,
-
     _logging_fatal,
-
     //_logging_message
 };
 
@@ -554,7 +554,7 @@ static void opencstl_exit(void) {
             logging.debug("%p: %s, %s, %d", zmem[i].ptr, zmem[i].file, zmem[i].func, zmem[i].line);
         }
     }
-    logging.debug("opencstl trace exit");
+    logging.debug("OpenCSTL tracer end");
     logging.debug("zalloc count: %d", zalloc_count);
 }
 #endif
@@ -567,7 +567,7 @@ static int opencstl_init(void) {
     //zalloc_vector = salloc(SZ);
     //memset(zalloc_vector, 0, SZ);
 
-    logging.debug("opencstl tracer init");
+    logging.debug("OpenCSTL tracer start");
 
     //htm = htm_new();
 
@@ -709,543 +709,44 @@ static void *_zrealloc(void *ptr, size_t new_size, char *file, char *func, int l
 /* [already included: zalloc.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  error.h                        (depth 1) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_ERROR_H)
-#define _OPENCSTL_ERROR_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  types.h                        (depth 2) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_TYPES_H)
-#define _OPENCSTL_TYPES_H
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<stdarg.h>
-#include<stdint.h>
-#include<limits.h>
-#include<stddef.h>
-#include<stdbool.h>
-#include<assert.h>
-
-typedef int (*cstl_compare)(const void *, const void *);
-
-typedef size_t cstl_ptr;
-
-typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
-
-
-typedef int size_type;
-
-
-typedef int int32_x;
-typedef long long int64_x;
-typedef unsigned int uint32_x;
-typedef unsigned long long uint64_x;
-
-typedef unsigned char ubyte_x;
-typedef wchar_t wchar;
-
-#endif
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    types.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  defines.h                      (depth 2) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_DEFINES_H)
-#define _OPENCSTL_DEFINES_H
-
-#if defined(_WIN32) || defined(_WIN64)
-#define OPENCSTL_OS_WINDOWS
-#elif defined(__linux__)
-#define OPENCSTL_OS_LINUX
-#elif defined(__APPLE__)
-#define OPENCSTL_OS_OSX
-#endif
-
-#if defined(__clang__)
-#define OPENCSTL_CC_CLANG
-#elif defined(_MSC_VER)
-#define OPENCSTL_CC_MSVC
-#elif defined(__GNUC__)
-#define OPENCSTL_CC_GCC
-
-#endif
-
-//#define OPENCSTL_ARRAYBASE	0x80	//b10000000
-//#define OPENCSTL_NODEBASE	0x40	//b01000000
-
-#define OPENCSTL_SET		    0
-#define OPENCSTL_MAP		    1
-#define OPENCSTL_VECTOR		    2
-#define OPENCSTL_LIST		    3
-#define OPENCSTL_DEQUE		    4
-#define OPENCSTL_STACK		    5
-#define OPENCSTL_QUEUE		    6
-#define OPENCSTL_PRIORITY_QUEUE	7
-#define OPENCSTL_UNORDERED_SET	8
-#define OPENCSTL_UNORDERED_MAP	9
-
-
-#if defined(OPENCSTL_OS_WINDOWS)
-#include<Windows.h>
-#endif
-
-//For access header element
-//OPENCSTL_AccessContainerAsIndex
-#define OPENCSTL_NIDX(container,nidx) (((size_t*)*container)[(nidx)])
-
-#define OPENCSTL_HEADER	(12)
-#define NIDX_CTYPE	    (-12)	// container type
-#define NIDX_HSIZE	    (-11)	// header size
-#define NIDX_TSIZE	    (-10)	// type size
-
-#define NIDX_LIST_NODE_SIZE	(3)
-#define NIDX_TREE_NODE_SIZE	(5)
-//OPENCSTL_HEAP_MACROS
-#define HEAP_PARENT(I)	    (((I)-1)>>1)
-#define HEAP_LEFT(I)		(((I)<<1)+1)
-#define HEAP_RIGHT(I)	    (((I)<<1)+2)
-
-#if defined(_MSC_VER)
-#   define ARGN(...)  INTERNAL_EXPAND_ARGS_PRIVATE(INTERNAL_ARGS_AUGMENTER(__VA_ARGS__))
-#   define INTERNAL_ARGS_AUGMENTER(...) unused, __VA_ARGS__
-#   define INTERNAL_EXPAND(x) x
-#   define INTERNAL_EXPAND_ARGS_PRIVATE(...) INTERNAL_EXPAND(INTERNAL_GET_ARG_COUNT_PRIVATE(__VA_ARGS__, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
-#   define INTERNAL_GET_ARG_COUNT_PRIVATE(_1_, _2_, _3_, _4_, _5_, _6_, _7_, _8_, _9_, _10_, _11_, _12_, _13_, _14_, _15_, _16_, _17_, _18_, _19_, _20_, _21_, _22_, _23_, _24_, _25_, _26_, _27_, _28_, _29_, _30_, _31_, _32_, _33_, _34_, _35_, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, count, ...) count
-#else // Non-Microsoft compilers
-#   define ARGN(...) INTERNAL_GET_ARG_COUNT_PRIVATE(0, ## __VA_ARGS__, 70, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-#   define INTERNAL_GET_ARG_COUNT_PRIVATE(_0, _1_, _2_, _3_, _4_, _5_, _6_, _7_, _8_, _9_, _10_, _11_, _12_, _13_, _14_, _15_, _16_, _17_, _18_, _19_, _20_, _21_, _22_, _23_, _24_, _25_, _26_, _27_, _28_, _29_, _30_, _31_, _32_, _33_, _34_, _35_, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, count, ...) count
-#endif
-
-#endif
-
-
-#define cstl_value(iter,TYPE)	(*(TYPE*)(iter+1))
-
-// CSTL_USE_VAARG=0: Windows only (values passed directly on stack)
-// CSTL_USE_VAARG=1: Linux/macOS (macros pass pointers via &__1; standard va_arg is correct)
-#if defined(_WIN32) || defined(_WIN64)
-#  define CSTL_USE_VAARG 0
-#else
-#  define CSTL_USE_VAARG 1
-#endif
-
-#if defined(_WIN32) || defined(_WIN64)
-// On Windows the dispatch macros pass values directly (not pointer-to-value).
-// va_arg(vl,void*) would read the value itself, so use PTR arithmetic instead.
-#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=(void*)V;
-#define __cstl_va_arg(PTR)	(PTR)
-// Windows: __cstl_va_arg_next is unused (Windows uses PTR-based path),
-// but define it to avoid compile errors if referenced.
-#define __cstl_va_arg_next(V)	(NULL)
-#define __cstl_va_end(V)	va_end(V)
-#else
-
-// On Linux/macOS (GCC, Clang, TCC) the dispatch macros pass &__N (address of a local copy)
-// for each arg. So va_arg(vl, void*) returns void** -- we must dereference to get the actual value.
-#define __cstl_va_start(V,C,beg)	va_start(V,C)
-#define __cstl_va_arg_next(V)	    va_arg((V),void*)
-#define __cstl_va_end(V)	        va_end(V)
-#endif
-
-//Unary Functions
-#define cstl_pop(container)	        _cstl_pop(&(container))
-#define cstl_pop_back(container)	_cstl_pop_back(&(container))
-#define cstl_pop_front(container)	_cstl_pop_front(&(container))
-#define cstl_size(container)	    _cstl_size(&(container))
-#define cstl_capacity(container)	_cstl_capacity(&(container))
-#define cstl_next(iterator)	        _cstl_next(iterator)
-#define cstl_prev(iterator)	        _cstl_prev(iterator)
-#define cstl_begin(container)	    _cstl_begin(&(container))
-#define cstl_rbegin(container)	    _cstl_rbegin(&(container))
-#define cstl_end(container)	        _cstl_end(&(container))
-#define cstl_rend(container)	    _cstl_rend(&(container))
-#define cstl_clear(container)	    _cstl_clear(&(container))
-#define cstl_empty(container)	    _cstl_empty(&(container))
-#define cstl_free(container)	    _cstl_free(&(container))
-#define cstl_max_capacity(container) _cstl_max_size(&(container))
-//Macro only functions
-
-#define _cstl_deque_type(container) (*(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
-#ifdef _MSC_VER
-#pragma warning(disable:4047)
-#pragma warning(disable:4477)
-#pragma warning(disable:4313)
-#elif defined(__GNUC__) || defined(__clang__)
-// #pragma GCC diagnostic push
-// #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
-// #pragma GCC diagnostic ignored "-Wint-conversion"
-#if !defined(__clang__)
-//#pragma GCC diagnostic ignored "-Wno-lto-type-mismatch"
-#endif
-#endif
-
-#define _cstl_deref(P) (*(P))
-#define _cstl_err_ptr (void*)(size_t)cstl_error("Invalid Operation")
-
-#define cstl_front(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
-_cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C):_cstl_err_ptr) :\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C):\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)(*(void**)C):_cstl_err_ptr)))
-
-#define cstl_back(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
-_cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C+cstl_size(C)-1):_cstl_err_ptr) :\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C+cstl_size(C)-1):\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)((void**)C)[-2]:_cstl_err_ptr)))
-
-#if defined(__GNUC__) || defined(__clang__)
-// #pragma GCC diagnostic pop
-#endif
-
-#define OPENCSTL_DEQUE_NIDX(container, nidx) (*(size_t*)((char*)*(void**)container + nidx * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
-#define _cstl_stack_top(container)   *container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
-// cstl_top: (void**)&container explicit cast for strict compilers (MinGW64, Windows Clang).
-#define cstl_top(container)   __is_deque((void**)&container)?\
-OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) : (container[cstl_error("Invalid Operation")]):\
-(OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[cstl_error("Invalid Operation")]))   //priority queue
-
-
-#define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
-
-
-#if defined(_WIN32) || defined(_WIN64)
-
-#define cstl_push(container,...)	_cstl_push(&(container),__VA_ARGS__)
-#define cstl_push_back(container,...)	_cstl_push_back(&(container),__VA_ARGS__)
-#define cstl_push_front(container,...)	_cstl_push_front(&(container),__VA_ARGS__)
-#define cstl_insert(container,...)	_cstl_insert(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_erase(container,...)	_cstl_erase(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_resize(container,...)	_cstl_resize(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_assign(container,...)	_cstl_assign(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-//#define cstl_max_capacity(container,...) _cstl_max_size(&container)
-#elif defined(__linux__) || defined(__APPLE__)
-
-// TCC supports typeof but not __auto_type; GCC/Clang support both.
-#if defined(__TINYC__)
-#define _CSTL_TYPEOF(x) typeof(x)
-#else
-#define _CSTL_TYPEOF(x) __auto_type
-#endif
-
-
-#define cstl_push_back(C,...) _linux_cstl_push_back(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
-#define _linux_cstl_push_back(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_back ## _ ## N
-#define _cstl_push_back_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push_back( __0);}
-#define _cstl_push_back_1(C,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_push_back( __0,&__1);}
-#define _cstl_push_back_2(C,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_push_back( __0,&__1,&__2);}
-#define _cstl_push_back_3(C,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_push_back( __0,&__1,&__2,&__3);}
-#define _cstl_push_back_4(C,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_push_back( __0,&__1,&__2,&__3,&__4);}
-#define _cstl_push_back_5(C,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_push_back_6(C,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_push_back_7(C,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_push_back_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_push_back_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_push_back_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-#define cstl_push_front(C,...) _linux_cstl_push_front(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
-#define _linux_cstl_push_front(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_front ## _ ## N
-#define _cstl_push_front_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push_front( __0);}
-#define _cstl_push_front_1(C,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_push_front( __0,&__1);}
-#define _cstl_push_front_2(C,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_push_front( __0,&__1,&__2);}
-#define _cstl_push_front_3(C,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_push_front( __0,&__1,&__2,&__3);}
-#define _cstl_push_front_4(C,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_push_front( __0,&__1,&__2,&__3,&__4);}
-#define _cstl_push_front_5(C,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_push_front_6(C,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_push_front_7(C,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_push_front_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_push_front_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_push_front_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-#define cstl_insert(C,...) _linux_cstl_insert(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
-#define _linux_cstl_insert(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_insert ## _ ## N
-#define _cstl_insert_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_insert( __0,argc);}
-#define _cstl_insert_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_insert( __0,argc,&__1);}
-#define _cstl_insert_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_insert( __0,argc,&__1,&__2);}
-#define _cstl_insert_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_insert( __0,argc,&__1,&__2,&__3);}
-#define _cstl_insert_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_insert_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_insert_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_insert_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_insert_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_insert_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_insert_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-#define cstl_erase(C,...) _linux_cstl_erase(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
-#define _linux_cstl_erase(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_erase ## _ ## N
-#define _cstl_erase_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_erase( __0,argc);}
-#define _cstl_erase_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_erase( __0,argc,&__1);}
-#define _cstl_erase_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_erase( __0,argc,&__1,&__2);}
-#define _cstl_erase_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_erase( __0,argc,&__1,&__2,&__3);}
-#define _cstl_erase_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_erase_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_erase_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_erase_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_erase_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_erase_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_erase_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-#define cstl_resize(C,...) _linux_cstl_resize(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
-#define _linux_cstl_resize(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_resize ## _ ## N
-#define _cstl_resize_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_resize( __0,argc);}
-#define _cstl_resize_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_resize( __0,argc,&__1);}
-#define _cstl_resize_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_resize( __0,argc,&__1,&__2);}
-#define _cstl_resize_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_resize( __0,argc,&__1,&__2,&__3);}
-#define _cstl_resize_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_resize_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_resize_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_resize_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_resize_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_resize_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_resize_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-#define cstl_assign(C,...) _linux_cstl_assign(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
-#define _linux_cstl_assign(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_assign ## _ ## N
-#define _cstl_assign_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_assign( __0,argc);}
-#define _cstl_assign_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_assign( __0,argc,&__1);}
-#define _cstl_assign_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_assign( __0,argc,&__1,&__2);}
-#define _cstl_assign_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_assign( __0,argc,&__1,&__2,&__3);}
-#define _cstl_assign_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_assign_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_assign_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_assign_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_assign_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_assign_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_assign_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-#define cstl_find(C,...) _linux_cstl_find(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
-#define _linux_cstl_find(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_find ## _ ## N
-#define _cstl_find_0(C,argc)    ({_CSTL_TYPEOF(&C) __0=&C;_cstl_find( __0,argc);})
-#define _cstl_find_1(C,argc,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_find( __0,argc,&__1);}))
-#define _cstl_find_2(C,argc,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_find( __0,argc,&__1,&__2);}))
-#define _cstl_find_3(C,argc,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_find( __0,argc,&__1,&__2,&__3);}))
-#define _cstl_find_4(C,argc,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_find( __0,argc,&__1,&__2,&__3,&__4);}))
-#define _cstl_find_5(C,argc,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
-#define _cstl_find_6(C,argc,_1,_2,_3,_4,_5,_6)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
-#define _cstl_find_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
-#define _cstl_find_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
-#define _cstl_find_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
-#define _cstl_find_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
-#define cstl_push(C,...) _linux_cstl_push(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
-#define _linux_cstl_push(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push ## _ ## N
-#define _cstl_push_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push( __0);}
-#define _cstl_push_1(C,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_push( __0,&__1);}
-#define _cstl_push_2(C,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_push( __0,&__1,&__2);}
-#define _cstl_push_3(C,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_push( __0,&__1,&__2,&__3);}
-#define _cstl_push_4(C,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_push( __0,&__1,&__2,&__3,&__4);}
-#define _cstl_push_5(C,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_push_6(C,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_push_7(C,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_push_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_push_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_push_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-
-
-#define cstl_max_size(C,...) ({void* _() {_linux_cstl_max_size(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)}_;});
-#define _linux_cstl_max_size(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_max_size ## _ ## N
-#define _cstl_max_size_0(C) _cstl_max_size(&C)
-#define _cstl_max_size_1(C,...) _cstl_max_size(&C)
-#define _cstl_max_size_2(C,...) _cstl_max_size(&C)
-#define _cstl_max_size_3(C,...) _cstl_max_size(&C)
-#define _cstl_max_size_4(C,...) _cstl_max_size(&C)
-#define _cstl_max_size_5(C,...) _cstl_max_size(&C)
-#define _cstl_max_size_6(C,...) _cstl_max_size(&C)
-#define _cstl_max_size_7(C,...) _cstl_max_size(&C)
-#define _cstl_max_size_8(C,...) _cstl_max_size(&C)
-#define _cstl_max_size_9(C,...) _cstl_max_size(&C)
-#define _cstl_max_size_10(C,...) _cstl_max_size(&C)
-
-#endif
-
-
-#if defined(_WIN32) || defined(_WIN64)
-#define SELECT_ANY	__declspec(selectany)
-#elif defined(__linux__) || defined(__APPLE__)
-#define SELECT_ANY	__attribute__((weak))
-#endif
-#define OPENCSTL_FUNC	static
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    defines.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-#include <limits.h>
-
-// ██████╗░██╗░░░██╗███╗░░██╗████████╗██╗███╗░░░███╗███████╗░░░░░░███████╗██████╗░██████╗░░█████╗░██████╗░
-// ██╔══██╗██║░░░██║████╗░██║╚══██╔══╝██║████╗░████║██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗██╔══██╗██╔══██╗
-// ██████╔╝██║░░░██║██╔██╗██║░░░██║░░░██║██╔████╔██║█████╗░░█████╗█████╗░░██████╔╝██████╔╝██║░░██║██████╔╝
-// ██╔══██╗██║░░░██║██║╚████║░░░██║░░░██║██║╚██╔╝██║██╔══╝░░╚════╝██╔══╝░░██╔══██╗██╔══██╗██║░░██║██╔══██╗
-// ██║░░██║╚██████╔╝██║░╚███║░░░██║░░░██║██║░╚═╝░██║███████╗░░░░░░███████╗██║░░██║██║░░██║╚█████╔╝██║░░██║
-// ╚═╝░░╚═╝░╚═════╝░╚═╝░░╚══╝░░░╚═╝░░░╚═╝╚═╝░░░░░╚═╝╚══════╝░░░░░░╚══════╝╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝
-
-#if defined(__func__)
-#define __OPENCSTL_FUNCTION__ __func__
-#elif defined(__FUNCTION__)
-#define __OPENCSTL_FUNCTION__ __FUNCTION__
-#endif
-
-
-#if defined(__GNUC__)
-#define cstl_error(msg)		__cstl_error(msg,__FILE__,__func__,__LINE__)
-OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, const char *function, int line) {
-    char err_msg[1024] = {0};
-#if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
-    sprintf_s(err_msg, 1024, "[%s] in %s , %s , %d\n", msg, file, function, line);
-    //MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
-#else
-    sprintf(err_msg, "[%s] in %s , %s , %d\n", msg, file, function, line);
-    puts(err_msg);
-    //Other platform msg box...
-#endif
-    exit(EXIT_FAILURE);
-    return 0;
-}
-#else
-#define cstl_error(msg)		__cstl_error(msg,__FILE__,__LINE__)
-OPENCSTL_FUNC int __cstl_error(const char *msg, const char *file, int line) {
-    char err_msg[1024] = {0};
-
-#if defined(OPENCSTL_OS_WINDOWS) && (defined(OPENCSTL_CC_MSVC) || defined(OPENCSTL_CC_GCC))
-sprintf_s(err_msg, 1024, "[%s] in %s , %d\n", msg, file, line);
-//MessageBoxA(NULL, err_msg, "ccl fatal", MB_OK);
-#else
-sprintf(err_msg, "[%s] in %s , %d\n", msg, file, line);
-//Other platform msg box...
-#endif
-exit(EXIT_FAILURE);
-    return 0;
-}
-#endif
-
-// ░█████╗░░█████╗░███╗░░░███╗██████╗░██╗██╗░░░░░███████╗░░░░░░███████╗██████╗░██████╗░░█████╗░██████╗░
-// ██╔══██╗██╔══██╗████╗░████║██╔══██╗██║██║░░░░░██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗██╔══██╗██╔══██╗
-// ██║░░╚═╝██║░░██║██╔████╔██║██████╔╝██║██║░░░░░█████╗░░█████╗█████╗░░██████╔╝██████╔╝██║░░██║██████╔╝
-// ██║░░██╗██║░░██║██║╚██╔╝██║██╔═══╝░██║██║░░░░░██╔══╝░░╚════╝██╔══╝░░██╔══██╗██╔══██╗██║░░██║██╔══██╗
-// ╚█████╔╝╚█████╔╝██║░╚═╝░██║██║░░░░░██║███████╗███████╗░░░░░░███████╗██║░░██║██║░░██║╚█████╔╝██║░░██║
-// ░╚════╝░░╚════╝░╚═╝░░░░░╚═╝╚═╝░░░░░╚═╝╚══════╝╚══════╝░░░░░░╚══════╝╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝
-
-
-#endif
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    error.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  string.h                       (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 4/15/2026.
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
 //
 
 #ifndef OPENCSTL_STRING_H
@@ -1273,6 +774,12 @@ int __verify(char *expression, char *file, int line) {
                   expression, file, line);
     abort();
 }
+
+#define mistake(STR) _mistake(STR,__FILE__,__LINE__)
+
+void _mistake(char *str, char *file, int line) {
+    logging.error("Mistake failed: %s, file %s, line %d");
+}
 #endif //OPENCSTL_VERIFY_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -1281,7 +788,7 @@ int __verify(char *expression, char *file, int line) {
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-
+#include<stdbool.h>
 // ============================================================
 // string function implementations
 // ============================================================
@@ -1620,7 +1127,7 @@ static __STRING string = {
 //
 #if !defined(_OPENCSTL_DEQUE_H)
 #define _OPENCSTL_DEQUE_H
-/* [already included: error.h] */
+
 /* [already included: zalloc.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -2091,7 +1598,433 @@ void __opencstl_iveb_destroy(void) {
 #pragma warning(disable:4307)
 #endif
 
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  defines.h                      (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
 
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_DEFINES_H)
+#define _OPENCSTL_DEFINES_H
+
+#if defined(_WIN32) || defined(_WIN64)
+#define OPENCSTL_OS_WINDOWS
+#elif defined(__linux__)
+#define OPENCSTL_OS_LINUX
+#elif defined(__APPLE__)
+#define OPENCSTL_OS_OSX
+#endif
+
+#if defined(__clang__)
+#define OPENCSTL_CC_CLANG
+#elif defined(_MSC_VER)
+#define OPENCSTL_CC_MSVC
+#elif defined(__GNUC__)
+#define OPENCSTL_CC_GCC
+
+#endif
+
+//#define OPENCSTL_ARRAYBASE	0x80	//b10000000
+//#define OPENCSTL_NODEBASE	0x40	//b01000000
+
+#define OPENCSTL_SET		    0
+#define OPENCSTL_MAP		    1
+#define OPENCSTL_VECTOR		    2
+#define OPENCSTL_LIST		    3
+#define OPENCSTL_DEQUE		    4
+#define OPENCSTL_STACK		    5
+#define OPENCSTL_QUEUE		    6
+#define OPENCSTL_PRIORITY_QUEUE	7
+#define OPENCSTL_UNORDERED_SET	8
+#define OPENCSTL_UNORDERED_MAP	9
+
+
+#if defined(OPENCSTL_OS_WINDOWS)
+#include<Windows.h>
+#endif
+
+//For access header element
+//OPENCSTL_AccessContainerAsIndex
+#define OPENCSTL_NIDX(container,nidx) (((size_t*)*container)[(nidx)])
+
+#define OPENCSTL_HEADER	(12)
+#define NIDX_CTYPE	    (-12)	// container type
+#define NIDX_HSIZE	    (-11)	// header size
+#define NIDX_TSIZE	    (-10)	// type size
+
+#define NIDX_LIST_NODE_SIZE	(3)
+#define NIDX_TREE_NODE_SIZE	(5)
+//OPENCSTL_HEAP_MACROS
+#define HEAP_PARENT(I)	    (((I)-1)>>1)
+#define HEAP_LEFT(I)		(((I)<<1)+1)
+#define HEAP_RIGHT(I)	    (((I)<<1)+2)
+
+#if defined(_MSC_VER)
+#   define ARGN(...)  INTERNAL_EXPAND_ARGS_PRIVATE(INTERNAL_ARGS_AUGMENTER(__VA_ARGS__))
+#   define INTERNAL_ARGS_AUGMENTER(...) unused, __VA_ARGS__
+#   define INTERNAL_EXPAND(x) x
+#   define INTERNAL_EXPAND_ARGS_PRIVATE(...) INTERNAL_EXPAND(INTERNAL_GET_ARG_COUNT_PRIVATE(__VA_ARGS__, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
+#   define INTERNAL_GET_ARG_COUNT_PRIVATE(_1_, _2_, _3_, _4_, _5_, _6_, _7_, _8_, _9_, _10_, _11_, _12_, _13_, _14_, _15_, _16_, _17_, _18_, _19_, _20_, _21_, _22_, _23_, _24_, _25_, _26_, _27_, _28_, _29_, _30_, _31_, _32_, _33_, _34_, _35_, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, count, ...) count
+#else // Non-Microsoft compilers
+#   define ARGN(...) INTERNAL_GET_ARG_COUNT_PRIVATE(0, ## __VA_ARGS__, 70, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+#   define INTERNAL_GET_ARG_COUNT_PRIVATE(_0, _1_, _2_, _3_, _4_, _5_, _6_, _7_, _8_, _9_, _10_, _11_, _12_, _13_, _14_, _15_, _16_, _17_, _18_, _19_, _20_, _21_, _22_, _23_, _24_, _25_, _26_, _27_, _28_, _29_, _30_, _31_, _32_, _33_, _34_, _35_, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, count, ...) count
+#endif
+
+#endif
+
+
+#define cstl_value(iter,TYPE)	(*(TYPE*)(iter+1))
+
+// CSTL_USE_VAARG=0: Windows only (values passed directly on stack)
+// CSTL_USE_VAARG=1: Linux/macOS (macros pass pointers via &__1; standard va_arg is correct)
+#if defined(_WIN32) || defined(_WIN64)
+#  define CSTL_USE_VAARG 0
+#else
+#  define CSTL_USE_VAARG 1
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+// On Windows the dispatch macros pass values directly (not pointer-to-value).
+// va_arg(vl,void*) would read the value itself, so use PTR arithmetic instead.
+#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=(void*)V;
+#define __cstl_va_arg(PTR)	(PTR)
+// Windows: __cstl_va_arg_next is unused (Windows uses PTR-based path),
+// but define it to avoid compile errors if referenced.
+#define __cstl_va_arg_next(V)	(NULL)
+#define __cstl_va_end(V)	va_end(V)
+#else
+
+// On Linux/macOS (GCC, Clang, TCC) the dispatch macros pass &__N (address of a local copy)
+// for each arg. So va_arg(vl, void*) returns void** -- we must dereference to get the actual value.
+#define __cstl_va_start(V,C,beg)	va_start(V,C)
+#define __cstl_va_arg_next(V)	    va_arg((V),void*)
+#define __cstl_va_end(V)	        va_end(V)
+#endif
+
+//Unary Functions
+#define cstl_pop(container)	        _cstl_pop(&(container))
+#define cstl_pop_back(container)	_cstl_pop_back(&(container))
+#define cstl_pop_front(container)	_cstl_pop_front(&(container))
+#define cstl_size(container)	    _cstl_size(&(container))
+#define cstl_capacity(container)	_cstl_capacity(&(container))
+#define cstl_next(iterator)	        _cstl_next(iterator)
+#define cstl_prev(iterator)	        _cstl_prev(iterator)
+#define cstl_begin(container)	    _cstl_begin(&(container))
+#define cstl_rbegin(container)	    _cstl_rbegin(&(container))
+#define cstl_end(container)	        _cstl_end(&(container))
+#define cstl_rend(container)	    _cstl_rend(&(container))
+#define cstl_clear(container)	    _cstl_clear(&(container))
+#define cstl_empty(container)	    _cstl_empty(&(container))
+#define cstl_free(container)	    _cstl_free(&(container))
+#define cstl_max_capacity(container) _cstl_max_size(&(container))
+//Macro only functions
+
+#define _cstl_deque_type(container) (*(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
+#ifdef _MSC_VER
+#pragma warning(disable:4047)
+#pragma warning(disable:4477)
+#pragma warning(disable:4313)
+#elif defined(__GNUC__) || defined(__clang__)
+// #pragma GCC diagnostic push
+// #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
+// #pragma GCC diagnostic ignored "-Wint-conversion"
+#if !defined(__clang__)
+//#pragma GCC diagnostic ignored "-Wno-lto-type-mismatch"
+#endif
+#endif
+
+#define _cstl_deref(P) (*(P))
+#define _cstl_err_ptr (void*)(size_t)0
+
+#define cstl_front(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
+_cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C):_cstl_err_ptr) :\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C):\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)(*(void**)C):_cstl_err_ptr)))
+
+#define cstl_back(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
+_cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C+cstl_size(C)-1):_cstl_err_ptr) :\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C+cstl_size(C)-1):\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)((void**)C)[-2]:_cstl_err_ptr)))
+
+#if defined(__GNUC__) || defined(__clang__)
+// #pragma GCC diagnostic pop
+#endif
+
+#define OPENCSTL_DEQUE_NIDX(container, nidx) (*(size_t*)((char*)*(void**)container + nidx * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
+#define _cstl_stack_top(container)   *container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
+// cstl_top: (void**)&container explicit cast for strict compilers (MinGW64, Windows Clang).
+#define cstl_top(container)   __is_deque((void**)&container)?\
+OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) : (container[0]):\
+(OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[0]))   //priority queue
+
+
+#define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
+
+
+#if defined(_WIN32) || defined(_WIN64)
+
+#define cstl_push(container,...)	_cstl_push(&(container),__VA_ARGS__)
+#define cstl_push_back(container,...)	_cstl_push_back(&(container),__VA_ARGS__)
+#define cstl_push_front(container,...)	_cstl_push_front(&(container),__VA_ARGS__)
+#define cstl_insert(container,...)	_cstl_insert(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_erase(container,...)	_cstl_erase(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_resize(container,...)	_cstl_resize(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_assign(container,...)	_cstl_assign(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+//#define cstl_max_capacity(container,...) _cstl_max_size(&container)
+#elif defined(__linux__) || defined(__APPLE__)
+
+// TCC supports typeof but not __auto_type; GCC/Clang support both.
+#if defined(__TINYC__)
+#define _CSTL_TYPEOF(x) typeof(x)
+#else
+#define _CSTL_TYPEOF(x) __auto_type
+#endif
+
+
+#define cstl_push_back(C,...) _linux_cstl_push_back(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
+#define _linux_cstl_push_back(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_back ## _ ## N
+#define _cstl_push_back_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push_back( __0);}
+#define _cstl_push_back_1(C,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_push_back( __0,&__1);}
+#define _cstl_push_back_2(C,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_push_back( __0,&__1,&__2);}
+#define _cstl_push_back_3(C,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_push_back( __0,&__1,&__2,&__3);}
+#define _cstl_push_back_4(C,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_push_back( __0,&__1,&__2,&__3,&__4);}
+#define _cstl_push_back_5(C,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_push_back_6(C,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_push_back_7(C,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_push_back_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_push_back_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_push_back_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_push_front(C,...) _linux_cstl_push_front(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
+#define _linux_cstl_push_front(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_front ## _ ## N
+#define _cstl_push_front_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push_front( __0);}
+#define _cstl_push_front_1(C,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_push_front( __0,&__1);}
+#define _cstl_push_front_2(C,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_push_front( __0,&__1,&__2);}
+#define _cstl_push_front_3(C,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_push_front( __0,&__1,&__2,&__3);}
+#define _cstl_push_front_4(C,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_push_front( __0,&__1,&__2,&__3,&__4);}
+#define _cstl_push_front_5(C,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_push_front_6(C,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_push_front_7(C,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_push_front_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_push_front_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_push_front_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_insert(C,...) _linux_cstl_insert(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_insert(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_insert ## _ ## N
+#define _cstl_insert_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_insert( __0,argc);}
+#define _cstl_insert_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_insert( __0,argc,&__1);}
+#define _cstl_insert_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_insert( __0,argc,&__1,&__2);}
+#define _cstl_insert_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_insert( __0,argc,&__1,&__2,&__3);}
+#define _cstl_insert_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_insert_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_insert_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_insert_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_insert_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_insert_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_insert_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_erase(C,...) _linux_cstl_erase(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_erase(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_erase ## _ ## N
+#define _cstl_erase_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_erase( __0,argc);}
+#define _cstl_erase_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_erase( __0,argc,&__1);}
+#define _cstl_erase_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_erase( __0,argc,&__1,&__2);}
+#define _cstl_erase_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_erase( __0,argc,&__1,&__2,&__3);}
+#define _cstl_erase_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_erase_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_erase_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_erase_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_erase_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_erase_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_erase_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_resize(C,...) _linux_cstl_resize(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_resize(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_resize ## _ ## N
+#define _cstl_resize_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_resize( __0,argc);}
+#define _cstl_resize_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_resize( __0,argc,&__1);}
+#define _cstl_resize_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_resize( __0,argc,&__1,&__2);}
+#define _cstl_resize_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_resize( __0,argc,&__1,&__2,&__3);}
+#define _cstl_resize_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_resize_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_resize_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_resize_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_resize_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_resize_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_resize_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_assign(C,...) _linux_cstl_assign(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_assign(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_assign ## _ ## N
+#define _cstl_assign_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_assign( __0,argc);}
+#define _cstl_assign_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_assign( __0,argc,&__1);}
+#define _cstl_assign_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_assign( __0,argc,&__1,&__2);}
+#define _cstl_assign_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_assign( __0,argc,&__1,&__2,&__3);}
+#define _cstl_assign_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_assign_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_assign_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_assign_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_assign_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_assign_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_assign_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_find(C,...) _linux_cstl_find(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_find(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_find ## _ ## N
+#define _cstl_find_0(C,argc)    ({_CSTL_TYPEOF(&C) __0=&C;_cstl_find( __0,argc);})
+#define _cstl_find_1(C,argc,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_find( __0,argc,&__1);}))
+#define _cstl_find_2(C,argc,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_find( __0,argc,&__1,&__2);}))
+#define _cstl_find_3(C,argc,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_find( __0,argc,&__1,&__2,&__3);}))
+#define _cstl_find_4(C,argc,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_find( __0,argc,&__1,&__2,&__3,&__4);}))
+#define _cstl_find_5(C,argc,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
+#define _cstl_find_6(C,argc,_1,_2,_3,_4,_5,_6)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
+#define _cstl_find_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
+#define _cstl_find_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
+#define _cstl_find_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
+#define _cstl_find_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
+#define cstl_push(C,...) _linux_cstl_push(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
+#define _linux_cstl_push(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push ## _ ## N
+#define _cstl_push_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push( __0);}
+#define _cstl_push_1(C,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_push( __0,&__1);}
+#define _cstl_push_2(C,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_push( __0,&__1,&__2);}
+#define _cstl_push_3(C,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_push( __0,&__1,&__2,&__3);}
+#define _cstl_push_4(C,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_push( __0,&__1,&__2,&__3,&__4);}
+#define _cstl_push_5(C,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_push_6(C,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_push_7(C,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_push_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_push_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_push_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+
+
+#define cstl_max_size(C,...) ({void* _() {_linux_cstl_max_size(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)}_;});
+#define _linux_cstl_max_size(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_max_size ## _ ## N
+#define _cstl_max_size_0(C) _cstl_max_size(&C)
+#define _cstl_max_size_1(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_2(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_3(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_4(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_5(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_6(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_7(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_8(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_9(C,...) _cstl_max_size(&C)
+#define _cstl_max_size_10(C,...) _cstl_max_size(&C)
+
+#endif
+
+
+#if defined(_WIN32) || defined(_WIN64)
+#define SELECT_ANY	__declspec(selectany)
+#elif defined(__linux__) || defined(__APPLE__)
+#define SELECT_ANY	__attribute__((weak))
+#endif
+#define OPENCSTL_FUNC	static
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    defines.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  types.h                        (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_TYPES_H)
+#define _OPENCSTL_TYPES_H
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<stdarg.h>
+#include<stdint.h>
+#include<limits.h>
+#include<stddef.h>
+#include<stdbool.h>
+#include<assert.h>
+
+typedef int (*cstl_compare)(const void *, const void *);
+
+typedef size_t cstl_ptr;
+
+typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
+
+
+typedef int size_type;
+
+
+typedef int int32_x;
+typedef long long int64_x;
+typedef unsigned int uint32_x;
+typedef unsigned long long uint64_x;
+
+typedef unsigned char ubyte_x;
+typedef wchar_t wchar;
+
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    types.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
     if (OPENCSTL_NIDX(container, -1) > (size_t)INT_MAX)
         return 1;
@@ -2115,9 +2048,7 @@ OPENCSTL_FUNC size_t __opencstl_container_type(void **container, ptrdiff_t *dist
 OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *block = calloc(header_sz + type_size * 2, 1);
-    if (block == NULL) {
-        cstl_error("Failed to allocate memory for deque");
-    }
+    verify(block != NULL);
     void *ptr = (char *) block + header_sz; // 2 = capacity
     void **container = &ptr;
 
@@ -2259,9 +2190,7 @@ OPENCSTL_FUNC void __cstl_deque_pop_back(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
 
-    if (length <= 0) {
-        cstl_error("No elements in cstl_deque");
-    }
+    verify(length > 0);
     *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) -= 1;
 }
 
@@ -2269,9 +2198,7 @@ OPENCSTL_FUNC void __cstl_deque_pop_front(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
 
-    if (*(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance - type_size) <= 0) {
-        cstl_error("No elements in cstl_deque");
-    }
+    verify(*(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance - type_size) > 0);
     memcpy(*container, (char *) *container - type_size, type_size);
     *container = (char *) *container + type_size;
     OPENCSTL_NIDX(container, -1) = distance - type_size - 1;
@@ -2450,10 +2377,10 @@ OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-
+    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     // 이미 꽉 차있고 앞쪽 여유도 없으면 아무것도 안 함
     if (length == capacity && distance == 0) {
         return;
@@ -2463,9 +2390,7 @@ OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
 
     iveb_erase(iveb, (char *) *container + distance);
     void *b = calloc(1, header_sz + new_capacity * type_size);
-    if (b == NULL) {
-        cstl_error("Failed to allocate memory for deque shrink_to_fit");
-    }
+    verify(b != NULL);
     // 헤더 복사
     memcpy(b, (char *) *container - header_sz + distance, header_sz);
     // 원소들을 새 버퍼의 맨 앞(distance=0)으로 복사
@@ -2529,7 +2454,6 @@ OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
 //
 #if !defined(_OPENCSTL_VECTOR_H)
 #define _OPENCSTL_VECTOR_H
-/* [already included: error.h] */
 /* [already included: zalloc.h] */
 /* [already included: van_emde_boas_tree.h] */
 // ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
@@ -2544,7 +2468,7 @@ OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *block = calloc(header_sz + type_size, 1);
     if (block == NULL) {
-        cstl_error("Failed to allocate memory for vector");
+        mistake("Failed to allocate memory for vector");
     }
     void *ptr = ((char *) block) + header_sz;
     void **container = &ptr;
@@ -2590,7 +2514,7 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value)
         iveb_erase(iveb, *container);
         void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
-            cstl_error("Reallocation failed at vector assign");
+            mistake("Reallocation failed at vector assign");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
@@ -2626,7 +2550,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
         size_t new_capaciy = capacity * 2;
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
-            cstl_error("Reallocation failed at vector push_back");
+            mistake("Reallocation failed at vector push_back");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = new_capaciy;
@@ -2638,7 +2562,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
 
 OPENCSTL_FUNC void __cstl_vector_pop_back(void **container) {
     if (OPENCSTL_NIDX(container, -1) <= 0) {
-        cstl_error("No elements in cstl_vector");
+        mistake("No elements in cstl_vector");
     }
     OPENCSTL_NIDX(container, -1)--;
 }
@@ -2672,7 +2596,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
         size_t new_capaciy = (capacity + N) * 2;
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
-            cstl_error("Reallocation failed at vector insert");
+            mistake("Reallocation failed at vector insert");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = new_capaciy;
@@ -2737,7 +2661,7 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
         iveb_erase(iveb, *container);
         void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
-            cstl_error("Reallocation failed at vector resize");
+            mistake("Reallocation failed at vector resize");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
@@ -2800,7 +2724,7 @@ OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
         iveb_erase(iveb, *container);
         void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
-            cstl_error("Reallocation failed at vector reserve");
+            mistake("Reallocation failed at vector reserve");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
@@ -2835,7 +2759,7 @@ OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
     iveb_erase(iveb, *container);
     void *b = realloc((char *) *container - header_sz, header_sz + new_capacity * type_size);
     if (b == NULL) {
-        cstl_error("Reallocation failed at vector shrink_to_fit");
+        mistake("Reallocation failed at vector shrink_to_fit");
     }
     *container = ((char *) b + header_sz);
     OPENCSTL_NIDX(container, -2) = new_capacity;
@@ -2891,16 +2815,30 @@ OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
 //
 #if !defined(_OPENCSTL_LIST_H)
 #define _OPENCSTL_LIST_H
-/* [already included: error.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  error.h                        (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/21/2026.
+//
+#ifndef OPENCSTL_ERROR_H
+#define OPENCSTL_ERROR_H
+/* [already included: defines.h] */
+/* [already included: types.h] */
+#endif //OPENCSTL_ERROR_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    error.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 /* [already included: zalloc.h] */
 #define cstl_list(TYPE)		__cstl_list(sizeof(TYPE),#TYPE)
 #define NTAIL(N)	(N==-1?-2:N)
 OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
     size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
     void *block = calloc(header_sz + sizeof(size_t), 1);
-    if (block == NULL) {
-        cstl_error("Failed to allocate memory for list");
-    }
+    verify(block != NULL);
     void *ptr = ((char *) block) + header_sz;
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_LIST;
@@ -2966,9 +2904,7 @@ OPENCSTL_FUNC void __cstl_list_pop_back_front(void **container, int ntail, int n
     //size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail)); //-1 , 0
     void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
-    if (*head == NULL || *tail == NULL) {
-        cstl_error("No elements in cstl_list");
-    }
+    verify(*head != NULL && *tail != NULL);
     if (*head == *tail) {
         free(&OPENCSTL_NIDX(tail, -3)); //fix
         *head = *tail = 0;
@@ -3058,9 +2994,7 @@ OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void *
     //size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
-    if (*iter_begin == NULL) {
-        cstl_error("iter_begin could not be NULL");
-    }
+    verify(*iter_begin != NULL);
     if (*iter_begin == *head) {
         *head = *iter_end;
         if (*head != NULL) {
@@ -3161,9 +3095,7 @@ OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, 
     (void) type_size;
     (void) type;
 
-    if (cmp == NULL) {
-        cstl_error("cmp could not be NULL");
-    }
+    verify(cmp != NULL);
     if (*head == NULL || *tail == NULL || length < 2) {
         return;
     }
@@ -3251,9 +3183,7 @@ typedef struct {
 OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_t n) {
     unsigned char buf[128];
     unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) calloc(n, 1);
-    if (tmp == NULL) {
-        cstl_error("Failed to allocate memory for swap");
-    }
+    verify(tmp != NULL);
     memcpy(tmp, a, n);
     memcpy(a, b, n);
     memcpy(b, tmp, n);
@@ -3313,17 +3243,14 @@ OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, 
     (void) header_sz;
     (void) type_size;
     (void) type;
-    if (cmp == NULL) {
-        cstl_error("cmp could not be NULL");
-    }
+    verify(cmp != NULL);
+
     if (*head == NULL || *tail == NULL || length < 2) {
         return;
     }
     size_t stack_cap = 64;
     __cstl_qsort_range *stack = (__cstl_qsort_range *) calloc(sizeof(__cstl_qsort_range), stack_cap);
-    if (stack == NULL) {
-        cstl_error("Failed to allocate memory for qsort stack");
-    }
+    verify(stack != NULL);
     size_t top = 0;
     stack[top].low = *head;
     stack[top].high = *tail;
@@ -4241,9 +4168,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
 }
 
 OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
-    if (OPENCSTL_NIDX(container, -1) <= 0) {
-        cstl_error("No elements in cstl_priority_queue");
-    }
+    verify(OPENCSTL_NIDX(container, -1) > 0);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
     cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -3);
@@ -4703,8 +4628,8 @@ static inline bool __ht_reinsert(
 
 static uint16_t *__ht_alloc_meta(size_t cap) {
     uint16_t *m = (uint16_t *) calloc(cap + 4, sizeof(uint16_t));
-    if (!m)
-        cstl_error("Allocation failed (metadata)");
+
+    verify(m!=NULL);
     m[cap] = 0x0001;
     return m;
 }
@@ -4718,8 +4643,7 @@ static void __ht_do_rehash(
     size_t new_cap = (old_cap_mask + 1) * 2;
     while (true) {
         void *new_raw = calloc(header_sz + new_cap * type_size, 1);
-        if (!new_raw)
-            cstl_error("Allocation failed (rehash)");
+        verify(new_raw!=NULL);
         memcpy(new_raw, (char *) *container - header_sz, header_sz);
         uint16_t *new_meta = __ht_alloc_meta(new_cap);
         void *nb = (char *) new_raw + header_sz;
@@ -4973,16 +4897,6 @@ OPENCSTL_FUNC
 
 void *__cstl_hashtable_next_prev(void *it, int n) {
     HashtableManager *chtm = htm_find(htm, it);
-    // int idx = -1;
-    // for (int i = 0; i < (int) htm_length; i++)
-    //     if (htm[i].p1 <= it && it < htm[i].p2) {
-    //         idx = i;
-    //         break;
-    //     }
-    //
-    //
-    // if (idx == -1)
-    //     cstl_error("Unregistered hashtable");
 
     size_t ts = (size_t) chtm->type_size;
     size_t cap = ((char *) chtm->p2 - (char *) chtm->p1) / ts;
@@ -5064,8 +4978,8 @@ void __cstl_hashtable_reserve(void **container, size_t n) {
 
     while (true) {
         void *new_raw = calloc(header_sz + new_cap * type_size, 1);
-        if (!new_raw)
-            cstl_error("Allocation failed (reserve)");
+
+        verify(new_raw!=NULL);
         memcpy(new_raw, (char *) *container - header_sz, header_sz);
         uint16_t *new_meta = __ht_alloc_meta(new_cap);
         void *nb = (char *) new_raw + header_sz;
@@ -5249,7 +5163,7 @@ void *__cstl_unordered_map(size_t key_size, size_t value_size,
 /* BEGIN  compare.h                      (depth 2) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
-//
+ //
 //  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
 //  By downloading, copying, installing or using the software you agree to this license.
@@ -5767,7 +5681,7 @@ OPENCSTL_FUNC void *_cstl_next(void *it) {
         }
         break;
         default: {
-            cstl_error("Invalid operation");
+            mistake("Invalid operation");
         }
         break;
     }
@@ -5802,7 +5716,7 @@ OPENCSTL_FUNC void *_cstl_prev(void *it) {
         break;
 
         default: {
-            cstl_error("Invalid operation");
+            mistake("Invalid operation");
         }
     }
     return NULL;
@@ -5839,7 +5753,7 @@ OPENCSTL_FUNC void *_cstl_begin(void *container) {
             return __cstl_hashtable_begin((void **) container);
         }
         break;
-        default: cstl_error("Invalid operation");
+        default: mistake("Invalid operation");
             break;
     }
     return NULL;
@@ -5876,7 +5790,7 @@ OPENCSTL_FUNC void *_cstl_rbegin(void *container) {
             return __cstl_hashtable_rbegin((void **) container);
         }
         break;
-        default: cstl_error("Invalid operation");
+        default: mistake("Invalid operation");
             break;
     }
     return NULL;
@@ -5913,7 +5827,7 @@ OPENCSTL_FUNC void *_cstl_end(void *container) {
             return __cstl_hashtable_end((void **) container);
         }
         break;
-        default: cstl_error("Invalid operation");
+        default: mistake("Invalid operation");
             break;
     }
     return NULL;
@@ -5950,7 +5864,7 @@ OPENCSTL_FUNC void *_cstl_rend(void *container) {
             return __cstl_hashtable_rend((void **) container);
         }
         break;
-        default: cstl_error("Invalid operation");
+        default: mistake("Invalid operation");
             break;
     }
     return NULL;
@@ -6004,10 +5918,7 @@ OPENCSTL_FUNC void *_cstl_max_element(void *_begin, void *_end, _OpenCSTLCompare
         if (_cmp == NULL) {
             _cmp = _memcmp_funcs[tm->type_size];
         }
-        if (_cmp == NULL) {
-            cstl_error("Compare function is NULL");
-            return _end;
-        }
+        verify(_cmp != NULL);
     }
 
     void *max_it = _begin;
@@ -6035,10 +5946,7 @@ OPENCSTL_FUNC void *_cstl_min_element(void *_begin, void *_end, _OpenCSTLCompare
         if (_cmp == NULL) {
             _cmp = _memcmp_funcs[tm->type_size];
         }
-        if (_cmp == NULL) {
-            cstl_error("Compare function is NULL");
-            return _end;
-        }
+        verify(_cmp != NULL);
     }
 
     void *min_it = _begin;
@@ -6059,87 +5967,6 @@ OPENCSTL_FUNC void *_cstl_min_element(void *_begin, void *_end, _OpenCSTLCompare
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 /* [already included: compare.h] */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  random.h                       (depth 1) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_C_RANDOM_H)
-#define _OPENCSTL_C_RANDOM_H
-#include <limits.h>
-#define CSTL_RAND64_MAX ULLONG_MAX
-#define CSTL_RAND32_MAX UINT_MAX
-// static unsigned __int128 _seed64 = 1;
-// static unsigned long long _seed32 = 1;
-
-static unsigned long long _seed64 = 1;
-static unsigned int _seed32 = 1;
-
-static void cstl_rand_seed32(unsigned int seed) {
-    _seed32 = seed;
-}
-
-static unsigned int cstl_rand32(void) {
-    _seed32 = _seed32 * 1103515245 + 12345;
-    return (unsigned int) (_seed32 / 65536);
-}
-
-static void cstl_rand_seed64(unsigned long long seed) {
-    _seed64 = seed;
-}
-
-static unsigned long long cstl_rand64(void) {
-    _seed64 = (_seed64 * 6364136223846793005ULL) + 1442695040888963407ULL;
-    return (unsigned long long) _seed64;
-}
-
-#define rand32              cstl_rand32
-#define rand64              cstl_rand64
-
-
-// shuffle
-
-#endif //_OPENCSTL_C_RANDOM_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    random.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  mt19937.h                      (depth 1) */
@@ -6194,7 +6021,40 @@ static unsigned long long cstl_rand64(void) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 4/21/2026.
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
 //
 
 #ifndef OPENCSTL_SWAP_H
@@ -6740,7 +6600,7 @@ void __mt19937_shuffle(void *container) {
             __cstl_list_shuffle((void **) &container);
         }
         break;
-        default: cstl_error("Invalid operator");
+        default: mistake("Invalid operator");
             break;
     }
 }
@@ -6995,6 +6855,7 @@ FILE *__cstl_fopen( char *filename, const char *mode) {
 }
 
 void __cstl_fclose(FILE *fp) {
+
     fpm_erase(fp);
     fclose(fp);
 }
@@ -7045,7 +6906,7 @@ FILE *__cstl_fwrite_all(FILE *fp, const char *buf) {
     __cstl_fclose(fp);
     FILE *new_fp = __cstl_fopen(filepath, "wt");
     fpm_append(new_fp, filepath);
-    if (!new_fp) return false;
+    if (!new_fp) return NULL;
     size_t len = strlen(buf);
     fwrite(buf, 1, len, new_fp) == len;
     return new_fp;
@@ -7090,13 +6951,59 @@ FSTREAM fstream = {
 /* BEGIN  filesystem.h                   (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
 
+#ifndef OPENCSTL_FILESYSTEM_H
+#define OPENCSTL_FILESYSTEM_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <ctype.h>
 /* [already included: zalloc.h] */
 /* [already included: tracer.h] */
 /* [already included: crossplatform.h] */
 
 #if defined(OCSTL_OS_WINDOWS)
+#if !defined(OCSTL_CC_TCC)
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #define CSTL_PATH_SEP '\\'
 #else
@@ -7444,6 +7351,7 @@ static FileSystem fs = {
     __cstl_is_dir,
     __cstl_is_file,
 };
+#endif // OPENCSTL_FILESYSTEM_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    filesystem.h */
@@ -7585,19 +7493,12 @@ static FileSystem fs = {
 #if !defined(_OPENCSTL_ISORT_H)
 #define _OPENCSTL_ISORT_H
 
-#if defined(__cplusplus)
-extern "C" {
-
-
-
-#endif
-
 
 #include <stdlib.h>
 #include <string.h>
 
 static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const void *)) {
-    char sbuf[256];
+    char sbuf[1024];
     char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
     for (size_t i = 1; i < n; i++) {
         memcpy(tmp, arr + i * sz, sz);
@@ -7614,9 +7515,7 @@ static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const
     }
     if (tmp != sbuf) free(tmp);
 }
-#if defined(__cplusplus)
-}
-#endif
+
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -7663,22 +7562,22 @@ static void merge(char *arr, size_t len1, size_t len2, size_t sz,
     }
 }
 
-static void msort(void *base, size_t nmemb, size_t size,
+static void msort(void *base, size_t number, size_t size,
                   int (*compar)(const void *, const void *)) {
-    if (nmemb < 2) return;
+    if (number < 2) return;
     char *arr = (char *) base;
     size_t sz = size;
-    for (size_t i = 0; i < nmemb; i += MSORT_ISORT_THRESH) {
-        size_t blk = nmemb - i;
+    for (size_t i = 0; i < number; i += MSORT_ISORT_THRESH) {
+        size_t blk = number - i;
         if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
         isort(arr + i * sz, blk, sz, compar);
     }
-    char *buf = (char *) calloc(((nmemb + 1) / 2), sz);
+    char *buf = (char *) calloc(((number + 1) / 2), sz);
     if (!buf) return;
-    for (size_t width = MSORT_ISORT_THRESH; width < nmemb; width *= 2) {
-        for (size_t i = 0; i + width < nmemb; i += 2 * width) {
+    for (size_t width = MSORT_ISORT_THRESH; width < number; width *= 2) {
+        for (size_t i = 0; i + width < number; i += 2 * width) {
             size_t len1 = width;
-            size_t len2 = nmemb - i - width;
+            size_t len2 = number - i - width;
             if (len2 > width) len2 = width;
             merge(arr + i * sz, len1, len2, sz, compar, buf);
         }
@@ -9035,7 +8934,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                cstl_error("Compare function is NULL");
+                mistake("Compare function is NULL");
             }
 
             cstl_unstable_sort(container, length, type_size, cmp);
@@ -9052,7 +8951,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                cstl_error("Compare function is NULL");
+                mistake("Compare function is NULL");
             }
             __cstl_list_qsort(&container, cmp);
         }
@@ -9069,13 +8968,13 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                cstl_error("Compare function is NULL");
+                mistake("Compare function is NULL");
             }
             cstl_unstable_sort(container, length, type_size, cmp);
         }
         break;
         default: {
-            cstl_error("Invalid Operation");
+            mistake("Invalid Operation");
         }
         break;
     }
@@ -9107,7 +9006,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                cstl_error("Compare function is NULL");
+                mistake("Compare function is NULL");
             }
             cstl_best_stable_sort(container, length, type_size, cmp);
         }
@@ -9123,7 +9022,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                cstl_error("Compare function is NULL");
+                mistake("Compare function is NULL");
             }
             __cstl_list_msort(&container, cmp);
         }
@@ -9140,21 +9039,26 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                cstl_error("Compare function is NULL");
+                mistake("Compare function is NULL");
             }
             cstl_best_stable_sort(container, length, type_size, cmp);
         }
         break;
         default: {
-            cstl_error("Invalid Operation");
+            mistake("Invalid Operation");
         }
         break;
     }
 }
 
 #if defined(USE_CSTL_FUNC)
+#if defined(__cplusplus)
 #define csort _cstl_sort_func
 #define cstable_sort _cstl_stable_sort_func
+#else
+#define sort _cstl_sort_func
+#define stable_sort _cstl_stable_sort_func
+#endif
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -9225,7 +9129,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                cstl_error("Compare function is NULL");
+                mistake("Compare function is NULL");
                 return 0;
             }
             for (size_t i = 1; i < length; i++) {
@@ -9249,7 +9153,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                cstl_error("Compare function is NULL");
+                mistake("Compare function is NULL");
                 return 0;
             }
             void *it = cstl_begin(container);
@@ -9281,7 +9185,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                cstl_error("Compare function is NULL");
+                mistake("Compare function is NULL");
                 return 0;
             }
             for (size_t i = 1; i < length; i++) {
@@ -9294,7 +9198,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
         }
         break;
         default: {
-            cstl_error("Invalid Operation");
+            mistake("Invalid Operation");
             return 0;
         }
         break;
@@ -9481,7 +9385,7 @@ BITSET __cstl_bitset(size_type n) {
     size_type cap = __cstl_bitset_capacity(n);
     BITSET b;
     b.nbits = n;
-    b.bits = (ubyte_x*)calloc(cap, 1);
+    b.bits = (ubyte_x *) calloc(cap, 1);
     b.str = (char *) calloc(b.nbits + 1, 1);
     return b;
 }
@@ -9693,9 +9597,42 @@ static __BITSET bitset = {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// cstl_glob.h — Python-style glob for OpenCSTL
-// glob(pattern) or glob(pattern, recursive)
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+
 
 #ifndef OPENCSTL_GLOB_H
 #define OPENCSTL_GLOB_H
@@ -10074,6 +10011,122 @@ static void glob_free(char **results) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    glob.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  msg.h                          (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+
+#if !defined(OPENCSTL_MSG_H)
+#define OPENCSTL_MSG_H
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include <string.h>
+#include <stdarg.h>
+
+static void ConsoleMSG(const char *format, ...) {
+#if defined(OCSTL_CC_MSVC)
+    SetConsoleOutputCP(CP_UTF8);
+#elif defined(OCSTL_CC_TCC)
+    setvbuf(stdout, NULL, _IONBF, 0); // unbuffered — 바이트 단위 즉시 전송
+#endif
+    int width = 80;
+    setlocale(LC_ALL, ".UTF-8");
+
+    va_list args;
+    va_start(args, format);
+    char buf[1024];
+    vsnprintf(buf, sizeof(buf), format, args);
+    va_end(args);
+
+    const char *tl = "\xE2\x94\x8F"; // ┏
+    const char *tr = "\xE2\x94\x93"; // ┓
+    const char *bl = "\xE2\x94\x97"; // ┗
+    const char *br = "\xE2\x94\x9B"; // ┛
+    const char *vline = "\xE2\x94\x81"; // ━ (가로선)
+    const char *hline = "\xE2\x94\x83"; // ┃ (세로선)
+
+    int inner = width - 2;
+
+    // 상단
+    fputs(tl, stdout);
+    for (int i = 0; i < inner; i++) fputs(vline, stdout);
+    fputs(tr, stdout);
+    putchar('\n');
+
+    // 중간 — 각 라인을 개별 중앙 정렬
+    const char *line_start = buf;
+    const char *p = buf;
+    while (1) {
+        if (*p == '\n' || *p == '\0') {
+            int len = (int) (p - line_start);
+            int lpadding = (inner - len) / 2;
+            int rpadding = inner - len - lpadding;
+            if (lpadding < 0) lpadding = 0;
+            if (rpadding < 0) rpadding = 0;
+
+            fputs(hline, stdout);
+            for (int i = 0; i < lpadding; i++) putchar(' ');
+            fwrite(line_start, 1, (size_t) len, stdout);
+            for (int i = 0; i < rpadding; i++) putchar(' ');
+            fputs(hline, stdout);
+            putchar('\n');
+
+            if (*p == '\0') break;
+            line_start = p + 1;
+        }
+        p++;
+    }
+
+    // 하단
+    fputs(bl, stdout);
+    for (int i = 0; i < inner; i++) fputs(vline, stdout);
+    fputs(br, stdout);
+    putchar('\n');
+}
+#endif //OPENCSTL_MSG_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    msg.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* [already included: mt19937.h] */
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**
 #define SET(TYPE)               TYPE**
@@ -10157,7 +10210,7 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             if (argc >= 3) {
-                cstl_error("Not implemented");
+                mistake("Not implemented");
             } else {
                 if (argc == 1) {
                     param2 = NULL;
@@ -10165,16 +10218,16 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
                 __cstl_vector_assign((void **) container, *(int *) param1, param2);
             }
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             if (argc == 1)param2 = NULL;
             __cstl_deque_assign((void **) container, *(int *) param1, param2);
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -10201,12 +10254,12 @@ OPENCSTL_FUNC void _cstl_push(void *container, ...) {
         case OPENCSTL_QUEUE: {
             __cstl_deque_push_back((void **) container, value);
         }
-            break;
+        break;
         case OPENCSTL_PRIORITY_QUEUE: {
             __cstl_priority_queue_push((void **) container, value);
         }
-            break;
-        default: cstl_error("Invalid operator");
+        break;
+        default: mistake("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
@@ -10236,16 +10289,16 @@ OPENCSTL_FUNC void _cstl_push_back(void *container, ...) {
         case OPENCSTL_VECTOR: {
             __cstl_vector_push_back((void **) container, param1);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             __cstl_list_push_back_front((void **) container, param1, -1, 0);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             __cstl_deque_push_back((void **) container, param1);
         }
-            break;
-        default: cstl_error("Invalid operator");
+        break;
+        default: mistake("Invalid operator");
             break;
     }
 
@@ -10272,12 +10325,12 @@ OPENCSTL_FUNC void _cstl_push_front(void *container, ...) {
         case OPENCSTL_LIST: {
             __cstl_list_push_back_front((void **) container, param1, 0, -1);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             __cstl_deque_push_front((void **) container, param1);
         }
-            break;
-        default: cstl_error("Invalid operator");
+        break;
+        default: mistake("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
@@ -10295,16 +10348,16 @@ OPENCSTL_FUNC void _cstl_pop(void *container) {
         case OPENCSTL_STACK: {
             __cstl_deque_pop_back((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_QUEUE: {
             __cstl_deque_pop_front((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_PRIORITY_QUEUE: {
             __cstl_priority_queue_pop((void **) container);
         }
-            break;
-        default: cstl_error("Invalid operator");
+        break;
+        default: mistake("Invalid operator");
             break;
     }
 }
@@ -10321,15 +10374,15 @@ OPENCSTL_FUNC void _cstl_pop_back(void *container) {
         case OPENCSTL_VECTOR: {
             __cstl_vector_pop_back((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             __cstl_list_pop_back_front((void **) container, -1, 0);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             __cstl_deque_pop_back((void **) container);
         }
-            break;
+        break;
     }
 }
 
@@ -10346,22 +10399,22 @@ OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_max_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             sz = __cstl_list_max_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_max_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             sz = __cstl_hashtable_capacity((void **) container);
         }
-            break;
+        break;
         default: {
-            verify("Invalid operator");
+            mistake("Invalid operator");
         }
     }
     return sz;
@@ -10408,11 +10461,11 @@ OPENCSTL_FUNC void _cstl_pop_front(void *container) {
         case OPENCSTL_LIST: {
             __cstl_list_pop_back_front((void **) container, 0, -1);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             __cstl_deque_pop_front((void **) container);
         }
-            break;
+        break;
     }
 }
 
@@ -10430,26 +10483,26 @@ OPENCSTL_FUNC size_type _cstl_size(void *container) {
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             sz = __cstl_list_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             sz = __cstl_tree_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             sz = __cstl_hashtable_size((void **) container);
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
     return sz;
@@ -10471,17 +10524,17 @@ OPENCSTL_FUNC size_type _cstl_capacity(void *container) {
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_capacity((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_capacity((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             sz = __cstl_hashtable_capacity((void **) container);
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
     return sz;
@@ -10514,43 +10567,43 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
             if (argc == 2)__cstl_vector_insert((void **) container, param1, 1, param2);
             else __cstl_vector_insert((void **) container, param1, *(int *) param2, param3);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             if (argc == 2)__cstl_list_insert((void **) container, (void **) param1, 1, param2);
             else __cstl_list_insert((void **) container, (void **) param1, *(int *) param2, param3);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             if (argc == 2)__cstl_deque_insert((void **) container, param1, 1, param2);
             else __cstl_deque_insert((void **) container, param1, *(int *) param2, param3);
         }
-            break;
+        break;
         case OPENCSTL_MAP: {
             if (argc == 2) __cstl_tree_insert((void **) container, param1, param2);
             else
-                cstl_error("Invalid operation");
+                mistake("Invalid operation");
         }
-            break;
+        break;
         case OPENCSTL_SET: {
             if (argc == 1) __cstl_tree_insert((void **) container, param1,NULL);
             else
-                cstl_error("Invalid operation");
+                mistake("Invalid operation");
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_MAP: {
             if (argc == 2)__cstl_hashtable_insert((void **) container, param1, param2);
             else
-                cstl_error("Invalid operation");
+                mistake("Invalid operation");
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET: {
             if (argc == 1) {
                 __cstl_hashtable_insert((void **) container, param1,NULL);
             } else
-                cstl_error("Invalid operation");
+                mistake("Invalid operation");
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
 
@@ -10583,14 +10636,14 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
                 __cstl_vector_erase((void **) container, param1, &param2);
             } else __cstl_vector_erase((void **) container, param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             if (argc == 1) {
                 param2 = cstl_next(*(void**)param1);
                 __cstl_list_erase((void **) container, (void **) param1, (void **) &param2);
             } else __cstl_list_erase((void **) container, (void **) param1, (void **) param2);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             if (argc == 1) {
                 param2 = (*(char **) param1) + OPENCSTL_NIDX((void**)container,
@@ -10599,18 +10652,18 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
                 __cstl_deque_erase((void **) container, param1, &param2);
             } else __cstl_deque_erase((void **) container, param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_MAP:
         case OPENCSTL_SET: {
             __cstl_tree_erase((void **) container, (void **) *(void **) param1);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             __cstl_hashtable_erase((void **) container, *(void **) param1);
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -10640,18 +10693,18 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
             if (argc == 1)param2 = NULL;
             __cstl_vector_resize((void **) container, *(int *) param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             if (argc == 1)param2 = NULL;
             __cstl_list_resize((void **) container, *(int *) param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             if (argc == 1)param2 = NULL;
             __cstl_deque_resize((void **) container, *(int *) param1, &param2);
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -10670,31 +10723,31 @@ OPENCSTL_FUNC void _cstl_clear(void *container) {
         case OPENCSTL_VECTOR: {
             __cstl_vector_clear((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             __cstl_list_clear((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_STACK:
         case OPENCSTL_QUEUE:
         case OPENCSTL_DEQUE: {
             __cstl_deque_clear((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             __cstl_tree_clear((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             __cstl_hashtable_clear((void **) container);
         }
-            break;
+        break;
         default: {
-            cstl_error("Invalid operation");
+            mistake("Invalid operation");
         }
-            break;
+        break;
     }
 }
 
@@ -10712,29 +10765,29 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             sz = __cstl_list_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             sz = __cstl_tree_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_STACK:
         case OPENCSTL_QUEUE:
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_size((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             sz = __cstl_hashtable_size((void **) container);
         }
-            break;
+        break;
         default: {
-            cstl_error("Invalid operation");
+            mistake("Invalid operation");
         };
     }
     return sz ? false : true;
@@ -10752,32 +10805,32 @@ OPENCSTL_FUNC void _cstl_free(void *container) {
         case OPENCSTL_VECTOR: {
             __cstl_vector_free((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             __cstl_list_free((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_STACK:
         case OPENCSTL_QUEUE:
         case OPENCSTL_DEQUE: {
             __cstl_deque_free((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             __cstl_tree_free((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_PRIORITY_QUEUE: {
             __cstl_vector_free((void **) container);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             __cstl_hashtable_free((void **) container);
         }
-            break;
-        default: cstl_error("Invalid operation");
+        break;
+        default: mistake("Invalid operation");
             break;
     }
 }
@@ -10807,30 +10860,30 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
             if (argc == 1) return __cstl_vector_find((void **) container, container, param1);
             else return __cstl_vector_find((void **) container, param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_LIST: {
             if (argc == 1)
                 return __cstl_list_find((void **) container, (void **) &OPENCSTL_NIDX((void**)container, 0),
                                         param1);
             else return __cstl_list_find((void **) container, (void **) param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_DEQUE: {
             if (argc == 1) return __cstl_deque_find((void **) container, container, param1);
             else return __cstl_deque_find((void **) container, param1, param2);
         }
-            break;
+        break;
         case OPENCSTL_MAP:
         case OPENCSTL_SET: {
             return __cstl_tree_find((void **) container, param1);
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             return __cstl_hashtable_find((void **) container, param1);
         }
-            break;
-        default: cstl_error("Invalid operator");
+        break;
+        default: mistake("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
@@ -10851,7 +10904,7 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
 
     size_t container_type;
     if (__is_deque((void **) container)) {
-        cstl_error("Invalid operation");
+        mistake("Invalid operation");
     }
     container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
 
@@ -10861,19 +10914,19 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
                 __cstl_vector_reserve((void **) container, *(size_t *) param1);
             }
         }
-            break;
+        break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             if (argc == 1) {
                 __cstl_hashtable_reserve((void **) container, *(size_t *) param1);
             }
         }
-            break;
+        break;
 
         default: {
-            cstl_error("Invalid operation");
+            mistake("Invalid operation");
         }
-            break;
+        break;
     }
     __cstl_va_end(vl);
 }
@@ -10911,7 +10964,7 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
 //         }
 //         break;
 //
-//         default: cstl_error("Invalid operator");
+//         default: verify("Invalid operator");
 //             break;
 //     }
 //     __cstl_va_end(vl);
@@ -10938,6 +10991,7 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
 #if defined(__cplusplus)
 }
 #endif
+
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    opencstl.h */
 /* ////////////////////////////////////////////////////////////////////////////// */

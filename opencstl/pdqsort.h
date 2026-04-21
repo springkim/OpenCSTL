@@ -48,11 +48,11 @@
 
 
 #if defined(_MSC_VER)
-    #define PDQ_LIKELY(x)   (x)
-    #define PDQ_UNLIKELY(x) (x)
+#define PDQ_LIKELY(x)   (x)
+#define PDQ_UNLIKELY(x) (x)
 #else
-    #define PDQ_LIKELY(x)   __builtin_expect(!!(x), 1)
-    #define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
+#define PDQ_LIKELY(x)   __builtin_expect(!!(x), 1)
+#define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
 #endif
 
 static inline void pdq__swap(unsigned char *a, unsigned char *b, size_t n) {
@@ -257,12 +257,11 @@ static inline size_t pdq_part_l(unsigned char *base, size_t n, size_t sz,
     return (size_t) (hi - base) / sz;
 }
 
-void pdqsort(void *__base, size_t __nel, size_t __width,
-             int (*__compar)(const void *, const void *)) {
-    if (!__base || !__compar || __width == 0 || __nel < 2) return;
-    const size_t sz = __width;
-    int (*cmp)(const void *, const void *) = __compar;
-    unsigned char *arr = (unsigned char *) __base;
+static void pdqsort(void *base, size_t number, size_t width, CSTL_COMPARE cmp) {
+    if (!base || !cmp || width == 0 || number < 2) return;
+    const size_t sz = width;
+
+    unsigned char *arr = (unsigned char *) base;
     unsigned char sbuf[512];
     unsigned char *scratch;
     size_t need = sz * 2;
@@ -270,7 +269,7 @@ void pdqsort(void *__base, size_t __nel, size_t __width,
     if (!scratch) return;
     unsigned char *tmp = scratch;
     unsigned char *piv = scratch + sz;
-    uint64_t rs = (uint64_t) __nel ^ 0x517cc1b727220a95ULL;
+    uint64_t rs = (uint64_t) number ^ 0x517cc1b727220a95ULL;
     struct pdq_frame {
         unsigned char *base;
         size_t n;
@@ -280,8 +279,8 @@ void pdqsort(void *__base, size_t __nel, size_t __width,
     struct pdq_frame stk[PDQ_MAX_STACK];
     int sp = 0;
     stk[sp].base = arr;
-    stk[sp].n = __nel;
-    stk[sp].bad = pdq_log2(__nel) * 2 + 1;
+    stk[sp].n = number;
+    stk[sp].bad = pdq_log2(number) * 2 + 1;
     stk[sp].left = 1;
     ++sp;
     while (sp > 0) {
@@ -348,7 +347,8 @@ void pdqsort(void *__base, size_t __nel, size_t __width,
         }
         goto again;
     }
-    if (scratch != sbuf) free(scratch);
+    if (scratch != sbuf)
+        free(scratch);
 }
 #undef PDQ_ELEM
 #undef PDQ_ISORT_THRESH

@@ -352,7 +352,8 @@ HTMVEB *htm_new(void) {
 
 void htm_free(HTMVEB *iv) {
     for (size_t i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used) free(iv->data->e[i].val);
+        if (iv->data->e[i].used)
+            free(iv->data->e[i].val);
     hm_free(iv->data);
     veb_free(iv->veb);
     free(iv);
@@ -404,7 +405,8 @@ IntervalVEB *iveb_new(void) {
 
 void iveb_free(IntervalVEB *iv) {
     for (size_t i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used) free(iv->data->e[i].val);
+        if (iv->data->e[i].used)
+            free(iv->data->e[i].val);
     hm_free(iv->data);
     veb_free(iv->veb);
     free(iv);

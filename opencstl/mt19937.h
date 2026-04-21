@@ -478,7 +478,7 @@ OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
 
     for (size_t i = length - 1; i > 0; i--) {
         size_t rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *)(*container) + i * type_size, (char *)(*container) + rng_idx * type_size, type_size);
+        swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
     }
 }
 
@@ -489,7 +489,7 @@ OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
 
     for (size_t i = length - 1; i > 0; i--) {
         size_t rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *)(*container) + i * type_size, (char *)(*container) + rng_idx * type_size, type_size);
+        swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
     }
 }
 
@@ -521,7 +521,6 @@ OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
 }
 
 
-
 void __mt19937_shuffle(void *container) {
     size_t container_type;
     if (__is_deque((void **) &container)) {
@@ -543,7 +542,7 @@ void __mt19937_shuffle(void *container) {
             __cstl_list_shuffle((void **) &container);
         }
         break;
-        default: cstl_error("Invalid operator");
+        default: mistake("Invalid operator");
             break;
     }
 }

@@ -37,36 +37,30 @@
 #if !defined(_OPENCSTL_ISORT_H)
 #define _OPENCSTL_ISORT_H
 
-#if defined(__cplusplus)
-extern "C" {
-
-
-
-#endif
-
 
 #include <stdlib.h>
 #include <string.h>
+#include "types.h"
 
-static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const void *)) {
-    char sbuf[256];
-    char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
-    for (size_t i = 1; i < n; i++) {
-        memcpy(tmp, arr + i * sz, sz);
+static void isort(void *base, size_t number, size_t width, CSTL_COMPARE compare) {
+    char *arr = (char *) base;
+    char sbuf[1024];
+    char *tmp = (width <= sizeof(sbuf)) ? sbuf : (char *) malloc(width);
+    for (size_t i = 1; i < number; i++) {
+        memcpy(tmp, arr + i * width, width);
         size_t lo = 0, hi = i;
         while (lo < hi) {
             size_t mid = lo + ((hi - lo) >> 1);
-            if (cmp(tmp, arr + mid * sz) < 0) hi = mid;
+            if (compare(tmp, arr + mid * width) < 0) hi = mid;
             else lo = mid + 1;
         }
         if (lo < i) {
-            memmove(arr + (lo + 1) * sz, arr + lo * sz, (i - lo) * sz);
-            memcpy(arr + lo * sz, tmp, sz);
+            memmove(arr + (lo + 1) * width, arr + lo * width, (i - lo) * width);
+            memcpy(arr + lo * width, tmp, width);
         }
     }
-    if (tmp != sbuf) free(tmp);
+    if (tmp != sbuf)
+        free(tmp);
 }
-#if defined(__cplusplus)
-}
-#endif
+
 #endif

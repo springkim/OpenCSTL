@@ -47,7 +47,7 @@
 #include<stdbool.h>
 #include<assert.h>
 
-typedef int (*cstl_compare)(const void *, const void *);
+typedef int (*CSTL_COMPARE)(const void *, const void *);
 
 typedef size_t cstl_ptr;
 

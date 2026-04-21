@@ -112,20 +112,19 @@ static void *ps_run(void *p) {
     return NULL;
 }
 
-void pmsort(void *mem, const size_t len, const size_t size_elem,
-            int (*cmp)(const void *, const void *)) {
-    if (len < 2) return;
-    if (len <= PS_SEQ_CUTOFF) {
-        msort(mem, len, size_elem, cmp);
+static void pmsort(void *base, const size_t number, const size_t width, CSTL_COMPARE cmp) {
+    if (number < 2) return;
+    if (number <= PS_SEQ_CUTOFF) {
+        msort(base, number, width, cmp);
         return;
     }
-    char *buf = (char *) malloc(len * size_elem);
+    char *buf = (char *) malloc(number * width);
     if (!buf) {
-        msort(mem, len, size_elem, cmp);
+        msort(base, number, width, cmp);
         return;
     }
     struct ps_args root = {
-        (char *) mem, buf, len, size_elem, cmp, 0
+        (char *) base, buf, number, width, cmp, 0
     };
     ps_run(&root);
     free(buf);
