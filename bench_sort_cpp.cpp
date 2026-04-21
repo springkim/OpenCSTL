@@ -1,4 +1,7 @@
-#include "opencstl.h"
+#include<algorithm>
+
+
+#include "opencstl/opencstl.h"
 
 typedef long long DTYPE;
 
@@ -15,7 +18,7 @@ int sort_test() {
 
     DTYPE N = 5000000;
 
-    size_t ALGORITHMS = 6;
+    size_t ALGORITHMS = 7;
     size_t REPEAT = 10;
     DTYPE *arr = (DTYPE *) calloc(N, sizeof(DTYPE));
     for (int i = 0; i < N; i++) {
@@ -36,6 +39,7 @@ int sort_test() {
     double p_diff = 0;
     double r_diff = 0;
     double pm_diff = 0;
+    double std_diff = 0;
     for (int i = 0; i < ALGORITHMS * REPEAT; i++) {
         memcpy(target, arr, N * sizeof(int));;
         switch (i % ALGORITHMS) {
@@ -81,6 +85,13 @@ int sort_test() {
                 pm_diff += chrono.duration(t_beg, t_end);
             }
             break;
+            case 6: {
+                t_beg = chrono.now();
+                std::sort(target, target + N);
+                t_end = chrono.now();
+                std_diff += chrono.duration(t_beg, t_end);
+            }
+            break;
             default: {
                 exit(-1);
             };
@@ -95,6 +106,7 @@ int sort_test() {
     printf("|%s/%s|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|\n",OCSTL_OS_STR,OCSTL_CC_STR,
            q_diff, m_diff, t_diff, p_diff, r_diff, pm_diff);
 
+    printf("%.2f\n", std_diff);
 
     return 0;
 }

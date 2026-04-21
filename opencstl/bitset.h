@@ -103,7 +103,7 @@ BITSET __cstl_bitset(size_type n) {
     size_type cap = __cstl_bitset_capacity(n);
     BITSET b;
     b.nbits = n;
-    b.bits = calloc(cap, 1);
+    b.bits = (ubyte_x *) calloc(cap, 1);
     b.str = (char *) calloc(b.nbits + 1, 1);
     return b;
 }

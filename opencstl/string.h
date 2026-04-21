@@ -15,7 +15,7 @@
 // string function implementations
 // ============================================================
 
-char *__cstl_string_substr(char *src, int pos, int len) {
+static char *__cstl_string_substr(char *src, int pos, int len) {
     verify(strlen(src) >= pos + len);
     char *ret = (char *) calloc(len + 1, sizeof(char));
     memcpy(ret, src + pos, len);

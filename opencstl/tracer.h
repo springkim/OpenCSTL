@@ -41,37 +41,70 @@
 #include <stdlib.h>
 #include <string.h>
 #include "logging.h"
-#include "mt19937.h"
 //#include "van_emde_boas_tree.h"
 #define _1MB (1024*1024)
 #define _512KB (1024*512)
 
 #ifdef OPENCSTL_TRACER
-void *zalloc_vector[_512KB] = {0};
+typedef struct ZMem {
+    void *ptr;
+    char *file;
+    char *func;
+    int line;
+} ZMEM;
+
+ZMEM zmem[8192] = {0};
+//void *zalloc_vector[_512KB] = {0};
 size_t zalloc_size = 0;
 size_t zalloc_count = 0;
 
-
-static void zappend(void *ptr) {
-    zalloc_vector[zalloc_size++] = ptr;
+static void zinsert(void *ptr, char *file, char *func, int line) {
+    zmem[zalloc_size].ptr = ptr;
+    zmem[zalloc_size].file = file;
+    zmem[zalloc_size].func = func;
+    zmem[zalloc_size].line = line;
+    zalloc_size++;
     zalloc_count++;
 }
 
-static void zerase(void *ptr) {
+static void zremove(void *ptr) {
     for (size_t i = 0; i < zalloc_size; i++) {
-        if (zalloc_vector[i] == ptr) {
-            memcpy(zalloc_vector + i, zalloc_vector + i + 1, (zalloc_size - i - 1) * sizeof(void *));
+        if (zmem[i].ptr == ptr) {
+            memcpy(zmem + i, zmem + i + 1, (zalloc_size - i - 1) * sizeof(ZMEM));
             zalloc_size--;
-            zalloc_vector[zalloc_size] = NULL;
+            zmem[zalloc_size].ptr = NULL;
+            zmem[zalloc_size].file = NULL;
+            zmem[zalloc_size].func = NULL;
+            zmem[zalloc_size].line = 0;
             return;
         }
     }
 }
+
+// static void zappend(void *ptr) {
+//     zalloc_vector[zalloc_size++] = ptr;
+//     zalloc_count++;
+// }
+//
+// static void zerase(void *ptr) {
+//     for (size_t i = 0; i < zalloc_size; i++) {
+//         if (zalloc_vector[i] == ptr) {
+//             memcpy(zalloc_vector + i, zalloc_vector + i + 1, (zalloc_size - i - 1) * sizeof(void *));
+//             zalloc_size--;
+//             zalloc_vector[zalloc_size] = NULL;
+//             return;
+//         }
+//     }
+// }
 #endif
 #ifdef OPENCSTL_TRACER
 static void opencstl_exit(void) {
     if (zalloc_size > 0) {
         logging.warning("%d memory blocks were not released", zalloc_size);
+
+        for (size_t i = 0; i < zalloc_size; i++) {
+            logging.debug("%p: %s, %s, %d", zmem[i].ptr, zmem[i].file, zmem[i].func, zmem[i].line);
+        }
     }
     logging.debug("opencstl trace exit");
     logging.debug("zalloc count: %d", zalloc_count);

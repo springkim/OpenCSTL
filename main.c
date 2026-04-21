@@ -387,9 +387,9 @@ void test01(void) {
     cstl_stack_test();
     cstl_queue_test();
     cstl_priority_queue_test();
-    cstl_priority_queue_test2();
-    cstl_vector_test3();
-    cstl_hash_test();
+     cstl_priority_queue_test2();
+     cstl_vector_test3();
+     cstl_hash_test();
 }
 
 void test02(void) {

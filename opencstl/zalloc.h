@@ -54,29 +54,32 @@ static realloc_fn orealloc = realloc;
 static calloc_fn ocalloc = calloc;
 
 static void zfree(void *ptr) {
-    zerase(ptr);
+    zremove(ptr);
     ofree(ptr);
 }
 
-static void *zcalloc(size_t cnt, size_t sz) {
+
+static void *_zcalloc(size_t cnt, size_t sz, char *file, char *func, int line) {
     void *ptr = ocalloc(cnt, sz);
     if (ptr) {
-        zappend(ptr);
+        zinsert(ptr, file, func, line);
     }
     return ptr;
 }
 
-static void *zmalloc(size_t sz) {
+
+static void *_zmalloc(size_t sz, char *file, char *func, int line) {
     void *ptr = omalloc(sz);
     if (ptr) {
-        zappend(ptr);
+        zinsert(ptr, file, func, line);
     }
     return ptr;
 }
 
-static void *zrealloc(void *ptr, size_t new_size) {
+
+static void *_zrealloc(void *ptr, size_t new_size, char *file, char *func, int line) {
     if (ptr == NULL) {
-        return zmalloc(new_size);
+        return _zmalloc(new_size, file, func, line);
     }
 
     if (new_size == 0) {
@@ -90,8 +93,8 @@ static void *zrealloc(void *ptr, size_t new_size) {
     }
 
     if (new_ptr != ptr) {
-        zerase(ptr);
-        zappend(new_ptr);
+        zremove(ptr);
+        zinsert(new_ptr, file, func, line);
     }
 
     return new_ptr;
@@ -99,9 +102,9 @@ static void *zrealloc(void *ptr, size_t new_size) {
 
 
 #define free(ptr) zfree(ptr)
-#define calloc(cnt, sz) zcalloc(cnt, sz)
-#define malloc(sz) zmalloc(sz)
-#define realloc(ptr, new_size) zrealloc(ptr, new_size)
+#define calloc(cnt, sz) _zcalloc(cnt, sz,__FILE__,__func__,__LINE__)
+#define malloc(sz) _zmalloc(sz,__FILE__,__func__,__LINE__)
+#define realloc(ptr, new_size) _zrealloc(ptr, new_size,__FILE__,__func__,__LINE__)
 
 
 #endif

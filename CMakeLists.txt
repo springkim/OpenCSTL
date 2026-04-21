@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
 
-project(OpenCSTL C)
+project(OpenCSTL C CXX)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 23)
+set(CMAKE_CXX_STANDARD 17)
 
 set(EXE_NAME OpenCSTL)
 add_executable(${EXE_NAME} main.c)
@@ -26,6 +27,8 @@ add_executable(bench_sort2 bench_sort2.c)
 add_executable(bench_parser bench_parser.c)
 add_executable(test_fstream test_fstream.c)
 add_executable(test_tqdm test_tqdm.c)
+
+add_executable(bench_sort_cpp bench_sort_cpp.cpp)
 # ---- 컴파일러별 최적화 플래그 --------------------------------------------
 #if(MSVC)
 #    # MSVC: /O2 + 전체 프로그램 최적화 + AVX2 + fast math

@@ -54,7 +54,7 @@ typedef struct FPM {
 static FPM fpm[1024] = {0};
 static int fpm_size = 0;
 
-void fpm_append(FILE *fp, const char *filepath) {
+void fpm_append(FILE *fp, char *filepath) {
     verify(fpm_size < 1024);
     fpm[fpm_size].fp = fp;
     fpm[fpm_size].filepath = filepath;
@@ -92,7 +92,7 @@ char *fpm_get(FILE *fp) {
 // ██╔══╝░░░╚═══██╗░░░██║░░░██╔══██╗██╔══╝░░██╔══██║██║╚██╔╝██║
 // ██║░░░░░██████╔╝░░░██║░░░██║░░██║███████╗██║░░██║██║░╚═╝░██║
 // ╚═╝░░░░░╚═════╝░░░░╚═╝░░░╚═╝
-FILE *__cstl_fopen(const char *filename, const char *mode) {
+FILE *__cstl_fopen( char *filename, const char *mode) {
     FILE *fp = NULL;
 #if defined(__TINYC__)
     fp = fopen(filename, mode);
@@ -107,6 +107,7 @@ FILE *__cstl_fopen(const char *filename, const char *mode) {
 }
 
 void __cstl_fclose(FILE *fp) {
+    
     fpm_erase(fp);
     fclose(fp);
 }
@@ -157,13 +158,13 @@ FILE *__cstl_fwrite_all(FILE *fp, const char *buf) {
     __cstl_fclose(fp);
     FILE *new_fp = __cstl_fopen(filepath, "wt");
     fpm_append(new_fp, filepath);
-    if (!new_fp) return false;
+    if (!new_fp) return NULL;
     size_t len = strlen(buf);
     fwrite(buf, 1, len, new_fp) == len;
     return new_fp;
 }
 
-typedef FILE *(*cstl_fopen_fn)(const char *filename, const char *mode);
+typedef FILE *(*cstl_fopen_fn)( char *filename, const char *mode);
 
 typedef void (*cstl_fclose_fn)(FILE *fp);
 

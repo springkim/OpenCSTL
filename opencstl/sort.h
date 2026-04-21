@@ -203,8 +203,13 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
 }
 
 #if defined(USE_CSTL_FUNC)
+#if defined(__cplusplus)
+#define csort _cstl_sort_func
+#define cstable_sort _cstl_stable_sort_func
+#else
 #define sort _cstl_sort_func
 #define stable_sort _cstl_stable_sort_func
+#endif
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)

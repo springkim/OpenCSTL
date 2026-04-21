@@ -61,6 +61,9 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  zalloc.h                       (depth 1) */
@@ -486,9 +489,227 @@ static LOGGING logging = {
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    logging.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+//#include "van_emde_boas_tree.h"
+#define _1MB (1024*1024)
+#define _512KB (1024*512)
+
+#ifdef OPENCSTL_TRACER
+typedef struct ZMem {
+    void *ptr;
+    char *file;
+    char *func;
+    int line;
+} ZMEM;
+
+ZMEM zmem[8192] = {0};
+//void *zalloc_vector[_512KB] = {0};
+size_t zalloc_size = 0;
+size_t zalloc_count = 0;
+
+static void zinsert(void *ptr, char *file, char *func, int line) {
+    zmem[zalloc_size].ptr = ptr;
+    zmem[zalloc_size].file = file;
+    zmem[zalloc_size].func = func;
+    zmem[zalloc_size].line = line;
+    zalloc_size++;
+    zalloc_count++;
+}
+
+static void zremove(void *ptr) {
+    for (size_t i = 0; i < zalloc_size; i++) {
+        if (zmem[i].ptr == ptr) {
+            memcpy(zmem + i, zmem + i + 1, (zalloc_size - i - 1) * sizeof(ZMEM));
+            zalloc_size--;
+            zmem[zalloc_size].ptr = NULL;
+            zmem[zalloc_size].file = NULL;
+            zmem[zalloc_size].func = NULL;
+            zmem[zalloc_size].line = 0;
+            return;
+        }
+    }
+}
+
+// static void zappend(void *ptr) {
+//     zalloc_vector[zalloc_size++] = ptr;
+//     zalloc_count++;
+// }
+//
+// static void zerase(void *ptr) {
+//     for (size_t i = 0; i < zalloc_size; i++) {
+//         if (zalloc_vector[i] == ptr) {
+//             memcpy(zalloc_vector + i, zalloc_vector + i + 1, (zalloc_size - i - 1) * sizeof(void *));
+//             zalloc_size--;
+//             zalloc_vector[zalloc_size] = NULL;
+//             return;
+//         }
+//     }
+// }
+#endif
+#ifdef OPENCSTL_TRACER
+static void opencstl_exit(void) {
+    if (zalloc_size > 0) {
+        logging.warning("%d memory blocks were not released", zalloc_size);
+
+        for (size_t i = 0; i < zalloc_size; i++) {
+            logging.debug("%p: %s, %s, %d", zmem[i].ptr, zmem[i].file, zmem[i].func, zmem[i].line);
+        }
+    }
+    logging.debug("opencstl trace exit");
+    logging.debug("zalloc count: %d", zalloc_count);
+}
+#endif
+#ifdef OPENCSTL_TRACER
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((constructor))
+#endif
+static int opencstl_init(void) {
+    //size_t SZ = _512KB;
+    //zalloc_vector = salloc(SZ);
+    //memset(zalloc_vector, 0, SZ);
+
+    logging.debug("opencstl tracer init");
+
+    //htm = htm_new();
+
+    //mt19937.seed(time(NULL));
+    atexit(opencstl_exit);
+    return 0;
+}
+
+#if defined(_MSC_VER)
+# pragma section(".CRT$XCU",read)
+__declspec(allocate(".CRT$XCU")) static int (*__p)(void) = opencstl_init;
+# pragma data_seg()
+#endif
+#endif
+#endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  mt19937.h                      (depth 3) */
+/* END    tracer.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+
+#ifdef OPENCSTL_TRACER
+typedef void (*free_fn)(void *ptr);
+
+typedef void *(*malloc_fn)(size_t sz);
+
+typedef void *(*realloc_fn)(void *ptr, size_t new_size);
+
+typedef void * (*calloc_fn)(size_t cnt, size_t sz);
+
+static free_fn ofree = free;
+static malloc_fn omalloc = malloc;
+static realloc_fn orealloc = realloc;
+static calloc_fn ocalloc = calloc;
+
+static void zfree(void *ptr) {
+    zremove(ptr);
+    ofree(ptr);
+}
+
+
+static void *_zcalloc(size_t cnt, size_t sz, char *file, char *func, int line) {
+    void *ptr = ocalloc(cnt, sz);
+    if (ptr) {
+        zinsert(ptr, file, func, line);
+    }
+    return ptr;
+}
+
+
+static void *_zmalloc(size_t sz, char *file, char *func, int line) {
+    void *ptr = omalloc(sz);
+    if (ptr) {
+        zinsert(ptr, file, func, line);
+    }
+    return ptr;
+}
+
+
+static void *_zrealloc(void *ptr, size_t new_size, char *file, char *func, int line) {
+    if (ptr == NULL) {
+        return _zmalloc(new_size, file, func, line);
+    }
+
+    if (new_size == 0) {
+        zfree(ptr);
+        return NULL;
+    }
+
+    void *new_ptr = orealloc(ptr, new_size);
+    if (new_ptr == NULL) {
+        return NULL;
+    }
+
+    if (new_ptr != ptr) {
+        zremove(ptr);
+        zinsert(new_ptr, file, func, line);
+    }
+
+    return new_ptr;
+}
+
+
+#define free(ptr) zfree(ptr)
+#define calloc(cnt, sz) _zcalloc(cnt, sz,__FILE__,__func__,__LINE__)
+#define malloc(sz) _zmalloc(sz,__FILE__,__func__,__LINE__)
+#define realloc(ptr, new_size) _zrealloc(ptr, new_size,__FILE__,__func__,__LINE__)
+
+
+#endif
+
+
+#endif //_OPENCSTL_ZALLOC_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    zalloc.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* [already included: tracer.h] */
+/* [already included: zalloc.h] */
+/* [already included: crossplatform.h] */
+
+#if defined(OCSTL_CC_CLANG)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic ignored "-Wunused-value"
+#pragma clang diagnostic ignored "-Wsign-compare"
+#pragma clang diagnostic ignored "-Wpedantic"
+#pragma clang diagnostic ignored "-Wgnu-auto-type"
+#pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+#pragma clang diagnostic ignored "-Wuse-after-free"
+
+#endif
+
+#if defined(OCSTL_CC_GCC)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wuse-after-free"
+#endif
+
+
+#define USE_CSTL_FUNC
+
+// #if defined(__linux__) || defined(__APPLE__)
+// #if !defined(__8cc__ )
+// #pragma GCC push_options
+// #pragma GCC optimize("O0")
+// #endif
+// #endif
+/* [already included: zalloc.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  error.h                        (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -502,7 +723,7 @@ static LOGGING logging = {
 //                               License Agreement
 //                Open Source C Container Library like STL in C++
 //
-//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
 //
 // Third party copyrights are property of their respective owners.
 //
@@ -527,13 +748,87 @@ static LOGGING logging = {
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#if !defined(OPENCSTL_MT19937_H)
-#define OPENCSTL_MT19937_H
-#include <stdint.h>
-#include <time.h>
+#if !defined(_OPENCSTL_ERROR_H)
+#define _OPENCSTL_ERROR_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  defines.h                      (depth 4) */
+/* BEGIN  types.h                        (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_TYPES_H)
+#define _OPENCSTL_TYPES_H
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<stdarg.h>
+#include<stdint.h>
+#include<limits.h>
+#include<stddef.h>
+#include<stdbool.h>
+#include<assert.h>
+
+typedef int (*cstl_compare)(const void *, const void *);
+
+typedef size_t cstl_ptr;
+
+typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
+
+
+typedef int size_type;
+
+
+typedef int int32_x;
+typedef long long int64_x;
+typedef unsigned int uint32_x;
+typedef unsigned long long uint64_x;
+
+typedef unsigned char ubyte_x;
+typedef wchar_t wchar;
+
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    types.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  defines.h                      (depth 2) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -883,168 +1178,6 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    defines.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  deque.h                        (depth 4) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, Woo Cheol, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_DEQUE_H)
-#define _OPENCSTL_DEQUE_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  error.h                        (depth 5) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_ERROR_H)
-#define _OPENCSTL_ERROR_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  types.h                        (depth 6) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_TYPES_H)
-#define _OPENCSTL_TYPES_H
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<stdarg.h>
-#include<stdint.h>
-#include<limits.h>
-#include<stddef.h>
-#include<stdbool.h>
-#include<assert.h>
-
-typedef int (*cstl_compare)(const void *, const void *);
-
-typedef size_t cstl_ptr;
-
-typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
-
-
-typedef int size_type;
-
-
-typedef int int32_x;
-typedef long long int64_x;
-typedef unsigned int uint32_x;
-typedef unsigned long long uint64_x;
-
-typedef unsigned char ubyte_x;
-typedef wchar_t wchar;
-
-#endif
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    types.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* [already included: defines.h] */
 #include <limits.h>
 
 // ██████╗░██╗░░░██╗███╗░░██╗████████╗██╗███╗░░░███╗███████╗░░░░░░███████╗██████╗░██████╗░░█████╗░██████╗░
@@ -1106,10 +1239,392 @@ exit(EXIT_FAILURE);
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    error.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  string.h                       (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/15/2026.
+//
+
+#ifndef OPENCSTL_STRING_H
+#define OPENCSTL_STRING_H
+
 /* [already included: zalloc.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  van_emde_boas_tree.h           (depth 5) */
+/* BEGIN  verify.h                       (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/15/2026.
+//
+
+#ifndef OPENCSTL_VERIFY_H
+#define OPENCSTL_VERIFY_H
+#include <assert.h>
+/* [already included: logging.h] */
+
+#define verify(EXPR) do { if(!(EXPR)) __verify(#EXPR,__FILE__,__LINE__); } while(0)
+
+int __verify(char *expression, char *file, int line) {
+    logging.error("Verification failed: %s, file %s, line %d",
+                  expression, file, line);
+    abort();
+}
+#endif //OPENCSTL_VERIFY_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    verify.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+// ============================================================
+// string function implementations
+// ============================================================
+
+static char *__cstl_string_substr(char *src, int pos, int len) {
+    verify(strlen(src) >= pos + len);
+    char *ret = (char *) calloc(len + 1, sizeof(char));
+    memcpy(ret, src + pos, len);
+    return ret;
+}
+
+char **__cstl_string_split(const char *src, const char *sep, int *n) {
+    int len = (int) strlen(src);
+    int sep_len = (int) strlen(sep);
+
+    if (sep_len == 0) {
+        char **ret = (char **) malloc(sizeof(char *) + (len + 1));
+        char *buf = (char *) ret + sizeof(char *);
+        memcpy(buf, src, len + 1);
+        ret[0] = buf;
+        *n = 1;
+        return ret;
+    }
+
+    // separator 개수 세기
+    int count = 1;
+    const char *p = src;
+    while ((p = strstr(p, sep)) != NULL) {
+        count++;
+        p += sep_len;
+    }
+
+    char **ret = (char **) malloc(count * sizeof(char *) + (len + 1));
+    char *buf = (char *) ret + count * sizeof(char *);
+    memcpy(buf, src, len + 1);
+
+
+    int idx = 0;
+    ret[idx++] = buf;
+    char *s = buf;
+    while ((s = strstr(s, sep)) != NULL) {
+        *s = '\0';
+        s += sep_len;
+        ret[idx++] = s;
+    }
+
+    *n = count;
+    return ret;
+}
+
+
+char *__cstl_string_replace(char *src, char *from, char *to) {
+    int len = strlen(src);
+    int from_len = strlen(from);
+    int to_len = strlen(to);
+
+    int count = 0;
+    char *p = src;
+    while ((p = strstr(p, from)) != NULL) {
+        count++;
+        p += from_len;
+    }
+
+    char *ret = (char *) calloc(len + count * (to_len - from_len) + 1, 1);
+    char *dst = ret;
+    p = src;
+    while (*p) {
+        if (strncmp(p, from, from_len) == 0) {
+            memcpy(dst, to, to_len);
+            dst += to_len;
+            p += from_len;
+        } else {
+            *dst++ = *p++;
+        }
+    }
+    *dst = '\0';
+
+    return ret;
+}
+
+char *__cstl_string_ltrim(const char *src) {
+    const char *p = src;
+    while (*p && isspace((unsigned char) *p)) p++;
+    size_t len = strlen(p);
+    char *ret = (char *) malloc(len + 1);
+    memcpy(ret, p, len + 1);
+    return ret;
+}
+
+char *__cstl_string_rtrim(const char *src) {
+    size_t len = strlen(src);
+    while (len > 0 && isspace((unsigned char) src[len - 1])) len--;
+    char *ret = (char *) malloc(len + 1);
+    memcpy(ret, src, len);
+    ret[len] = '\0';
+    return ret;
+}
+
+char *__cstl_string_trim(const char *src) {
+    const char *begin = src;
+    while (*begin && isspace((unsigned char) *begin)) begin++;
+    const char *end = src + strlen(src);
+    while (end > begin && isspace((unsigned char) *(end - 1))) end--;
+    size_t len = end - begin;
+    char *ret = (char *) malloc(len + 1);
+    memcpy(ret, begin, len);
+    ret[len] = '\0';
+    return ret;
+}
+
+char *__cstl_string_to_upper(const char *src) {
+    size_t len = strlen(src);
+    char *ret = (char *) malloc(len + 1);
+    for (size_t i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
+    ret[len] = '\0';
+    return ret;
+}
+
+char *__cstl_string_to_lower(const char *src) {
+    size_t len = strlen(src);
+    char *ret = (char *) malloc(len + 1);
+    for (size_t i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
+    ret[len] = '\0';
+    return ret;
+}
+
+bool __cstl_string_starts_with(const char *src, const char *prefix) {
+    size_t plen = strlen(prefix);
+    return strncmp(src, prefix, plen) == 0;
+}
+
+bool __cstl_string_ends_with(const char *src, const char *suffix) {
+    size_t slen = strlen(src);
+    size_t flen = strlen(suffix);
+    if (flen > slen) return false;
+    return memcmp(src + slen - flen, suffix, flen) == 0;
+}
+
+int __cstl_string_count(const char *src, const char *sub) {
+    int count = 0;
+    size_t sub_len = strlen(sub);
+    if (sub_len == 0) return 0;
+    const char *p = src;
+    while ((p = strstr(p, sub)) != NULL) {
+        count++;
+        p += sub_len;
+    }
+    return count;
+}
+
+char *__cstl_string_join(char **parts, int n, const char *delim) {
+    if (n <= 0) {
+        char *empty = (char *) malloc(1);
+        *empty = '\0';
+        return empty;
+    }
+    size_t dlen = strlen(delim);
+    size_t total = 0;
+    for (int i = 0; i < n; i++) total += strlen(parts[i]);
+    total += dlen * (n - 1) + 1;
+
+    char *ret = (char *) malloc(total);
+    char *dst = ret;
+    for (int i = 0; i < n; i++) {
+        if (i > 0) {
+            memcpy(dst, delim, dlen);
+            dst += dlen;
+        }
+        size_t len = strlen(parts[i]);
+        memcpy(dst, parts[i], len);
+        dst += len;
+    }
+    *dst = '\0';
+    return ret;
+}
+
+char *__cstl_string_concat(const char *a, const char *b) {
+    size_t alen = strlen(a);
+    size_t blen = strlen(b);
+    char *ret = (char *) malloc(alen + blen + 1);
+    memcpy(ret, a, alen);
+    memcpy(ret + alen, b, blen + 1);
+    return ret;
+}
+
+char *__cstl_string_reverse(const char *src) {
+    size_t len = strlen(src);
+    char *ret = (char *) malloc(len + 1);
+    for (size_t i = 0; i < len; i++) ret[i] = src[len - 1 - i];
+    ret[len] = '\0';
+    return ret;
+}
+
+bool __cstl_string_is_digit(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isdigit((unsigned char) *p)) return false;
+    return true;
+}
+
+bool __cstl_string_is_alpha(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isalpha((unsigned char) *p)) return false;
+    return true;
+}
+
+bool __cstl_string_is_alnum(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isalnum((unsigned char) *p)) return false;
+    return true;
+}
+
+bool __cstl_string_is_space(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isspace((unsigned char) *p)) return false;
+    return true;
+}
+
+
+
+// ============================================================
+// function pointer types
+// ============================================================
+typedef char *(*string_substr_fn)(char *, int, int);
+
+typedef char **(*string_split_fn)(const char *, const char *, int *);
+
+typedef char *(*string_replace_fn)(char *, char *, char *);
+
+typedef char *(*string_unary_fn)(const char *);
+
+typedef bool (*string_match_fn)(const char *, const char *);
+
+typedef int (*string_count_fn)(const char *, const char *);
+
+typedef char *(*string_join_fn)(char **, int, const char *);
+
+typedef char *(*string_concat_fn)(const char *, const char *);
+
+typedef bool (*string_pred_fn)(const char *);
+
+// ============================================================
+// string namespace struct
+// ============================================================
+typedef struct {
+    string_substr_fn substr;
+    string_split_fn split;
+    string_replace_fn replace;
+    string_unary_fn ltrim;
+    string_unary_fn rtrim;
+    string_unary_fn trim;
+    string_unary_fn to_upper;
+    string_unary_fn to_lower;
+    string_match_fn starts_with;
+    string_match_fn ends_with;
+    string_count_fn count;
+    string_join_fn join;
+    string_concat_fn concat;
+    string_unary_fn reverse;
+    string_pred_fn is_digit;
+    string_pred_fn is_alpha;
+    string_pred_fn is_alnum;
+    string_pred_fn is_space;
+} __STRING;
+
+static __STRING string = {
+    __cstl_string_substr,
+    __cstl_string_split,
+    __cstl_string_replace,
+    __cstl_string_ltrim,
+    __cstl_string_rtrim,
+    __cstl_string_trim,
+    __cstl_string_to_upper,
+    __cstl_string_to_lower,
+    __cstl_string_starts_with,
+    __cstl_string_ends_with,
+    __cstl_string_count,
+    __cstl_string_join,
+    __cstl_string_concat,
+    __cstl_string_reverse,
+    __cstl_string_is_digit,
+    __cstl_string_is_alpha,
+    __cstl_string_is_alnum,
+    __cstl_string_is_space
+};
+
+#endif //OPENCSTL_STRING_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    string.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+// Contaner
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  deque.h                        (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, Woo Cheol, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_DEQUE_H)
+#define _OPENCSTL_DEQUE_H
+/* [already included: error.h] */
+/* [already included: zalloc.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  van_emde_boas_tree.h           (depth 2) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -1973,7 +2488,369 @@ OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  list.h                         (depth 4) */
+/* BEGIN  vector.h                       (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_VECTOR_H)
+#define _OPENCSTL_VECTOR_H
+/* [already included: error.h] */
+/* [already included: zalloc.h] */
+/* [already included: van_emde_boas_tree.h] */
+// ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
+// ██║░░░██║██╔════╝██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗
+// ╚██╗░██╔╝█████╗░░██║░░╚═╝░░░██║░░░██║░░██║██████╔╝
+// ░╚████╔╝░██╔══╝░░██║░░██╗░░░██║░░░██║░░██║██╔══██╗
+// ░░╚██╔╝░░███████╗╚█████╔╝░░░██║░░░╚█████╔╝██║░░██║
+// ░░░╚═╝░░░╚══════╝░╚════╝░░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝
+
+#define cstl_vector(TYPE)	__cstl_vector(sizeof(TYPE),#TYPE)
+OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
+    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
+    void *block = calloc(header_sz + type_size, 1);
+    if (block == NULL) {
+        cstl_error("Failed to allocate memory for vector");
+    }
+    void *ptr = ((char *) block) + header_sz;
+    void **container = &ptr;
+    OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_VECTOR;
+    OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
+    OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
+
+    OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
+
+    OPENCSTL_NIDX(container, -4) = (size_t) type;
+
+    OPENCSTL_NIDX(container, -3) = 0; //
+    OPENCSTL_NIDX(container, -2) = 1; //capacity
+    OPENCSTL_NIDX(container, -1) = 0; //length
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, ptr, (char *) ptr + (type_size), CT_VECTOR, type_size, type);
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
+    return ptr;
+}
+
+OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //size_t length = OPENCSTL_NIDX(container, -1);
+    size_t capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    if (capacity < n) {
+        iveb_erase(iveb, *container);
+        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
+        if (b == NULL) {
+            cstl_error("Reallocation failed at vector assign");
+        }
+        *container = ((char *) b + header_sz);
+        OPENCSTL_NIDX(container, -2) = n;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size, type);
+    }
+    if (value == NULL) {
+        memset(*container, 0, type_size * n);
+    } else {
+        for (size_t i = 0; i < n; i++) {
+            memcpy((char *) *container + type_size * (i), value, type_size);
+        }
+    }
+    OPENCSTL_NIDX(container, -1) = n;
+}
+
+OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    size_t capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    if (length == capacity) {
+        iveb_erase(iveb, *container);
+        size_t new_capaciy = capacity * 2;
+        void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
+        if (b == NULL) {
+            cstl_error("Reallocation failed at vector push_back");
+        }
+        *container = ((char *) b + header_sz);
+        OPENCSTL_NIDX(container, -2) = new_capaciy;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capaciy), CT_VECTOR, type_size, type);
+    }
+    memcpy((char *) *container + type_size * length, value, type_size);
+    OPENCSTL_NIDX(container, -1)++;
+}
+
+OPENCSTL_FUNC void __cstl_vector_pop_back(void **container) {
+    if (OPENCSTL_NIDX(container, -1) <= 0) {
+        cstl_error("No elements in cstl_vector");
+    }
+    OPENCSTL_NIDX(container, -1)--;
+}
+
+OPENCSTL_FUNC size_type __cstl_vector_size(void **container) {
+    return (size_type) OPENCSTL_NIDX(container, -1);
+}
+
+OPENCSTL_FUNC size_type __cstl_vector_capacity(void **container) {
+    return (size_type) OPENCSTL_NIDX(container, -2);
+}
+
+OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, void *value) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    size_t capacity = OPENCSTL_NIDX(container, -2);
+    size_t pos = (*(char **) iter - *(char **) container) / type_size;
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    if (length + N >= capacity) {
+        iveb_erase(iveb, *container);
+        size_t new_capaciy = (capacity + N) * 2;
+        void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
+        if (b == NULL) {
+            cstl_error("Reallocation failed at vector insert");
+        }
+        *container = ((char *) b + header_sz);
+        OPENCSTL_NIDX(container, -2) = new_capaciy;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capaciy), CT_VECTOR, type_size, type);
+    }
+    memmove((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
+            (length - pos) * type_size);
+    for (size_t i = 0; i < N; i++) {
+        memcpy((char *) *container + type_size * (pos + i), value, type_size);
+    }
+    OPENCSTL_NIDX(container, -1) += N;
+}
+
+OPENCSTL_FUNC void __cstl_vector_erase(void **container, void *iter_begin, void *iter_end) {
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    //size_t capacity = OPENCSTL_NIDX(container, -2);
+    size_t pos_begin = (*(char **) iter_begin - *(char **) container) / type_size;
+    size_t pos_end = (*(char **) iter_end - *(char **) container) / type_size;
+    memmove((char *) *container + type_size * (pos_begin), (char *) *container + type_size * (pos_end),
+            (length - pos_end) * type_size);
+    OPENCSTL_NIDX(container, -1) -= (pos_end - pos_begin);
+}
+
+OPENCSTL_FUNC void *__cstl_vector_begin(void **container) {
+    return (void *) *container;
+}
+
+OPENCSTL_FUNC void *__cstl_vector_end(void **container) {
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    return (void *) ((char *) *container + (type_size * length));
+}
+
+OPENCSTL_FUNC void *__cstl_vector_rbegin(void **container) {
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    return (void *) ((char *) *container + (type_size * (length - 1)));
+}
+
+OPENCSTL_FUNC void *__cstl_vector_rend(void **container) {
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    return (void *) ((char *) *container - (type_size));
+}
+
+OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    size_t capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    if (capacity < n) {
+        iveb_erase(iveb, *container);
+        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
+        if (b == NULL) {
+            cstl_error("Reallocation failed at vector resize");
+        }
+        *container = ((char *) b + header_sz);
+        OPENCSTL_NIDX(container, -2) = n;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size, type);
+    }
+    if (n > length) {
+        if (value == NULL) {
+            memset((char *) *container + type_size * length, 0, type_size * (n - length));
+        } else {
+            for (size_t i = length; i < n; i++) {
+                memcpy((char *) *container + type_size * (i), value, type_size);
+            }
+        }
+    }
+    OPENCSTL_NIDX(container, -1) = n;
+}
+
+OPENCSTL_FUNC void *__cstl_vector_find(void **container, void *iter_begin, void *value) {
+    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    //size_t capacity = OPENCSTL_NIDX(container, -2);
+    size_t pos = (*(char **) iter_begin - *(char **) container) / type_size;
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_t is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    for (size_t i = pos; i < length; i++) {
+        if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
+            return (char *) *container + type_size * (i);
+        }
+    }
+    return NULL;
+}
+
+OPENCSTL_FUNC void __cstl_vector_clear(void **container) {
+    OPENCSTL_NIDX(container, -1) = 0;
+}
+
+OPENCSTL_FUNC void __cstl_vector_free(void **container) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    iveb_erase(iveb, *container);
+    free((char *) (*container) - header_sz);
+    *container = NULL;
+}
+
+OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //size_t length = OPENCSTL_NIDX(container, -1);
+    size_t capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+    if (capacity < n) {
+        iveb_erase(iveb, *container);
+        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
+        if (b == NULL) {
+            cstl_error("Reallocation failed at vector reserve");
+        }
+        *container = ((char *) b + header_sz);
+        OPENCSTL_NIDX(container, -2) = n;
+        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size, type);
+    }
+}
+
+OPENCSTL_FUNC void *__cstl_vector_next(void *it, size_t type_size) {
+    return (char *) it + type_size;
+}
+
+OPENCSTL_FUNC void *__cstl_vector_prev(void *it, size_t type_size) {
+    return (char *) it - type_size;
+}
+
+OPENCSTL_FUNC size_type __cstl_vector_max_size(void **container) {
+    return INT_MAX;
+}
+
+OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
+    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+    size_t capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+    if (capacity == length) {
+        return;
+    }
+    size_t new_capacity = length > 0 ? length : 1;
+
+    iveb_erase(iveb, *container);
+    void *b = realloc((char *) *container - header_sz, header_sz + new_capacity * type_size);
+    if (b == NULL) {
+        cstl_error("Reallocation failed at vector shrink_to_fit");
+    }
+    *container = ((char *) b + header_sz);
+    OPENCSTL_NIDX(container, -2) = new_capacity;
+    iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capacity), CT_VECTOR, type_size, type);
+}
+
+
+#endif
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    vector.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  list.h                         (depth 1) */
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
@@ -2533,1479 +3410,6 @@ OPENCSTL_FUNC size_type __cstl_list_max_size(void **container) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    list.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  swap.h                         (depth 4) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-// Created by spring on 4/21/2026.
-//
-
-#ifndef OPENCSTL_SWAP_H
-#define OPENCSTL_SWAP_H
-#include <stddef.h>
-#include <string.h>
-
-#define SWAP_STACK_BUF_SIZE 256
-
-void swap(void *a, void *b, size_t sz) {
-    unsigned char stack_buf[SWAP_STACK_BUF_SIZE];
-    unsigned char *tmp;
-    size_t i;
-
-    if (a == NULL || b == NULL || a == b || sz == 0) {
-        return;
-    }
-
-    /*
-     * 작은 크기는 stack buffer 사용
-     * 큰 크기는 byte-wise swap (malloc 없이)
-     */
-    if (sz <= SWAP_STACK_BUF_SIZE) {
-        tmp = stack_buf;
-
-        memcpy(tmp, a, sz);
-        memcpy(a, b, sz);
-        memcpy(b, tmp, sz);
-    } else {
-        unsigned char *pa = (unsigned char *) a;
-        unsigned char *pb = (unsigned char *) b;
-
-        for (i = 0; i < sz; ++i) {
-            unsigned char t = pa[i];
-            pa[i] = pb[i];
-            pb[i] = t;
-        }
-    }
-}
-#endif //OPENCSTL_SWAP_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    swap.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-#define MT64_N          312
-#define MT64_M          156
-#define MT64_MATRIX_A   0xB5026F5AA96619E9ULL
-#define MT64_UPPER_MASK 0xFFFFFFFF80000000ULL
-#define MT64_LOWER_MASK 0x7FFFFFFFULL
-
-typedef struct {
-    uint64_t mt[MT64_N];
-    int index;
-} __mt19937_64_t;
-
-__mt19937_64_t __rng64 = {
-    {
-        1776098118,
-        4095968591,
-        2489032677,
-        2495002180,
-        1521698085,
-        3468952409,
-        1098923224,
-        2876365311,
-        3875427246,
-        2303920453,
-        3481655941,
-        3656246169,
-        3488737099,
-        1911217468,
-        3072370164,
-        54539853,
-        2100673779,
-        3365782472,
-        3678642746,
-        3156232773,
-        423872610,
-        384980604,
-        14136892,
-        1456753616,
-        237535746,
-        3636975731,
-        2024840138,
-        2028378269,
-        1647654370,
-        3507099562,
-        2984247251,
-        2709726729,
-        4136871816,
-        2050550537,
-        819447735,
-        3874448673,
-        1342874910,
-        2832492440,
-        2016583134,
-        124576301,
-        1384715537,
-        3530629926,
-        671516421,
-        2761930297,
-        648433457,
-        1017100791,
-        1981299097,
-        3101820692,
-        2950834868,
-        1756679637,
-        584964515,
-        4081098669,
-        1775854538,
-        3437182948,
-        1020220836,
-        341993995,
-        3408141005,
-        2904582044,
-        94705709,
-        1395954468,
-        2723919850,
-        4100156421,
-        4019124044,
-        1842129442,
-        4079666746,
-        3677560224,
-        3999536271,
-        2893025081,
-        4228019062,
-        3210991107,
-        1390517408,
-        662431847,
-        1090909027,
-        1852368304,
-        1200827841,
-        521259154,
-        2855284515,
-        202287130,
-        1068495373,
-        2234023621,
-        3282764785,
-        323567790,
-        3148296635,
-        391185413,
-        3058708111,
-        3342934558,
-        3443548783,
-        2861981824,
-        2794386527,
-        142350258,
-        2955638948,
-        3162968156,
-        3760718351,
-        3871919616,
-        1645458827,
-        1497555060,
-        3613359691,
-        458681097,
-        2981316388,
-        713218878,
-        3450818032,
-        1431683567,
-        1600366697,
-        1714270684,
-        1544611227,
-        941048232,
-        2087772914,
-        907867291,
-        4128335230,
-        2840844480,
-        1774507957,
-        2264249920,
-        1258670090,
-        1947410483,
-        2037348156,
-        3228252038,
-        1761066031,
-        2293032587,
-        4078238904,
-        3236442710,
-        2705458281,
-        2303876801,
-        1926326119,
-        3998075151,
-        2811251186,
-        930843956,
-        1144233212,
-        3332349131,
-        97732309,
-        3849002316,
-        2915293496,
-        2810737890,
-        1149413950,
-        1535291243,
-        3360025429,
-        3421309515,
-        3433858864,
-        1712656768,
-        2497877002,
-        28081018,
-        1500134564,
-        1291223784,
-        2088311216,
-        678941823,
-        4050017251,
-        804407025,
-        3248654108,
-        3933873068,
-        4007401725,
-        2277599457,
-        1076301181,
-        2622448272,
-        3748282735,
-        1821610946,
-        817739489,
-        2234696578,
-        1210669987,
-        2701425175,
-        2214421026,
-        486743705,
-        761055154,
-        2043636369,
-        1639492383,
-        2540008982,
-        892906626,
-        3301593260,
-        2463924540,
-        2304834400,
-        2865483490,
-        4019518352,
-        3388450644,
-        2519700470,
-        2378632848,
-        3859218429,
-        41583399,
-        3551979613,
-        455310134,
-        1784672860,
-        2439363685,
-        1129068494,
-        1190855146,
-        1219423658,
-        1519984024,
-        2292587420,
-        457621073,
-        26485539,
-        44862599,
-        4036930934,
-        1752500768,
-        500049802,
-        3842075558,
-        3846522605,
-        1330514793,
-        296294288,
-        1509560985,
-        3534138747,
-        871597155,
-        3371132114,
-        3468519555,
-        3117276577,
-        771937135,
-        879279391,
-        1934008381,
-        1167355102,
-        3585722021,
-        2714912251,
-        1754911891,
-        726519327,
-        1643748675,
-        3770213438,
-        3328598245,
-        2760155758,
-        2639634685,
-        2778091809,
-        1699423094,
-        659540027,
-        2343729207,
-        2118446589,
-        74406227,
-        218555160,
-        30856212,
-        1167930465,
-        3467170840,
-        4084379716,
-        2016327892,
-        1786161279,
-        1516085301,
-        1338537268,
-        530933512,
-        3684209364,
-        2513271217,
-        1475130583,
-        4151669683,
-        1501144793,
-        1340046562,
-        2965836453,
-        1148330311,
-        417665896,
-        2097316195,
-        2645187881,
-        1399929080,
-        2659323017,
-        1490103303,
-        363804462,
-        3465020727,
-        3639391603,
-        1334768429,
-        2136970163,
-        58803944,
-        2115603995,
-        1159651724,
-        3891861745,
-        3070456198,
-        142601912,
-        3549937283,
-        1064205062,
-        1475451662,
-        1811199306,
-        3691353348,
-        2849091044,
-        3302207000,
-        4132176068,
-        989617620,
-        51194066,
-        717904882,
-        4168333670,
-        2453975333,
-        2041085414,
-        4005969440,
-        3758836276,
-        3903149919,
-        4189289922,
-        548363216,
-        973394894,
-        1839689710,
-        1896955670,
-        1636598469,
-        1933293750,
-        3097838145,
-        3857376222,
-        2039165214,
-        2629174834,
-        4288046775,
-        3240581823,
-        1710208853,
-        337962299,
-        3788182518,
-        2090635011,
-        1721836154,
-        2416252352,
-        3422851855,
-        2488421740,
-        1397862477,
-        1477292673,
-        1997234387,
-        2430055230,
-        2579580596,
-        1704015956,
-        2216497525,
-        2313035196,
-        610434450,
-        4230676740,
-        1885612770,
-        3439405078,
-        2028271374,
-        3388301479,
-        3283245152,
-        3050416026,
-        2302106739,
-        2730938597,
-        1762153169,
-        3610328820
-    },
-    MT64_N
-};
-
-__mt19937_64_t __uuid64 = {0};
-
-static void __mt19937_64_uuid_seed(uint64_t seed) {
-    __uuid64.mt[0] = seed;
-    for (int i = 1; i < MT64_N; i++) {
-        __uuid64.mt[i] = 6364136223846793005ULL * (__uuid64.mt[i - 1] ^ (__uuid64.mt[i - 1] >> 62)) + (uint64_t) i;
-    }
-    __uuid64.index = MT64_N;
-}
-
-static void __mt19937_64_seed(uint64_t seed) {
-    __rng64.mt[0] = seed;
-    for (int i = 1; i < MT64_N; i++) {
-        __rng64.mt[i] = 6364136223846793005ULL * (__rng64.mt[i - 1] ^ (__rng64.mt[i - 1] >> 62)) + (uint64_t) i;
-    }
-    __rng64.index = MT64_N;
-}
-
-
-// [0, 2^64 - 1]
-static inline uint64_t __mt19937_64_next() {
-    uint64_t y;
-
-    if (__rng64.index >= MT64_N) {
-        static const uint64_t mag01[2] = {0ULL, MT64_MATRIX_A};
-        uint64_t y;
-        int i;
-
-        for (i = 0; i < MT64_N - MT64_M; i++) {
-            y = (__rng64.mt[i] & MT64_UPPER_MASK) | (__rng64.mt[i + 1] & MT64_LOWER_MASK);
-            __rng64.mt[i] = __rng64.mt[i + MT64_M] ^ (y >> 1) ^ mag01[y & 1ULL];
-        }
-        for (; i < MT64_N - 1; i++) {
-            y = (__rng64.mt[i] & MT64_UPPER_MASK) | (__rng64.mt[i + 1] & MT64_LOWER_MASK);
-            __rng64.mt[i] = __rng64.mt[i + (MT64_M - MT64_N)] ^ (y >> 1) ^ mag01[y & 1ULL];
-        }
-        y = (__rng64.mt[MT64_N - 1] & MT64_UPPER_MASK) | (__rng64.mt[0] & MT64_LOWER_MASK);
-        __rng64.mt[MT64_N - 1] = __rng64.mt[MT64_M - 1] ^ (y >> 1) ^ mag01[y & 1ULL];
-
-        __rng64.index = 0;
-    }
-
-    y = __rng64.mt[__rng64.index++];
-
-    // tempering
-    y ^= (y >> 29) & 0x5555555555555555ULL;
-    y ^= (y << 17) & 0x71D67FFFEDA60000ULL;
-    y ^= (y << 37) & 0xFFF7EEE000000000ULL;
-    y ^= (y >> 43);
-
-    return y;
-}
-
-// [0, 1) uniform real
-static double __mt19937_random(void) {
-    return (double) (__mt19937_64_next() >> 11) * (1.0 / 9007199254740992.0);
-}
-
-
-// [lo, hi] inclusive integer range (supports negative)
-static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
-    uint64_t range = (uint64_t) (hi - lo) + 1ULL;
-    return lo + (int64_t) (__mt19937_64_next() % range);
-}
-
-char *__mt19937_uuid(void) {
-    __mt19937_64_uuid_seed(time(NULL));
-    static char buf[37];
-    static const char hex[] = "0123456789abcdef";
-
-    uint64_t hi = __mt19937_64_next();
-    uint64_t lo = __mt19937_64_next();
-
-    hi = (hi & ~((uint64_t) 0xF << 12)) | ((uint64_t) 0x4 << 12);
-    lo = (lo & ~((uint64_t) 0x3 << 62)) | ((uint64_t) 0x2 << 62);
-
-    int p = 0;
-    // time_low: 8자 (hi >> 32)
-    for (int i = 60; i >= 32; i -= 4)
-        buf[p++] = hex[(hi >> i) & 0xF];
-    buf[p++] = '-';
-    // time_mid: 4자 (hi >> 16)
-    for (int i = 28; i >= 16; i -= 4)
-        buf[p++] = hex[(hi >> i) & 0xF];
-    buf[p++] = '-';
-    // time_hi_and_version: 4자 (hi >> 0)
-    for (int i = 12; i >= 0; i -= 4)
-        buf[p++] = hex[(hi >> i) & 0xF];
-    buf[p++] = '-';
-    // clock_seq: 4자 (lo >> 48)
-    for (int i = 60; i >= 48; i -= 4)
-        buf[p++] = hex[(lo >> i) & 0xF];
-    buf[p++] = '-';
-    // node: 12자 (lo >> 0)
-    for (int i = 44; i >= 0; i -= 4)
-        buf[p++] = hex[(lo >> i) & 0xF];
-
-    buf[36] = '\0';
-    return buf;
-}
-
-OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-
-    for (size_t i = length - 1; i > 0; i--) {
-        size_t rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *)(*container) + i * type_size, (char *)(*container) + rng_idx * type_size, type_size);
-    }
-}
-
-OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
-    ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
-
-    for (size_t i = length - 1; i > 0; i--) {
-        size_t rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *)(*container) + i * type_size, (char *)(*container) + rng_idx * type_size, type_size);
-    }
-}
-
-OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    void **head = (void **) &OPENCSTL_NIDX(container, 0);
-    size_type length = (size_type) OPENCSTL_NIDX(container, -1);
-    if (length <= 1) return;
-
-    // Copy list data to flat array
-    void *ptr = malloc(type_size * length);
-    void *it = *head;
-    for (size_type i = 0; i < length; i++) {
-        memcpy((char *) ptr + (i * type_size), it, type_size);
-        it = __cstl_list_next_prev(it, -1);
-    }
-    // Fisher-Yates shuffle on flat array
-    for (size_type i = length - 1; i > 0; i--) {
-        size_type rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *) ptr + i * type_size, (char *) ptr + rng_idx * type_size, type_size);
-    }
-    // Copy shuffled data back to list nodes
-    it = *head;
-    for (size_type i = 0; i < length; i++) {
-        memcpy(it, (char *) ptr + (i * type_size), type_size);
-        it = __cstl_list_next_prev(it, -1);
-    }
-    free(ptr);
-}
-
-
-
-void __mt19937_shuffle(void *container) {
-    size_t container_type;
-    if (__is_deque((void **) &container)) {
-        ptrdiff_t distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
-    } else {
-        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
-    }
-    switch (container_type) {
-        case OPENCSTL_VECTOR: {
-            __cstl_vector_shuffle((void **) &container);
-        }
-        break;
-        case OPENCSTL_DEQUE: {
-            __cstl_deque_shuffle((void **) &container);
-        }
-        break;
-        case OPENCSTL_LIST: {
-            __cstl_list_shuffle((void **) &container);
-        }
-        break;
-        default: cstl_error("Invalid operator");
-            break;
-    }
-}
-
-typedef void (*seed_fn)(uint64_t);
-
-typedef double (*random_fn)(void);
-
-typedef int64_t (*randint_fn)(int64_t, int64_t);
-
-typedef char *(*uuid_fn)(void);
-
-typedef void (*shuffle_fn)(void *);
-
-typedef struct {
-    random_fn random;
-    randint_fn randint;
-    seed_fn seed;
-    uuid_fn uuid;
-    shuffle_fn shuffle;
-} RANDOM;
-
-RANDOM mt19937 = {
-    __mt19937_random,
-    __mt19937_randint,
-    __mt19937_64_seed,
-    __mt19937_uuid,
-    __mt19937_shuffle
-};
-
-#endif //OPENCSTL_MT19937_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    mt19937.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-//#include "van_emde_boas_tree.h"
-#define _1MB (1024*1024)
-#define _512KB (1024*512)
-
-#ifdef OPENCSTL_TRACER
-void *zalloc_vector[_512KB] = {0};
-size_t zalloc_size = 0;
-size_t zalloc_count = 0;
-
-
-static void zappend(void *ptr) {
-    zalloc_vector[zalloc_size++] = ptr;
-    zalloc_count++;
-}
-
-static void zerase(void *ptr) {
-    for (size_t i = 0; i < zalloc_size; i++) {
-        if (zalloc_vector[i] == ptr) {
-            memcpy(zalloc_vector + i, zalloc_vector + i + 1, (zalloc_size - i - 1) * sizeof(void *));
-            zalloc_size--;
-            zalloc_vector[zalloc_size] = NULL;
-            return;
-        }
-    }
-}
-#endif
-#ifdef OPENCSTL_TRACER
-static void opencstl_exit(void) {
-    if (zalloc_size > 0) {
-        logging.warning("%d memory blocks were not released", zalloc_size);
-    }
-    logging.debug("opencstl trace exit");
-    logging.debug("zalloc count: %d", zalloc_count);
-}
-#endif
-#ifdef OPENCSTL_TRACER
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-#endif
-static int opencstl_init(void) {
-    //size_t SZ = _512KB;
-    //zalloc_vector = salloc(SZ);
-    //memset(zalloc_vector, 0, SZ);
-
-    logging.debug("opencstl tracer init");
-
-    //htm = htm_new();
-
-    //mt19937.seed(time(NULL));
-    atexit(opencstl_exit);
-    return 0;
-}
-
-#if defined(_MSC_VER)
-# pragma section(".CRT$XCU",read)
-__declspec(allocate(".CRT$XCU")) static int (*__p)(void) = opencstl_init;
-# pragma data_seg()
-#endif
-#endif
-#endif
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    tracer.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-
-#ifdef OPENCSTL_TRACER
-typedef void (*free_fn)(void *ptr);
-
-typedef void *(*malloc_fn)(size_t sz);
-
-typedef void *(*realloc_fn)(void *ptr, size_t new_size);
-
-typedef void * (*calloc_fn)(size_t cnt, size_t sz);
-
-static free_fn ofree = free;
-static malloc_fn omalloc = malloc;
-static realloc_fn orealloc = realloc;
-static calloc_fn ocalloc = calloc;
-
-static void zfree(void *ptr) {
-    zerase(ptr);
-    ofree(ptr);
-}
-
-static void *zcalloc(size_t cnt, size_t sz) {
-    void *ptr = ocalloc(cnt, sz);
-    if (ptr) {
-        zappend(ptr);
-    }
-    return ptr;
-}
-
-static void *zmalloc(size_t sz) {
-    void *ptr = omalloc(sz);
-    if (ptr) {
-        zappend(ptr);
-    }
-    return ptr;
-}
-
-static void *zrealloc(void *ptr, size_t new_size) {
-    if (ptr == NULL) {
-        return zmalloc(new_size);
-    }
-
-    if (new_size == 0) {
-        zfree(ptr);
-        return NULL;
-    }
-
-    void *new_ptr = orealloc(ptr, new_size);
-    if (new_ptr == NULL) {
-        return NULL;
-    }
-
-    if (new_ptr != ptr) {
-        zerase(ptr);
-        zappend(new_ptr);
-    }
-
-    return new_ptr;
-}
-
-
-#define free(ptr) zfree(ptr)
-#define calloc(cnt, sz) zcalloc(cnt, sz)
-#define malloc(sz) zmalloc(sz)
-#define realloc(ptr, new_size) zrealloc(ptr, new_size)
-
-
-#endif
-
-
-#endif //_OPENCSTL_ZALLOC_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    zalloc.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-/* [already included: tracer.h] */
-/* [already included: zalloc.h] */
-/* [already included: crossplatform.h] */
-
-#if defined(OCSTL_CC_CLANG)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat"
-#pragma clang diagnostic ignored "-Wunused-parameter"
-#pragma clang diagnostic ignored "-Wunused-variable"
-#pragma clang diagnostic ignored "-Wunused-function"
-#pragma clang diagnostic ignored "-Wunused-value"
-#pragma clang diagnostic ignored "-Wsign-compare"
-#pragma clang diagnostic ignored "-Wpedantic"
-#pragma clang diagnostic ignored "-Wgnu-auto-type"
-#pragma clang diagnostic ignored "-Wsometimes-uninitialized"
-#pragma clang diagnostic ignored "-Wuse-after-free"
-
-#endif
-
-#if defined(OCSTL_CC_GCC)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wunused-function"
-#pragma GCC diagnostic ignored "-Wunused-value"
-#pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wpedantic"
-#pragma GCC diagnostic ignored "-Wformat"
-#pragma GCC diagnostic ignored "-Wuse-after-free"
-#endif
-
-
-#define USE_CSTL_FUNC
-
-// #if defined(__linux__) || defined(__APPLE__)
-// #if !defined(__8cc__ )
-// #pragma GCC push_options
-// #pragma GCC optimize("O0")
-// #endif
-// #endif
-/* [already included: zalloc.h] */
-/* [already included: error.h] */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  string.h                       (depth 1) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-// Created by spring on 4/15/2026.
-//
-
-#ifndef OPENCSTL_STRING_H
-#define OPENCSTL_STRING_H
-
-/* [already included: zalloc.h] */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  verify.h                       (depth 2) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-// Created by spring on 4/15/2026.
-//
-
-#ifndef OPENCSTL_VERIFY_H
-#define OPENCSTL_VERIFY_H
-#include <assert.h>
-/* [already included: logging.h] */
-
-#define verify(EXPR) do { if(!(EXPR)) __verify(#EXPR,__FILE__,__LINE__); } while(0)
-
-int __verify(char *expression, char *file, int line) {
-    logging.error("Verification failed: %s, file %s, line %d",
-                  expression, file, line);
-    abort();
-}
-#endif //OPENCSTL_VERIFY_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    verify.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-
-// ============================================================
-// string function implementations
-// ============================================================
-
-char *__cstl_string_substr(char *src, int pos, int len) {
-    verify(strlen(src) >= pos + len);
-    char *ret = (char *) calloc(len + 1, sizeof(char));
-    memcpy(ret, src + pos, len);
-    return ret;
-}
-
-char **__cstl_string_split(const char *src, const char *sep, int *n) {
-    int len = (int) strlen(src);
-    int sep_len = (int) strlen(sep);
-
-    if (sep_len == 0) {
-        char **ret = (char **) malloc(sizeof(char *) + (len + 1));
-        char *buf = (char *) ret + sizeof(char *);
-        memcpy(buf, src, len + 1);
-        ret[0] = buf;
-        *n = 1;
-        return ret;
-    }
-
-    // separator 개수 세기
-    int count = 1;
-    const char *p = src;
-    while ((p = strstr(p, sep)) != NULL) {
-        count++;
-        p += sep_len;
-    }
-
-    char **ret = (char **) malloc(count * sizeof(char *) + (len + 1));
-    char *buf = (char *) ret + count * sizeof(char *);
-    memcpy(buf, src, len + 1);
-
-
-    int idx = 0;
-    ret[idx++] = buf;
-    char *s = buf;
-    while ((s = strstr(s, sep)) != NULL) {
-        *s = '\0';
-        s += sep_len;
-        ret[idx++] = s;
-    }
-
-    *n = count;
-    return ret;
-}
-
-
-char *__cstl_string_replace(char *src, char *from, char *to) {
-    int len = strlen(src);
-    int from_len = strlen(from);
-    int to_len = strlen(to);
-
-    int count = 0;
-    char *p = src;
-    while ((p = strstr(p, from)) != NULL) {
-        count++;
-        p += from_len;
-    }
-
-    char *ret = (char *) calloc(len + count * (to_len - from_len) + 1, 1);
-    char *dst = ret;
-    p = src;
-    while (*p) {
-        if (strncmp(p, from, from_len) == 0) {
-            memcpy(dst, to, to_len);
-            dst += to_len;
-            p += from_len;
-        } else {
-            *dst++ = *p++;
-        }
-    }
-    *dst = '\0';
-
-    return ret;
-}
-
-char *__cstl_string_ltrim(const char *src) {
-    const char *p = src;
-    while (*p && isspace((unsigned char) *p)) p++;
-    size_t len = strlen(p);
-    char *ret = (char *) malloc(len + 1);
-    memcpy(ret, p, len + 1);
-    return ret;
-}
-
-char *__cstl_string_rtrim(const char *src) {
-    size_t len = strlen(src);
-    while (len > 0 && isspace((unsigned char) src[len - 1])) len--;
-    char *ret = (char *) malloc(len + 1);
-    memcpy(ret, src, len);
-    ret[len] = '\0';
-    return ret;
-}
-
-char *__cstl_string_trim(const char *src) {
-    const char *begin = src;
-    while (*begin && isspace((unsigned char) *begin)) begin++;
-    const char *end = src + strlen(src);
-    while (end > begin && isspace((unsigned char) *(end - 1))) end--;
-    size_t len = end - begin;
-    char *ret = (char *) malloc(len + 1);
-    memcpy(ret, begin, len);
-    ret[len] = '\0';
-    return ret;
-}
-
-char *__cstl_string_to_upper(const char *src) {
-    size_t len = strlen(src);
-    char *ret = (char *) malloc(len + 1);
-    for (size_t i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
-    ret[len] = '\0';
-    return ret;
-}
-
-char *__cstl_string_to_lower(const char *src) {
-    size_t len = strlen(src);
-    char *ret = (char *) malloc(len + 1);
-    for (size_t i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
-    ret[len] = '\0';
-    return ret;
-}
-
-bool __cstl_string_starts_with(const char *src, const char *prefix) {
-    size_t plen = strlen(prefix);
-    return strncmp(src, prefix, plen) == 0;
-}
-
-bool __cstl_string_ends_with(const char *src, const char *suffix) {
-    size_t slen = strlen(src);
-    size_t flen = strlen(suffix);
-    if (flen > slen) return false;
-    return memcmp(src + slen - flen, suffix, flen) == 0;
-}
-
-int __cstl_string_count(const char *src, const char *sub) {
-    int count = 0;
-    size_t sub_len = strlen(sub);
-    if (sub_len == 0) return 0;
-    const char *p = src;
-    while ((p = strstr(p, sub)) != NULL) {
-        count++;
-        p += sub_len;
-    }
-    return count;
-}
-
-char *__cstl_string_join(char **parts, int n, const char *delim) {
-    if (n <= 0) {
-        char *empty = (char *) malloc(1);
-        *empty = '\0';
-        return empty;
-    }
-    size_t dlen = strlen(delim);
-    size_t total = 0;
-    for (int i = 0; i < n; i++) total += strlen(parts[i]);
-    total += dlen * (n - 1) + 1;
-
-    char *ret = (char *) malloc(total);
-    char *dst = ret;
-    for (int i = 0; i < n; i++) {
-        if (i > 0) {
-            memcpy(dst, delim, dlen);
-            dst += dlen;
-        }
-        size_t len = strlen(parts[i]);
-        memcpy(dst, parts[i], len);
-        dst += len;
-    }
-    *dst = '\0';
-    return ret;
-}
-
-char *__cstl_string_concat(const char *a, const char *b) {
-    size_t alen = strlen(a);
-    size_t blen = strlen(b);
-    char *ret = (char *) malloc(alen + blen + 1);
-    memcpy(ret, a, alen);
-    memcpy(ret + alen, b, blen + 1);
-    return ret;
-}
-
-char *__cstl_string_reverse(const char *src) {
-    size_t len = strlen(src);
-    char *ret = (char *) malloc(len + 1);
-    for (size_t i = 0; i < len; i++) ret[i] = src[len - 1 - i];
-    ret[len] = '\0';
-    return ret;
-}
-
-bool __cstl_string_is_digit(const char *src) {
-    if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isdigit((unsigned char) *p)) return false;
-    return true;
-}
-
-bool __cstl_string_is_alpha(const char *src) {
-    if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isalpha((unsigned char) *p)) return false;
-    return true;
-}
-
-bool __cstl_string_is_alnum(const char *src) {
-    if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isalnum((unsigned char) *p)) return false;
-    return true;
-}
-
-bool __cstl_string_is_space(const char *src) {
-    if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isspace((unsigned char) *p)) return false;
-    return true;
-}
-
-
-
-// ============================================================
-// function pointer types
-// ============================================================
-typedef char *(*string_substr_fn)(char *, int, int);
-
-typedef char **(*string_split_fn)(const char *, const char *, int *);
-
-typedef char *(*string_replace_fn)(char *, char *, char *);
-
-typedef char *(*string_unary_fn)(const char *);
-
-typedef bool (*string_match_fn)(const char *, const char *);
-
-typedef int (*string_count_fn)(const char *, const char *);
-
-typedef char *(*string_join_fn)(char **, int, const char *);
-
-typedef char *(*string_concat_fn)(const char *, const char *);
-
-typedef bool (*string_pred_fn)(const char *);
-
-// ============================================================
-// string namespace struct
-// ============================================================
-typedef struct {
-    string_substr_fn substr;
-    string_split_fn split;
-    string_replace_fn replace;
-    string_unary_fn ltrim;
-    string_unary_fn rtrim;
-    string_unary_fn trim;
-    string_unary_fn to_upper;
-    string_unary_fn to_lower;
-    string_match_fn starts_with;
-    string_match_fn ends_with;
-    string_count_fn count;
-    string_join_fn join;
-    string_concat_fn concat;
-    string_unary_fn reverse;
-    string_pred_fn is_digit;
-    string_pred_fn is_alpha;
-    string_pred_fn is_alnum;
-    string_pred_fn is_space;
-} __STRING;
-
-static __STRING string = {
-    __cstl_string_substr,
-    __cstl_string_split,
-    __cstl_string_replace,
-    __cstl_string_ltrim,
-    __cstl_string_rtrim,
-    __cstl_string_trim,
-    __cstl_string_to_upper,
-    __cstl_string_to_lower,
-    __cstl_string_starts_with,
-    __cstl_string_ends_with,
-    __cstl_string_count,
-    __cstl_string_join,
-    __cstl_string_concat,
-    __cstl_string_reverse,
-    __cstl_string_is_digit,
-    __cstl_string_is_alpha,
-    __cstl_string_is_alnum,
-    __cstl_string_is_space
-};
-
-#endif //OPENCSTL_STRING_H
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    string.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-// Contaner
-/* [already included: deque.h] */
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* BEGIN  vector.h                       (depth 1) */
-/* ////////////////////////////////////////////////////////////////////////////// */
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_VECTOR_H)
-#define _OPENCSTL_VECTOR_H
-/* [already included: error.h] */
-/* [already included: zalloc.h] */
-/* [already included: van_emde_boas_tree.h] */
-// ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
-// ██║░░░██║██╔════╝██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗
-// ╚██╗░██╔╝█████╗░░██║░░╚═╝░░░██║░░░██║░░██║██████╔╝
-// ░╚████╔╝░██╔══╝░░██║░░██╗░░░██║░░░██║░░██║██╔══██╗
-// ░░╚██╔╝░░███████╗╚█████╔╝░░░██║░░░╚█████╔╝██║░░██║
-// ░░░╚═╝░░░╚══════╝░╚════╝░░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝
-
-#define cstl_vector(TYPE)	__cstl_vector(sizeof(TYPE),#TYPE)
-OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
-    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = calloc(header_sz + type_size, 1);
-    if (block == NULL) {
-        cstl_error("Failed to allocate memory for vector");
-    }
-    void *ptr = ((char *) block) + header_sz;
-    void **container = &ptr;
-    OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_VECTOR;
-    OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
-    OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
-
-    OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
-
-    OPENCSTL_NIDX(container, -4) = (size_t) type;
-
-    OPENCSTL_NIDX(container, -3) = 0; //
-    OPENCSTL_NIDX(container, -2) = 1; //capacity
-    OPENCSTL_NIDX(container, -1) = 0; //length
-    bool iveb_init = false;
-    if (iveb == NULL) {
-        iveb = iveb_new();
-        iveb_init = true;
-    }
-    iveb_insert(iveb, ptr, (char *) ptr + (type_size), CT_VECTOR, type_size, type);
-    if (iveb_init) {
-        atexit(__opencstl_iveb_destroy);
-    }
-    return ptr;
-}
-
-OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    //size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-
-#if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
-    float valuef = 0.0F;
-    if (is_float) {
-        valuef = (float) *(double *) value;
-        value = &valuef;
-    }
-#endif
-    if (capacity < n) {
-        iveb_erase(iveb, *container);
-        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
-        if (b == NULL) {
-            cstl_error("Reallocation failed at vector assign");
-        }
-        *container = ((char *) b + header_sz);
-        OPENCSTL_NIDX(container, -2) = n;
-        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size, type);
-    }
-    if (value == NULL) {
-        memset(*container, 0, type_size * n);
-    } else {
-        for (size_t i = 0; i < n; i++) {
-            memcpy((char *) *container + type_size * (i), value, type_size);
-        }
-    }
-    OPENCSTL_NIDX(container, -1) = n;
-}
-
-OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-
-#if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
-    float valuef = 0.0F;
-    if (is_float) {
-        valuef = (float) *(double *) value;
-        value = &valuef;
-    }
-#endif
-    if (length == capacity) {
-        iveb_erase(iveb, *container);
-        size_t new_capaciy = capacity * 2;
-        void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
-        if (b == NULL) {
-            cstl_error("Reallocation failed at vector push_back");
-        }
-        *container = ((char *) b + header_sz);
-        OPENCSTL_NIDX(container, -2) = new_capaciy;
-        iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capaciy), CT_VECTOR, type_size, type);
-    }
-    memcpy((char *) *container + type_size * length, value, type_size);
-    OPENCSTL_NIDX(container, -1)++;
-}
-
-OPENCSTL_FUNC void __cstl_vector_pop_back(void **container) {
-    if (OPENCSTL_NIDX(container, -1) <= 0) {
-        cstl_error("No elements in cstl_vector");
-    }
-    OPENCSTL_NIDX(container, -1)--;
-}
-
-OPENCSTL_FUNC size_type __cstl_vector_size(void **container) {
-    return (size_type) OPENCSTL_NIDX(container, -1);
-}
-
-OPENCSTL_FUNC size_type __cstl_vector_capacity(void **container) {
-    return (size_type) OPENCSTL_NIDX(container, -2);
-}
-
-OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, void *value) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
-    size_t pos = (*(char **) iter - *(char **) container) / type_size;
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-
-#if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
-    float valuef = 0.0F;
-    if (is_float) {
-        valuef = (float) *(double *) value;
-        value = &valuef;
-    }
-#endif
-    if (length + N >= capacity) {
-        iveb_erase(iveb, *container);
-        size_t new_capaciy = (capacity + N) * 2;
-        void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
-        if (b == NULL) {
-            cstl_error("Reallocation failed at vector insert");
-        }
-        *container = ((char *) b + header_sz);
-        OPENCSTL_NIDX(container, -2) = new_capaciy;
-        iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capaciy), CT_VECTOR, type_size, type);
-    }
-    memmove((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
-            (length - pos) * type_size);
-    for (size_t i = 0; i < N; i++) {
-        memcpy((char *) *container + type_size * (pos + i), value, type_size);
-    }
-    OPENCSTL_NIDX(container, -1) += N;
-}
-
-OPENCSTL_FUNC void __cstl_vector_erase(void **container, void *iter_begin, void *iter_end) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    //size_t capacity = OPENCSTL_NIDX(container, -2);
-    size_t pos_begin = (*(char **) iter_begin - *(char **) container) / type_size;
-    size_t pos_end = (*(char **) iter_end - *(char **) container) / type_size;
-    memmove((char *) *container + type_size * (pos_begin), (char *) *container + type_size * (pos_end),
-            (length - pos_end) * type_size);
-    OPENCSTL_NIDX(container, -1) -= (pos_end - pos_begin);
-}
-
-OPENCSTL_FUNC void *__cstl_vector_begin(void **container) {
-    return (void *) *container;
-}
-
-OPENCSTL_FUNC void *__cstl_vector_end(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    return (void *) ((char *) *container + (type_size * length));
-}
-
-OPENCSTL_FUNC void *__cstl_vector_rbegin(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    return (void *) ((char *) *container + (type_size * (length - 1)));
-}
-
-OPENCSTL_FUNC void *__cstl_vector_rend(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    return (void *) ((char *) *container - (type_size));
-}
-
-OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
-    float valuef = 0.0F;
-    if (is_float) {
-        valuef = (float) *(double *) value;
-        value = &valuef;
-    }
-#endif
-    if (capacity < n) {
-        iveb_erase(iveb, *container);
-        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
-        if (b == NULL) {
-            cstl_error("Reallocation failed at vector resize");
-        }
-        *container = ((char *) b + header_sz);
-        OPENCSTL_NIDX(container, -2) = n;
-        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size, type);
-    }
-    if (n > length) {
-        if (value == NULL) {
-            memset((char *) *container + type_size * length, 0, type_size * (n - length));
-        } else {
-            for (size_t i = length; i < n; i++) {
-                memcpy((char *) *container + type_size * (i), value, type_size);
-            }
-        }
-    }
-    OPENCSTL_NIDX(container, -1) = n;
-}
-
-OPENCSTL_FUNC void *__cstl_vector_find(void **container, void *iter_begin, void *value) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    //size_t capacity = OPENCSTL_NIDX(container, -2);
-    size_t pos = (*(char **) iter_begin - *(char **) container) / type_size;
-    //char *type = (char *) OPENCSTL_NIDX(container, -4);
-
-#if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
-    float valuef = 0.0F;
-    if (is_float) {
-        valuef = (float) *(double *) value;
-        value = &valuef;
-    }
-#endif
-    for (size_t i = pos; i < length; i++) {
-        if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
-            return (char *) *container + type_size * (i);
-        }
-    }
-    return NULL;
-}
-
-OPENCSTL_FUNC void __cstl_vector_clear(void **container) {
-    OPENCSTL_NIDX(container, -1) = 0;
-}
-
-OPENCSTL_FUNC void __cstl_vector_free(void **container) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    iveb_erase(iveb, *container);
-    free((char *) (*container) - header_sz);
-    *container = NULL;
-}
-
-OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    //size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-    if (capacity < n) {
-        iveb_erase(iveb, *container);
-        void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
-        if (b == NULL) {
-            cstl_error("Reallocation failed at vector reserve");
-        }
-        *container = ((char *) b + header_sz);
-        OPENCSTL_NIDX(container, -2) = n;
-        iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size, type);
-    }
-}
-
-OPENCSTL_FUNC void *__cstl_vector_next(void *it, size_t type_size) {
-    return (char *) it + type_size;
-}
-
-OPENCSTL_FUNC void *__cstl_vector_prev(void *it, size_t type_size) {
-    return (char *) it - type_size;
-}
-
-OPENCSTL_FUNC size_type __cstl_vector_max_size(void **container) {
-    return INT_MAX;
-}
-
-OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
-    char *type = (char *) OPENCSTL_NIDX(container, -4);
-
-    if (capacity == length) {
-        return;
-    }
-    size_t new_capacity = length > 0 ? length : 1;
-
-    iveb_erase(iveb, *container);
-    void *b = realloc((char *) *container - header_sz, header_sz + new_capacity * type_size);
-    if (b == NULL) {
-        cstl_error("Reallocation failed at vector shrink_to_fit");
-    }
-    *container = ((char *) b + header_sz);
-    OPENCSTL_NIDX(container, -2) = new_capacity;
-    iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capacity), CT_VECTOR, type_size, type);
-}
-
-
-#endif
-
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* END    vector.h */
-/* ////////////////////////////////////////////////////////////////////////////// */
-/* [already included: list.h] */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  rbtree.h                       (depth 1) */
@@ -6736,7 +6140,642 @@ static unsigned long long cstl_rand64(void) {
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    random.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
-/* [already included: mt19937.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  mt19937.h                      (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(OPENCSTL_MT19937_H)
+#define OPENCSTL_MT19937_H
+#include <stdint.h>
+#include <time.h>
+/* [already included: defines.h] */
+/* [already included: deque.h] */
+/* [already included: list.h] */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  swap.h                         (depth 2) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+// Created by spring on 4/21/2026.
+//
+
+#ifndef OPENCSTL_SWAP_H
+#define OPENCSTL_SWAP_H
+#include <stddef.h>
+#include <string.h>
+
+#define SWAP_STACK_BUF_SIZE 256
+
+void swap(void *a, void *b, size_t sz) {
+    unsigned char stack_buf[SWAP_STACK_BUF_SIZE];
+    unsigned char *tmp;
+    size_t i;
+
+    if (a == NULL || b == NULL || a == b || sz == 0) {
+        return;
+    }
+
+    /*
+     * 작은 크기는 stack buffer 사용
+     * 큰 크기는 byte-wise swap (malloc 없이)
+     */
+    if (sz <= SWAP_STACK_BUF_SIZE) {
+        tmp = stack_buf;
+
+        memcpy(tmp, a, sz);
+        memcpy(a, b, sz);
+        memcpy(b, tmp, sz);
+    } else {
+        unsigned char *pa = (unsigned char *) a;
+        unsigned char *pb = (unsigned char *) b;
+
+        for (i = 0; i < sz; ++i) {
+            unsigned char t = pa[i];
+            pa[i] = pb[i];
+            pb[i] = t;
+        }
+    }
+}
+#endif //OPENCSTL_SWAP_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    swap.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+#define MT64_N          312
+#define MT64_M          156
+#define MT64_MATRIX_A   0xB5026F5AA96619E9ULL
+#define MT64_UPPER_MASK 0xFFFFFFFF80000000ULL
+#define MT64_LOWER_MASK 0x7FFFFFFFULL
+
+typedef struct {
+    uint64_t mt[MT64_N];
+    int index;
+} __mt19937_64_t;
+
+__mt19937_64_t __rng64 = {
+    {
+        1776098118,
+        4095968591,
+        2489032677,
+        2495002180,
+        1521698085,
+        3468952409,
+        1098923224,
+        2876365311,
+        3875427246,
+        2303920453,
+        3481655941,
+        3656246169,
+        3488737099,
+        1911217468,
+        3072370164,
+        54539853,
+        2100673779,
+        3365782472,
+        3678642746,
+        3156232773,
+        423872610,
+        384980604,
+        14136892,
+        1456753616,
+        237535746,
+        3636975731,
+        2024840138,
+        2028378269,
+        1647654370,
+        3507099562,
+        2984247251,
+        2709726729,
+        4136871816,
+        2050550537,
+        819447735,
+        3874448673,
+        1342874910,
+        2832492440,
+        2016583134,
+        124576301,
+        1384715537,
+        3530629926,
+        671516421,
+        2761930297,
+        648433457,
+        1017100791,
+        1981299097,
+        3101820692,
+        2950834868,
+        1756679637,
+        584964515,
+        4081098669,
+        1775854538,
+        3437182948,
+        1020220836,
+        341993995,
+        3408141005,
+        2904582044,
+        94705709,
+        1395954468,
+        2723919850,
+        4100156421,
+        4019124044,
+        1842129442,
+        4079666746,
+        3677560224,
+        3999536271,
+        2893025081,
+        4228019062,
+        3210991107,
+        1390517408,
+        662431847,
+        1090909027,
+        1852368304,
+        1200827841,
+        521259154,
+        2855284515,
+        202287130,
+        1068495373,
+        2234023621,
+        3282764785,
+        323567790,
+        3148296635,
+        391185413,
+        3058708111,
+        3342934558,
+        3443548783,
+        2861981824,
+        2794386527,
+        142350258,
+        2955638948,
+        3162968156,
+        3760718351,
+        3871919616,
+        1645458827,
+        1497555060,
+        3613359691,
+        458681097,
+        2981316388,
+        713218878,
+        3450818032,
+        1431683567,
+        1600366697,
+        1714270684,
+        1544611227,
+        941048232,
+        2087772914,
+        907867291,
+        4128335230,
+        2840844480,
+        1774507957,
+        2264249920,
+        1258670090,
+        1947410483,
+        2037348156,
+        3228252038,
+        1761066031,
+        2293032587,
+        4078238904,
+        3236442710,
+        2705458281,
+        2303876801,
+        1926326119,
+        3998075151,
+        2811251186,
+        930843956,
+        1144233212,
+        3332349131,
+        97732309,
+        3849002316,
+        2915293496,
+        2810737890,
+        1149413950,
+        1535291243,
+        3360025429,
+        3421309515,
+        3433858864,
+        1712656768,
+        2497877002,
+        28081018,
+        1500134564,
+        1291223784,
+        2088311216,
+        678941823,
+        4050017251,
+        804407025,
+        3248654108,
+        3933873068,
+        4007401725,
+        2277599457,
+        1076301181,
+        2622448272,
+        3748282735,
+        1821610946,
+        817739489,
+        2234696578,
+        1210669987,
+        2701425175,
+        2214421026,
+        486743705,
+        761055154,
+        2043636369,
+        1639492383,
+        2540008982,
+        892906626,
+        3301593260,
+        2463924540,
+        2304834400,
+        2865483490,
+        4019518352,
+        3388450644,
+        2519700470,
+        2378632848,
+        3859218429,
+        41583399,
+        3551979613,
+        455310134,
+        1784672860,
+        2439363685,
+        1129068494,
+        1190855146,
+        1219423658,
+        1519984024,
+        2292587420,
+        457621073,
+        26485539,
+        44862599,
+        4036930934,
+        1752500768,
+        500049802,
+        3842075558,
+        3846522605,
+        1330514793,
+        296294288,
+        1509560985,
+        3534138747,
+        871597155,
+        3371132114,
+        3468519555,
+        3117276577,
+        771937135,
+        879279391,
+        1934008381,
+        1167355102,
+        3585722021,
+        2714912251,
+        1754911891,
+        726519327,
+        1643748675,
+        3770213438,
+        3328598245,
+        2760155758,
+        2639634685,
+        2778091809,
+        1699423094,
+        659540027,
+        2343729207,
+        2118446589,
+        74406227,
+        218555160,
+        30856212,
+        1167930465,
+        3467170840,
+        4084379716,
+        2016327892,
+        1786161279,
+        1516085301,
+        1338537268,
+        530933512,
+        3684209364,
+        2513271217,
+        1475130583,
+        4151669683,
+        1501144793,
+        1340046562,
+        2965836453,
+        1148330311,
+        417665896,
+        2097316195,
+        2645187881,
+        1399929080,
+        2659323017,
+        1490103303,
+        363804462,
+        3465020727,
+        3639391603,
+        1334768429,
+        2136970163,
+        58803944,
+        2115603995,
+        1159651724,
+        3891861745,
+        3070456198,
+        142601912,
+        3549937283,
+        1064205062,
+        1475451662,
+        1811199306,
+        3691353348,
+        2849091044,
+        3302207000,
+        4132176068,
+        989617620,
+        51194066,
+        717904882,
+        4168333670,
+        2453975333,
+        2041085414,
+        4005969440,
+        3758836276,
+        3903149919,
+        4189289922,
+        548363216,
+        973394894,
+        1839689710,
+        1896955670,
+        1636598469,
+        1933293750,
+        3097838145,
+        3857376222,
+        2039165214,
+        2629174834,
+        4288046775,
+        3240581823,
+        1710208853,
+        337962299,
+        3788182518,
+        2090635011,
+        1721836154,
+        2416252352,
+        3422851855,
+        2488421740,
+        1397862477,
+        1477292673,
+        1997234387,
+        2430055230,
+        2579580596,
+        1704015956,
+        2216497525,
+        2313035196,
+        610434450,
+        4230676740,
+        1885612770,
+        3439405078,
+        2028271374,
+        3388301479,
+        3283245152,
+        3050416026,
+        2302106739,
+        2730938597,
+        1762153169,
+        3610328820
+    },
+    MT64_N
+};
+
+__mt19937_64_t __uuid64 = {0};
+
+static void __mt19937_64_uuid_seed(uint64_t seed) {
+    __uuid64.mt[0] = seed;
+    for (int i = 1; i < MT64_N; i++) {
+        __uuid64.mt[i] = 6364136223846793005ULL * (__uuid64.mt[i - 1] ^ (__uuid64.mt[i - 1] >> 62)) + (uint64_t) i;
+    }
+    __uuid64.index = MT64_N;
+}
+
+static void __mt19937_64_seed(uint64_t seed) {
+    __rng64.mt[0] = seed;
+    for (int i = 1; i < MT64_N; i++) {
+        __rng64.mt[i] = 6364136223846793005ULL * (__rng64.mt[i - 1] ^ (__rng64.mt[i - 1] >> 62)) + (uint64_t) i;
+    }
+    __rng64.index = MT64_N;
+}
+
+
+// [0, 2^64 - 1]
+static inline uint64_t __mt19937_64_next() {
+    uint64_t y;
+
+    if (__rng64.index >= MT64_N) {
+        static const uint64_t mag01[2] = {0ULL, MT64_MATRIX_A};
+        uint64_t y;
+        int i;
+
+        for (i = 0; i < MT64_N - MT64_M; i++) {
+            y = (__rng64.mt[i] & MT64_UPPER_MASK) | (__rng64.mt[i + 1] & MT64_LOWER_MASK);
+            __rng64.mt[i] = __rng64.mt[i + MT64_M] ^ (y >> 1) ^ mag01[y & 1ULL];
+        }
+        for (; i < MT64_N - 1; i++) {
+            y = (__rng64.mt[i] & MT64_UPPER_MASK) | (__rng64.mt[i + 1] & MT64_LOWER_MASK);
+            __rng64.mt[i] = __rng64.mt[i + (MT64_M - MT64_N)] ^ (y >> 1) ^ mag01[y & 1ULL];
+        }
+        y = (__rng64.mt[MT64_N - 1] & MT64_UPPER_MASK) | (__rng64.mt[0] & MT64_LOWER_MASK);
+        __rng64.mt[MT64_N - 1] = __rng64.mt[MT64_M - 1] ^ (y >> 1) ^ mag01[y & 1ULL];
+
+        __rng64.index = 0;
+    }
+
+    y = __rng64.mt[__rng64.index++];
+
+    // tempering
+    y ^= (y >> 29) & 0x5555555555555555ULL;
+    y ^= (y << 17) & 0x71D67FFFEDA60000ULL;
+    y ^= (y << 37) & 0xFFF7EEE000000000ULL;
+    y ^= (y >> 43);
+
+    return y;
+}
+
+// [0, 1) uniform real
+static double __mt19937_random(void) {
+    return (double) (__mt19937_64_next() >> 11) * (1.0 / 9007199254740992.0);
+}
+
+
+// [lo, hi] inclusive integer range (supports negative)
+static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
+    uint64_t range = (uint64_t) (hi - lo) + 1ULL;
+    return lo + (int64_t) (__mt19937_64_next() % range);
+}
+
+char *__mt19937_uuid(void) {
+    __mt19937_64_uuid_seed(time(NULL));
+    static char buf[37];
+    static const char hex[] = "0123456789abcdef";
+
+    uint64_t hi = __mt19937_64_next();
+    uint64_t lo = __mt19937_64_next();
+
+    hi = (hi & ~((uint64_t) 0xF << 12)) | ((uint64_t) 0x4 << 12);
+    lo = (lo & ~((uint64_t) 0x3 << 62)) | ((uint64_t) 0x2 << 62);
+
+    int p = 0;
+    // time_low: 8자 (hi >> 32)
+    for (int i = 60; i >= 32; i -= 4)
+        buf[p++] = hex[(hi >> i) & 0xF];
+    buf[p++] = '-';
+    // time_mid: 4자 (hi >> 16)
+    for (int i = 28; i >= 16; i -= 4)
+        buf[p++] = hex[(hi >> i) & 0xF];
+    buf[p++] = '-';
+    // time_hi_and_version: 4자 (hi >> 0)
+    for (int i = 12; i >= 0; i -= 4)
+        buf[p++] = hex[(hi >> i) & 0xF];
+    buf[p++] = '-';
+    // clock_seq: 4자 (lo >> 48)
+    for (int i = 60; i >= 48; i -= 4)
+        buf[p++] = hex[(lo >> i) & 0xF];
+    buf[p++] = '-';
+    // node: 12자 (lo >> 0)
+    for (int i = 44; i >= 0; i -= 4)
+        buf[p++] = hex[(lo >> i) & 0xF];
+
+    buf[36] = '\0';
+    return buf;
+}
+
+OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_t length = OPENCSTL_NIDX(container, -1);
+
+    for (size_t i = length - 1; i > 0; i--) {
+        size_t rng_idx = __mt19937_64_next() % (i + 1);
+        swap((char *)(*container) + i * type_size, (char *)(*container) + rng_idx * type_size, type_size);
+    }
+}
+
+OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
+    ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
+    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
+    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+
+    for (size_t i = length - 1; i > 0; i--) {
+        size_t rng_idx = __mt19937_64_next() % (i + 1);
+        swap((char *)(*container) + i * type_size, (char *)(*container) + rng_idx * type_size, type_size);
+    }
+}
+
+OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
+    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    size_type length = (size_type) OPENCSTL_NIDX(container, -1);
+    if (length <= 1) return;
+
+    // Copy list data to flat array
+    void *ptr = malloc(type_size * length);
+    void *it = *head;
+    for (size_type i = 0; i < length; i++) {
+        memcpy((char *) ptr + (i * type_size), it, type_size);
+        it = __cstl_list_next_prev(it, -1);
+    }
+    // Fisher-Yates shuffle on flat array
+    for (size_type i = length - 1; i > 0; i--) {
+        size_type rng_idx = __mt19937_64_next() % (i + 1);
+        swap((char *) ptr + i * type_size, (char *) ptr + rng_idx * type_size, type_size);
+    }
+    // Copy shuffled data back to list nodes
+    it = *head;
+    for (size_type i = 0; i < length; i++) {
+        memcpy(it, (char *) ptr + (i * type_size), type_size);
+        it = __cstl_list_next_prev(it, -1);
+    }
+    free(ptr);
+}
+
+
+
+void __mt19937_shuffle(void *container) {
+    size_t container_type;
+    if (__is_deque((void **) &container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
+        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            __cstl_vector_shuffle((void **) &container);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            __cstl_deque_shuffle((void **) &container);
+        }
+        break;
+        case OPENCSTL_LIST: {
+            __cstl_list_shuffle((void **) &container);
+        }
+        break;
+        default: cstl_error("Invalid operator");
+            break;
+    }
+}
+
+typedef void (*seed_fn)(uint64_t);
+
+typedef double (*random_fn)(void);
+
+typedef int64_t (*randint_fn)(int64_t, int64_t);
+
+typedef char *(*uuid_fn)(void);
+
+typedef void (*shuffle_fn)(void *);
+
+typedef struct {
+    random_fn random;
+    randint_fn randint;
+    seed_fn seed;
+    uuid_fn uuid;
+    shuffle_fn shuffle;
+} RANDOM;
+
+RANDOM mt19937 = {
+    __mt19937_random,
+    __mt19937_randint,
+    __mt19937_64_seed,
+    __mt19937_uuid,
+    __mt19937_shuffle
+};
+
+#endif //OPENCSTL_MT19937_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    mt19937.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* BEGIN  chrono.h                       (depth 1) */
@@ -6903,7 +6942,7 @@ typedef struct FPM {
 static FPM fpm[1024] = {0};
 static int fpm_size = 0;
 
-void fpm_append(FILE *fp, const char *filepath) {
+void fpm_append(FILE *fp, char *filepath) {
     verify(fpm_size < 1024);
     fpm[fpm_size].fp = fp;
     fpm[fpm_size].filepath = filepath;
@@ -6941,7 +6980,7 @@ char *fpm_get(FILE *fp) {
 // ██╔══╝░░░╚═══██╗░░░██║░░░██╔══██╗██╔══╝░░██╔══██║██║╚██╔╝██║
 // ██║░░░░░██████╔╝░░░██║░░░██║░░██║███████╗██║░░██║██║░╚═╝░██║
 // ╚═╝░░░░░╚═════╝░░░░╚═╝░░░╚═╝
-FILE *__cstl_fopen(const char *filename, const char *mode) {
+FILE *__cstl_fopen( char *filename, const char *mode) {
     FILE *fp = NULL;
 #if defined(__TINYC__)
     fp = fopen(filename, mode);
@@ -7012,7 +7051,7 @@ FILE *__cstl_fwrite_all(FILE *fp, const char *buf) {
     return new_fp;
 }
 
-typedef FILE *(*cstl_fopen_fn)(const char *filename, const char *mode);
+typedef FILE *(*cstl_fopen_fn)( char *filename, const char *mode);
 
 typedef void (*cstl_fclose_fn)(FILE *fp);
 
@@ -9114,8 +9153,8 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
 }
 
 #if defined(USE_CSTL_FUNC)
-#define sort _cstl_sort_func
-#define stable_sort _cstl_stable_sort_func
+#define csort _cstl_sort_func
+#define cstable_sort _cstl_stable_sort_func
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -9442,7 +9481,7 @@ BITSET __cstl_bitset(size_type n) {
     size_type cap = __cstl_bitset_capacity(n);
     BITSET b;
     b.nbits = n;
-    b.bits = calloc(cap, 1);
+    b.bits = (ubyte_x*)calloc(cap, 1);
     b.str = (char *) calloc(b.nbits + 1, 1);
     return b;
 }
@@ -10126,15 +10165,15 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
                 __cstl_vector_assign((void **) container, *(int *) param1, param2);
             }
         }
-        break;
+            break;
         case OPENCSTL_LIST: {
         }
-        break;
+            break;
         case OPENCSTL_DEQUE: {
             if (argc == 1)param2 = NULL;
             __cstl_deque_assign((void **) container, *(int *) param1, param2);
         }
-        break;
+            break;
         default: cstl_error("Invalid operation");
             break;
     }
@@ -10162,11 +10201,11 @@ OPENCSTL_FUNC void _cstl_push(void *container, ...) {
         case OPENCSTL_QUEUE: {
             __cstl_deque_push_back((void **) container, value);
         }
-        break;
+            break;
         case OPENCSTL_PRIORITY_QUEUE: {
             __cstl_priority_queue_push((void **) container, value);
         }
-        break;
+            break;
         default: cstl_error("Invalid operator");
             break;
     }
@@ -10197,15 +10236,15 @@ OPENCSTL_FUNC void _cstl_push_back(void *container, ...) {
         case OPENCSTL_VECTOR: {
             __cstl_vector_push_back((void **) container, param1);
         }
-        break;
+            break;
         case OPENCSTL_LIST: {
             __cstl_list_push_back_front((void **) container, param1, -1, 0);
         }
-        break;
+            break;
         case OPENCSTL_DEQUE: {
             __cstl_deque_push_back((void **) container, param1);
         }
-        break;
+            break;
         default: cstl_error("Invalid operator");
             break;
     }
@@ -10233,11 +10272,11 @@ OPENCSTL_FUNC void _cstl_push_front(void *container, ...) {
         case OPENCSTL_LIST: {
             __cstl_list_push_back_front((void **) container, param1, 0, -1);
         }
-        break;
+            break;
         case OPENCSTL_DEQUE: {
             __cstl_deque_push_front((void **) container, param1);
         }
-        break;
+            break;
         default: cstl_error("Invalid operator");
             break;
     }
@@ -10256,15 +10295,15 @@ OPENCSTL_FUNC void _cstl_pop(void *container) {
         case OPENCSTL_STACK: {
             __cstl_deque_pop_back((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_QUEUE: {
             __cstl_deque_pop_front((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_PRIORITY_QUEUE: {
             __cstl_priority_queue_pop((void **) container);
         }
-        break;
+            break;
         default: cstl_error("Invalid operator");
             break;
     }
@@ -10282,15 +10321,15 @@ OPENCSTL_FUNC void _cstl_pop_back(void *container) {
         case OPENCSTL_VECTOR: {
             __cstl_vector_pop_back((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_LIST: {
             __cstl_list_pop_back_front((void **) container, -1, 0);
         }
-        break;
+            break;
         case OPENCSTL_DEQUE: {
             __cstl_deque_pop_back((void **) container);
         }
-        break;
+            break;
     }
 }
 
@@ -10307,20 +10346,20 @@ OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_max_size((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_LIST: {
             sz = __cstl_list_max_size((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_max_size((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             sz = __cstl_hashtable_capacity((void **) container);
         }
-        break;
+            break;
         default: {
             verify("Invalid operator");
         }
@@ -10369,11 +10408,11 @@ OPENCSTL_FUNC void _cstl_pop_front(void *container) {
         case OPENCSTL_LIST: {
             __cstl_list_pop_back_front((void **) container, 0, -1);
         }
-        break;
+            break;
         case OPENCSTL_DEQUE: {
             __cstl_deque_pop_front((void **) container);
         }
-        break;
+            break;
     }
 }
 
@@ -10391,25 +10430,25 @@ OPENCSTL_FUNC size_type _cstl_size(void *container) {
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_size((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_LIST: {
             sz = __cstl_list_size((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             sz = __cstl_tree_size((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_size((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             sz = __cstl_hashtable_size((void **) container);
         }
-        break;
+            break;
         default: cstl_error("Invalid operation");
             break;
     }
@@ -10432,16 +10471,16 @@ OPENCSTL_FUNC size_type _cstl_capacity(void *container) {
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_capacity((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_capacity((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             sz = __cstl_hashtable_capacity((void **) container);
         }
-        break;
+            break;
         default: cstl_error("Invalid operation");
             break;
     }
@@ -10475,42 +10514,42 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
             if (argc == 2)__cstl_vector_insert((void **) container, param1, 1, param2);
             else __cstl_vector_insert((void **) container, param1, *(int *) param2, param3);
         }
-        break;
+            break;
         case OPENCSTL_LIST: {
             if (argc == 2)__cstl_list_insert((void **) container, (void **) param1, 1, param2);
             else __cstl_list_insert((void **) container, (void **) param1, *(int *) param2, param3);
         }
-        break;
+            break;
         case OPENCSTL_DEQUE: {
             if (argc == 2)__cstl_deque_insert((void **) container, param1, 1, param2);
             else __cstl_deque_insert((void **) container, param1, *(int *) param2, param3);
         }
-        break;
+            break;
         case OPENCSTL_MAP: {
             if (argc == 2) __cstl_tree_insert((void **) container, param1, param2);
             else
                 cstl_error("Invalid operation");
         }
-        break;
+            break;
         case OPENCSTL_SET: {
             if (argc == 1) __cstl_tree_insert((void **) container, param1,NULL);
             else
                 cstl_error("Invalid operation");
         }
-        break;
+            break;
         case OPENCSTL_UNORDERED_MAP: {
             if (argc == 2)__cstl_hashtable_insert((void **) container, param1, param2);
             else
                 cstl_error("Invalid operation");
         }
-        break;
+            break;
         case OPENCSTL_UNORDERED_SET: {
             if (argc == 1) {
                 __cstl_hashtable_insert((void **) container, param1,NULL);
             } else
                 cstl_error("Invalid operation");
         }
-        break;
+            break;
         default: cstl_error("Invalid operation");
             break;
     }
@@ -10544,14 +10583,14 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
                 __cstl_vector_erase((void **) container, param1, &param2);
             } else __cstl_vector_erase((void **) container, param1, param2);
         }
-        break;
+            break;
         case OPENCSTL_LIST: {
             if (argc == 1) {
                 param2 = cstl_next(*(void**)param1);
                 __cstl_list_erase((void **) container, (void **) param1, (void **) &param2);
             } else __cstl_list_erase((void **) container, (void **) param1, (void **) param2);
         }
-        break;
+            break;
         case OPENCSTL_DEQUE: {
             if (argc == 1) {
                 param2 = (*(char **) param1) + OPENCSTL_NIDX((void**)container,
@@ -10560,17 +10599,17 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
                 __cstl_deque_erase((void **) container, param1, &param2);
             } else __cstl_deque_erase((void **) container, param1, param2);
         }
-        break;
+            break;
         case OPENCSTL_MAP:
         case OPENCSTL_SET: {
             __cstl_tree_erase((void **) container, (void **) *(void **) param1);
         }
-        break;
+            break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             __cstl_hashtable_erase((void **) container, *(void **) param1);
         }
-        break;
+            break;
         default: cstl_error("Invalid operation");
             break;
     }
@@ -10601,17 +10640,17 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
             if (argc == 1)param2 = NULL;
             __cstl_vector_resize((void **) container, *(int *) param1, param2);
         }
-        break;
+            break;
         case OPENCSTL_LIST: {
             if (argc == 1)param2 = NULL;
             __cstl_list_resize((void **) container, *(int *) param1, param2);
         }
-        break;
+            break;
         case OPENCSTL_DEQUE: {
             if (argc == 1)param2 = NULL;
             __cstl_deque_resize((void **) container, *(int *) param1, &param2);
         }
-        break;
+            break;
         default: cstl_error("Invalid operation");
             break;
     }
@@ -10631,31 +10670,31 @@ OPENCSTL_FUNC void _cstl_clear(void *container) {
         case OPENCSTL_VECTOR: {
             __cstl_vector_clear((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_LIST: {
             __cstl_list_clear((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_STACK:
         case OPENCSTL_QUEUE:
         case OPENCSTL_DEQUE: {
             __cstl_deque_clear((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             __cstl_tree_clear((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             __cstl_hashtable_clear((void **) container);
         }
-        break;
+            break;
         default: {
             cstl_error("Invalid operation");
         }
-        break;
+            break;
     }
 }
 
@@ -10673,27 +10712,27 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_size((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_LIST: {
             sz = __cstl_list_size((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             sz = __cstl_tree_size((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_STACK:
         case OPENCSTL_QUEUE:
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_size((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             sz = __cstl_hashtable_size((void **) container);
         }
-        break;
+            break;
         default: {
             cstl_error("Invalid operation");
         };
@@ -10713,31 +10752,31 @@ OPENCSTL_FUNC void _cstl_free(void *container) {
         case OPENCSTL_VECTOR: {
             __cstl_vector_free((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_LIST: {
             __cstl_list_free((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_STACK:
         case OPENCSTL_QUEUE:
         case OPENCSTL_DEQUE: {
             __cstl_deque_free((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_SET:
         case OPENCSTL_MAP: {
             __cstl_tree_free((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_PRIORITY_QUEUE: {
             __cstl_vector_free((void **) container);
         }
-        break;
+            break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             __cstl_hashtable_free((void **) container);
         }
-        break;
+            break;
         default: cstl_error("Invalid operation");
             break;
     }
@@ -10768,29 +10807,29 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
             if (argc == 1) return __cstl_vector_find((void **) container, container, param1);
             else return __cstl_vector_find((void **) container, param1, param2);
         }
-        break;
+            break;
         case OPENCSTL_LIST: {
             if (argc == 1)
                 return __cstl_list_find((void **) container, (void **) &OPENCSTL_NIDX((void**)container, 0),
                                         param1);
             else return __cstl_list_find((void **) container, (void **) param1, param2);
         }
-        break;
+            break;
         case OPENCSTL_DEQUE: {
             if (argc == 1) return __cstl_deque_find((void **) container, container, param1);
             else return __cstl_deque_find((void **) container, param1, param2);
         }
-        break;
+            break;
         case OPENCSTL_MAP:
         case OPENCSTL_SET: {
             return __cstl_tree_find((void **) container, param1);
         }
-        break;
+            break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             return __cstl_hashtable_find((void **) container, param1);
         }
-        break;
+            break;
         default: cstl_error("Invalid operator");
             break;
     }
@@ -10822,19 +10861,19 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
                 __cstl_vector_reserve((void **) container, *(size_t *) param1);
             }
         }
-        break;
+            break;
         case OPENCSTL_UNORDERED_SET:
         case OPENCSTL_UNORDERED_MAP: {
             if (argc == 1) {
                 __cstl_hashtable_reserve((void **) container, *(size_t *) param1);
             }
         }
-        break;
+            break;
 
         default: {
             cstl_error("Invalid operation");
         }
-        break;
+            break;
     }
     __cstl_va_end(vl);
 }
@@ -10896,7 +10935,9 @@ OPENCSTL_FUNC void _cstl_reserve(void *container, int argc, ...) {
 #endif
 
 #endif
-
+#if defined(__cplusplus)
+}
+#endif
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    opencstl.h */
 /* ////////////////////////////////////////////////////////////////////////////// */

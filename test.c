@@ -1,7 +1,10 @@
 #define OPENCSTL_TRACER
+#include <locale.h>
 #include "opencstl/opencstl.h"
 
 int main() {
+    setlocale(LC_ALL, ".UTF-8");
+    SetConsoleOutputCP(65001);
     // fs.makedirs("./test/folder");
     // FILE *fp = fstream.open("./test/folder/a.txt", "wt");
     // for (int i = 0; i < 10; i++) {
@@ -28,4 +31,6 @@ int main() {
         printf("%s\n", *p);
     }
     glob_free(all_c);
+
+    wprintf(L"%s\n", L"■■■■");
 }
