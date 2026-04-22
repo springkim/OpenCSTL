@@ -95,4 +95,6 @@
 #else
 #define OCSTL_RELEASE
 #endif
+
+
 #endif //_OPENCSTL_CROSSPLATFORM_H

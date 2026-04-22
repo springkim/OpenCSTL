@@ -7,7 +7,7 @@
 
 
 void cstl_vector_test01(void) {
-    ConsoleMSG("OpenCSTL / VECTOR TEST01");
+    MsgBoxCLI("OpenCSTL / VECTOR TEST01");
 
     VECTOR(int) arr = new_vector(int);
 
@@ -57,7 +57,7 @@ void cstl_vector_test01(void) {
 }
 
 void cstl_vector_test2(void) {
-    ConsoleMSG("OpenCSTL / VECTOR TEST02");
+    MsgBoxCLI("OpenCSTL / VECTOR TEST02");
     VECTOR(int*) matrix = new_vector(int*);
     const size_t sz = 7;
     assign(matrix, sz);
@@ -85,7 +85,7 @@ void cstl_vector_test2(void) {
 }
 
 void cstl_vector_test3(void) {
-    ConsoleMSG("OpenCSTL / VECTOR TEST03");
+    MsgBoxCLI("OpenCSTL / VECTOR TEST03");
     VECTOR(int) vec = new_vector(int);
     const size_type N = 100;
     for (int i = 0; i < N; i++) {
@@ -108,7 +108,7 @@ void cstl_vector_test3(void) {
 
 
 void cstl_list_test01(void) {
-    ConsoleMSG("OpenCSTL / LIST TEST01");
+    MsgBoxCLI("OpenCSTL / LIST TEST01");
     LIST(int) list = new_list(int);
 
     for (int i = 0; i < 10; i++) {
@@ -158,7 +158,7 @@ void cstl_list_test01(void) {
 
 
 void cstl_set_test01(void) {
-    ConsoleMSG("OpenCSTL / SET TEST01");
+    MsgBoxCLI("OpenCSTL / SET TEST01");
     SET(float) tree = new_set(float);
     for (float i = 0; i < 100; i++) {
         insert(tree, i);
@@ -180,7 +180,7 @@ void cstl_set_test01(void) {
 }
 
 void cstl_map_test01(void) {
-    ConsoleMSG("OpenCSTL / MAP TEST01");
+    MsgBoxCLI("OpenCSTL / MAP TEST01");
     MAP(int) tree = new_map(int, double);
     for (int i = 0; i < 10; i++) {
         double d = (double) i * i;
@@ -201,7 +201,7 @@ void cstl_map_test01(void) {
 }
 
 void cstl_deque_test01(void) {
-    ConsoleMSG("OpenCSTL / DEQUE TEST01");
+    MsgBoxCLI("OpenCSTL / DEQUE TEST01");
     DEQUE(int) deque = new_deque(int);
     for (int i = 0; i < 10; i++) {
         push_back(deque, i);
@@ -243,7 +243,7 @@ void cstl_deque_test01(void) {
 }
 
 void cstl_stack_test01(void) {
-    ConsoleMSG("OpenCSTL / STACK TEST01");
+    MsgBoxCLI("OpenCSTL / STACK TEST01");
     STACK(int) stack = new_stack(int);
     for (int i = 0; i < 10; i++) {
         push(stack, i);
@@ -257,7 +257,7 @@ void cstl_stack_test01(void) {
 }
 
 void cstl_queue_test01(void) {
-    ConsoleMSG("OpenCSTL / QUEUE TEST01");
+    MsgBoxCLI("OpenCSTL / QUEUE TEST01");
     QUEUE(int) queue = new_queue(int);
     for (int i = 0; i < 100; i++) {
         push(queue, i);
@@ -271,7 +271,7 @@ void cstl_queue_test01(void) {
 }
 
 void cstl_priority_queue_test01(void) {
-    ConsoleMSG("OpenCSTL / PRIORITY_QUEUE TEST01");
+    MsgBoxCLI("OpenCSTL / PRIORITY_QUEUE TEST01");
     QUEUE(int) queue = new_priority_queue(int);
     for (int i = 0; i < 10; i++) {
         push(queue, i);
@@ -325,7 +325,7 @@ int *dijkstra(Edge **vec, int beg) {
 }
 
 void cstl_priority_queue_test02(void) {
-    ConsoleMSG("OpenCSTL / PRIORITY_QUEUE TEST02");
+    MsgBoxCLI("OpenCSTL / PRIORITY_QUEUE TEST02");
     Edge **vec = new_vector(Edge*);
     assign(vec, 7);
     for (int i = 0; i < size(vec); i++) {
@@ -353,7 +353,7 @@ void cstl_priority_queue_test02(void) {
 }
 
 void cstl_unordered_set_test01(void) {
-    ConsoleMSG("OpenCSTL / UNORDERED_SET TEST01");
+    MsgBoxCLI("OpenCSTL / UNORDERED_SET TEST01");
     UNORDERED_SET(int) h = new_unordered_set(int);
 
     for (int i = 1; i < 100; i++) {
@@ -380,7 +380,7 @@ void cstl_unordered_set_test01(void) {
 }
 
 void cstl_unordered_set_test02(void) {
-    ConsoleMSG("OpenCSTL / UNORDERED_SET TEST02");
+    MsgBoxCLI("OpenCSTL / UNORDERED_SET TEST02");
     UNORDERED_SET(int) v = new_unordered_set(int);
     watch t_beg = chrono.now();
     for (int i = 0; i < 5000000; ++i) {

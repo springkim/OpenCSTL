@@ -28,7 +28,7 @@
 #  define tqdm_fileno_(fp)  fileno(fp)
 #endif
 
-#include "opencstl/opencstl.h"
+#include "../opencstl/opencstl.h"
 
 typedef struct {
     size_t total;             // 0이면 unknown (indeterminate bar)
