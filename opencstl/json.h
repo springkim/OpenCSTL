@@ -42,7 +42,7 @@
 #include<string.h>
 #include<ctype.h>
 #include<stdbool.h>
-#if defined(OCSTL_CC_TCC)
+#if defined(OCSTL_CC_TCC) || defined(OCSTL_OS_LINUX)
 // TCC는 strtok_s / strtok_r 둘 다 없으니 직접 구현
 char *strtok_s(char *str, char *delimiters, char **last) {
     if (!delimiters || !last) return NULL;

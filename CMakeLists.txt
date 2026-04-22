@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 project(OpenCSTL C CXX)
 
 set(CMAKE_C_STANDARD 99)
+set(CMAKE_CXX_STANDARD 11)
 
 
 set(EXE_NAME OpenCSTL)
@@ -24,12 +25,14 @@ if (MSVC)
 endif ()
 
 add_executable(bench_sort bench_sort.c)
-add_executable(bench_parser bench_parser.c)
+add_executable(bench_parser bench_parser.c
+        test_curl.c)
 add_executable(test_fstream test_fstream.c)
 add_executable(test_logging test_logging.c)
 add_executable(test_string test_string.c)
 add_executable(test_json test_json.c)
 add_executable(test_hashtable test_hashtable.c)
+add_executable(test_curl test_curl.c)
 #if(MSVC)
 #    # MSVC: /O2 + 전체 프로그램 최적화 + AVX2 + fast math
 #    target_compile_options(bench_sort PRIVATE

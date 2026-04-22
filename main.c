@@ -471,5 +471,8 @@ int main(void) {
     // __auto_type b = 1;
     //auto b = 1;
 
+    //MsgBoxGUI("Test GUI Message");
+    popen("curl https://github.com/springkim/OpenCSTL/wiki",)
+
     return 0;
 }

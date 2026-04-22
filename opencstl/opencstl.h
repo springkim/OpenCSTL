@@ -58,8 +58,9 @@ extern "C" {
 #pragma clang diagnostic ignored "-Wpedantic"
 #pragma clang diagnostic ignored "-Wgnu-auto-type"
 #pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+#if !defined(OCSTL_OS_LINUX)
 #pragma clang diagnostic ignored "-Wuse-after-free"
-
+#endif
 #endif
 
 #if defined(OCSTL_CC_GCC)
@@ -72,6 +73,7 @@ extern "C" {
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wformat"
 #pragma GCC diagnostic ignored "-Wuse-after-free"
+#pragma GCC diagnostic ignored "-Wunused-result"
 #endif
 
 
@@ -946,9 +948,14 @@ OPENCSTL_FUNC void _cstl_reverse(void *container) {
 
 #if defined(OCSTL_CC_CLANG)
 #pragma clang diagnostic pop
+
+
+#if !defined(OCSTL_CC_CLANG)
 #pragma clang diagnostic ignored "-Wgnu-auto-type"
+
 #pragma clang diagnostic ignored "-Wgnu-statement-expression-from-macro-expansion"
 #pragma clang diagnostic ignored "-Wvariadic-macro-arguments-omitted"
+#endif
 #endif
 #if defined(OCSTL_CC_GCC)
 #pragma GCC diagnostic pop

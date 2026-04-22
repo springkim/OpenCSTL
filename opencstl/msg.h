@@ -195,6 +195,7 @@ case IDIGNORE: break; // 무시
 #include <string.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <signal.h>
 struct lang_labels {
     const char *prefix; // LANG의 앞 2글자
     const char *abort_s;
@@ -344,7 +345,12 @@ static void MsgBoxGUI(const char *format, ...) {
         case IDABORT: fprintf(stderr, "abort\n");
             _exit(3);
         case IDRETRY: fprintf(stderr, "retry\n");
+#if defined(OCSTL_CC_TCC)
+            raise(SIGTRAP); // = DebugBreak (TCC: no __builtin_trap)
+#else
             __builtin_trap(); // = DebugBreak
+#endif
+            break;
         case IDIGNORE: fprintf(stderr, "ignore\n");
             break;
     }
