@@ -348,7 +348,6 @@ static void MsgBoxGUI(const char *format, ...) {
         case IDIGNORE: fprintf(stderr, "ignore\n");
             break;
     }
-    return 0;
 }
 
 #elif defined(OASTL_OS_MACOD)
