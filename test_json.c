@@ -10,6 +10,7 @@ int main() {
 
     JSON *root = json.parse(data);
 
+    printf("%s\n", json.get(root, "nested.8.0")->as_string());
     printf("title         = %s\n", json.get(root, "title")->as_string());
     printf("2             = %d\n", json.get(root, "2")->as_int());
     printf("arrays.2      = %d\n", json.get(root, "arrays.2")->as_int());

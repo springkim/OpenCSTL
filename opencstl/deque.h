@@ -427,4 +427,32 @@ OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
                 (char *) *container + (type_size * new_capacity),
                 CT_DEQUE, type_size, type);
 }
+
+OPENCSTL_FUNC void __cstl_deque_reverse(void **container) {
+    ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
+    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
+    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+
+    if (length < 2) {
+        return;
+    }
+
+    // 작은 타입은 스택 버퍼, 큰 타입은 heap (list_swap_data와 동일 패턴)
+    unsigned char stackbuf[128];
+    unsigned char *tmp = (type_size <= sizeof(stackbuf))
+                             ? stackbuf
+                             : (unsigned char *) calloc(type_size, 1);
+    verify(tmp != NULL);
+
+    char *base = (char *) *container;
+    for (size_t i = 0, j = length - 1; i < j; i++, j--) {
+        memcpy(tmp, base + i * type_size, type_size);
+        memcpy(base + i * type_size, base + j * type_size, type_size);
+        memcpy(base + j * type_size, tmp, type_size);
+    }
+
+    if (tmp != stackbuf) {
+        free(tmp);
+    }
+}
 #endif // if !defined(_OPENCSTL_DEQUE_H)

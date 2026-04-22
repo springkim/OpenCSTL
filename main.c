@@ -106,6 +106,20 @@ void cstl_vector_test3(void) {
     destroy(vec);
 }
 
+void cstl_vector_test4(void) {
+    MsgBoxCLI("OpenCSTL / VECTOR TEST04");
+    VECTOR(int) v = new_vector(int);
+    for (int i = 0; i < 100; i++) {
+        push_back(v, i);
+        printf("%d : %d\n",size(v),capacity(v));
+    }
+    reverse(v);
+    for (int *it = begin(v); it != end(v); it = next(it)) {
+        printf("[%d]", *it);
+    }
+    putchar('\n');
+    destroy(v);
+}
 
 void cstl_list_test01(void) {
     MsgBoxCLI("OpenCSTL / LIST TEST01");
@@ -360,7 +374,7 @@ void cstl_unordered_set_test01(void) {
         insert(h, i);
     }
 
-    size_t capacity_max = max_capacity(h);
+    size_t capacity_max = capacity(h);
 
     for (int i = 0; i < (int) capacity_max; i++) {
         int k = h[i];
@@ -397,6 +411,7 @@ void test01(void) {
     cstl_vector_test01();
     cstl_vector_test2();
     cstl_vector_test3();
+    cstl_vector_test4();
     cstl_list_test01();
 
     cstl_set_test01();
@@ -445,8 +460,6 @@ void test04(void) {
 
 
 int main(void) {
-
-
     logging.info(opencstl_env());
     logging.info(opencstl_version());
 

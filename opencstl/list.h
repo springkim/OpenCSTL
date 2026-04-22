@@ -39,6 +39,7 @@
 #define _OPENCSTL_LIST_H
 #include"error.h"
 #include"zalloc.h"
+
 #define cstl_list(TYPE)		__cstl_list(sizeof(TYPE),#TYPE)
 #define NTAIL(N)	(N==-1?-2:N)
 OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
@@ -537,5 +538,27 @@ OPENCSTL_FUNC size_type __cstl_list_max_size(void **container) {
     return INT_MAX;
 }
 
+OPENCSTL_FUNC void __cstl_list_reverse(void **container) {
+    void **tail = (void **) &OPENCSTL_NIDX(container, -2);
+    void **head = (void **) &OPENCSTL_NIDX(container, 0);
+    size_t length = OPENCSTL_NIDX(container, -1);
 
+    if (*head == NULL || *tail == NULL || length < 2) {
+        return;
+    }
+
+    // 각 노드의 prev/next 포인터를 스왑
+    void *curr = *head;
+    while (curr != NULL) {
+        void *next = (void *) OPENCSTL_NIDX(&curr, -1);
+        OPENCSTL_NIDX(&curr, -1) = OPENCSTL_NIDX(&curr, -2); // next ← old prev
+        OPENCSTL_NIDX(&curr, -2) = (size_t) next; // prev ← old next
+        curr = next;
+    }
+
+    // 컨테이너의 head ↔ tail 스왑
+    void *tmp = *head;
+    *head = *tail;
+    *tail = tmp;
+}
 #endif
