@@ -1,6 +1,8 @@
 <p align="center">
   <img width="1024" src="assets/blogo.png">
 </p>
+
+
 # OpenCSTL
 
 **C++ STL containers, in pure C.**
@@ -11,15 +13,15 @@ Header-only, no templates, no per-type macro dance.
 ```c
 #include <opencstl/opencstl.h>
 
-VECTOR(int) v = cstl_vector(int);
-cstl_push_back(v, 1);
-cstl_push_back(v, 2);
-cstl_push_back(v, 3);
+VECTOR(int) v = new_vector(int);
+push_back(v, 1);
+push_back(v, 2);
+push_back(v, 3);
 
-for (int* it = cstl_begin(v); it != cstl_end(v); it = cstl_next(it))
+for (int* it = begin(v); it != end(v); it = next(it))
     printf("%d ", *it);
 
-cstl_free(v);
+destroy(v);
 ```
 
 ## Why OpenCSTL?
@@ -290,6 +292,7 @@ cstl_free(v);
       Q(queue.h) --> OCSTL(opencstl.h)
       DQ(deque.h) --> OCSTL(opencstl.h)
       H(hashtable.h) --> OCSTL(opencstl.h)
+      MSG(msg.h) --> L(logging.h)
       MSG(msg.h) --> OCSTL(opencstl.h)
       ISORT(isort.h) --> MSORT(msort.h)
       TSORT(tsort.h) --> SORT(sort.h)

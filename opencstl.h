@@ -260,6 +260,8 @@ extern "C" {
 #else
 #define OCSTL_RELEASE
 #endif
+
+
 #endif //_OPENCSTL_CROSSPLATFORM_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -788,7 +790,7 @@ void _mistake(char *str, char *file, int line) {
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include<stdbool.h>
+#include <stdbool.h>
 // ============================================================
 // string function implementations
 // ============================================================
@@ -1010,7 +1012,100 @@ bool __cstl_string_is_space(const char *src) {
     return true;
 }
 
+int *__cstl_string_kmp(char *src, char *pattern, int *count) {
+    if (count != NULL) *count = 0;
 
+    if (src == NULL || pattern == NULL || count == NULL) {
+        return NULL;
+    }
+
+    size_t n = strlen(src);
+    size_t m = strlen(pattern);
+
+    // 빈 패턴 또는 패턴이 원본보다 긴 경우
+    if (m == 0 || n < m) {
+        return NULL;
+    }
+
+    // LPS 테이블 생성
+    int *lps = (int *) malloc(sizeof(int) * m);
+    if (lps == NULL) return NULL;
+
+    lps[0] = 0;
+    size_t len = 0;
+    size_t i = 1;
+
+    while (i < m) {
+        if (pattern[i] == pattern[len]) {
+            len++;
+            lps[i] = (int) len;
+            i++;
+        } else {
+            if (len != 0) {
+                len = lps[len - 1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+
+    // 매칭 위치 버퍼 (인덱스 0부터 저장)
+    size_t capacity = 16;
+    int *matches = (int *) malloc(sizeof(int) * capacity);
+    if (matches == NULL) {
+        free(lps);
+        return NULL;
+    }
+
+    size_t match_count = 0;
+    size_t j = 0;
+    i = 0;
+
+    while (i < n) {
+        if (pattern[j] == src[i]) {
+            i++;
+            j++;
+
+            if (j == m) {
+                // 용량 부족 시 확장
+                if (match_count >= capacity) {
+                    capacity *= 2;
+                    int *temp = (int *) realloc(matches, sizeof(int) * capacity);
+                    if (temp == NULL) {
+                        free(matches);
+                        free(lps);
+                        return NULL;
+                    }
+                    matches = temp;
+                }
+                matches[match_count] = (int) (i - j);
+                match_count++;
+                j = lps[j - 1];
+            }
+        } else {
+            if (j != 0) {
+                j = lps[j - 1];
+            } else {
+                i++;
+            }
+        }
+    }
+
+    free(lps);
+
+    *count = (int) match_count;
+
+    // 매칭 0개면 NULL 반환 (caller가 free 안 하도록)
+    if (match_count == 0) {
+        free(matches);
+        return NULL;
+    }
+
+    // 실제 크기로 축소 (실패해도 matches는 유효)
+    int *result = (int *) realloc(matches, sizeof(int) * match_count);
+    return (result != NULL) ? result : matches;
+}
 
 // ============================================================
 // function pointer types
@@ -1032,6 +1127,8 @@ typedef char *(*string_join_fn)(char **, int, const char *);
 typedef char *(*string_concat_fn)(const char *, const char *);
 
 typedef bool (*string_pred_fn)(const char *);
+
+typedef int * (*string_kmp_fn)(char *src, char *pattern, int *count);
 
 // ============================================================
 // string namespace struct
@@ -1055,6 +1152,7 @@ typedef struct {
     string_pred_fn is_alpha;
     string_pred_fn is_alnum;
     string_pred_fn is_space;
+    string_kmp_fn kmp;
 } __STRING;
 
 static __STRING string = {
@@ -1075,7 +1173,8 @@ static __STRING string = {
     __cstl_string_is_digit,
     __cstl_string_is_alpha,
     __cstl_string_is_alnum,
-    __cstl_string_is_space
+    __cstl_string_is_space,
+    __cstl_string_kmp
 };
 
 #endif //OPENCSTL_STRING_H
@@ -1487,7 +1586,8 @@ HTMVEB *htm_new(void) {
 
 void htm_free(HTMVEB *iv) {
     for (size_t i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used) free(iv->data->e[i].val);
+        if (iv->data->e[i].used)
+            free(iv->data->e[i].val);
     hm_free(iv->data);
     veb_free(iv->veb);
     free(iv);
@@ -1539,7 +1639,8 @@ IntervalVEB *iveb_new(void) {
 
 void iveb_free(IntervalVEB *iv) {
     for (size_t i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used) free(iv->data->e[i].val);
+        if (iv->data->e[i].used)
+            free(iv->data->e[i].val);
     hm_free(iv->data);
     veb_free(iv->veb);
     free(iv);
@@ -2002,7 +2103,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #include<stdbool.h>
 #include<assert.h>
 
-typedef int (*cstl_compare)(const void *, const void *);
+typedef int (*CSTL_COMPARE)(const void *, const void *);
 
 typedef size_t cstl_ptr;
 
@@ -2026,7 +2127,7 @@ typedef wchar_t wchar;
 /* END    types.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
-    if (OPENCSTL_NIDX(container, -1) > (size_t)INT_MAX)
+    if (OPENCSTL_NIDX(container, -1) > (size_t) INT_MAX)
         return 1;
     return 0;
 }
@@ -2037,7 +2138,7 @@ OPENCSTL_FUNC size_t __opencstl_container_type(void **container, ptrdiff_t *dist
     *distance = 0;
     if (iveb == NULL) return 0;
     Interval *it = iveb_find(iveb, *container);
-    if (it == NULL) return 0;  // Not an OpenCSTL container
+    if (it == NULL) return 0; // Not an OpenCSTL container
     if (it->ctype == CT_DEQUE) {
         *distance = OPENCSTL_NIDX(container, -1) + 1;
     }
@@ -2377,10 +2478,10 @@ OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
     size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-
+    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
     size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
     char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+
     // 이미 꽉 차있고 앞쪽 여유도 없으면 아무것도 안 함
     if (length == capacity && distance == 0) {
         return;
@@ -3635,7 +3736,7 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
     size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t value_size = OPENCSTL_NIDX(container, -4);
     size_t type_size = key_size + value_size;
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
+    CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -2);
 
     // char *type_key = (char *) OPENCSTL_NIDX(container, -3);
     // char *type_value = (char *) OPENCSTL_NIDX(container, -5);
@@ -3820,7 +3921,7 @@ OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
 #endif
 
 
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -2);
+    CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -2);
     void ***root = (void ***) *container;
     while (*root != nil) {
         int r = compare ? compare(*root, key) : memcmp(*root, key, type_size);
@@ -4151,7 +4252,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
     __cstl_vector_push_back(container, value);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -3);
+    CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -3);
 
     void *tmp = salloc(type_size);
     size_t idx = length - 1;
@@ -4171,7 +4272,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
     verify(OPENCSTL_NIDX(container, -1) > 0);
     size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_t length = OPENCSTL_NIDX(container, -1);
-    cstl_compare compare = (cstl_compare) OPENCSTL_NIDX(container, -3);
+    CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -3);
     memcpy(*container, ((char *) *container) + type_size * (length - 1), type_size);
     OPENCSTL_NIDX(container, -1)--;
     length--;
@@ -6535,7 +6636,7 @@ OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
 
     for (size_t i = length - 1; i > 0; i--) {
         size_t rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *)(*container) + i * type_size, (char *)(*container) + rng_idx * type_size, type_size);
+        swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
     }
 }
 
@@ -6546,7 +6647,7 @@ OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
 
     for (size_t i = length - 1; i > 0; i--) {
         size_t rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *)(*container) + i * type_size, (char *)(*container) + rng_idx * type_size, type_size);
+        swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
     }
 }
 
@@ -6576,7 +6677,6 @@ OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
     }
     free(ptr);
 }
-
 
 
 void __mt19937_shuffle(void *container) {
@@ -6987,10 +7087,8 @@ FSTREAM fstream = {
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-
 #ifndef OPENCSTL_FILESYSTEM_H
 #define OPENCSTL_FILESYSTEM_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6999,7 +7097,6 @@ FSTREAM fstream = {
 /* [already included: zalloc.h] */
 /* [already included: tracer.h] */
 /* [already included: crossplatform.h] */
-
 #if defined(OCSTL_OS_WINDOWS)
 #if !defined(OCSTL_CC_TCC)
 #define WIN32_LEAN_AND_MEAN
@@ -7012,11 +7109,8 @@ FSTREAM fstream = {
 #include <sys/types.h>
 #include <unistd.h>
 #include <limits.h>
-
 #define CSTL_PATH_SEP '/'
 #endif
-
-// Windows는 '/'와 '\\' 둘 다 구분자, POSIX는 '/'만
 static bool __cstl_is_sep(char c) {
 #if defined(OCSTL_OS_WINDOWS)
     return c == '/' || c == '\\';
@@ -7025,7 +7119,6 @@ static bool __cstl_is_sep(char c) {
 #endif
 }
 
-// Python: os.path.exists(path)
 static bool __cstl_exists(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     DWORD attrs = GetFileAttributesA(path);
@@ -7036,18 +7129,13 @@ static bool __cstl_exists(char *path) {
 #endif
 }
 
-// Python: os.path.join(path1, path2)
-// path2가 absolute면 path1은 버림
 static char *__cstl_join(char *path1, char *path2) {
     if (!path1) path1 = "";
     if (!path2) path2 = "";
-
-    // path2가 absolute인지 판정
     bool p2_abs = false;
     if (path2[0] != '\0') {
         if (__cstl_is_sep(path2[0])) p2_abs = true;
 #if defined(OCSTL_OS_WINDOWS)
-        // Windows drive letter: "C:foo" 이런 형태도 absolute로 취급
         if (isalpha((unsigned char) path2[0]) && path2[1] == ':') p2_abs = true;
 #endif
     }
@@ -7057,21 +7145,16 @@ static char *__cstl_join(char *path1, char *path2) {
         memcpy(ret, path2, l + 1);
         return ret;
     }
-
     size_t l1 = strlen(path1);
     size_t l2 = strlen(path2);
-
-    // 빈 path1이면 path2만
     if (l1 == 0) {
         char *ret = (char *) malloc(l2 + 1);
         memcpy(ret, path2, l2 + 1);
         return ret;
     }
-
     bool need_sep = !__cstl_is_sep(path1[l1 - 1]);
     size_t total = l1 + (need_sep ? 1 : 0) + l2;
     char *ret = (char *) malloc(total + 1);
-
     memcpy(ret, path1, l1);
     size_t pos = l1;
     if (need_sep) ret[pos++] = CSTL_PATH_SEP;
@@ -7080,8 +7163,6 @@ static char *__cstl_join(char *path1, char *path2) {
     return ret;
 }
 
-// Python: os.path.basename(path)
-// "/foo/bar" -> "bar", "/foo/bar/" -> ""
 static char *__cstl_basename(char *path) {
     size_t len = strlen(path);
     size_t start = 0;
@@ -7095,49 +7176,32 @@ static char *__cstl_basename(char *path) {
     return ret;
 }
 
-// Python: os.path.splitext(path)
-// "file.tar.gz" -> ("file.tar", ".gz")
-// "/path/.hidden" -> ("/path/.hidden", "")  (leading dot은 ext가 아님)
-// 반환값: ret[0]=root, ret[1]=ext. free(ret) 한 번이면 됨.
 static char **__cstl_splitext(char *path) {
     size_t len = strlen(path);
-
-    // basename 시작 위치 찾기
     size_t base_start = 0;
     for (size_t i = 0; i < len; i++) {
         if (__cstl_is_sep(path[i])) base_start = i + 1;
     }
-
-    // basename의 leading dot 스킵
     size_t nonleading = base_start;
     while (nonleading < len && path[nonleading] == '.') nonleading++;
-
-    // 그 뒤로 마지막 '.' 찾기
     size_t dot_pos = (size_t) -1;
     for (size_t i = nonleading; i < len; i++) {
         if (path[i] == '.') dot_pos = i;
     }
-
     size_t root_len = (dot_pos == (size_t) -1) ? len : dot_pos;
     size_t ext_len = (dot_pos == (size_t) -1) ? 0 : (len - dot_pos);
-
-    // 단일 할당: 2 포인터 + root + '\0' + ext + '\0'
     size_t total = 2 * sizeof(char *) + root_len + 1 + ext_len + 1;
     char **ret = (char **) malloc(total);
     char *buf = (char *) ret + 2 * sizeof(char *);
-
     memcpy(buf, path, root_len);
     buf[root_len] = '\0';
     memcpy(buf + root_len + 1, path + root_len, ext_len);
     buf[root_len + 1 + ext_len] = '\0';
-
     ret[0] = buf;
     ret[1] = buf + root_len + 1;
     return ret;
 }
 
-// Python: os.path.getsize(path)
-// 에러 시 0 반환 (Python은 raise, 여기선 C 스타일)
 static size_t __cstl_getsize(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     WIN32_FILE_ATTRIBUTE_DATA attr;
@@ -7153,16 +7217,11 @@ static size_t __cstl_getsize(char *path) {
 #endif
 }
 
-// Python: os.makedirs(path) with exist_ok=True
-// 중간 디렉토리 전부 생성, 이미 있어도 무시
 static void __cstl_makedirs(char *path) {
     size_t len = strlen(path);
     if (len == 0) return;
-
     char *tmp = (char *) malloc(len + 1);
     memcpy(tmp, path, len + 1);
-
-    // 각 구분자 위치에서 하나씩 mkdir 시도
     for (size_t i = 1; i < len; i++) {
         if (__cstl_is_sep(tmp[i])) {
             char save = tmp[i];
@@ -7175,18 +7234,14 @@ static void __cstl_makedirs(char *path) {
             tmp[i] = save;
         }
     }
-
-    // 마지막 component
 #if defined(OCSTL_OS_WINDOWS)
     CreateDirectoryA(tmp, NULL);
 #else
     mkdir(tmp, 0755);
 #endif
-
     free(tmp);
 }
 
-// Python: os.remove(path) - 파일만 삭제
 static void __cstl_remove(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     DeleteFileA(path);
@@ -7195,44 +7250,34 @@ static void __cstl_remove(char *path) {
 #endif
 }
 
-// Python: os.rename(old, new)
 static void __cstl_rename(char *oldpath, char *newpath) {
     rename(oldpath, newpath);
 }
 
 static char *__cstl_dirname(char *path) {
     size_t len = strlen(path);
-    // 마지막 separator 위치 찾기
     size_t last_sep = (size_t) -1;
     for (size_t i = 0; i < len; i++) {
         if (__cstl_is_sep(path[i])) last_sep = i;
     }
-
     if (last_sep == (size_t) -1) {
-        // separator 없음 → 빈 문자열
         char *ret = (char *) malloc(1);
         ret[0] = '\0';
         return ret;
     }
-
-    // root 보존: "/" → "/", "C:\\" → "C:\\"
     size_t dir_len = last_sep;
-    if (dir_len == 0) dir_len = 1; // POSIX root "/"
+    if (dir_len == 0) dir_len = 1;
 #if defined(OCSTL_OS_WINDOWS)
-    // "C:\\foo" → last_sep=2, dir_len=3 ("C:\\")
     if (last_sep == 2 && isalpha((unsigned char) path[0]) && path[1] == ':') {
         dir_len = 3;
     }
 #endif
-
     char *ret = (char *) malloc(dir_len + 1);
     memcpy(ret, path, dir_len);
     ret[dir_len] = '\0';
     return ret;
 }
 
-// Python: os.path.abspath(path)
-// 존재하지 않는 경로도 처리 (realpath는 NULL 반환하므로 fallback)
 static char *__cstl_abspath(char *path) {
     if (!path) path = "";
 #if defined(OCSTL_OS_WINDOWS)
@@ -7246,7 +7291,6 @@ static char *__cstl_abspath(char *path) {
     GetFullPathNameA(path, len, ret, NULL);
     return ret;
 #else
-    // realpath가 해결해주면 그걸 씀
     char resolved[PATH_MAX];
     if (realpath(path, resolved)) {
         size_t l = strlen(resolved);
@@ -7254,9 +7298,6 @@ static char *__cstl_abspath(char *path) {
         memcpy(ret, resolved, l + 1);
         return ret;
     }
-    // Fallback: 경로가 존재하지 않는 경우
-    // - absolute면 그대로 복사
-    // - relative면 getcwd + join
     if (path[0] == '/') {
         size_t l = strlen(path);
         char *ret = (char *) malloc(l + 1);
@@ -7274,7 +7315,6 @@ static char *__cstl_abspath(char *path) {
 #endif
 }
 
-// Python: os.path.isdir(path)
 static bool __cstl_is_dir(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     DWORD a = GetFileAttributesA(path);
@@ -7286,7 +7326,6 @@ static bool __cstl_is_dir(char *path) {
 #endif
 }
 
-// Python: os.path.isfile(path) - regular file만
 static bool __cstl_is_file(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     DWORD a = GetFileAttributesA(path);
@@ -7496,24 +7535,27 @@ static FileSystem fs = {
 
 #include <stdlib.h>
 #include <string.h>
+/* [already included: types.h] */
 
-static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const void *)) {
+static void isort(void *base, size_t number, size_t width, CSTL_COMPARE compare) {
+    char *arr = (char *) base;
     char sbuf[1024];
-    char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
-    for (size_t i = 1; i < n; i++) {
-        memcpy(tmp, arr + i * sz, sz);
+    char *tmp = (width <= sizeof(sbuf)) ? sbuf : (char *) malloc(width);
+    for (size_t i = 1; i < number; i++) {
+        memcpy(tmp, arr + i * width, width);
         size_t lo = 0, hi = i;
         while (lo < hi) {
             size_t mid = lo + ((hi - lo) >> 1);
-            if (cmp(tmp, arr + mid * sz) < 0) hi = mid;
+            if (compare(tmp, arr + mid * width) < 0) hi = mid;
             else lo = mid + 1;
         }
         if (lo < i) {
-            memmove(arr + (lo + 1) * sz, arr + lo * sz, (i - lo) * sz);
-            memcpy(arr + lo * sz, tmp, sz);
+            memmove(arr + (lo + 1) * width, arr + lo * width, (i - lo) * width);
+            memcpy(arr + lo * width, tmp, width);
         }
     }
-    if (tmp != sbuf) free(tmp);
+    if (tmp != sbuf)
+        free(tmp);
 }
 
 #endif
@@ -7524,8 +7566,8 @@ static void isort(char *arr, size_t n, size_t sz, int (*cmp)(const void *, const
 #define MSORT_ISORT_THRESH 32
 
 
-static void merge(char *arr, size_t len1, size_t len2, size_t sz,
-                  int (*cmp)(const void *, const void *), char *buf) {
+static void msort_merge(char *arr, size_t len1, size_t len2, size_t sz,
+                        CSTL_COMPARE cmp, char *buf) {
     if (cmp(arr + (len1 - 1) * sz, arr + len1 * sz) <= 0) return;
     if (len1 <= len2) {
         memcpy(buf, arr, len1 * sz);
@@ -7543,7 +7585,7 @@ static void merge(char *arr, size_t len1, size_t len2, size_t sz,
             d += sz;
         }
         if (c1 < e1)
-            memcpy(d, c1, (size_t)(e1 - c1));
+            memcpy(d, c1, (size_t) (e1 - c1));
     } else {
         memcpy(buf, arr + len1 * sz, len2 * sz);
         size_t i = len1, j = len2, k = len1 + len2;
@@ -7562,29 +7604,28 @@ static void merge(char *arr, size_t len1, size_t len2, size_t sz,
     }
 }
 
-static void msort(void *base, size_t number, size_t size,
-                  int (*compar)(const void *, const void *)) {
+static void msort(void *base, size_t number, size_t width, CSTL_COMPARE compare) {
     if (number < 2) return;
     char *arr = (char *) base;
-    size_t sz = size;
+    size_t sz = width;
     for (size_t i = 0; i < number; i += MSORT_ISORT_THRESH) {
         size_t blk = number - i;
         if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
-        isort(arr + i * sz, blk, sz, compar);
+        isort(arr + i * sz, blk, sz, compare);
     }
     char *buf = (char *) calloc(((number + 1) / 2), sz);
     if (!buf) return;
-    for (size_t width = MSORT_ISORT_THRESH; width < number; width *= 2) {
-        for (size_t i = 0; i + width < number; i += 2 * width) {
-            size_t len1 = width;
-            size_t len2 = number - i - width;
-            if (len2 > width) len2 = width;
-            merge(arr + i * sz, len1, len2, sz, compar, buf);
+    for (size_t mb = MSORT_ISORT_THRESH; mb < number; mb *= 2) {
+        for (size_t i = 0; i + mb < number; i += 2 * mb) {
+            size_t len1 = mb;
+            size_t len2 = number - i - mb;
+            if (len2 > mb) len2 = mb;
+            msort_merge(arr + i * sz, len1, len2, sz, compare, buf);
         }
     }
     free(buf);
 }
-#undef MSORT_ISORT_THRESH
+
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -7655,8 +7696,8 @@ static inline size_t ts_minrun(size_t n) {
 }
 
 static void ts_binsort(char *arr, size_t lo, size_t hi, size_t start,
-                       size_t sz, int (*cmp)(const void *, const void *)) {
-    char sbuf[256];
+                       size_t sz, CSTL_COMPARE cmp) {
+    char sbuf[1024];
     char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
     for (size_t i = start; i < hi; i++) {
         memcpy(tmp, arr + i * sz, sz);
@@ -7671,11 +7712,12 @@ static void ts_binsort(char *arr, size_t lo, size_t hi, size_t start,
             memcpy(arr + left * sz, tmp, sz);
         }
     }
-    if (tmp != sbuf) free(tmp);
+    if (tmp != sbuf)
+        free(tmp);
 }
 
 static size_t ts_count_run(char *arr, size_t lo, size_t hi,
-                           size_t sz, int (*cmp)(const void *, const void *)) {
+                           size_t sz, CSTL_COMPARE cmp) {
     if (hi - lo < 2) return hi - lo;
     size_t run_hi = lo + 1;
     if (cmp(arr + run_hi * sz, arr + lo * sz) < 0) {
@@ -7683,7 +7725,7 @@ static size_t ts_count_run(char *arr, size_t lo, size_t hi,
                cmp(arr + (run_hi + 1) * sz, arr + run_hi * sz) < 0)
             run_hi++;
         run_hi++;
-        char rbuf[256];
+        char rbuf[1024];
         char *t = (sz <= sizeof(rbuf)) ? rbuf : (char *) malloc(sz);
         size_t a = lo, b = run_hi - 1;
         while (a < b) {
@@ -7693,7 +7735,8 @@ static size_t ts_count_run(char *arr, size_t lo, size_t hi,
             a++;
             b--;
         }
-        if (t != rbuf) free(t);
+        if (t != rbuf)
+            free(t);
     } else {
         while (run_hi + 1 < hi &&
                cmp(arr + (run_hi + 1) * sz, arr + run_hi * sz) >= 0)
@@ -7704,7 +7747,7 @@ static size_t ts_count_run(char *arr, size_t lo, size_t hi,
 }
 
 static size_t ts_gallop_right(const char *key, const char *a, size_t n,
-                              size_t sz, int (*cmp)(const void *, const void *)) {
+                              size_t sz, CSTL_COMPARE cmp) {
     if (n == 0 || cmp(key, a) < 0) return 0;
     size_t last = 0, ofs = 1;
     while (ofs < n && cmp(key, a + ofs * sz) >= 0) {
@@ -7722,7 +7765,7 @@ static size_t ts_gallop_right(const char *key, const char *a, size_t n,
 }
 
 static size_t ts_gallop_left(const char *key, const char *a, size_t n,
-                             size_t sz, int (*cmp)(const void *, const void *)) {
+                             size_t sz, CSTL_COMPARE cmp) {
     if (n == 0 || cmp(key, a) <= 0) return 0;
     size_t last = 0, ofs = 1;
     while (ofs < n && cmp(key, a + ofs * sz) > 0) {
@@ -7740,7 +7783,7 @@ static size_t ts_gallop_left(const char *key, const char *a, size_t n,
 }
 
 static void ts_merge_lo(char *base, size_t len1, size_t len2,
-                        size_t sz, int (*cmp)(const void *, const void *), char *buf) {
+                        size_t sz, CSTL_COMPARE cmp, char *buf) {
     memcpy(buf, base, len1 * sz);
     char *c1 = buf, *e1 = buf + len1 * sz;
     char *c2 = base + len1 * sz, *e2 = c2 + len2 * sz;
@@ -7794,11 +7837,11 @@ static void ts_merge_lo(char *base, size_t len1, size_t len2,
     }
 tail_lo:
     if (c1 < e1)
-        memcpy(d, c1, (size_t)(e1 - c1));
+        memcpy(d, c1, (size_t) (e1 - c1));
 }
 
 static void ts_merge_hi(char *base, size_t len1, size_t len2,
-                        size_t sz, int (*cmp)(const void *, const void *), char *buf) {
+                        size_t sz, CSTL_COMPARE cmp, char *buf) {
     memcpy(buf, base + len1 * sz, len2 * sz);
     size_t i = len1, j = len2;
     size_t k = len1 + len2;
@@ -7817,7 +7860,7 @@ static void ts_merge_hi(char *base, size_t len1, size_t len2,
 }
 
 static inline void ts_do_merge(char *arr, size_t base1, size_t len1,
-                               size_t len2, size_t sz, int (*cmp)(const void *, const void *),
+                               size_t len2, size_t sz, CSTL_COMPARE cmp,
                                char *buf) {
     size_t mid = base1 + len1;
     if (cmp(arr + (mid - 1) * sz, arr + mid * sz) <= 0) return;
@@ -7828,7 +7871,7 @@ static inline void ts_do_merge(char *arr, size_t base1, size_t len1,
 }
 
 static void ts_merge_collapse(char *arr, struct ts_run *stk, size_t *sp,
-                              size_t sz, int (*cmp)(const void *, const void *), char *buf) {
+                              size_t sz, CSTL_COMPARE cmp, char *buf) {
     while (*sp > 1) {
         size_t n = *sp - 2;
         int need_merge = 0;
@@ -7849,7 +7892,7 @@ static void ts_merge_collapse(char *arr, struct ts_run *stk, size_t *sp,
 }
 
 static void ts_merge_force(char *arr, struct ts_run *stk, size_t *sp,
-                           size_t sz, int (*cmp)(const void *, const void *), char *buf) {
+                           size_t sz, CSTL_COMPARE cmp, char *buf) {
     while (*sp > 1) {
         size_t n = *sp - 2;
         if (n > 0 && stk[n - 1].len < stk[n + 1].len) n--;
@@ -7862,26 +7905,25 @@ static void ts_merge_force(char *arr, struct ts_run *stk, size_t *sp,
     }
 }
 
-void tsort(void *mem, const size_t len, const size_t size_elem,
-           int (*cmp)(const void *, const void *)) {
-    if (len < 2) return;
-    char *arr = (char *) mem;
-    size_t sz = size_elem;
-    if (len < TS_MIN_MERGE) {
-        size_t run = ts_count_run(arr, 0, len, sz, cmp);
-        ts_binsort(arr, 0, len, run, sz, cmp);
+static void tsort(void *base, const size_t number, const size_t width, CSTL_COMPARE cmp) {
+    if (number < 2) return;
+    char *arr = (char *) base;
+    size_t sz = width;
+    if (number < TS_MIN_MERGE) {
+        size_t run = ts_count_run(arr, 0, number, sz, cmp);
+        ts_binsort(arr, 0, number, run, sz, cmp);
         return;
     }
-    char *buf = (char *) malloc(len * sz);
+    char *buf = (char *) malloc(number * sz);
     if (!buf) return;
     struct ts_run stk[TS_MAX_STACK];
     size_t sp = 0;
-    size_t minrun = ts_minrun(len);
+    size_t minrun = ts_minrun(number);
     size_t lo = 0;
-    while (lo < len) {
-        size_t run_len = ts_count_run(arr, lo, len, sz, cmp);
+    while (lo < number) {
+        size_t run_len = ts_count_run(arr, lo, number, sz, cmp);
         if (run_len < minrun) {
-            size_t force = len - lo;
+            size_t force = number - lo;
             if (force > minrun) force = minrun;
             ts_binsort(arr, lo, lo + force, lo + run_len, sz, cmp);
             run_len = force;
@@ -7957,11 +7999,11 @@ void tsort(void *mem, const size_t len, const size_t size_elem,
 
 
 #if defined(_MSC_VER)
-    #define PDQ_LIKELY(x)   (x)
-    #define PDQ_UNLIKELY(x) (x)
+#define PDQ_LIKELY(x)   (x)
+#define PDQ_UNLIKELY(x) (x)
 #else
-    #define PDQ_LIKELY(x)   __builtin_expect(!!(x), 1)
-    #define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
+#define PDQ_LIKELY(x)   __builtin_expect(!!(x), 1)
+#define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
 #endif
 
 static inline void pdq__swap(unsigned char *a, unsigned char *b, size_t n) {
@@ -8166,12 +8208,11 @@ static inline size_t pdq_part_l(unsigned char *base, size_t n, size_t sz,
     return (size_t) (hi - base) / sz;
 }
 
-void pdqsort(void *__base, size_t __nel, size_t __width,
-             int (*__compar)(const void *, const void *)) {
-    if (!__base || !__compar || __width == 0 || __nel < 2) return;
-    const size_t sz = __width;
-    int (*cmp)(const void *, const void *) = __compar;
-    unsigned char *arr = (unsigned char *) __base;
+static void pdqsort(void *base, size_t number, size_t width, CSTL_COMPARE cmp) {
+    if (!base || !cmp || width == 0 || number < 2) return;
+    const size_t sz = width;
+
+    unsigned char *arr = (unsigned char *) base;
     unsigned char sbuf[512];
     unsigned char *scratch;
     size_t need = sz * 2;
@@ -8179,7 +8220,7 @@ void pdqsort(void *__base, size_t __nel, size_t __width,
     if (!scratch) return;
     unsigned char *tmp = scratch;
     unsigned char *piv = scratch + sz;
-    uint64_t rs = (uint64_t) __nel ^ 0x517cc1b727220a95ULL;
+    uint64_t rs = (uint64_t) number ^ 0x517cc1b727220a95ULL;
     struct pdq_frame {
         unsigned char *base;
         size_t n;
@@ -8189,8 +8230,8 @@ void pdqsort(void *__base, size_t __nel, size_t __width,
     struct pdq_frame stk[PDQ_MAX_STACK];
     int sp = 0;
     stk[sp].base = arr;
-    stk[sp].n = __nel;
-    stk[sp].bad = pdq_log2(__nel) * 2 + 1;
+    stk[sp].n = number;
+    stk[sp].bad = pdq_log2(number) * 2 + 1;
     stk[sp].left = 1;
     ++sp;
     while (sp > 0) {
@@ -8257,7 +8298,8 @@ void pdqsort(void *__base, size_t __nel, size_t __width,
         }
         goto again;
     }
-    if (scratch != sbuf) free(scratch);
+    if (scratch != sbuf)
+        free(scratch);
 }
 #undef PDQ_ELEM
 #undef PDQ_ISORT_THRESH
@@ -8654,20 +8696,19 @@ static void *ps_run(void *p) {
     return NULL;
 }
 
-void pmsort(void *mem, const size_t len, const size_t size_elem,
-            int (*cmp)(const void *, const void *)) {
-    if (len < 2) return;
-    if (len <= PS_SEQ_CUTOFF) {
-        msort(mem, len, size_elem, cmp);
+static void pmsort(void *base, const size_t number, const size_t width, CSTL_COMPARE cmp) {
+    if (number < 2) return;
+    if (number <= PS_SEQ_CUTOFF) {
+        msort(base, number, width, cmp);
         return;
     }
-    char *buf = (char *) malloc(len * size_elem);
+    char *buf = (char *) malloc(number * width);
     if (!buf) {
-        msort(mem, len, size_elem, cmp);
+        msort(base, number, width, cmp);
         return;
     }
     struct ps_args root = {
-        (char *) mem, buf, len, size_elem, cmp, 0
+        (char *) base, buf, number, width, cmp, 0
     };
     ps_run(&root);
     free(buf);
@@ -8776,7 +8817,40 @@ void pmsort(void *mem, const size_t len, const size_t size_elem,
 /* ////////////////////////////////////////////////////////////////////////////// */
 
 //
-// Created by spring on 4/21/2026.
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
 //
 
 #ifndef OPENCSTL_RSORT_H
@@ -9258,7 +9332,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 /* [already included: crossplatform.h] */
-static char *OPENCSTL_VERSION = "v1.2.8";
+static char *OPENCSTL_VERSION = "v1.2.9";
 
 static char *opencstl_version(void) {
     return OPENCSTL_VERSION;
@@ -10061,7 +10135,7 @@ static void glob_free(char **results) {
 #include <string.h>
 #include <stdarg.h>
 
-static void ConsoleMSG(const char *format, ...) {
+static void MsgBoxCLI(const char *format, ...) {
 #if defined(OCSTL_CC_MSVC)
     SetConsoleOutputCP(CP_UTF8);
 #elif defined(OCSTL_CC_TCC)
@@ -10121,10 +10195,690 @@ static void ConsoleMSG(const char *format, ...) {
     fputs(br, stdout);
     putchar('\n');
 }
+
+#if defined(OCSTL_OS_WINDOWS)
+static char *_MsgTitle(void) {
+    static char buf[1024] = {0};
+
+#if defined(OCSTL_CC_GCC)
+sprintf(buf, "%s", "GNU gcc Runtime Library");
+#elif defined(OCSTL_CC_MSVC)
+sprintf(buf, "%s", "Microsoft Visual C Runtime Library");
+#elif defined(OCSTL_CC_CLANG)
+sprintf(buf, "%s", "LLVM clang Runtime Library");
+#elif defined(OCSTL_CC_TCC)
+sprintf(buf, "%s", "TCC Runtime Library");
+#endif
+return buf;
+}
+
+typedef int (WINAPI *PFN_MessageBoxExA)(HWND, LPCSTR, LPCSTR, UINT, WORD);
+
+static void MsgBoxGUI(const char *format, ...) {
+    setlocale(LC_ALL, ".UTF-8");
+
+    // 1) 사용자 메시지를 먼저 별도 버퍼에 포맷
+    char userMsg[1024];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(userMsg, sizeof(userMsg), format, args);
+    va_end(args);;
+
+#ifdef OCSTL_OS_WINDOWS
+int r = 0;
+
+// 2) MessageBoxExA 포인터 얻기 (컴파일러별)
+#ifdef OCSTL_CC_TCC
+HMODULE h = LoadLibraryA("user32.dll");
+PFN_MessageBoxExA pMessageBoxExA = h
+                                       ? (PFN_MessageBoxExA) GetProcAddress(h, "MessageBoxExA")
+                                       : NULL;
+#else
+HMODULE h = NULL;
+PFN_MessageBoxExA pMessageBoxExA = MessageBoxExA;
+#endif
+
+// 3) 컴파일러 무관하게 동일한 템플릿으로 본문 빌드
+char path[MAX_PATH];
+GetModuleFileNameA(NULL, path, sizeof(path));
+
+char buf[2048]; // path(260) + userMsg(1024) + 템플릿 여유
+snprintf(buf, sizeof(buf),
+             "Runtime Error!\n\n"
+             "Program: %s\n\n"
+             "MsgBoxGUI() has been called\n\n"
+             "%s\n\n"
+             "(Press Retry to debug the application)",
+         path, userMsg);
+
+// 4) 다이얼로그 표시
+    if (pMessageBoxExA) {
+    r = pMessageBoxExA(
+        NULL,
+        buf,
+        _MsgTitle(),
+        MB_ABORTRETRYIGNORE | MB_ICONERROR | MB_DEFBUTTON3 | MB_TASKMODAL,
+        0
+    );
+}
+
+// 5) 정리는 반드시 MessageBox 호출 후에
+    if (h) FreeLibrary(h);
+
+    switch (r) {
+case IDABORT: ExitProcess(3);
+    break; // 중단
+case IDRETRY: DebugBreak();
+    break; // 다시 시도 → 디버거 어태치
+case IDIGNORE: break; // 무시
+}
+#endif
+}
+#elif defined(OCSTL_OS_LINUX)
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <limits.h>
+#include <sys/wait.h>
+#include <locale.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <fcntl.h>
+struct lang_labels {
+    const char *prefix; // LANG의 앞 2글자
+    const char *abort_s;
+    const char *retry_s;
+    const char *ignore_s;
+    const char *title_s; // "Runtime Library" 번역
+};
+
+static const struct lang_labels kLangs[] = {
+    {"ko", "중단", "다시 시도", "무시", "런타임 라이브러리"},
+    {"ja", "中止", "再試行", "無視", "ランタイム ライブラリ"},
+    {"zh", "中止", "重试", "忽略", "运行时库"},
+    {"de", "Abbrechen", "Wiederholen", "Ignorieren", "Laufzeitbibliothek"},
+    {"fr", "Abandonner", "Réessayer", "Ignorer", "Bibliothèque d'exécution"},
+    {"es", "Anular", "Reintentar", "Omitir", "Biblioteca de ejecución"},
+    {"ru", "Прервать", "Повторить", "Пропустить", "Библиотека времени выполнения"},
+    {"it", "Interrompi", "Riprova", "Ignora", "Libreria runtime"},
+    {"pt", "Anular", "Repetir", "Ignorar", "Biblioteca de runtime"},
+    {"en", "Abort", "Retry", "Ignore", "Runtime Library"},
+    {NULL, NULL, NULL, NULL, NULL}
+};
+
+static const struct lang_labels *detect_lang(void) {
+    const char *lang = getenv("LC_ALL");
+    if (!lang || !*lang) lang = getenv("LC_MESSAGES");
+    if (!lang || !*lang) lang = getenv("LANG");
+    if (!lang || !*lang) lang = "en";
+
+    // "ko_KR.UTF-8" -> "ko" 비교
+    for (int i = 0; kLangs[i].prefix; i++) {
+        size_t n = strlen(kLangs[i].prefix);
+        if (strncmp(lang, kLangs[i].prefix, n) == 0 &&
+            (lang[n] == '\0' || lang[n] == '_' || lang[n] == '.')) {
+            return &kLangs[i];
+        }
+    }
+    // 마지막 엔트리(en) fallback
+    int last = 0;
+    while (kLangs[last + 1].prefix) last++;
+    return &kLangs[last];
+}
+
+// MessageBoxExA 반환값과 동일한 상수 (이식성 위해)
+#define IDABORT   3
+#define IDRETRY   4
+#define IDIGNORE  5
+
+static void get_exe_path(char *out, size_t n) {
+    ssize_t r = readlink("/proc/self/exe", out, n - 1);
+    if (r < 0) r = 0;
+    out[r] = '\0';
+}
+
+// Windows의 MessageBoxExA(MB_ABORTRETRYIGNORE|MB_ICONERROR) 대응
+static int zenity_abort_retry_ignore(const char *title, const char *body) {
+    int pipefd[2];
+    if (pipe(pipefd) < 0) return IDABORT;
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        close(pipefd[0]);
+        close(pipefd[1]);
+        return IDABORT;
+    }
+    const struct lang_labels *L = detect_lang();
+    if (pid == 0) {
+        // 자식: zenity 실행
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[1]);
+
+
+        char ok_opt[128], cancel_opt[128], extra_opt[128];
+        snprintf(ok_opt, sizeof(ok_opt), "--ok-label=%s", L->ignore_s);
+        snprintf(cancel_opt, sizeof(cancel_opt), "--cancel-label=%s", L->abort_s);
+        snprintf(extra_opt, sizeof(extra_opt), "--extra-button=%s", L->retry_s);
+
+        // zenity(GTK/Mesa)의 경고 메시지 버리기
+        int devnull = open("/dev/null", O_WRONLY);
+        if (devnull >= 0) {
+            dup2(devnull, STDERR_FILENO);
+            close(devnull);
+        }
+
+        execlp("zenity", "zenity",
+               "--question",
+               "--title", L->title_s, // title 인자도 로케일 반영하려면 이걸 사용
+               "--text", body,
+               "--icon=dialog-error",
+               ok_opt,
+               cancel_opt,
+               extra_opt,
+               "--default-cancel",
+               "--width=420",
+               (char *) NULL);
+        _exit(127);
+    }
+
+    // 부모: 결과 수집
+    close(pipefd[1]);
+    char out[256] = {0};
+    ssize_t n = read(pipefd[0], out, sizeof(out) - 1);
+    close(pipefd[0]);
+    if (n > 0) out[n] = '\0';
+
+    int status = 0;
+    waitpid(pid, &status, 0);
+    int code = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+
+    // zenity 종료 코드:
+    //   0  -> --ok-label (무시)          → IDIGNORE
+    //   1  -> --cancel-label 또는 extra-button
+    //         (extra-button을 눌렀다면 stdout에 라벨 문자열이 출력됨)
+    //   5  -> 타임아웃
+    if (code == 0) {
+        return IDIGNORE; // --ok-label 클릭
+    }
+    size_t Llen = strlen(out);
+    while (Llen > 0 && (out[Llen - 1] == '\n' || out[Llen - 1] == '\r')) out[--Llen] = '\0';
+
+    if (strcmp(out, L->retry_s) == 0) return IDRETRY;
+    return IDABORT; // 취소 버튼, 창 닫기(X), Esc 모두 여기로
+}
+
+static void MsgBoxGUI(const char *format, ...) {
+    char userMsg[1024];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(userMsg, sizeof(userMsg), format, args);
+    va_end(args);
+
+    char path[PATH_MAX];
+    get_exe_path(path, sizeof(path));
+
+    char buf[1024];
+    snprintf(buf, sizeof(buf),
+             "<b>Runtime Error!</b>\n\n"
+             "Program: %s\n\n"
+             "MsgBoxGUI() has been called\n\n"
+             "%s\n\n"
+             "(Press Retry to debug the application)",
+             path, userMsg);
+
+    int r = zenity_abort_retry_ignore("Runtime Library", buf);
+
+    switch (r) {
+        case IDABORT: fprintf(stderr, "abort\n");
+            _exit(3);
+        case IDRETRY: fprintf(stderr, "retry\n");
+            __builtin_trap(); // = DebugBreak
+        case IDIGNORE: fprintf(stderr, "ignore\n");
+            break;
+    }
+}
+
+#elif defined(OASTL_OS_MACOD)
+
+
+#endif
 #endif //OPENCSTL_MSG_H
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* END    msg.h */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* BEGIN  json.h                         (depth 1) */
+/* ////////////////////////////////////////////////////////////////////////////// */
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#ifndef OPENCSTL_JSON_H
+#define OPENCSTL_JSON_H
+//#define _CRT_SECURE_NO_WARNINGS
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<ctype.h>
+#include<stdbool.h>
+#if defined(OCSTL_CC_TCC)
+// TCC는 strtok_s / strtok_r 둘 다 없으니 직접 구현
+char *strtok_s(char *str, char *delimiters, char **last) {
+    if (!delimiters || !last) return NULL;
+
+    // 첫 호출이면 str에서, 재호출이면 저장된 위치에서 재개
+    char *s = str ? str : *last;
+    if (!s) return NULL;
+
+    // 선행 delimiter 건너뛰기 (연속된 구분자는 하나로 취급)
+    while (*s && strchr(delimiters, *s)) s++;
+    if (!*s) {
+        *last = NULL;
+        return NULL;
+    }
+
+    // 토큰 시작 지점
+    char *token = s;
+
+    // 다음 delimiter까지 진행
+    while (*s && !strchr(delimiters, *s)) s++;
+
+    if (*s) {
+        *s = '\0'; // delimiter를 NUL로 바꿔 토큰 종결
+        *last = s + 1; // 다음 호출에서 여기부터 시작
+    } else {
+        *last = NULL; // 문자열 끝에 도달
+    }
+    return token;
+}
+#elif !defined(OCSTL_CC_MSVC)
+
+#endif
+typedef struct JSON_TOKEN JSON_TOKEN;
+JSON_TOKEN *__g_last_token = NULL;
+
+int as_int();
+
+char *as_string();
+
+bool as_bool();
+
+double as_double();
+
+bool is_null();
+
+struct JSON_TOKEN {
+    char *p;
+    char *q;
+    char key[512];
+    char *str_buf; // as_string 결과 캐시
+    struct JSON_TOKEN *children;
+    struct JSON_TOKEN *next;
+
+    int (*as_int)();
+
+    bool (*as_bool)();
+
+    char * (*as_string)();
+
+    double (*as_double)();
+
+    bool (*is_null)();
+};
+
+typedef struct JSON_TOKEN JSON;
+
+
+int __as_int() {
+    JSON_TOKEN *p = __g_last_token;
+    if (!p || !p->p) return 0;
+    return (int) strtol(p->p, NULL, 10);
+}
+
+char *__as_string() {
+    JSON_TOKEN *p = __g_last_token;
+    if (!p || !p->p || !p->q) return NULL;
+    if (p->str_buf) return p->str_buf; // 이미 디코딩됨 → 캐시 반환
+
+    char *start;
+    char *end;
+    if (*(p->p) == '"') {
+        start = p->p + 1;
+        end = p->q;
+    } else {
+        start = p->p;
+        end = p->q + 1;
+    }
+
+    size_t cap = (size_t) (end - start) + 1; // 이스케이프 처리 후 길이는 항상 원본 이하
+    char *out = (char *) malloc(cap);
+    if (!out) return NULL;
+
+    char *dst = out;
+    for (char *s = start; s < end; s++) {
+        if (*s != '\\' || s + 1 >= end) {
+            *dst++ = *s;
+            continue;
+        }
+        s++;
+        switch (*s) {
+            case 'n': *dst++ = '\n';
+                break;
+            case 't': *dst++ = '\t';
+                break;
+            case 'r': *dst++ = '\r';
+                break;
+            case 'b': *dst++ = '\b';
+                break;
+            case 'f': *dst++ = '\f';
+                break;
+            case '"': *dst++ = '"';
+                break;
+            case '\\': *dst++ = '\\';
+                break;
+            case '/': *dst++ = '/';
+                break;
+            default: *dst++ = '\\';
+                *dst++ = *s;
+                break; // \uXXXX 등 미처리는 원본 유지
+        }
+    }
+    *dst = '\0';
+
+    p->str_buf = out;
+    return out;
+}
+
+bool __as_bool() {
+    JSON_TOKEN *p = __g_last_token;
+    if (!p || !p->p) return false;
+    return *(p->p) == 't'; // "true" 만 true, 나머지는 false
+}
+
+double __as_double() {
+    JSON_TOKEN *p = __g_last_token;
+    if (!p || !p->p) return 0.0;
+    return strtod(p->p, NULL);
+}
+
+bool __is_null() {
+    JSON_TOKEN *p = __g_last_token;
+    return p && p->p && *(p->p) == 'n';
+}
+
+static char *__parse_value(char *s, JSON_TOKEN *node);
+
+static char *__skip_ws(char *s) {
+    while (*s && isspace((unsigned char) *s)) s++;
+    return s;
+}
+
+static char *__parse_string(char *s, JSON_TOKEN *node) {
+    node->p = s;
+    s++;
+    while (*s && *s != '"') {
+        if (*s == '\\' && *(s + 1)) s++;
+        s++;
+    }
+    node->q = s;
+    return (*s == '"') ? s + 1 : s;
+}
+
+static char *__parse_number(char *s, JSON_TOKEN *node) {
+    node->p = s;
+    if (*s == '-' || *s == '+') s++;
+    while (*s && (isdigit((unsigned char) *s) || *s == '.' ||
+                  *s == 'e' || *s == 'E' || *s == '+' || *s == '-')) {
+        s++;
+    }
+    node->q = s - 1;
+    return s;
+}
+
+static char *__parse_literal(char *s, JSON_TOKEN *node) {
+    node->p = s;
+    while (*s && isalpha((unsigned char) *s)) s++;
+    node->q = s - 1;
+    return s;
+}
+
+static char *parse_array(char *s, JSON_TOKEN *node) {
+    node->p = s;
+    s++;
+    s = __skip_ws(s);
+    JSON_TOKEN **tail = &node->children;
+    if (*s == ']') {
+        node->q = s;
+        return s + 1;
+    }
+    while (*s) {
+        JSON_TOKEN *child = (JSON_TOKEN *) calloc(1, sizeof(JSON_TOKEN));
+        s = __parse_value(s, child);
+        *tail = child;
+        tail = &child->next;
+        s = __skip_ws(s);
+        if (*s == ',') {
+            s++;
+            s = __skip_ws(s);
+        } else if (*s == ']') {
+            node->q = s;
+            return s + 1;
+        } else break;
+    }
+    node->q = s;
+    return s;
+}
+
+static char *__parse_object(char *s, JSON_TOKEN *node) {
+    node->p = s;
+    s++;
+    s = __skip_ws(s);
+    JSON_TOKEN **tail = &node->children;
+    if (*s == '}') {
+        node->q = s;
+        return s + 1;
+    }
+
+    while (*s) {
+        s = __skip_ws(s);
+        if (*s != '"') break;
+
+        // 키의 시작/끝 기록
+        s++; // 여는 " 스킵
+        char *key_start = s;
+        while (*s && *s != '"') {
+            if (*s == '\\' && *(s + 1)) s++;
+            s++;
+        }
+        char *key_end = s; // 닫는 " 위치
+        if (*s == '"') s++;
+
+        s = __skip_ws(s);
+        if (*s != ':') break;
+        s++;
+        s = __skip_ws(s);
+
+        JSON_TOKEN *child = (JSON_TOKEN *) calloc(1, sizeof(JSON_TOKEN));
+
+        // 자식의 key 필드에 복사
+        size_t klen = (size_t) (key_end - key_start);
+        if (klen > sizeof(child->key) - 1) klen = sizeof(child->key) - 1;
+        memcpy(child->key, key_start, klen);
+        child->key[klen] = '\0';
+
+        s = __parse_value(s, child);
+        *tail = child;
+        tail = &child->next;
+
+        s = __skip_ws(s);
+        if (*s == ',') s++;
+        else if (*s == '}') {
+            node->q = s;
+            return s + 1;
+        } else break;
+    }
+    node->q = s;
+    return s;
+}
+
+static char *__parse_value(char *s, JSON_TOKEN *node) {
+    s = __skip_ws(s);
+    if (*s == '{') return __parse_object(s, node);
+    if (*s == '[') return parse_array(s, node);
+    if (*s == '"') return __parse_string(s, node);
+    if (*s == '-' || *s == '+' || isdigit((unsigned char) *s)) return __parse_number(s, node);
+    if (isalpha((unsigned char) *s)) return __parse_literal(s, node);
+    return s;
+}
+
+JSON_TOKEN *__parse(char *json_str) {
+    JSON_TOKEN *root = (JSON_TOKEN *) calloc(1, sizeof(JSON_TOKEN));
+    memset(root, 0, sizeof(JSON_TOKEN));
+    __parse_value(json_str, root);
+    return root;
+}
+
+JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
+    if (!root || !keys) return NULL;
+
+    char buf[1024];
+#ifdef _MSC_VER
+    strncpy_s(buf, sizeof(buf), keys, _TRUNCATE);
+#else
+    strncpy(buf, keys, sizeof(buf) - 1);
+    buf[sizeof(buf) - 1] = '\0';
+#endif
+
+    JSON_TOKEN *cur = root;
+    char *ctx = NULL;
+    char *tok = strtok_s(buf, ".", &ctx); // 매크로 덕에 한 줄
+
+    while (tok && cur) {
+        JSON_TOKEN *found = NULL;
+
+        if (cur->p && *(cur->p) == '[') {
+            int idx = atoi(tok);
+            JSON_TOKEN *c = cur->children;
+            for (int i = 0; c && i < idx; i++) c = c->next;
+            found = c;
+        } else {
+            for (JSON_TOKEN *c = cur->children; c; c = c->next) {
+                if (strcmp(c->key, tok) == 0) {
+                    found = c;
+                    break;
+                }
+            }
+        }
+
+        if (!found) return NULL;
+        cur = found;
+        tok = strtok_s(NULL, ".", &ctx);
+    }
+
+    __g_last_token = cur;
+    cur->as_int = __as_int;
+    cur->as_bool = __as_bool;
+    cur->as_string = __as_string;
+    cur->as_double = __as_double;
+    cur->is_null = __is_null;
+    return cur;
+}
+
+
+static void __free_subtree(JSON_TOKEN *node) {
+    if (!node) return;
+    JSON_TOKEN *c = node->children;
+    while (c) {
+        JSON_TOKEN *nx = c->next;
+        __free_subtree(c);
+        c = nx;
+    }
+    free(node->str_buf); // as_string 캐시 해제
+    free(node);
+}
+
+void __free_json(JSON *root) {
+    if (!root) return;
+    JSON_TOKEN *c = root->children;
+    while (c) {
+        JSON_TOKEN *nx = c->next;
+        __free_subtree(c);
+        c = nx;
+    }
+    free(root->str_buf); // root에 as_string을 호출했을 수 있음
+    root->str_buf = NULL;
+    root->children = NULL;
+    root->p = root->q = NULL;
+    free(root);
+}
+
+static void __dumps(JSON_TOKEN *node, int depth) {
+    if (!node || !node->p || !node->q) return;
+    for (int i = 0; i < depth; i++) printf("  ");
+    int len = (int) (node->q - node->p + 1);
+    if (node->key[0]) printf("\"%s\": [%.*s]\n", node->key, len, node->p);
+    else printf("[%.*s]\n", len, node->p);
+    for (JSON_TOKEN *c = node->children; c; c = c->next) __dumps(c, depth + 1);
+}
+
+static void _dumps(JSON *root) {
+    __dumps(root, 0);
+}
+
+typedef struct JSON_CLASS {
+    JSON_TOKEN * (*parse)(char *json_str);
+
+    JSON_TOKEN * (*get)(JSON_TOKEN *root, char *keys);
+
+    void (*dumps)(JSON *root);
+
+    void (*delete)(JSON *root);
+} JSON_CLASS;
+
+JSON_CLASS json = {__parse, __get, _dumps, __free_json};
+#endif //OPENCSTL_JSON_H
+
+/* ////////////////////////////////////////////////////////////////////////////// */
+/* END    json.h */
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* [already included: mt19937.h] */
 #define VECTOR(TYPE)            TYPE*

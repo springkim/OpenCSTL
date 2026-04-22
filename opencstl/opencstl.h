@@ -108,6 +108,7 @@ extern "C" {
 #include "string.h"
 #include "glob.h"
 #include "msg.h"
+#include "json.h"
 #include "mt19937.h"
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**

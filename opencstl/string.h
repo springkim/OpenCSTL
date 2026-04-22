@@ -43,7 +43,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include<stdbool.h>
+#include <stdbool.h>
 // ============================================================
 // string function implementations
 // ============================================================
@@ -265,7 +265,100 @@ bool __cstl_string_is_space(const char *src) {
     return true;
 }
 
+int *__cstl_string_kmp(char *src, char *pattern, int *count) {
+    if (count != NULL) *count = 0;
 
+    if (src == NULL || pattern == NULL || count == NULL) {
+        return NULL;
+    }
+
+    size_t n = strlen(src);
+    size_t m = strlen(pattern);
+
+    // 빈 패턴 또는 패턴이 원본보다 긴 경우
+    if (m == 0 || n < m) {
+        return NULL;
+    }
+
+    // LPS 테이블 생성
+    int *lps = (int *) malloc(sizeof(int) * m);
+    if (lps == NULL) return NULL;
+
+    lps[0] = 0;
+    size_t len = 0;
+    size_t i = 1;
+
+    while (i < m) {
+        if (pattern[i] == pattern[len]) {
+            len++;
+            lps[i] = (int) len;
+            i++;
+        } else {
+            if (len != 0) {
+                len = lps[len - 1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+
+    // 매칭 위치 버퍼 (인덱스 0부터 저장)
+    size_t capacity = 16;
+    int *matches = (int *) malloc(sizeof(int) * capacity);
+    if (matches == NULL) {
+        free(lps);
+        return NULL;
+    }
+
+    size_t match_count = 0;
+    size_t j = 0;
+    i = 0;
+
+    while (i < n) {
+        if (pattern[j] == src[i]) {
+            i++;
+            j++;
+
+            if (j == m) {
+                // 용량 부족 시 확장
+                if (match_count >= capacity) {
+                    capacity *= 2;
+                    int *temp = (int *) realloc(matches, sizeof(int) * capacity);
+                    if (temp == NULL) {
+                        free(matches);
+                        free(lps);
+                        return NULL;
+                    }
+                    matches = temp;
+                }
+                matches[match_count] = (int) (i - j);
+                match_count++;
+                j = lps[j - 1];
+            }
+        } else {
+            if (j != 0) {
+                j = lps[j - 1];
+            } else {
+                i++;
+            }
+        }
+    }
+
+    free(lps);
+
+    *count = (int) match_count;
+
+    // 매칭 0개면 NULL 반환 (caller가 free 안 하도록)
+    if (match_count == 0) {
+        free(matches);
+        return NULL;
+    }
+
+    // 실제 크기로 축소 (실패해도 matches는 유효)
+    int *result = (int *) realloc(matches, sizeof(int) * match_count);
+    return (result != NULL) ? result : matches;
+}
 
 // ============================================================
 // function pointer types
@@ -287,6 +380,8 @@ typedef char *(*string_join_fn)(char **, int, const char *);
 typedef char *(*string_concat_fn)(const char *, const char *);
 
 typedef bool (*string_pred_fn)(const char *);
+
+typedef int * (*string_kmp_fn)(char *src, char *pattern, int *count);
 
 // ============================================================
 // string namespace struct
@@ -310,6 +405,7 @@ typedef struct {
     string_pred_fn is_alpha;
     string_pred_fn is_alnum;
     string_pred_fn is_space;
+    string_kmp_fn kmp;
 } __STRING;
 
 static __STRING string = {
@@ -330,7 +426,8 @@ static __STRING string = {
     __cstl_string_is_digit,
     __cstl_string_is_alpha,
     __cstl_string_is_alnum,
-    __cstl_string_is_space
+    __cstl_string_is_space,
+    __cstl_string_kmp
 };
 
 #endif //OPENCSTL_STRING_H
