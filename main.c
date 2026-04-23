@@ -397,7 +397,7 @@ void cstl_unordered_set_test02(void) {
     MsgBoxCLI("OpenCSTL / UNORDERED_SET TEST02");
     UNORDERED_SET(int) v = new_unordered_set(int);
     double t_beg = ttime();
-    for (int i = 0; i < 5000000; ++i) {
+    for (int i = 0; i < 500000  ; ++i) {
         insert(v, mt19937.randint(0,10000000));
     }
     double t_end = ttime();

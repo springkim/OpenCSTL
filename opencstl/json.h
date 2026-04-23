@@ -73,6 +73,8 @@ char *strtok_s(char *str, char *delimiters, char **last) {
     }
     return token;
 }
+#elif defined(OCSTL_OS_MACOS) || defined(OCSTL_CC_GCC)
+#define strtok_s strtok_r
 #elif !defined(OCSTL_CC_MSVC)
 
 #endif

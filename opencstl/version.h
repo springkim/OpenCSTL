@@ -45,19 +45,8 @@ static char *opencstl_version(void) {
 
 static char __opencstl_env_str[512] = {0};
 
-#if defined(OCSTL_CC_CLANG)
-static const char __ocstl_clang_ver[] = __clang_version__;
-#define __OCSTL_CC_STR \
-((__ocstl_clang_ver[sizeof(__ocstl_clang_ver)-2] == ' ') ? "zig cc" : OCSTL_CC_STR)
-#else
-#define __OCSTL_CC_STR OCSTL_CC_STR
-#endif
-
 char *opencstl_env(void) {
-#ifdef __clang_version__
-    logging.info(__clang_version__);
-#endif
-    sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, __OCSTL_CC_STR, OCSTL_C_VERSION_STR);
+    sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
     return __opencstl_env_str;
 }
 #endif //_OPENCSTL_VERSION_H
