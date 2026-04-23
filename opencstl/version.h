@@ -54,6 +54,9 @@ static const char __ocstl_clang_ver[] = __clang_version__;
 #endif
 
 char *opencstl_env(void) {
+#ifdef __clang_version__
+    logging.info(__clang_version__);
+#endif
     sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, __OCSTL_CC_STR, OCSTL_C_VERSION_STR);
     return __opencstl_env_str;
 }
