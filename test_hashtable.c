@@ -6,6 +6,7 @@
 // const int SET_SIZE = 50000000;
 
 const int SET_SIZE = 50000000;
+
 void test_opencstl_unordered_set() {
     srand(21);
     UNORDERED_SET(int) v = new_unordered_set(int);
@@ -16,6 +17,7 @@ void test_opencstl_unordered_set() {
     printf("size: %d\n", size(v));
     destroy(v);
 }
+
 int main() {
     watch t_beg = chrono.now();
     test_opencstl_unordered_set();

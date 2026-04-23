@@ -42,6 +42,7 @@
 #include<string.h>
 #include<ctype.h>
 #include<stdbool.h>
+#include "van_emde_boas_tree.h"
 #if defined(OCSTL_CC_TCC) || defined(OCSTL_OS_LINUX)
 // TCC는 strtok_s / strtok_r 둘 다 없으니 직접 구현
 char *strtok_s(char *str, char *delimiters, char **last) {
@@ -316,6 +317,15 @@ JSON_TOKEN *__parse(char *json_str) {
     JSON_TOKEN *root = (JSON_TOKEN *) calloc(1, sizeof(JSON_TOKEN));
     memset(root, 0, sizeof(JSON_TOKEN));
     __parse_value(json_str, root);
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, root, root, CT_JSON, 0, "json");
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return root;
 }
 
@@ -380,6 +390,7 @@ static void __free_subtree(JSON_TOKEN *node) {
 
 void __free_json(JSON *root) {
     if (!root) return;
+    iveb_erase(iveb, root);
     JSON_TOKEN *c = root->children;
     while (c) {
         JSON_TOKEN *nx = c->next;
@@ -413,8 +424,8 @@ typedef struct JSON_CLASS {
 
     void (*dumps)(JSON *root);
 
-    void (*delete)(JSON *root);
+    //void (*delete)(JSON *root);
 } JSON_CLASS;
 
-JSON_CLASS json = {__parse, __get, _dumps, __free_json};
+JSON_CLASS json = {__parse, __get, _dumps};
 #endif //OPENCSTL_JSON_H

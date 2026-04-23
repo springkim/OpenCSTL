@@ -50,11 +50,6 @@ void swap(void *a, void *b, size_t sz) {
     if (a == NULL || b == NULL || a == b || sz == 0) {
         return;
     }
-
-    /*
-     * 작은 크기는 stack buffer 사용
-     * 큰 크기는 byte-wise swap (malloc 없이)
-     */
     if (sz <= SWAP_STACK_BUF_SIZE) {
         tmp = stack_buf;
 

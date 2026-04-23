@@ -101,7 +101,7 @@ extern "C" {
 
 #include "compare.h"
 #include"mt19937.h"
-#include "chrono.h"
+#include "ttime.h"
 #include "fstream.h"
 #include "filesystem.h"
 
@@ -179,6 +179,7 @@ extern "C" {
 
 
 #endif
+
 
 #include "types.h"
 #include "verify.h"
@@ -789,6 +790,15 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
 }
 
 OPENCSTL_FUNC void _cstl_free(void *container) {
+    void **tmp = (void **) container;
+    Interval *iv = iveb_find(iveb, *tmp);
+    if (iv->ctype == CT_JSON) {
+        __free_json((JSON *) *tmp);
+        goto _BYE_;
+    } else if (iv->ctype == CT_GLOB) {
+        __glob_free(*tmp);
+        goto _BYE_;
+    }
     size_t container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -828,6 +838,8 @@ OPENCSTL_FUNC void _cstl_free(void *container) {
         default: yikes("Invalid operation");
             break;
     }
+_BYE_:
+    return;
 }
 
 OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {

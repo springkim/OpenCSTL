@@ -396,13 +396,13 @@ void cstl_unordered_set_test01(void) {
 void cstl_unordered_set_test02(void) {
     MsgBoxCLI("OpenCSTL / UNORDERED_SET TEST02");
     UNORDERED_SET(int) v = new_unordered_set(int);
-    watch t_beg = chrono.now();
+    double t_beg = ttime();
     for (int i = 0; i < 5000000; ++i) {
         insert(v, mt19937.randint(0,10000000));
     }
-    watch t_end = chrono.now();
+    double t_end = ttime();
     printf("size: %d\n", size(v));
-    double ms = chrono.duration(t_beg, t_end);
+    double ms = t_end - t_beg;
     printf("duration : %f ms\n", ms);
     destroy(v);
 }
@@ -472,7 +472,7 @@ int main(void) {
     //auto b = 1;
 
     //MsgBoxGUI("Test GUI Message");
-    popen("curl https://github.com/springkim/OpenCSTL/wiki",)
+
 
     return 0;
 }

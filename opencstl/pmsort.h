@@ -41,6 +41,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "msort.h"
+#include "types.h"
 #ifndef PS_MAX_DEPTH
 #define PS_MAX_DEPTH 4
 #endif
@@ -49,19 +50,19 @@
 #define PS_SEQ_CUTOFF 4096
 #endif
 
-typedef int (*ps_cmp_t)(const void *, const void *);
+
 
 struct ps_args {
     char *base;
     char *buf;
     size_t n;
     size_t sz;
-    ps_cmp_t cmp;
+    CSTL_COMPARE cmp;
     int depth;
 };
 
 static void ps_merge(char *base, char *buf, size_t n1, size_t n2,
-                     size_t sz, ps_cmp_t cmp) {
+                     size_t sz, CSTL_COMPARE cmp) {
     char *l = base;
     char *r = base + n1 * sz;
     char *l_end = r;

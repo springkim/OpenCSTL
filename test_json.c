@@ -17,7 +17,7 @@ int main() {
     printf("nested.3      = %s\n", json.get(root, "nested.3")->as_bool() ? "true" : "false");
     printf("nested.9      = %f\n", json.get(root, "nested.9")->as_double());
     printf("nested.10     = %s\n", json.get(root, "nested.10")->is_null() ? "null" : "not null");
-    json.delete(root);
+    destroy(root);
 
     free(data);
     return 0;

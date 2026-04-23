@@ -17,10 +17,12 @@ int sort_test() {
 
     size_t ALGORITHMS = 7;
     size_t REPEAT = 10;
-    DTYPE *arr = (DTYPE *) calloc(N, sizeof(DTYPE));
+    // DTYPE *arr = (DTYPE *) calloc(N, sizeof(DTYPE));
+    VECTOR(DTYPE) arr = new_vector(DTYPE);
     for (int i = 0; i < N; i++) {
         //arr[i] = rand() * 1.0 * rand();
-        arr[i] = rand() * rand();
+        DTYPE val = rand() * rand();
+        push_back(arr, val);
         //printf("arr[%d] = %d\n", i, arr[i]);
     }
 
@@ -28,8 +30,8 @@ int sort_test() {
     DTYPE *target = (DTYPE *) calloc(N, sizeof(DTYPE));
 
 
-    watch t_beg;
-    watch t_end;
+    double t_beg;
+    double t_end;
     double m_diff = 0;
     double q_diff = 0;
     double t_diff = 0;
@@ -38,55 +40,56 @@ int sort_test() {
     double pm_diff = 0;
     double ipn_diff = 0;
     for (int i = 0; i < ALGORITHMS * REPEAT; i++) {
-        memcpy(target, arr, N * sizeof(int));;
+        mt19937.shuffle(arr);
+        memcpy(target, arr, N * sizeof(DTYPE));;
         switch (i % ALGORITHMS) {
             case 0: {
-                t_beg = chrono.now();
+                t_beg = ttime();
                 qsort(target, N, sizeof(DTYPE), compare);
-                t_end = chrono.now();
-                q_diff += chrono.duration(t_beg, t_end);
+                t_end = ttime();
+                q_diff += t_end - t_beg;
             };
                 break;
             case 1: {
-                t_beg = chrono.now();
+                t_beg = ttime();
                 msort(target, N, sizeof(DTYPE), compare);
-                t_end = chrono.now();
-                m_diff += chrono.duration(t_beg, t_end);
+                t_end = ttime();
+                m_diff += t_end - t_beg;
             };
                 break;
             case 2: {
-                t_beg = chrono.now();
+                t_beg = ttime();
                 tsort(target, N, sizeof(DTYPE), compare);
-                t_end = chrono.now();
-                t_diff += chrono.duration(t_beg, t_end);
+                t_end = ttime();
+                t_diff += t_end - t_beg;
             };
                 break;
             case 3: {
-                t_beg = chrono.now();
+                t_beg = ttime();
                 pdqsort(target, N, sizeof(DTYPE), compare);
-                t_end = chrono.now();
-                p_diff += chrono.duration(t_beg, t_end);
+                t_end = ttime();
+                p_diff += t_end - t_beg;
             }
             break;
             case 4: {
-                t_beg = chrono.now();
+                t_beg = ttime();
                 rsort(target, N);
-                t_end = chrono.now();
-                r_diff += chrono.duration(t_beg, t_end);
+                t_end = ttime();
+                r_diff += t_end - t_beg;
             }
             break;
             case 5: {
-                t_beg = chrono.now();
+                t_beg = ttime();
                 pmsort(target, N, sizeof(DTYPE), compare);
-                t_end = chrono.now();
-                pm_diff += chrono.duration(t_beg, t_end);
+                t_end = ttime();
+                pm_diff += t_end - t_beg;
             }
             break;
             case 6: {
-                t_beg = chrono.now();
+                t_beg = ttime();
                 ipnsort(target, N, sizeof(DTYPE), compare);
-                t_end = chrono.now();
-                ipn_diff += chrono.duration(t_beg, t_end);
+                t_end = ttime();
+                ipn_diff += t_end - t_beg;
             }
             break;
             default: {
@@ -98,12 +101,13 @@ int sort_test() {
             puts("Not sorted");
         }
     }
-    printf("|ENV/SORTING|%s|%s|%s|%s|%s|%s|\n", "qsort", "msort", "tsort", "pdqsort", "rsort", "pmsort", "ipnsort");
+    printf("|ENV/SORTING|%s|%s|%s|%s|%s|%s|%s|\n", "qsort", "msort", "tsort", "pdqsort", "rsort", "pmsort", "ipnsort");
     printf("|-|-|-|-|-|-|-|-|\n");
     printf("|%s/%s|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|\n",OCSTL_OS_STR,OCSTL_CC_STR,
            q_diff, m_diff, t_diff, p_diff, r_diff, pm_diff, ipn_diff);
 
-
+    free(target);
+    destroy(arr);
     return 0;
 }
 

@@ -316,6 +316,8 @@ typedef enum CONTAINER_TYPE {
     CT_MAP,
     CT_UNORDERED_SET,
     CT_UNORDERED_MAP,
+    CT_JSON,
+    CT_GLOB
 } CONTAINER_TYPE;
 
 typedef struct {

@@ -1,3 +1,4 @@
+#define OPENCSTL_TRACER
 #include "opencstl/opencstl.h"
 
 int main() {
@@ -11,4 +12,6 @@ int main() {
         printf("%d\n", pos[i]);
     }
     free(pos);
+
+
 }

@@ -45,6 +45,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include "crossplatform.h"
+#include "van_emde_boas_tree.h"
 
 #if defined(OCSTL_OS_WINDOWS)
 #include <windows.h>
@@ -122,7 +123,10 @@ static char **__cstl_glob_listdir_(const char *path, int *n_out) {
     if (h == INVALID_HANDLE_VALUE) return names;
     do {
         if (strcmp(data.cFileName, ".") == 0 || strcmp(data.cFileName, "..") == 0) continue;
-        if (cnt >= cap) { cap *= 2; names = (char **) realloc(names, cap * sizeof(char *)); }
+        if (cnt >= cap) {
+            cap *= 2;
+            names = (char **) realloc(names, cap * sizeof(char *));
+        }
         size_t nl = strlen(data.cFileName);
         names[cnt] = (char *) malloc(nl + 1);
         memcpy(names[cnt], data.cFileName, nl + 1);
@@ -135,7 +139,10 @@ static char **__cstl_glob_listdir_(const char *path, int *n_out) {
     struct dirent *e;
     while ((e = readdir(d))) {
         if (strcmp(e->d_name, ".") == 0 || strcmp(e->d_name, "..") == 0) continue;
-        if (cnt >= cap) { cap *= 2; names = (char **) realloc(names, cap * sizeof(char *)); }
+        if (cnt >= cap) {
+            cap *= 2;
+            names = (char **) realloc(names, cap * sizeof(char *));
+        }
         size_t nl = strlen(e->d_name);
         names[cnt] = (char *) malloc(nl + 1);
         memcpy(names[cnt], e->d_name, nl + 1);
@@ -166,11 +173,15 @@ static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
         if (!*name) return false;
 
         if (*pat == '?') {
-            pat++; name++;
+            pat++;
+            name++;
         } else if (*pat == '[') {
             const char *p = pat + 1;
             bool negate = false;
-            if (*p == '!' || *p == '^') { negate = true; p++; }
+            if (*p == '!' || *p == '^') {
+                negate = true;
+                p++;
+            }
             bool matched = false;
             if (*p == ']') {
                 if (*name == ']') matched = true;
@@ -193,7 +204,8 @@ static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
             name++;
         } else {
             if (*pat != *name) return false;
-            pat++; name++;
+            pat++;
+            name++;
         }
     }
     return !*name;
@@ -220,29 +232,38 @@ static void __cstl_glob_parse_(const char *pat,
     if (plen >= 2 && isalpha((unsigned char) pat[0]) && pat[1] == ':') {
         if (plen >= 3 && __cstl_glob_is_sep(pat[2])) {
             base = (char *) malloc(4);
-            base[0] = pat[0]; base[1] = ':'; base[2] = '/'; base[3] = '\0';
+            base[0] = pat[0];
+            base[1] = ':';
+            base[2] = '/';
+            base[3] = '\0';
             rest = pat + 3;
         } else {
             base = (char *) malloc(3);
-            base[0] = pat[0]; base[1] = ':'; base[2] = '\0';
+            base[0] = pat[0];
+            base[1] = ':';
+            base[2] = '\0';
             rest = pat + 2;
         }
     } else if (plen >= 1 && __cstl_glob_is_sep(pat[0])) {
         base = (char *) malloc(2);
-        base[0] = '/'; base[1] = '\0';
+        base[0] = '/';
+        base[1] = '\0';
         rest = pat + 1;
     } else {
         base = (char *) malloc(2);
-        base[0] = '.'; base[1] = '\0';
+        base[0] = '.';
+        base[1] = '\0';
     }
 #else
     if (plen >= 1 && pat[0] == '/') {
         base = (char *) malloc(2);
-        base[0] = '/'; base[1] = '\0';
+        base[0] = '/';
+        base[1] = '\0';
         rest = pat + 1;
     } else {
         base = (char *) malloc(2);
-        base[0] = '.'; base[1] = '\0';
+        base[0] = '.';
+        base[1] = '\0';
     }
 #endif
 
@@ -254,7 +275,10 @@ static void __cstl_glob_parse_(const char *pat,
         if (__cstl_glob_is_sep(*p) || *p == '\0') {
             size_t sl = (size_t) (p - start);
             if (sl > 0) {
-                if (n >= cap) { cap *= 2; segs = (char **) realloc(segs, cap * sizeof(char *)); }
+                if (n >= cap) {
+                    cap *= 2;
+                    segs = (char **) realloc(segs, cap * sizeof(char *));
+                }
                 segs[n] = (char *) malloc(sl + 1);
                 memcpy(segs[n], start, sl);
                 segs[n][sl] = '\0';
@@ -394,12 +418,22 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
             memmove(s, s + 2, l - 1); // includes '\0'
         }
     }
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, r.items, r.items, CT_GLOB, 0, "glob");
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return r.items;
 }
 
-static void glob_free(char **results) {
+static void __glob_free(char **results) {
     if (!results) return;
     for (char **p = results; *p; p++) free(*p);
+    iveb_erase(iveb,results);
     free(results);
 }
 

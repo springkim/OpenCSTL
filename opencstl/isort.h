@@ -59,8 +59,9 @@ static void isort(void *base, size_t number, size_t width, CSTL_COMPARE compare)
             memcpy(arr + lo * width, tmp, width);
         }
     }
-    if (tmp != sbuf)
+    if (tmp != sbuf) {
         free(tmp);
+    }
 }
 
 #endif

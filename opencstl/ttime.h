@@ -37,25 +37,20 @@
 #pragma once
 #if !defined(_OPENCSTL_CSTL_TICKTOCK_H)
 #define _OPENCSTL_CSTL_TICKTOCK_H
+
+
 #include <stdio.h>
+
 
 #if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
 
 #include <windows.h>
 
-typedef LARGE_INTEGER watch;
-
-static watch _now() {
-    watch t;
-    QueryPerformanceCounter(&t);
-    return t;
-}
-
-static double _duration(const watch t_beg, const watch t_end) {
-    LARGE_INTEGER freq;
+static double ttime(void) {
+    LARGE_INTEGER freq, counter;
     QueryPerformanceFrequency(&freq);
-    double ms = (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
-    return ms > 0 ? ms : -ms;
+    QueryPerformanceCounter(&counter);
+    return (double) counter.QuadPart * 1000.0 / (double) freq.QuadPart;
 }
 
 #elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
@@ -63,35 +58,15 @@ static double _duration(const watch t_beg, const watch t_end) {
 #include <sys/time.h>
 #include <time.h>
 
-typedef struct timeval watch;
-
-static watch _now(void) {
-    watch tv;
+static double ttime(void) {
+    struct timeval tv;
     gettimeofday(&tv, NULL);
-    return tv;
+    return (double) tv.tv_sec * 1000.0 + (double) tv.tv_usec / 1000.0;
 }
-
-static double _duration(const watch t_beg, const watch t_end) {
-    double ms = (t_end.tv_sec - t_beg.tv_sec) * 1000.0 +
-                (t_end.tv_usec - t_beg.tv_usec) / 1000.0;
-    return ms > 0 ? ms : -ms;
-}
-
 
 #else
 #error Unsupported compiler/platform
 #endif
-typedef watch (*now_fn)(void);
 
-typedef double (*duration_fn)(const watch, const watch);
 
-typedef struct {
-    now_fn now;
-    duration_fn duration;
-} CHRONO;
-
-static CHRONO chrono = {
-    _now,
-    _duration,
-};
 #endif
