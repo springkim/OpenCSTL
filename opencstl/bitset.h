@@ -165,7 +165,7 @@ void __cstl_bitset_set_at(BITSET b, size_type idx, bool val) {
 size_type __cstl_bitset_count(BITSET b) {
     // 1로 설정된 비트의 개수를 반환
     size_type cap = __cstl_bitset_capacity(b.nbits);
-    size_t count = 0;
+    size_type64 count = 0;
     size_type i = 0;
     // 8바이트(64비트) 단위로 처리
     for (; i + 8 <= cap; i += 8) {

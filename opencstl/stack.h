@@ -39,14 +39,14 @@
 #include"error.h"
 
 #define cstl_stack(TYPE)	__cstl_stack(sizeof(TYPE),#TYPE)
-OPENCSTL_FUNC void *__cstl_stack(size_t type_size, char *type) {
-    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
+OPENCSTL_FUNC void *__cstl_stack(size_type64 type_size, char *type) {
+    size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + type_size * 2) + header_sz; // 2 = capacity
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_STACK;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
     OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
-    OPENCSTL_NIDX(container, -4) = (size_t) type;
+    OPENCSTL_NIDX(container, -4) = (size_type64) type;
     OPENCSTL_NIDX(container, -3) = 2; //capacity
     OPENCSTL_NIDX(container, -2) = 0; //length
     *container = (char *) ptr + type_size;

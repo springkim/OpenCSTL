@@ -41,6 +41,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "types.h"
 #include "logging.h"
 //#include "van_emde_boas_tree.h"
 #define _1MB (1024*1024)
@@ -56,8 +57,8 @@ typedef struct ZMem {
 
 ZMEM zmem[8192] = {0};
 //void *zalloc_vector[_512KB] = {0};
-size_t zalloc_size = 0;
-size_t zalloc_count = 0;
+size_type64 zalloc_size = 0;
+size_type64 zalloc_count = 0;
 
 static void zinsert(void *ptr, char *file, char *func, int line) {
     zmem[zalloc_size].ptr = ptr;
@@ -69,9 +70,9 @@ static void zinsert(void *ptr, char *file, char *func, int line) {
 }
 
 static void zremove(void *ptr) {
-    for (size_t i = 0; i < zalloc_size; i++) {
+    for (size_type64 i = 0; i < zalloc_size; i++) {
         if (zmem[i].ptr == ptr) {
-            memcpy(zmem + i, zmem + i + 1, (zalloc_size - i - 1) * sizeof(ZMEM));
+            memmove(zmem + i, zmem + i + 1, (zalloc_size - i - 1) * sizeof(ZMEM));
             zalloc_size--;
             zmem[zalloc_size].ptr = NULL;
             zmem[zalloc_size].file = NULL;
@@ -88,7 +89,7 @@ static void zremove(void *ptr) {
 // }
 //
 // static void zerase(void *ptr) {
-//     for (size_t i = 0; i < zalloc_size; i++) {
+//     for (size_type64 i = 0; i < zalloc_size; i++) {
 //         if (zalloc_vector[i] == ptr) {
 //             memcpy(zalloc_vector + i, zalloc_vector + i + 1, (zalloc_size - i - 1) * sizeof(void *));
 //             zalloc_size--;
@@ -103,7 +104,7 @@ static void opencstl_exit(void) {
     if (zalloc_size > 0) {
         logging.warning("%d memory blocks were not released", zalloc_size);
 
-        for (size_t i = 0; i < zalloc_size; i++) {
+        for (size_type64 i = 0; i < zalloc_size; i++) {
             logging.debug("%p: %s, %s, %d", zmem[i].ptr, zmem[i].file, zmem[i].func, zmem[i].line);
         }
     }
@@ -116,7 +117,7 @@ static void opencstl_exit(void) {
 __attribute__((constructor))
 #endif
 static int opencstl_init(void) {
-    //size_t SZ = _512KB;
+    //size_type64 SZ = _512KB;
     //zalloc_vector = salloc(SZ);
     //memset(zalloc_vector, 0, SZ);
 

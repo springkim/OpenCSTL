@@ -473,28 +473,28 @@ char *__mt19937_uuid(void) {
 }
 
 OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
 
-    for (size_t i = length - 1; i > 0; i--) {
-        size_t rng_idx = __mt19937_64_next() % (i + 1);
+    for (size_type64 i = length - 1; i > 0; i--) {
+        size_type64 rng_idx = __mt19937_64_next() % (i + 1);
         swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
     }
 }
 
 OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_TSIZE) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
 
-    for (size_t i = length - 1; i > 0; i--) {
-        size_t rng_idx = __mt19937_64_next() % (i + 1);
+    for (size_type64 i = length - 1; i > 0; i--) {
+        size_type64 rng_idx = __mt19937_64_next() % (i + 1);
         swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
     }
 }
 
 OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     size_type length = (size_type) OPENCSTL_NIDX(container, -1);
     if (length <= 1) return;
@@ -522,10 +522,10 @@ OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
 
 
 void __mt19937_shuffle(void *container) {
-    size_t container_type;
+    size_type64 container_type;
     if (__is_deque((void **) &container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(size_t *) ((char *) *(void **) &container + NIDX_CTYPE * sizeof(size_t) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
     }

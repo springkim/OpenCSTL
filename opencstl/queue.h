@@ -43,8 +43,8 @@
 
 
 #define cstl_queue(TYPE)	__cstl_queue(sizeof(TYPE),#TYPE)
-OPENCSTL_FUNC void *__cstl_queue(size_t type_size, char *type) {
-    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
+OPENCSTL_FUNC void *__cstl_queue(size_type64 type_size, char *type) {
+    size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + type_size * 2) + header_sz; // 2 = capacity
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_QUEUE;
@@ -52,7 +52,7 @@ OPENCSTL_FUNC void *__cstl_queue(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
     OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
 
-    OPENCSTL_NIDX(container, -4) = (size_t) type;
+    OPENCSTL_NIDX(container, -4) = (size_type64) type;
     OPENCSTL_NIDX(container, -3) = 2; //capacity
     OPENCSTL_NIDX(container, -2) = 0; //length
     *container = (char *) ptr + type_size;
@@ -60,18 +60,19 @@ OPENCSTL_FUNC void *__cstl_queue(size_t type_size, char *type) {
     return ptr;
 }
 
-#define cstl_priority_queue(TYPE,...)	_CSTL_PQ_DISPATCH(TYPE, ##__VA_ARGS__, NULL)
+#define _CSTL_PQ_EXPAND(x) x
+#define cstl_priority_queue(...)	_CSTL_PQ_EXPAND(_CSTL_PQ_DISPATCH(__VA_ARGS__, NULL, NULL))
 #define _CSTL_PQ_DISPATCH(TYPE, COMP, ...) __cstl_priority_queue(sizeof(TYPE),#TYPE,(void*)(COMP))
-OPENCSTL_FUNC void *__cstl_priority_queue(size_t type_size, char *type, void *compare) {
-    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
+OPENCSTL_FUNC void *__cstl_priority_queue(size_type64 type_size, char *type, void *compare) {
+    size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + type_size * 1) + header_sz;
     void **container = &ptr;
     OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_PRIORITY_QUEUE;
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
     OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
     OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
-    OPENCSTL_NIDX(container, -4) = (size_t) type;
-    OPENCSTL_NIDX(container, -3) = (size_t) compare; //compare function
+    OPENCSTL_NIDX(container, -4) = (size_type64) type;
+    OPENCSTL_NIDX(container, -3) = (size_type64) compare; //compare function
     OPENCSTL_NIDX(container, -2) = 1; //capacity
     OPENCSTL_NIDX(container, -1) = 0; //length
     return ptr;
@@ -79,12 +80,12 @@ OPENCSTL_FUNC void *__cstl_priority_queue(size_t type_size, char *type, void *co
 
 OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
     __cstl_vector_push_back(container, value);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
     CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -3);
 
     void *tmp = salloc(type_size);
-    size_t idx = length - 1;
+    size_type64 idx = length - 1;
     memcpy(tmp, ((char *) *container) + type_size * idx, type_size);
     while (idx > 0) {
         void *c = ((char *) *container) + type_size * idx;
@@ -99,15 +100,15 @@ OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
 
 OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
     verify(OPENCSTL_NIDX(container, -1) > 0);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
     CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -3);
     memcpy(*container, ((char *) *container) + type_size * (length - 1), type_size);
     OPENCSTL_NIDX(container, -1)--;
     length--;
-    size_t idx = 0;
+    size_type64 idx = 0;
     void *tmp = salloc(type_size);
-    size_t L, R, C;
+    size_type64 L, R, C;
     memcpy(tmp, *container, type_size);
     void *ptr = tmp;
     do {

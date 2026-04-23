@@ -117,7 +117,7 @@ char *__cstl_get_line(FILE *fp) {
     long start = ftell(fp);
     if (start < 0) return NULL;
 
-    size_t len = 0;
+    size_type64 len = 0;
     int c;
     int found_any = 0;
     while ((c = fgetc(fp)) != EOF) {
@@ -132,7 +132,7 @@ char *__cstl_get_line(FILE *fp) {
     char *buf = (char *) calloc(len + 1, sizeof(char));
     if (!buf) return NULL;
 
-    for (size_t i = 0; i < len; i++) {
+    for (size_type64 i = 0; i < len; i++) {
         int ch = fgetc(fp);
         if (ch == EOF) {
             free(buf);
@@ -146,7 +146,7 @@ char *__cstl_get_line(FILE *fp) {
 
 char *__cstl_fread_all(FILE *fp) {
     fseek(fp, 0, SEEK_END);
-    size_t total_size = ftell(fp);
+    size_type64 total_size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
     char *buf = (char *) calloc(total_size, sizeof(char));
     fread(buf, 1, total_size, fp);
@@ -159,7 +159,7 @@ FILE *__cstl_fwrite_all(FILE *fp, const char *buf) {
     FILE *new_fp = __cstl_fopen(filepath, "wt");
     fpm_append(new_fp, filepath);
     if (!new_fp) return NULL;
-    size_t len = strlen(buf);
+    size_type64 len = strlen(buf);
     fwrite(buf, 1, len, new_fp) == len;
     return new_fp;
 }
@@ -172,7 +172,7 @@ typedef char *(*cstl_getline_fn)(FILE *fp);
 
 typedef char *(*cstl_fread_all_fn)(FILE *fp);
 
-typedef char *(*cstl_readall_fn)(FILE *fp, size_t *outsize);
+typedef char *(*cstl_readall_fn)(FILE *fp, size_type64 *outsize);
 
 typedef FILE * (*cstl_fwrite_all_fn)(FILE *fp, const char *buf);
 

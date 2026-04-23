@@ -31,15 +31,15 @@
 #include "../opencstl/opencstl.h"
 
 typedef struct {
-    size_t total;             // 0이면 unknown (indeterminate bar)
-    size_t current;
+    size_type64 total;             // 0이면 unknown (indeterminate bar)
+    size_type64 current;
     int    bar_width;
     int    mininterval_ms;
 
     double t0;
     double t_last_print;
     double t_last_sample;
-    size_t n_last_sample;
+    size_type64 n_last_sample;
 
     double ema_rate;
     double smoothing;
@@ -65,7 +65,7 @@ static inline double tqdm_now_(void) {
 #endif
 }
 
-static inline void tqdm_fmt_time_(double sec, char *buf, size_t bufsz) {
+static inline void tqdm_fmt_time_(double sec, char *buf, size_type64 bufsz) {
     if (!(sec >= 0.0) || sec > 359999.0) {
         snprintf(buf, bufsz, "??:??");
         return;
@@ -78,7 +78,7 @@ static inline void tqdm_fmt_time_(double sec, char *buf, size_t bufsz) {
     else       snprintf(buf, bufsz, "%02d:%02d", m, s);
 }
 
-static inline void tqdm_init(tqdm_t *t, size_t total) {
+static inline void tqdm_init(tqdm_t *t, size_type64 total) {
     t->total = total;
     t->current = 0;
     t->bar_width = 30;
@@ -141,7 +141,7 @@ static inline void tqdm_render_(tqdm_t *t, int final_) {
     }
 
     if (t->total > 0) {
-        size_t remaining = (t->current >= t->total) ? 0 : (t->total - t->current);
+        size_type64 remaining = (t->current >= t->total) ? 0 : (t->total - t->current);
         double eta = (rate > 0.0) ? (double)remaining / rate : -1.0;
         tqdm_fmt_time_(eta, r_buf, sizeof r_buf);
 
@@ -165,7 +165,7 @@ static inline void tqdm_render_(tqdm_t *t, int final_) {
 
     // Python tqdm 방식: 분기 없이 항상 \r만 쓰고 \n은 close에서만
     fputc('\r', t->fp);
-    fwrite(line, 1, (size_t)len, t->fp);
+    fwrite(line, 1, (size_type64)len, t->fp);
     int extra = t->last_line_len - len;
     for (int i = 0; i < extra; i++) fputc(' ', t->fp);
     for (int i = 0; i < extra; i++) fputc('\b', t->fp);
@@ -178,7 +178,7 @@ static inline void tqdm_render_(tqdm_t *t, int final_) {
     fflush(t->fp);
     t->t_last_print = now;
 }
-static inline void tqdm_update(tqdm_t *t, size_t n) {
+static inline void tqdm_update(tqdm_t *t, size_type64 n) {
     t->current += n;
     double now = tqdm_now_();
     double since_ms = (now - t->t_last_print) * 1000.0;
@@ -211,7 +211,7 @@ int main(void) {
     tqdm_init(&pbar, 100000);   // 1000은 너무 빨라서 bar를 못 봄
     pbar.bar_width = 30;
 
-    for (size_t i = 0; i < pbar.total; i++) {
+    for (size_type64 i = 0; i < pbar.total; i++) {
         sleep_us(100);
         tqdm_update(&pbar, 1);
     }

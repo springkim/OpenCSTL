@@ -59,7 +59,7 @@ static void zfree(void *ptr) {
 }
 
 
-static void *_zcalloc(size_t cnt, size_t sz, char *file, char *func, int line) {
+static void *_zcalloc(size_type64 cnt, size_type64 sz, char *file, char *func, int line) {
     void *ptr = ocalloc(cnt, sz);
     if (ptr) {
         zinsert(ptr, file, func, line);
@@ -68,7 +68,7 @@ static void *_zcalloc(size_t cnt, size_t sz, char *file, char *func, int line) {
 }
 
 
-static void *_zmalloc(size_t sz, char *file, char *func, int line) {
+static void *_zmalloc(size_type64 sz, char *file, char *func, int line) {
     void *ptr = omalloc(sz);
     if (ptr) {
         zinsert(ptr, file, func, line);
@@ -77,7 +77,7 @@ static void *_zmalloc(size_t sz, char *file, char *func, int line) {
 }
 
 
-static void *_zrealloc(void *ptr, size_t new_size, char *file, char *func, int line) {
+static void *_zrealloc(void *ptr, size_type64 new_size, char *file, char *func, int line) {
     if (ptr == NULL) {
         return _zmalloc(new_size, file, func, line);
     }

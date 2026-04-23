@@ -132,7 +132,7 @@ char *__as_string() {
         end = p->q + 1;
     }
 
-    size_t cap = (size_t) (end - start) + 1; // 이스케이프 처리 후 길이는 항상 원본 이하
+    size_type64 cap = (size_type64) (end - start) + 1; // 이스케이프 처리 후 길이는 항상 원본 이하
     char *out = (char *) malloc(cap);
     if (!out) return NULL;
 
@@ -283,7 +283,7 @@ static char *__parse_object(char *s, JSON_TOKEN *node) {
         JSON_TOKEN *child = (JSON_TOKEN *) calloc(1, sizeof(JSON_TOKEN));
 
         // 자식의 key 필드에 복사
-        size_t klen = (size_t) (key_end - key_start);
+        size_type64 klen = (size_type64) (key_end - key_start);
         if (klen > sizeof(child->key) - 1) klen = sizeof(child->key) - 1;
         memcpy(child->key, key_start, klen);
         child->key[klen] = '\0';

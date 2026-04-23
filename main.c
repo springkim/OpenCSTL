@@ -59,7 +59,7 @@ void cstl_vector_test01(void) {
 void cstl_vector_test2(void) {
     MsgBoxCLI("OpenCSTL / VECTOR TEST02");
     VECTOR(int*) matrix = new_vector(int*);
-    const size_t sz = 7;
+    const size_type64 sz = 7;
     assign(matrix, sz);
     for (int i = 0; i < size(matrix); i++) {
         matrix[i] = new_vector(int);
@@ -374,7 +374,7 @@ void cstl_unordered_set_test01(void) {
         insert(h, i);
     }
 
-    size_t capacity_max = capacity(h);
+    size_type64 capacity_max = capacity(h);
 
     for (int i = 0; i < (int) capacity_max; i++) {
         int k = h[i];

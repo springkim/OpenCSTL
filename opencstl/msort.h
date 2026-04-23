@@ -43,7 +43,7 @@
 #define MSORT_ISORT_THRESH 32
 
 
-static void msort_merge(char *arr, size_t len1, size_t len2, size_t sz,
+static void msort_merge(char *arr, size_type64 len1, size_type64 len2, size_type64 sz,
                         CSTL_COMPARE cmp, char *buf) {
     if (cmp(arr + (len1 - 1) * sz, arr + len1 * sz) <= 0) return;
     if (len1 <= len2) {
@@ -62,10 +62,10 @@ static void msort_merge(char *arr, size_t len1, size_t len2, size_t sz,
             d += sz;
         }
         if (c1 < e1)
-            memcpy(d, c1, (size_t) (e1 - c1));
+            memcpy(d, c1, (size_type64) (e1 - c1));
     } else {
         memcpy(buf, arr + len1 * sz, len2 * sz);
-        size_t i = len1, j = len2, k = len1 + len2;
+        size_type64 i = len1, j = len2, k = len1 + len2;
         while (i > 0 && j > 0) {
             k--;
             if (cmp(buf + (j - 1) * sz, arr + (i - 1) * sz) < 0) {
@@ -81,21 +81,21 @@ static void msort_merge(char *arr, size_t len1, size_t len2, size_t sz,
     }
 }
 
-static void msort(void *base, size_t number, size_t width, CSTL_COMPARE compare) {
+static void msort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
     if (number < 2) return;
     char *arr = (char *) base;
-    size_t sz = width;
-    for (size_t i = 0; i < number; i += MSORT_ISORT_THRESH) {
-        size_t blk = number - i;
+    size_type64 sz = width;
+    for (size_type64 i = 0; i < number; i += MSORT_ISORT_THRESH) {
+        size_type64 blk = number - i;
         if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
         isort(arr + i * sz, blk, sz, compare);
     }
     char *buf = (char *) calloc(((number + 1) / 2), sz);
     if (!buf) return;
-    for (size_t mb = MSORT_ISORT_THRESH; mb < number; mb *= 2) {
-        for (size_t i = 0; i + mb < number; i += 2 * mb) {
-            size_t len1 = mb;
-            size_t len2 = number - i - mb;
+    for (size_type64 mb = MSORT_ISORT_THRESH; mb < number; mb *= 2) {
+        for (size_type64 i = 0; i + mb < number; i += 2 * mb) {
+            size_type64 len1 = mb;
+            size_type64 len2 = number - i - mb;
             if (len2 > mb) len2 = mb;
             msort_merge(arr + i * sz, len1, len2, sz, compare, buf);
         }

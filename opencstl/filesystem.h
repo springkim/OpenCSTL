@@ -87,23 +87,23 @@ static char *__cstl_join(char *path1, char *path2) {
 #endif
     }
     if (p2_abs) {
-        size_t l = strlen(path2);
+        size_type64 l = strlen(path2);
         char *ret = (char *) malloc(l + 1);
         memcpy(ret, path2, l + 1);
         return ret;
     }
-    size_t l1 = strlen(path1);
-    size_t l2 = strlen(path2);
+    size_type64 l1 = strlen(path1);
+    size_type64 l2 = strlen(path2);
     if (l1 == 0) {
         char *ret = (char *) malloc(l2 + 1);
         memcpy(ret, path2, l2 + 1);
         return ret;
     }
     bool need_sep = !__cstl_is_sep(path1[l1 - 1]);
-    size_t total = l1 + (need_sep ? 1 : 0) + l2;
+    size_type64 total = l1 + (need_sep ? 1 : 0) + l2;
     char *ret = (char *) malloc(total + 1);
     memcpy(ret, path1, l1);
-    size_t pos = l1;
+    size_type64 pos = l1;
     if (need_sep) ret[pos++] = CSTL_PATH_SEP;
     memcpy(ret + pos, path2, l2);
     ret[pos + l2] = '\0';
@@ -111,12 +111,12 @@ static char *__cstl_join(char *path1, char *path2) {
 }
 
 static char *__cstl_basename(char *path) {
-    size_t len = strlen(path);
-    size_t start = 0;
-    for (size_t i = 0; i < len; i++) {
+    size_type64 len = strlen(path);
+    size_type64 start = 0;
+    for (size_type64 i = 0; i < len; i++) {
         if (__cstl_is_sep(path[i])) start = i + 1;
     }
-    size_t base_len = len - start;
+    size_type64 base_len = len - start;
     char *ret = (char *) malloc(base_len + 1);
     memcpy(ret, path + start, base_len);
     ret[base_len] = '\0';
@@ -124,20 +124,20 @@ static char *__cstl_basename(char *path) {
 }
 
 static char **__cstl_splitext(char *path) {
-    size_t len = strlen(path);
-    size_t base_start = 0;
-    for (size_t i = 0; i < len; i++) {
+    size_type64 len = strlen(path);
+    size_type64 base_start = 0;
+    for (size_type64 i = 0; i < len; i++) {
         if (__cstl_is_sep(path[i])) base_start = i + 1;
     }
-    size_t nonleading = base_start;
+    size_type64 nonleading = base_start;
     while (nonleading < len && path[nonleading] == '.') nonleading++;
-    size_t dot_pos = (size_t) -1;
-    for (size_t i = nonleading; i < len; i++) {
+    size_type64 dot_pos = (size_type64) -1;
+    for (size_type64 i = nonleading; i < len; i++) {
         if (path[i] == '.') dot_pos = i;
     }
-    size_t root_len = (dot_pos == (size_t) -1) ? len : dot_pos;
-    size_t ext_len = (dot_pos == (size_t) -1) ? 0 : (len - dot_pos);
-    size_t total = 2 * sizeof(char *) + root_len + 1 + ext_len + 1;
+    size_type64 root_len = (dot_pos == (size_type64) -1) ? len : dot_pos;
+    size_type64 ext_len = (dot_pos == (size_type64) -1) ? 0 : (len - dot_pos);
+    size_type64 total = 2 * sizeof(char *) + root_len + 1 + ext_len + 1;
     char **ret = (char **) malloc(total);
     char *buf = (char *) ret + 2 * sizeof(char *);
     memcpy(buf, path, root_len);
@@ -149,27 +149,27 @@ static char **__cstl_splitext(char *path) {
     return ret;
 }
 
-static size_t __cstl_getsize(char *path) {
+static size_type64 __cstl_getsize(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     WIN32_FILE_ATTRIBUTE_DATA attr;
     if (!GetFileAttributesExA(path, GetFileExInfoStandard, &attr)) return 0;
     ULARGE_INTEGER sz;
     sz.LowPart = attr.nFileSizeLow;
     sz.HighPart = attr.nFileSizeHigh;
-    return (size_t) sz.QuadPart;
+    return (size_type64) sz.QuadPart;
 #else
     struct stat st;
     if (stat(path, &st) != 0) return 0;
-    return (size_t) st.st_size;
+    return (size_type64) st.st_size;
 #endif
 }
 
 static void __cstl_makedirs(char *path) {
-    size_t len = strlen(path);
+    size_type64 len = strlen(path);
     if (len == 0) return;
     char *tmp = (char *) malloc(len + 1);
     memcpy(tmp, path, len + 1);
-    for (size_t i = 1; i < len; i++) {
+    for (size_type64 i = 1; i < len; i++) {
         if (__cstl_is_sep(tmp[i])) {
             char save = tmp[i];
             tmp[i] = '\0';
@@ -202,17 +202,17 @@ static void __cstl_rename(char *oldpath, char *newpath) {
 }
 
 static char *__cstl_dirname(char *path) {
-    size_t len = strlen(path);
-    size_t last_sep = (size_t) -1;
-    for (size_t i = 0; i < len; i++) {
+    size_type64 len = strlen(path);
+    size_type64 last_sep = (size_type64) -1;
+    for (size_type64 i = 0; i < len; i++) {
         if (__cstl_is_sep(path[i])) last_sep = i;
     }
-    if (last_sep == (size_t) -1) {
+    if (last_sep == (size_type64) -1) {
         char *ret = (char *) malloc(1);
         ret[0] = '\0';
         return ret;
     }
-    size_t dir_len = last_sep;
+    size_type64 dir_len = last_sep;
     if (dir_len == 0) dir_len = 1;
 #if defined(OCSTL_OS_WINDOWS)
     if (last_sep == 2 && isalpha((unsigned char) path[0]) && path[1] == ':') {
@@ -240,20 +240,20 @@ static char *__cstl_abspath(char *path) {
 #else
     char resolved[PATH_MAX];
     if (realpath(path, resolved)) {
-        size_t l = strlen(resolved);
+        size_type64 l = strlen(resolved);
         char *ret = (char *) malloc(l + 1);
         memcpy(ret, resolved, l + 1);
         return ret;
     }
     if (path[0] == '/') {
-        size_t l = strlen(path);
+        size_type64 l = strlen(path);
         char *ret = (char *) malloc(l + 1);
         memcpy(ret, path, l + 1);
         return ret;
     }
     char cwd[PATH_MAX];
     if (!getcwd(cwd, sizeof cwd)) {
-        size_t l = strlen(path);
+        size_type64 l = strlen(path);
         char *ret = (char *) malloc(l + 1);
         memcpy(ret, path, l + 1);
         return ret;
@@ -292,7 +292,7 @@ typedef char *(*cstl_basename_fn)(char *path);
 
 typedef char **(*cstl_splitext_fn)(char *path);
 
-typedef size_t (*cstl_getsize_fn)(char *path);
+typedef size_type64 (*cstl_getsize_fn)(char *path);
 
 typedef void (*cstl_makedirs_fn)(char *path);
 

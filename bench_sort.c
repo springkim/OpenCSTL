@@ -15,8 +15,8 @@ int sort_test() {
 
     DTYPE N = 5000000;
 
-    size_t ALGORITHMS = 7;
-    size_t REPEAT = 10;
+    size_type64 ALGORITHMS = 7;
+    size_type64 REPEAT = 10;
     // DTYPE *arr = (DTYPE *) calloc(N, sizeof(DTYPE));
     VECTOR(DTYPE) arr = new_vector(DTYPE);
     for (int i = 0; i < N; i++) {

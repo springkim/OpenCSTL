@@ -55,14 +55,14 @@
 struct ps_args {
     char *base;
     char *buf;
-    size_t n;
-    size_t sz;
+    size_type64 n;
+    size_type64 sz;
     CSTL_COMPARE cmp;
     int depth;
 };
 
-static void ps_merge(char *base, char *buf, size_t n1, size_t n2,
-                     size_t sz, CSTL_COMPARE cmp) {
+static void ps_merge(char *base, char *buf, size_type64 n1, size_type64 n2,
+                     size_type64 sz, CSTL_COMPARE cmp) {
     char *l = base;
     char *r = base + n1 * sz;
     char *l_end = r;
@@ -79,9 +79,9 @@ static void ps_merge(char *base, char *buf, size_t n1, size_t n2,
         d += sz;
     }
     if (l < l_end)
-        memcpy(d, l, (size_t) (l_end - l));
+        memcpy(d, l, (size_type64) (l_end - l));
     if (r < r_end)
-        memcpy(d, r, (size_t) (r_end - r));
+        memcpy(d, r, (size_type64) (r_end - r));
     memcpy(base, buf, (n1 + n2) * sz);
 }
 
@@ -94,7 +94,7 @@ static void *ps_run(void *p) {
         return NULL;
     }
 
-    size_t mid = a->n / 2;
+    size_type64 mid = a->n / 2;
     struct ps_args left = {
         a->base, a->buf, mid, a->sz, a->cmp, a->depth + 1
     };
@@ -113,7 +113,7 @@ static void *ps_run(void *p) {
     return NULL;
 }
 
-static void pmsort(void *base, const size_t number, const size_t width, CSTL_COMPARE cmp) {
+static void pmsort(void *base, const size_type64 number, const size_type64 width, CSTL_COMPARE cmp) {
     if (number < 2) return;
     if (number <= PS_SEQ_CUTOFF) {
         msort(base, number, width, cmp);

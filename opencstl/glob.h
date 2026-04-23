@@ -89,11 +89,11 @@ static bool __cstl_glob_isdir_(const char *path) {
 }
 
 static char *__cstl_glob_join_(const char *a, const char *b) {
-    size_t la = strlen(a), lb = strlen(b);
+    size_type64 la = strlen(a), lb = strlen(b);
     bool need_sep = la > 0 && !__cstl_glob_is_sep(a[la - 1]);
     char *r = (char *) malloc(la + (need_sep ? 1 : 0) + lb + 1);
     memcpy(r, a, la);
-    size_t pos = la;
+    size_type64 pos = la;
     if (need_sep) {
         r[pos++] = '/';
     }
@@ -109,10 +109,10 @@ static char **__cstl_glob_listdir_(const char *path, int *n_out) {
     *n_out = 0;
 
 #if defined(OCSTL_OS_WINDOWS)
-    size_t plen = strlen(path);
+    size_type64 plen = strlen(path);
     char *pat = (char *) malloc(plen + 3);
     memcpy(pat, path, plen);
-    size_t pos = plen;
+    size_type64 pos = plen;
     if (plen > 0 && !__cstl_glob_is_sep(path[plen - 1])) pat[pos++] = '\\';
     pat[pos++] = '*';
     pat[pos] = '\0';
@@ -127,7 +127,7 @@ static char **__cstl_glob_listdir_(const char *path, int *n_out) {
             cap *= 2;
             names = (char **) realloc(names, cap * sizeof(char *));
         }
-        size_t nl = strlen(data.cFileName);
+        size_type64 nl = strlen(data.cFileName);
         names[cnt] = (char *) malloc(nl + 1);
         memcpy(names[cnt], data.cFileName, nl + 1);
         cnt++;
@@ -143,7 +143,7 @@ static char **__cstl_glob_listdir_(const char *path, int *n_out) {
             cap *= 2;
             names = (char **) realloc(names, cap * sizeof(char *));
         }
-        size_t nl = strlen(e->d_name);
+        size_type64 nl = strlen(e->d_name);
         names[cnt] = (char *) malloc(nl + 1);
         memcpy(names[cnt], e->d_name, nl + 1);
         cnt++;
@@ -224,7 +224,7 @@ static bool __cstl_glob_has_magic_(const char *s) {
 
 static void __cstl_glob_parse_(const char *pat,
                                char **base_out, char ***segs_out, int *n_out) {
-    size_t plen = strlen(pat);
+    size_type64 plen = strlen(pat);
     const char *rest = pat;
     char *base;
 
@@ -273,7 +273,7 @@ static void __cstl_glob_parse_(const char *pat,
     const char *start = rest;
     for (const char *p = rest; ; p++) {
         if (__cstl_glob_is_sep(*p) || *p == '\0') {
-            size_t sl = (size_t) (p - start);
+            size_type64 sl = (size_type64) (p - start);
             if (sl > 0) {
                 if (n >= cap) {
                     cap *= 2;
@@ -310,7 +310,7 @@ static void __cstl_glob_push_(__cstl_glob_result_ *r, const char *s) {
         r->cap = r->cap ? r->cap * 2 : 16;
         r->items = (char **) realloc(r->items, r->cap * sizeof(char *));
     }
-    size_t l = strlen(s);
+    size_type64 l = strlen(s);
     r->items[r->cnt] = (char *) malloc(l + 1);
     memcpy(r->items[r->cnt], s, l + 1);
     r->cnt++;
@@ -414,7 +414,7 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
             if (*p == '\\') *p = '/';
         }
         if (s[0] == '.' && s[1] == '/') {
-            size_t l = strlen(s);
+            size_type64 l = strlen(s);
             memmove(s, s + 2, l - 1); // includes '\0'
         }
     }

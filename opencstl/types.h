@@ -49,12 +49,12 @@
 
 typedef int (*CSTL_COMPARE)(const void *, const void *);
 
-typedef size_t cstl_ptr;
-
-typedef size_t (*cstl_hash)(void *key, size_t capacity, size_t key_size);
-
-
 typedef int size_type;
+typedef long long size_type64;
+
+typedef size_type64 cstl_ptr;
+
+typedef size_type64 (*cstl_hash)(void *key, size_type64 capacity, size_type64 key_size);
 
 
 typedef int int32_x;

@@ -42,15 +42,15 @@
 #include <string.h>
 #include "types.h"
 
-static void isort(void *base, size_t number, size_t width, CSTL_COMPARE compare) {
+static void isort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
     char *arr = (char *) base;
     char sbuf[1024];
     char *tmp = (width <= sizeof(sbuf)) ? sbuf : (char *) malloc(width);
-    for (size_t i = 1; i < number; i++) {
+    for (size_type64 i = 1; i < number; i++) {
         memcpy(tmp, arr + i * width, width);
-        size_t lo = 0, hi = i;
+        size_type64 lo = 0, hi = i;
         while (lo < hi) {
-            size_t mid = lo + ((hi - lo) >> 1);
+            size_type64 mid = lo + ((hi - lo) >> 1);
             if (compare(tmp, arr + mid * width) < 0) hi = mid;
             else lo = mid + 1;
         }

@@ -1,5 +1,5 @@
 #define OPENCSTL_TRACER
-#include "opencstl/opencstl.h"
+#include "../opencstl/opencstl.h"
 
 int main() {
     FILE *fp = fstream.open("sample.json", "r");

@@ -76,7 +76,16 @@
 
 //For access header element
 //OPENCSTL_AccessContainerAsIndex
-#define OPENCSTL_NIDX(container,nidx) (((size_t*)*container)[(nidx)])
+
+
+#if defined(__GNUC__) || defined(__clang__)
+typedef long long __attribute__((__aligned__(1), __may_alias__)) _opencstl_ll_ua;
+#elif defined(_MSC_VER)
+typedef long long __unaligned _opencstl_ll_ua;
+#else
+typedef long long _opencstl_ll_ua;
+#endif
+#define OPENCSTL_NIDX(container,nidx) (((_opencstl_ll_ua*)*container)[(nidx)])
 
 #define OPENCSTL_HEADER	(12)
 #define NIDX_CTYPE	    (-12)	// container type
@@ -104,7 +113,18 @@
 #endif
 
 
-#define cstl_value(iter,TYPE)	(*(TYPE*)(iter+1))
+//#define cstl_value(iter,TYPE)	(*(TYPE*)(iter+1))
+
+#if defined(OCSTL_CC_MSVC)
+// MSVC: __unaligned 키워드로 비정렬 로드 허용
+#define cstl_value(iter, TYPE) \
+(*(TYPE __unaligned *)((char *)(iter) + sizeof(*(iter))))
+#else
+// GCC / Clang / zig cc: compound literal + memcpy
+// memcpy 반환값은 dst 포인터이므로 *(TYPE*) 역참조하면 정렬된 값을 읽음
+#define cstl_value(iter, TYPE) \
+(*(TYPE *)memcpy(&(TYPE){0}, (char *)(iter) + sizeof(*(iter)), sizeof(TYPE)))
+#endif
 
 // CSTL_USE_VAARG=0: Windows only (values passed directly on stack)
 // CSTL_USE_VAARG=1: Linux/macOS (macros pass pointers via &__1; standard va_arg is correct)
@@ -150,7 +170,7 @@
 // #define cstl_max_capacity(container) _cstl_max_size(&(container))
 //Macro only functions
 
-#define _cstl_deque_type(container) (*(size_t*)((char*)*(void**)container + NIDX_CTYPE * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
+#define _cstl_deque_type(container) (*(_opencstl_ll_ua *)((char*)*(void**)container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
 #ifdef _MSC_VER
 #pragma warning(disable:4047)
 #pragma warning(disable:4477)
@@ -164,8 +184,16 @@
 #endif
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define _cstl_deref(P) (__extension__ ({ \
+    __typeof__(*(P)) _cstl_rv; \
+    __builtin_memcpy(&_cstl_rv, (const void *)(P), sizeof(_cstl_rv)); \
+    _cstl_rv; \
+}))
+#else
 #define _cstl_deref(P) (*(P))
-#define _cstl_err_ptr (void*)(size_t)0
+#endif
+#define _cstl_err_ptr (void*)(size_type64)0
 
 #define cstl_front(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
 _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C):_cstl_err_ptr) :\
@@ -181,7 +209,7 @@ _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type
 // #pragma GCC diagnostic pop
 #endif
 
-#define OPENCSTL_DEQUE_NIDX(container, nidx) (*(size_t*)((char*)*(void**)container + nidx * sizeof(size_t) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
+#define OPENCSTL_DEQUE_NIDX(container, nidx) (*(_opencstl_ll_ua *)((char*)*(void**)container + (ptrdiff_t)(nidx) * (ptrdiff_t)sizeof(size_type64) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
 #define _cstl_stack_top(container)   *container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
 // cstl_top: (void**)&container explicit cast for strict compilers (MinGW64, Windows Clang).
 #define cstl_top(container)   __is_deque((void**)&container)?\

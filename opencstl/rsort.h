@@ -42,7 +42,7 @@
 #include <stdint.h>
 #include <limits.h>
 
-static void rsort32(int32_t *__base, size_t n) {
+static void rsort32(int32_t *__base, size_type64 n) {
     if (__base == NULL || n <= 1) {
         return;
     }
@@ -53,12 +53,12 @@ static void rsort32(int32_t *__base, size_t n) {
     }
 
     {
-        size_t count[256];
-        size_t pass, i;
+        size_type64 count[256];
+        size_type64 pass, i;
         uint32_t sign_mask = (uint32_t) 1u << (sizeof(int32_t) * CHAR_BIT - 1);
 
         for (pass = 0; pass < sizeof(int32_t); ++pass) {
-            size_t shift = pass * 8;
+            size_type64 shift = pass * 8;
 
             for (i = 0; i < 256; ++i) {
                 count[i] = 0;
@@ -89,7 +89,7 @@ static void rsort32(int32_t *__base, size_t n) {
     free(tmp);
 }
 
-static void rsort64(int64_t *__base, size_t n) {
+static void rsort64(int64_t *__base, size_type64 n) {
     if (__base == NULL || n <= 1) {
         return;
     }
@@ -100,12 +100,12 @@ static void rsort64(int64_t *__base, size_t n) {
     }
 
     {
-        size_t count[256];
-        size_t pass, i;
+        size_type64 count[256];
+        size_type64 pass, i;
         uint64_t sign_mask = (uint64_t) 1ULL << (sizeof(int64_t) * CHAR_BIT - 1);
 
         for (pass = 0; pass < sizeof(int64_t); ++pass) {
-            size_t shift = pass * 8;
+            size_type64 shift = pass * 8;
 
             for (i = 0; i < 256; ++i) {
                 count[i] = 0;

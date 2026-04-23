@@ -107,7 +107,7 @@ _OpenCSTLCompareFunc CSTL_LESS(const char *type_str) {
     while (end > type_str && *(end - 1) == ' ') end--;
 
     char buf[256];
-    size_t len = end - type_str;
+    size_type64 len = end - type_str;
     if (len >= sizeof(buf)) return NULL;
 
     memcpy(buf, type_str, len);
@@ -132,7 +132,7 @@ _OpenCSTLCompareFunc CSTL_GREATER(const char *type_str) {
     while (end > type_str && *(end - 1) == ' ') end--;
 
     char buf[256];
-    size_t len = end - type_str;
+    size_type64 len = end - type_str;
     if (len >= sizeof(buf)) return NULL;
 
     memcpy(buf, type_str, len);

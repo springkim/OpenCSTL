@@ -83,7 +83,7 @@
 #define IPN_ALWAYS_INLINE __attribute__((always_inline)) inline
 #endif
 
-static IPN_ALWAYS_INLINE void ipn__swap(unsigned char *a, unsigned char *b, size_t n) {
+static IPN_ALWAYS_INLINE void ipn__swap(unsigned char *a, unsigned char *b, size_type64 n) {
     if (a == b) return;
     if (IPN_LIKELY(n == 8)) {
         uint64_t t;
@@ -104,7 +104,7 @@ static IPN_ALWAYS_INLINE void ipn__swap(unsigned char *a, unsigned char *b, size
         memcpy(b, &t, 4);
     } else {
         unsigned char buf[64];
-        size_t left = n;
+        size_type64 left = n;
         while (left >= sizeof(buf)) {
             memcpy(buf, a, sizeof(buf));
             memcpy(a, b, sizeof(buf));
@@ -127,7 +127,7 @@ static IPN_ALWAYS_INLINE void ipn__swap(unsigned char *a, unsigned char *b, size
     if ((cmp)(_ipn_a, _ipn_b) > 0) ipn__swap(_ipn_a, _ipn_b, (w)); \
 } while (0)
 
-static IPN_ALWAYS_INLINE uint32_t ipn_log2u(size_t v) {
+static IPN_ALWAYS_INLINE uint32_t ipn_log2u(size_type64 v) {
     uint32_t r = 0;
     v |= 1;
     while (v > 1) {
@@ -145,7 +145,7 @@ static IPN_ALWAYS_INLINE uint64_t ipn_xorshift(uint64_t *s) {
     return (*s = x);
 }
 
-static void ipn_reverse(unsigned char *base, size_t n, size_t width) {
+static void ipn_reverse(unsigned char *base, size_type64 n, size_type64 width) {
     if (n < 2) return;
     unsigned char *lo = base;
     unsigned char *hi = base + (n - 1) * width;
@@ -159,10 +159,10 @@ static void ipn_reverse(unsigned char *base, size_t n, size_t width) {
 /* Swap-based insertion shift fallback — used when width exceeds the stack
    tmp buffer. Does 3x the memory traffic of the tmp-based path, but needs
    no scratch. */
-static void ipn_isort_shift_swap(unsigned char *base, size_t n, size_t offset,
-                                 size_t width, CSTL_COMPARE cmp, int guarded) {
+static void ipn_isort_shift_swap(unsigned char *base, size_type64 n, size_type64 offset,
+                                 size_type64 width, CSTL_COMPARE cmp, int guarded) {
     if (guarded) {
-        for (size_t i = offset; i < n; ++i) {
+        for (size_type64 i = offset; i < n; ++i) {
             unsigned char *j = base + i * width;
             while (j > base && cmp(j - width, j) > 0) {
                 ipn__swap(j - width, j, width);
@@ -170,7 +170,7 @@ static void ipn_isort_shift_swap(unsigned char *base, size_t n, size_t offset,
             }
         }
     } else {
-        for (size_t i = offset; i < n; ++i) {
+        for (size_type64 i = offset; i < n; ++i) {
             unsigned char *j = base + i * width;
             while (cmp(j - width, j) > 0) {
                 ipn__swap(j - width, j, width);
@@ -183,14 +183,14 @@ static void ipn_isort_shift_swap(unsigned char *base, size_t n, size_t offset,
 
 /* Guarded insertion of base[offset..n] into sorted base[0..offset]. Safe when
    base[-1] may not exist. Stack-local tmp, no heap. */
-static void ipn_isort_shift_left(unsigned char *base, size_t n, size_t offset,
-                                 size_t width, CSTL_COMPARE cmp) {
+static void ipn_isort_shift_left(unsigned char *base, size_type64 n, size_type64 offset,
+                                 size_type64 width, CSTL_COMPARE cmp) {
     if (IPN_UNLIKELY(width > IPN_ISORT_TMP_BYTES)) {
         ipn_isort_shift_swap(base, n, offset, width, cmp, 1);
         return;
     }
     unsigned char tmp[IPN_ISORT_TMP_BYTES];
-    for (size_t i = offset; i < n; ++i) {
+    for (size_type64 i = offset; i < n; ++i) {
         unsigned char *c = base + i * width;
         if (cmp(c - width, c) <= 0) continue;
         memcpy(tmp, c, width);
@@ -204,14 +204,14 @@ static void ipn_isort_shift_left(unsigned char *base, size_t n, size_t offset,
 }
 
 /* Unguarded variant: requires base[-1] to exist and be <= any element (sentinel). */
-static void ipn_isort_shift_left_unguard(unsigned char *base, size_t n, size_t offset,
-                                         size_t width, CSTL_COMPARE cmp) {
+static void ipn_isort_shift_left_unguard(unsigned char *base, size_type64 n, size_type64 offset,
+                                         size_type64 width, CSTL_COMPARE cmp) {
     if (IPN_UNLIKELY(width > IPN_ISORT_TMP_BYTES)) {
         ipn_isort_shift_swap(base, n, offset, width, cmp, 0);
         return;
     }
     unsigned char tmp[IPN_ISORT_TMP_BYTES];
-    for (size_t i = offset; i < n; ++i) {
+    for (size_type64 i = offset; i < n; ++i) {
         unsigned char *c = base + i * width;
         if (cmp(c - width, c) <= 0) continue;
         memcpy(tmp, c, width);
@@ -225,14 +225,14 @@ static void ipn_isort_shift_left_unguard(unsigned char *base, size_t n, size_t o
 }
 
 /* 3-element sorting network. */
-static IPN_ALWAYS_INLINE void ipn_sort3(unsigned char *b, size_t w, CSTL_COMPARE cmp) {
+static IPN_ALWAYS_INLINE void ipn_sort3(unsigned char *b, size_type64 w, CSTL_COMPARE cmp) {
     IPN_CSWAP(b, 0, 1, w, cmp);
     IPN_CSWAP(b, 1, 2, w, cmp);
     IPN_CSWAP(b, 0, 1, w, cmp);
 }
 
 /* 4-element Bose-Nelson optimal (5 comparators, depth 3). */
-static IPN_ALWAYS_INLINE void ipn_sort4(unsigned char *b, size_t w, CSTL_COMPARE cmp) {
+static IPN_ALWAYS_INLINE void ipn_sort4(unsigned char *b, size_type64 w, CSTL_COMPARE cmp) {
     IPN_CSWAP(b, 0, 2, w, cmp);
     IPN_CSWAP(b, 1, 3, w, cmp);
     IPN_CSWAP(b, 0, 1, w, cmp);
@@ -242,7 +242,7 @@ static IPN_ALWAYS_INLINE void ipn_sort4(unsigned char *b, size_t w, CSTL_COMPARE
 
 /* small_sort: dispatches to network for n <= 4, then extends via insertion.
    When `unguarded`, skips the left-bound check on insertion shift. */
-static void ipn_small_sort(unsigned char *base, size_t n, size_t width,
+static void ipn_small_sort(unsigned char *base, size_type64 n, size_type64 width,
                            CSTL_COMPARE cmp, int unguarded) {
     if (n < 2) return;
     if (n == 2) {
@@ -262,18 +262,18 @@ static void ipn_small_sort(unsigned char *base, size_t n, size_t width,
 }
 
 /* Top-level insertion sort (guarded). */
-static IPN_ALWAYS_INLINE void ipn_isort(unsigned char *base, size_t n, size_t width,
+static IPN_ALWAYS_INLINE void ipn_isort(unsigned char *base, size_type64 n, size_type64 width,
                                         CSTL_COMPARE cmp) {
     if (n < 2) return;
     ipn_small_sort(base, n, width, cmp, 0);
 }
 
 /* Detect a strictly-descending or non-strictly-ascending run at index 0. Read-only. */
-static size_t ipn_find_existing_run(const unsigned char *base, size_t n, size_t width,
+static size_type64 ipn_find_existing_run(const unsigned char *base, size_type64 n, size_type64 width,
                                     CSTL_COMPARE cmp, int *was_reversed) {
     *was_reversed = 0;
     if (n < 2) return n;
-    size_t i = 1;
+    size_type64 i = 1;
     if (cmp(base, base + width) > 0) {
         *was_reversed = 1;
         while (i < n && cmp(base + (i - 1) * width, base + i * width) > 0) ++i;
@@ -283,12 +283,12 @@ static size_t ipn_find_existing_run(const unsigned char *base, size_t n, size_t 
     return i;
 }
 
-static void ipn_sift(unsigned char *base, size_t root, size_t n, size_t width,
+static void ipn_sift(unsigned char *base, size_type64 root, size_type64 n, size_type64 width,
                      CSTL_COMPARE cmp) {
     for (;;) {
-        size_t c = root * 2 + 1;
+        size_type64 c = root * 2 + 1;
         if (c >= n) break;
-        size_t mx = root;
+        size_type64 mx = root;
         if (cmp(base + mx * width, base + c * width) < 0) mx = c;
         if (c + 1 < n && cmp(base + mx * width, base + (c + 1) * width) < 0) mx = c + 1;
         if (mx == root) break;
@@ -297,10 +297,10 @@ static void ipn_sift(unsigned char *base, size_t root, size_t n, size_t width,
     }
 }
 
-static void ipn_heapsort(unsigned char *base, size_t n, size_t width, CSTL_COMPARE cmp) {
+static void ipn_heapsort(unsigned char *base, size_type64 n, size_type64 width, CSTL_COMPARE cmp) {
     if (n < 2) return;
-    for (size_t i = n / 2; i-- > 0;) ipn_sift(base, i, n, width, cmp);
-    for (size_t e = n; e-- > 1;) {
+    for (size_type64 i = n / 2; i-- > 0;) ipn_sift(base, i, n, width, cmp);
+    for (size_type64 e = n; e-- > 1;) {
         ipn__swap(base, base + e * width, width);
         ipn_sift(base, 0, e, width, cmp);
     }
@@ -318,9 +318,9 @@ static IPN_ALWAYS_INLINE unsigned char *ipn_median3(unsigned char *a, unsigned c
 }
 
 static unsigned char *ipn_median3_rec(unsigned char *a, unsigned char *b, unsigned char *c,
-                                      size_t n, size_t width, CSTL_COMPARE cmp) {
+                                      size_type64 n, size_type64 width, CSTL_COMPARE cmp) {
     if (n * 8 >= IPN_PSEUDO_MEDIAN_REC_THRESHOLD) {
-        size_t n8 = n / 8;
+        size_type64 n8 = n / 8;
         a = ipn_median3_rec(a, a + n8 * 4 * width, a + n8 * 7 * width, n8, width, cmp);
         b = ipn_median3_rec(b, b + n8 * 4 * width, b + n8 * 7 * width, n8, width, cmp);
         c = ipn_median3_rec(c, c + n8 * 4 * width, c + n8 * 7 * width, n8, width, cmp);
@@ -328,8 +328,8 @@ static unsigned char *ipn_median3_rec(unsigned char *a, unsigned char *b, unsign
     return ipn_median3(a, b, c, cmp);
 }
 
-static size_t ipn_choose_pivot(unsigned char *base, size_t n, size_t width, CSTL_COMPARE cmp) {
-    size_t n8 = n / 8;
+static size_type64 ipn_choose_pivot(unsigned char *base, size_type64 n, size_type64 width, CSTL_COMPARE cmp) {
+    size_type64 n8 = n / 8;
     unsigned char *a = base;
     unsigned char *b = base + n8 * 4 * width;
     unsigned char *c = base + n8 * 7 * width;
@@ -339,14 +339,14 @@ static size_t ipn_choose_pivot(unsigned char *base, size_t n, size_t width, CSTL
     } else {
         r = ipn_median3_rec(a, b, c, n8, width, cmp);
     }
-    return (size_t) (r - base) / width;
+    return (size_type64) (r - base) / width;
 }
 
 /* In-place Hoare partition. Pivot lives at base[0] for the entire scan and is
    read directly from there (no pivot buffer). *was_partitioned = 1 if no swaps
    were needed during scanning. */
-static size_t ipn_partition(unsigned char *base, size_t n, size_t pivot_pos,
-                            size_t width, CSTL_COMPARE cmp, int *was_partitioned) {
+static size_type64 ipn_partition(unsigned char *base, size_type64 n, size_type64 pivot_pos,
+                            size_type64 width, CSTL_COMPARE cmp, int *was_partitioned) {
     if (pivot_pos != 0)
         ipn__swap(base, base + pivot_pos * width, width);
     unsigned char *piv = base;
@@ -371,12 +371,12 @@ static size_t ipn_partition(unsigned char *base, size_t n, size_t pivot_pos,
     if (pp > base)
         ipn__swap(base, pp, width);
 
-    return (size_t) (pp - base) / width;
+    return (size_type64) (pp - base) / width;
 }
 
 /* Equal-pivot partition: elements <= pivot go left. In-place pivot at base[0]. */
-static size_t ipn_partition_eq(unsigned char *base, size_t n, size_t pivot_pos,
-                               size_t width, CSTL_COMPARE cmp) {
+static size_type64 ipn_partition_eq(unsigned char *base, size_type64 n, size_type64 pivot_pos,
+                               size_type64 width, CSTL_COMPARE cmp) {
     if (pivot_pos != 0)
         ipn__swap(base, base + pivot_pos * width, width);
     unsigned char *piv = base;
@@ -399,18 +399,18 @@ static size_t ipn_partition_eq(unsigned char *base, size_t n, size_t pivot_pos,
     if (pp > base)
         ipn__swap(base, pp, width);
 
-    return (size_t) (pp - base) / width;
+    return (size_type64) (pp - base) / width;
 }
 
 /* Insertion sort bounded by total shift count. Returns 1 if fully sorted, 0 if
    it gave up after IPN_PARTIAL_LIMIT shifts. Stack-local tmp. */
-static int ipn_partial_isort(unsigned char *base, size_t n, size_t width,
+static int ipn_partial_isort(unsigned char *base, size_type64 n, size_type64 width,
                              CSTL_COMPARE cmp) {
     if (n < 2) return 1;
     if (IPN_UNLIKELY(width > IPN_ISORT_TMP_BYTES)) {
         /* Swap-based variant with shift budget. */
-        size_t cnt = 0;
-        for (size_t i = 1; i < n; ++i) {
+        size_type64 cnt = 0;
+        for (size_type64 i = 1; i < n; ++i) {
             unsigned char *j = base + i * width;
             while (j > base && cmp(j - width, j) > 0) {
                 ipn__swap(j - width, j, width);
@@ -421,8 +421,8 @@ static int ipn_partial_isort(unsigned char *base, size_t n, size_t width,
         return 1;
     }
     unsigned char tmp[IPN_ISORT_TMP_BYTES];
-    size_t cnt = 0;
-    for (size_t i = 1; i < n; ++i) {
+    size_type64 cnt = 0;
+    for (size_type64 i = 1; i < n; ++i) {
         unsigned char *c = base + i * width;
         if (cmp(c - width, c) <= 0) continue;
         memcpy(tmp, c, width);
@@ -439,14 +439,14 @@ static int ipn_partial_isort(unsigned char *base, size_t n, size_t width,
 }
 
 /* Pseudo-random shuffle of 3 elements near the middle to break adversarial patterns. */
-static void ipn_break_patterns(unsigned char *base, size_t n, size_t width, uint64_t *rs) {
+static void ipn_break_patterns(unsigned char *base, size_type64 n, size_type64 width, uint64_t *rs) {
     if (n < 8) return;
-    size_t q = n >> 2;
-    size_t h = n >> 1;
-    size_t span = (h > 0) ? h : 1;
-    size_t r1 = (size_t) (ipn_xorshift(rs) % span);
-    size_t r2 = (size_t) (ipn_xorshift(rs) % span);
-    size_t r3 = (size_t) (ipn_xorshift(rs) % span);
+    size_type64 q = n >> 2;
+    size_type64 h = n >> 1;
+    size_type64 span = (h > 0) ? h : 1;
+    size_type64 r1 = (size_type64) (ipn_xorshift(rs) % span);
+    size_type64 r2 = (size_type64) (ipn_xorshift(rs) % span);
+    size_type64 r3 = (size_type64) (ipn_xorshift(rs) % span);
     ipn__swap(base + q * width,       base + (q + r1) * width, width);
     ipn__swap(base + h * width,       base + (q + r2) * width, width);
     ipn__swap(base + (q + h) * width, base + (q + r3) * width, width);
@@ -458,7 +458,7 @@ static void ipn_break_patterns(unsigned char *base, size_t n, size_t width, uint
 typedef struct ipn_frame {
     unsigned char *base;
     const unsigned char *anc;
-    size_t n;
+    size_type64 n;
     uint32_t limit;
     uint32_t flags; /* bit 0: leftmost, bit 1: has_anc */
 } ipn_frame_t;
@@ -469,7 +469,7 @@ typedef struct ipn_frame {
 /* Iterative quicksort. Each popped frame drives an inner loop that continues
    on the right partition and pushes the left for later processing, mirroring
    the prior tail-recursive structure without using the C call stack. */
-static void ipn_quicksort(unsigned char *base0, size_t n0, size_t width,
+static void ipn_quicksort(unsigned char *base0, size_type64 n0, size_type64 width,
                           CSTL_COMPARE cmp, uint32_t limit0, uint64_t *rs) {
     ipn_frame_t stk[IPN_STACK_MAX];
     int sp = 0;
@@ -483,7 +483,7 @@ static void ipn_quicksort(unsigned char *base0, size_t n0, size_t width,
     while (sp > 0) {
         --sp;
         unsigned char *base = stk[sp].base;
-        size_t n = stk[sp].n;
+        size_type64 n = stk[sp].n;
         uint32_t limit = stk[sp].limit;
         const unsigned char *anc = stk[sp].anc;
         int leftmost = (int) (stk[sp].flags & IPN_F_LEFTMOST);
@@ -500,10 +500,10 @@ static void ipn_quicksort(unsigned char *base0, size_t n0, size_t width,
             }
             --limit;
 
-            size_t pivot_pos = ipn_choose_pivot(base, n, width, cmp);
+            size_type64 pivot_pos = ipn_choose_pivot(base, n, width, cmp);
 
             if (has_anc && cmp(anc, base + pivot_pos * width) >= 0) {
-                size_t num_le = ipn_partition_eq(base, n, pivot_pos, width, cmp);
+                size_type64 num_le = ipn_partition_eq(base, n, pivot_pos, width, cmp);
                 if (num_le + 1 >= n) break;
                 anc = base + num_le * width;
                 has_anc = 1;
@@ -514,10 +514,10 @@ static void ipn_quicksort(unsigned char *base0, size_t n0, size_t width,
             }
 
             int was_partitioned = 0;
-            size_t num_lt = ipn_partition(base, n, pivot_pos, width, cmp, &was_partitioned);
+            size_type64 num_lt = ipn_partition(base, n, pivot_pos, width, cmp, &was_partitioned);
 
-            size_t lsz = num_lt;
-            size_t rsz = n - num_lt - 1;
+            size_type64 lsz = num_lt;
+            size_type64 rsz = n - num_lt - 1;
             int unbalanced = (lsz < (n >> 3)) || (rsz < (n >> 3));
 
             if (unbalanced) {
@@ -558,7 +558,7 @@ static void ipn_quicksort(unsigned char *base0, size_t n0, size_t width,
     }
 }
 
-static void ipnsort(void *base, size_t number, size_t width, CSTL_COMPARE compare) {
+static void ipnsort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
     if (!base || !compare || width == 0 || number < 2) return;
 
     unsigned char *arr = (unsigned char *) base;
@@ -569,7 +569,7 @@ static void ipnsort(void *base, size_t number, size_t width, CSTL_COMPARE compar
     }
 
     int was_reversed = 0;
-    size_t run_len = ipn_find_existing_run(arr, number, width, compare, &was_reversed);
+    size_type64 run_len = ipn_find_existing_run(arr, number, width, compare, &was_reversed);
     if (run_len == number) {
         if (was_reversed) ipn_reverse(arr, number, width);
         return;

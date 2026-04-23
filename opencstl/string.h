@@ -127,14 +127,14 @@ char *__cstl_string_replace(char *src, char *from, char *to) {
 char *__cstl_string_ltrim(const char *src) {
     const char *p = src;
     while (*p && isspace((unsigned char) *p)) p++;
-    size_t len = strlen(p);
+    size_type64 len = strlen(p);
     char *ret = (char *) malloc(len + 1);
     memcpy(ret, p, len + 1);
     return ret;
 }
 
 char *__cstl_string_rtrim(const char *src) {
-    size_t len = strlen(src);
+    size_type64 len = strlen(src);
     while (len > 0 && isspace((unsigned char) src[len - 1])) len--;
     char *ret = (char *) malloc(len + 1);
     memcpy(ret, src, len);
@@ -147,7 +147,7 @@ char *__cstl_string_trim(const char *src) {
     while (*begin && isspace((unsigned char) *begin)) begin++;
     const char *end = src + strlen(src);
     while (end > begin && isspace((unsigned char) *(end - 1))) end--;
-    size_t len = end - begin;
+    size_type64 len = end - begin;
     char *ret = (char *) malloc(len + 1);
     memcpy(ret, begin, len);
     ret[len] = '\0';
@@ -155,36 +155,36 @@ char *__cstl_string_trim(const char *src) {
 }
 
 char *__cstl_string_to_upper(const char *src) {
-    size_t len = strlen(src);
+    size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
-    for (size_t i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
+    for (size_type64 i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
     ret[len] = '\0';
     return ret;
 }
 
 char *__cstl_string_to_lower(const char *src) {
-    size_t len = strlen(src);
+    size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
-    for (size_t i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
+    for (size_type64 i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
     ret[len] = '\0';
     return ret;
 }
 
 bool __cstl_string_starts_with(const char *src, const char *prefix) {
-    size_t plen = strlen(prefix);
+    size_type64 plen = strlen(prefix);
     return strncmp(src, prefix, plen) == 0;
 }
 
 bool __cstl_string_ends_with(const char *src, const char *suffix) {
-    size_t slen = strlen(src);
-    size_t flen = strlen(suffix);
+    size_type64 slen = strlen(src);
+    size_type64 flen = strlen(suffix);
     if (flen > slen) return false;
     return memcmp(src + slen - flen, suffix, flen) == 0;
 }
 
 int __cstl_string_count(const char *src, const char *sub) {
     int count = 0;
-    size_t sub_len = strlen(sub);
+    size_type64 sub_len = strlen(sub);
     if (sub_len == 0) return 0;
     const char *p = src;
     while ((p = strstr(p, sub)) != NULL) {
@@ -200,8 +200,8 @@ char *__cstl_string_join(char **parts, int n, const char *delim) {
         *empty = '\0';
         return empty;
     }
-    size_t dlen = strlen(delim);
-    size_t total = 0;
+    size_type64 dlen = strlen(delim);
+    size_type64 total = 0;
     for (int i = 0; i < n; i++) total += strlen(parts[i]);
     total += dlen * (n - 1) + 1;
 
@@ -212,7 +212,7 @@ char *__cstl_string_join(char **parts, int n, const char *delim) {
             memcpy(dst, delim, dlen);
             dst += dlen;
         }
-        size_t len = strlen(parts[i]);
+        size_type64 len = strlen(parts[i]);
         memcpy(dst, parts[i], len);
         dst += len;
     }
@@ -221,8 +221,8 @@ char *__cstl_string_join(char **parts, int n, const char *delim) {
 }
 
 char *__cstl_string_concat(const char *a, const char *b) {
-    size_t alen = strlen(a);
-    size_t blen = strlen(b);
+    size_type64 alen = strlen(a);
+    size_type64 blen = strlen(b);
     char *ret = (char *) malloc(alen + blen + 1);
     memcpy(ret, a, alen);
     memcpy(ret + alen, b, blen + 1);
@@ -230,9 +230,9 @@ char *__cstl_string_concat(const char *a, const char *b) {
 }
 
 char *__cstl_string_reverse(const char *src) {
-    size_t len = strlen(src);
+    size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
-    for (size_t i = 0; i < len; i++) ret[i] = src[len - 1 - i];
+    for (size_type64 i = 0; i < len; i++) ret[i] = src[len - 1 - i];
     ret[len] = '\0';
     return ret;
 }
@@ -272,8 +272,8 @@ int *__cstl_string_kmp(char *src, char *pattern, int *count) {
         return NULL;
     }
 
-    size_t n = strlen(src);
-    size_t m = strlen(pattern);
+    size_type64 n = strlen(src);
+    size_type64 m = strlen(pattern);
 
     // 빈 패턴 또는 패턴이 원본보다 긴 경우
     if (m == 0 || n < m) {
@@ -285,8 +285,8 @@ int *__cstl_string_kmp(char *src, char *pattern, int *count) {
     if (lps == NULL) return NULL;
 
     lps[0] = 0;
-    size_t len = 0;
-    size_t i = 1;
+    size_type64 len = 0;
+    size_type64 i = 1;
 
     while (i < m) {
         if (pattern[i] == pattern[len]) {
@@ -304,15 +304,15 @@ int *__cstl_string_kmp(char *src, char *pattern, int *count) {
     }
 
     // 매칭 위치 버퍼 (인덱스 0부터 저장)
-    size_t capacity = 16;
+    size_type64 capacity = 16;
     int *matches = (int *) malloc(sizeof(int) * capacity);
     if (matches == NULL) {
         free(lps);
         return NULL;
     }
 
-    size_t match_count = 0;
-    size_t j = 0;
+    size_type64 match_count = 0;
+    size_type64 j = 0;
     i = 0;
 
     while (i < n) {

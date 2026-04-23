@@ -50,7 +50,7 @@ bool is_even(void *it) {
 }
 
 #define fill(_First, _Last, _Value) _cstl_fill(_First, _Last, &(__typeof__(_Value)){_Value}, sizeof(_Value))
-OPENCSTL_FUNC void _cstl_fill(void *_begin, void *_end, void *_value, size_t _value_size) {
+OPENCSTL_FUNC void _cstl_fill(void *_begin, void *_end, void *_value, size_type64 _value_size) {
     void *it = _begin;
     while (it != _end) {
         memcpy(it, _value, _value_size);

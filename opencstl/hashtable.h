@@ -83,13 +83,13 @@
 #pragma intrinsic(_umul128)
 #endif
 
-static inline size_t __ht_next_pow2(size_t n) {
-    size_t p = HT_MIN_CAP;
+static inline size_type64 __ht_next_pow2(size_type64 n) {
+    size_type64 p = HT_MIN_CAP;
     while (p < n) p <<= 1;
     return p;
 }
 
-OPENCSTL_ALWAYS_INLINE bool __ht_key_eq(const void *a, const void *b, size_t ks) {
+OPENCSTL_ALWAYS_INLINE bool __ht_key_eq(const void *a, const void *b, size_type64 ks) {
     switch (ks) {
         case 1: return *(const uint8_t *) a == *(const uint8_t *) b;
         case 2: return *(const uint16_t *) a == *(const uint16_t *) b;
@@ -110,27 +110,27 @@ OPENCSTL_ALWAYS_INLINE bool __ht_key_eq(const void *a, const void *b, size_t ks)
 #define OPENCSTL_XXH64_P4  9650029242287828579ULL
 #define OPENCSTL_XXH64_P5  2870177450012600261ULL
 
-OPENCSTL_FUNC size_t hash32(void *_key) {
+OPENCSTL_FUNC size_type64 hash32(void *_key) {
     unsigned int h = *(unsigned int *) _key;
     h ^= h >> 15;
     h *= OPENCSTL_XXH32_P2;
     h ^= h >> 13;
     h *= OPENCSTL_XXH32_P3;
     h ^= h >> 16;
-    return (size_t) h;
+    return (size_type64) h;
 }
 
-OPENCSTL_FUNC size_t hash64(void *_key) {
+OPENCSTL_FUNC size_type64 hash64(void *_key) {
     unsigned long long x = *(unsigned long long *) _key;
     x ^= x >> 33;
     x *= OPENCSTL_XXH64_P2;
     x ^= x >> 29;
     x *= OPENCSTL_XXH64_P3;
     x ^= x >> 32;
-    return (size_t) x;
+    return (size_type64) x;
 }
 
-OPENCSTL_FUNC size_t hash(void *_key, size_t len) {
+OPENCSTL_FUNC size_type64 hash(void *_key, size_type64 len) {
     const unsigned char *p = (const unsigned char *) _key;
     const unsigned char *end = p + len;
     unsigned long long h64;
@@ -213,7 +213,7 @@ OPENCSTL_FUNC size_t hash(void *_key, size_t len) {
     h64 *= OPENCSTL_XXH64_P3;
     h64 ^= h64 >> 32;
 
-    return (size_t) h64;
+    return (size_type64) h64;
 }
 
 /* Single 64x64->128 multiply + fold: one instruction on x86/x64.
@@ -235,30 +235,30 @@ OPENCSTL_ALWAYS_INLINE uint64_t __ht_mum(uint64_t a, uint64_t b) {
 #endif
 }
 
-OPENCSTL_ALWAYS_INLINE size_t hash_mixer(void *key, size_t n) {
+OPENCSTL_ALWAYS_INLINE size_type64 hash_mixer(void *key, size_type64 n) {
     static const uint64_t s0 = 0xa0761d6478bd642fULL;
     static const uint64_t s1 = 0xe7037ed1a0b428dbULL;
     if (n == 4) {
         uint32_t v;
         memcpy(&v, key, 4);
-        return (size_t) __ht_mum((uint64_t) v ^ s1, s0);
+        return (size_type64) __ht_mum((uint64_t) v ^ s1, s0);
     }
     if (n == 8) {
         uint64_t v;
         memcpy(&v, key, 8);
-        return (size_t) __ht_mum(v ^ s1, s0);
+        return (size_type64) __ht_mum(v ^ s1, s0);
     }
-    return (size_t) hash(key, n);
+    return (size_type64) hash(key, n);
 }
 
-OPENCSTL_ALWAYS_INLINE uint8_t __ht_ctrl(size_t h) {
+OPENCSTL_ALWAYS_INLINE uint8_t __ht_ctrl(size_type64 h) {
     /* Non-zero fragment in [1, 255] — high bit set keeps occupied ctrls well clear of empty. */
     return (uint8_t) ((h >> 56) | 0x80u);
 }
 
 #define __HASHTABLE_DEFAULT_SIZE__ HT_MIN_CAP
 
-static uint8_t *__ht_alloc_ctrl(size_t cap) {
+static uint8_t *__ht_alloc_ctrl(size_type64 cap) {
     /* calloc zeros the ctrl array; every slot starts as empty. */
     uint8_t *m = (uint8_t *) calloc(cap, 1);
     verify(m!=NULL);
@@ -267,11 +267,11 @@ static uint8_t *__ht_alloc_ctrl(size_t cap) {
 
 /* Reinsert a single key (and optional value) into a freshly-allocated table. */
 static void __ht_reinsert(
-    void *base, uint8_t *ctrl, size_t cap_mask,
+    void *base, uint8_t *ctrl, size_type64 cap_mask,
     const void *key, const void *value,
-    size_t key_size, size_t value_size, size_t type_size, size_t h
+    size_type64 key_size, size_type64 value_size, size_type64 type_size, size_type64 h
 ) {
-    size_t idx = h & cap_mask;
+    size_type64 idx = h & cap_mask;
     uint8_t c = __ht_ctrl(h);
     while (ctrl[idx] != HT_CTRL_EMPTY) idx = (idx + 1) & cap_mask;
     ctrl[idx] = c;
@@ -281,23 +281,23 @@ static void __ht_reinsert(
 }
 
 static void __ht_do_rehash(
-    void **container, size_t header_sz,
-    size_t key_size, size_t value_size, size_t type_size,
-    size_t old_cap, uint8_t *old_ctrl
+    void **container, size_type64 header_sz,
+    size_type64 key_size, size_type64 value_size, size_type64 type_size,
+    size_type64 old_cap, uint8_t *old_ctrl
 ) {
-    size_t new_cap = old_cap * 2;
+    size_type64 new_cap = old_cap * 2;
     void *new_raw = calloc(header_sz + new_cap * type_size, 1);
     verify(new_raw!=NULL);
     memcpy(new_raw, (char *) *container - header_sz, header_sz);
     uint8_t *new_ctrl = __ht_alloc_ctrl(new_cap);
     void *nb = (char *) new_raw + header_sz;
-    size_t new_mask = new_cap - 1;
+    size_type64 new_mask = new_cap - 1;
 
-    for (size_t i = 0; i < old_cap; i++) {
+    for (size_type64 i = 0; i < old_cap; i++) {
         if (old_ctrl[i] != HT_CTRL_EMPTY) {
             const void *ok = (const char *) *container + i * type_size;
             const void *ov = value_size > 0 ? (const char *) ok + key_size : NULL;
-            size_t h = hash_mixer((void *) ok, key_size);
+            size_type64 h = hash_mixer((void *) ok, key_size);
             __ht_reinsert(nb, new_ctrl, new_mask, ok, ov,
                           key_size, value_size, type_size, h);
         }
@@ -308,7 +308,7 @@ static void __ht_do_rehash(
     free(old_ctrl);
     *container = nb;
     OPENCSTL_NIDX(container, -7) = new_mask;
-    OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_ctrl;
+    OPENCSTL_NIDX(container, -6) = (size_type64) (uintptr_t) new_ctrl;
     htm_erase(htm, old_ptr);
     htm_insert(htm, *container,
                (char *) *container + type_size * new_cap,
@@ -318,14 +318,14 @@ static void __ht_do_rehash(
 OPENCSTL_FUNC
 
 void __cstl_hashtable_insert(void **container, void *key, void *value) {
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    size_t type_size = key_size + value_size;
-    size_t cap_mask = OPENCSTL_NIDX(container, -7);
+    size_type64 key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 value_size = OPENCSTL_NIDX(container, -4);
+    size_type64 type_size = key_size + value_size;
+    size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
-    size_t is_float_value = OPENCSTL_NIDX(container, -9);
+    size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
+    size_type64 is_float_value = OPENCSTL_NIDX(container, -9);
     float kf = 0.f, vf = 0.f;
     if (is_float_key) {
         kf = (float) *(double *) key;
@@ -337,9 +337,9 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
     }
 #endif
 
-    size_t h = hash_mixer(key, key_size);
+    size_type64 h = hash_mixer(key, key_size);
     uint8_t c = __ht_ctrl(h);
-    size_t idx = h & cap_mask;
+    size_type64 idx = h & cap_mask;
     char *base = (char *) *container;
 
     /* Hot loop: probe for duplicate or empty slot. Rehash threshold is only
@@ -352,9 +352,9 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
         idx = (idx + 1) & cap_mask;
     }
 
-    size_t length = OPENCSTL_NIDX(container, -1);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
     if (OPENCSTL_UNLIKELY(length + 1 > HT_THRESHOLD(cap_mask + 1))) {
-        size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+        size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
         __ht_do_rehash(container, header_sz, key_size, value_size, type_size,
                        cap_mask + 1, ctrl);
         cap_mask = OPENCSTL_NIDX(container, -7);
@@ -374,22 +374,22 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
 OPENCSTL_FUNC
 
 void __cstl_hashtable_erase(void **container, void *key) {
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t cap_mask = OPENCSTL_NIDX(container, -7);
+    size_type64 key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    size_t type_size = key_size + value_size;
+    size_type64 value_size = OPENCSTL_NIDX(container, -4);
+    size_type64 type_size = key_size + value_size;
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
+    size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
     float kf = 0.f;
     if (is_float_key) {
         kf = (float) *(double *) key;
         key = &kf;
     }
 #endif
-    size_t h = hash_mixer(key, key_size);
+    size_type64 h = hash_mixer(key, key_size);
     uint8_t c = __ht_ctrl(h);
-    size_t idx = h & cap_mask;
+    size_type64 idx = h & cap_mask;
     char *base = (char *) *container;
 
     while (true) {
@@ -405,12 +405,12 @@ void __cstl_hashtable_erase(void **container, void *key) {
      * ideal home lies at or before the hole. Entries already at their home
      * stay put but we must keep scanning past them -- later slots may hold
      * entries from the same probe cluster whose chain would otherwise break. */
-    size_t hole = idx;
-    size_t j = (idx + 1) & cap_mask;
+    size_type64 hole = idx;
+    size_type64 j = (idx + 1) & cap_mask;
     while (ctrl[j] != HT_CTRL_EMPTY) {
-        size_t nh = hash_mixer(base + j * type_size, key_size) & cap_mask;
-        size_t dist_j = (j - nh) & cap_mask;
-        size_t dist_hole = (hole - nh) & cap_mask;
+        size_type64 nh = hash_mixer(base + j * type_size, key_size) & cap_mask;
+        size_type64 dist_j = (j - nh) & cap_mask;
+        size_type64 dist_hole = (hole - nh) & cap_mask;
         if (dist_hole < dist_j) {
             memcpy(base + hole * type_size, base + j * type_size, type_size);
             ctrl[hole] = ctrl[j];
@@ -425,22 +425,22 @@ void __cstl_hashtable_erase(void **container, void *key) {
 OPENCSTL_FUNC
 
 void *__cstl_hashtable_find(void **container, void *key) {
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t cap_mask = OPENCSTL_NIDX(container, -7);
+    size_type64 key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    size_t type_size = key_size + value_size;
+    size_type64 value_size = OPENCSTL_NIDX(container, -4);
+    size_type64 type_size = key_size + value_size;
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float_key = OPENCSTL_NIDX(container, -8);
+    size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
     float kf = 0.f;
     if (is_float_key) {
         kf = (float) *(double *) key;
         key = &kf;
     }
 #endif
-    size_t h = hash_mixer(key, key_size);
+    size_type64 h = hash_mixer(key, key_size);
     uint8_t c = __ht_ctrl(h);
-    size_t idx = h & cap_mask;
+    size_type64 idx = h & cap_mask;
     char *base = (char *) *container;
 
     while (true) {
@@ -455,7 +455,7 @@ void *__cstl_hashtable_find(void **container, void *key) {
 OPENCSTL_FUNC
 
 void __cstl_hashtable_clear(void **container) {
-    size_t cap_mask = OPENCSTL_NIDX(container, -7);
+    size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     memset(ctrl, 0, cap_mask + 1);
     OPENCSTL_NIDX(container, -1) = 0;
@@ -464,10 +464,10 @@ void __cstl_hashtable_clear(void **container) {
 OPENCSTL_FUNC
 
 void *__cstl_hashtable_begin(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
-    size_t cap_mask = OPENCSTL_NIDX(container, -7);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
+    size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-    for (size_t i = 0; i <= cap_mask; i++)
+    for (size_type64 i = 0; i <= cap_mask; i++)
         if (ctrl[i] != HT_CTRL_EMPTY)
             return (char *) *container + i * type_size;
     return NULL;
@@ -479,8 +479,8 @@ void *__cstl_hashtable_end(void **container) { return NULL; }
 OPENCSTL_FUNC
 
 void *__cstl_hashtable_rbegin(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
-    size_t cap_mask = OPENCSTL_NIDX(container, -7);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
+    size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     for (int i = (int) cap_mask; i >= 0; i--)
         if (ctrl[i] != HT_CTRL_EMPTY)
@@ -491,7 +491,7 @@ void *__cstl_hashtable_rbegin(void **container) {
 OPENCSTL_FUNC
 
 void *__cstl_hashtable_rend(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     return (char *) *container - type_size;
 }
 
@@ -514,22 +514,22 @@ OPENCSTL_FUNC
 void *__cstl_hashtable_next_prev(void *it, int n) {
     HashtableManager *chtm = htm_find(htm, it);
 
-    size_t ts = (size_t) chtm->type_size;
-    size_t cap = ((char *) chtm->p2 - (char *) chtm->p1) / ts;
+    size_type64 ts = (size_type64) chtm->type_size;
+    size_type64 cap = ((char *) chtm->p2 - (char *) chtm->p1) / ts;
     uint8_t *ctrl = (uint8_t *) chtm->tombstone;
 
     if (n == -1) {
-        size_t pos = ((char *) it - (char *) chtm->p1) / ts + 1;
+        size_type64 pos = ((char *) it - (char *) chtm->p1) / ts + 1;
         for (; pos < cap; pos++)
             if (ctrl[pos] != HT_CTRL_EMPTY)
                 return (char *) chtm->p1 + pos * ts;
         return NULL;
     }
     if (n == -2) {
-        size_t pos = ((char *) it - (char *) chtm->p1) / ts;
+        size_type64 pos = ((char *) it - (char *) chtm->p1) / ts;
         if (pos == 0) return (char *) chtm->p1 - ts;
 
-        for (size_t i = pos - 1; ; i--) {
+        for (size_type64 i = pos - 1; ; i--) {
             if (ctrl[i] != HT_CTRL_EMPTY)
                 return (char *) chtm->p1 + i * ts;
             if (i == 0) break;
@@ -542,7 +542,7 @@ void *__cstl_hashtable_next_prev(void *it, int n) {
 OPENCSTL_FUNC
 
 void __cstl_hashtable_free(void **container) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
 
     HashtableManager *chtm = htm_find(htm, *container);
@@ -554,19 +554,19 @@ void __cstl_hashtable_free(void **container) {
 
 OPENCSTL_FUNC
 
-void __cstl_hashtable_reserve(void **container, size_t n) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t value_size = OPENCSTL_NIDX(container, -4);
-    size_t type_size = key_size + value_size;
-    size_t length = OPENCSTL_NIDX(container, -1);
-    size_t cap_mask_old = OPENCSTL_NIDX(container, -7);
+void __cstl_hashtable_reserve(void **container, size_type64 n) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 value_size = OPENCSTL_NIDX(container, -4);
+    size_type64 type_size = key_size + value_size;
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 cap_mask_old = OPENCSTL_NIDX(container, -7);
     uint8_t *old_ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
 
-    size_t want = length + n;
-    size_t min_cap = (want * HT_LOAD_DEN + (HT_LOAD_NUM - 1)) / HT_LOAD_NUM;
+    size_type64 want = length + n;
+    size_type64 min_cap = (want * HT_LOAD_DEN + (HT_LOAD_NUM - 1)) / HT_LOAD_NUM;
     if (min_cap < __HASHTABLE_DEFAULT_SIZE__) min_cap = __HASHTABLE_DEFAULT_SIZE__;
-    size_t new_cap = __ht_next_pow2(min_cap);
+    size_type64 new_cap = __ht_next_pow2(min_cap);
     if (new_cap <= cap_mask_old + 1) return;
 
     void *new_raw = calloc(header_sz + new_cap * type_size, 1);
@@ -574,13 +574,13 @@ void __cstl_hashtable_reserve(void **container, size_t n) {
     memcpy(new_raw, (char *) *container - header_sz, header_sz);
     uint8_t *new_ctrl = __ht_alloc_ctrl(new_cap);
     void *nb = (char *) new_raw + header_sz;
-    size_t new_mask = new_cap - 1;
+    size_type64 new_mask = new_cap - 1;
 
-    for (size_t i = 0; i <= cap_mask_old; i++) {
+    for (size_type64 i = 0; i <= cap_mask_old; i++) {
         if (old_ctrl[i] != HT_CTRL_EMPTY) {
             const void *ok = (const char *) *container + i * type_size;
             const void *ov = value_size > 0 ? (const char *) ok + key_size : NULL;
-            size_t h = hash_mixer((void *) ok, key_size);
+            size_type64 h = hash_mixer((void *) ok, key_size);
             __ht_reinsert(nb, new_ctrl, new_mask, ok, ov,
                           key_size, value_size, type_size, h);
         }
@@ -591,7 +591,7 @@ void __cstl_hashtable_reserve(void **container, size_t n) {
     free(old_ctrl);
     *container = nb;
     OPENCSTL_NIDX(container, -7) = new_mask;
-    OPENCSTL_NIDX(container, -6) = (size_t) (uintptr_t) new_ctrl;
+    OPENCSTL_NIDX(container, -6) = (size_type64) (uintptr_t) new_ctrl;
     htm_erase(htm, old_ptr);
     htm_insert(htm, *container,
                (char *) *container + type_size * new_cap,
@@ -619,9 +619,9 @@ void __cstl_htm_destroy(void) {
 #define _CSTL_USET_DISPATCH(KEY, FUNC, ...) __cstl_unordered_set(sizeof(KEY),#KEY,(void*)(FUNC))
 OPENCSTL_FUNC
 
-void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_func) {
-    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    size_t cap = __HASHTABLE_DEFAULT_SIZE__;
+void *__cstl_unordered_set(size_type64 key_size, const char *type_key, void *hash_func) {
+    size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
+    size_type64 cap = __HASHTABLE_DEFAULT_SIZE__;
     void *ptr = (char *) calloc(header_sz + key_size * cap, 1) + header_sz;
     void **c = &ptr;
     uint8_t *ctrl = __ht_alloc_ctrl(cap);
@@ -631,10 +631,10 @@ void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_fun
     OPENCSTL_NIDX(c, -9) = 0;
     OPENCSTL_NIDX(c, -8) = !strcmp(type_key, "float");
     OPENCSTL_NIDX(c, -7) = cap - 1;
-    OPENCSTL_NIDX(c, -6) = (size_t) (uintptr_t) ctrl;
+    OPENCSTL_NIDX(c, -6) = (size_type64) (uintptr_t) ctrl;
     OPENCSTL_NIDX(c, -4) = 0;
-    OPENCSTL_NIDX(c, -3) = (size_t) type_key;
-    OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
+    OPENCSTL_NIDX(c, -3) = (size_type64) type_key;
+    OPENCSTL_NIDX(c, -2) = (size_type64) hash_func;
     OPENCSTL_NIDX(c, -1) = 0;
     OPENCSTL_NIDX(c, 0) = 0;
     bool htm_init = false;
@@ -665,12 +665,12 @@ void *__cstl_unordered_set(size_t key_size, const char *type_key, void *hash_fun
 #define _CSTL_UMAP_DISPATCH(KEY,VALUE,FUNC,...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,(void*)(FUNC))
 OPENCSTL_FUNC
 
-void *__cstl_unordered_map(size_t key_size, size_t value_size,
+void *__cstl_unordered_map(size_type64 key_size, size_type64 value_size,
                            const char *type_key, const char *type_value,
                            void *hash_func) {
-    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    size_t type_size = key_size + value_size;
-    size_t cap = __HASHTABLE_DEFAULT_SIZE__;
+    size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
+    size_type64 type_size = key_size + value_size;
+    size_type64 cap = __HASHTABLE_DEFAULT_SIZE__;
     void *ptr = (char *) calloc(header_sz + type_size * cap, 1) + header_sz;
     void **c = &ptr;
     uint8_t *ctrl = __ht_alloc_ctrl(cap);
@@ -680,10 +680,10 @@ void *__cstl_unordered_map(size_t key_size, size_t value_size,
     OPENCSTL_NIDX(c, -9) = !strcmp(type_value, "float");
     OPENCSTL_NIDX(c, -8) = !strcmp(type_key, "float");
     OPENCSTL_NIDX(c, -7) = cap - 1;
-    OPENCSTL_NIDX(c, -6) = (size_t) (uintptr_t) ctrl;
+    OPENCSTL_NIDX(c, -6) = (size_type64) (uintptr_t) ctrl;
     OPENCSTL_NIDX(c, -4) = value_size;
-    OPENCSTL_NIDX(c, -3) = (size_t) type_key;
-    OPENCSTL_NIDX(c, -2) = (size_t) hash_func;
+    OPENCSTL_NIDX(c, -3) = (size_type64) type_key;
+    OPENCSTL_NIDX(c, -2) = (size_type64) hash_func;
     OPENCSTL_NIDX(c, -1) = 0;
     OPENCSTL_NIDX(c, 0) = 0;
     bool htm_init = false;

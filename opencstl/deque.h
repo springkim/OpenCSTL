@@ -47,14 +47,14 @@
 #include "defines.h"
 #include "types.h"
 OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
-    if (OPENCSTL_NIDX(container, -1) > (size_t) INT_MAX)
+    if (OPENCSTL_NIDX(container, -1) < 0)
         return 1;
     return 0;
 }
 
 // Safe container type detection for sort dispatch functions.
 // Returns 0 if ptr is not an OpenCSTL container. Sets *distance for deque.
-OPENCSTL_FUNC size_t __opencstl_container_type(void **container, ptrdiff_t *distance) {
+OPENCSTL_FUNC size_type64 __opencstl_container_type(void **container, ptrdiff_t *distance) {
     *distance = 0;
     if (iveb == NULL) return 0;
     Interval *it = iveb_find(iveb, *container);
@@ -62,12 +62,13 @@ OPENCSTL_FUNC size_t __opencstl_container_type(void **container, ptrdiff_t *dist
     if (it->ctype == CT_DEQUE) {
         *distance = OPENCSTL_NIDX(container, -1) + 1;
     }
-    return *(size_t *) ((char *) *container + NIDX_CTYPE * sizeof(size_t) + *distance);
+    // return *(_opencstl_ll_ua *) ((char *) *container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + *distance);
+    return *(_opencstl_ll_ua *) ((char *) *container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + *distance);
 }
 
 #define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
-OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
-    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
+OPENCSTL_FUNC void *__cstl_deque(size_type64 type_size, char *type) {
+    size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *block = calloc(header_sz + type_size * 2, 1);
     verify(block != NULL);
     void *ptr = (char *) block + header_sz; // 2 = capacity
@@ -78,7 +79,7 @@ OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
     OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
 
-    OPENCSTL_NIDX(container, -4) = (size_t) type;
+    OPENCSTL_NIDX(container, -4) = (size_type64) type;
     OPENCSTL_NIDX(container, -3) = 2; // capacity
     OPENCSTL_NIDX(container, -2) = 0; // length
     void *buf_start = ptr;
@@ -96,13 +97,13 @@ OPENCSTL_FUNC void *__cstl_deque(size_t type_size, char *type) {
     return ptr;
 }
 
-OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_t n, void *value) {
+OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_type64 n, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    //size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
-    size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    //size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
 #if !defined(__linux__)
     float valuef = 0.0F;
     if (strcmp(type, "float") == 0) {
@@ -119,14 +120,14 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_t n, void *value) 
     *container = ((char *) b) + header_sz;
     OPENCSTL_NIDX(container, -1) = -1;
     distance = 0;
-    *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) = n;
-    *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) = n;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance) = n;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance) = n;
     iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_DEQUE, type_size, type);
 
     if (value == NULL) {
         memset((char *) *container, 0, n * type_size);
     } else {
-        for (size_t i = 0; i < n; i++) {
+        for (size_type64 i = 0; i < n; i++) {
             memcpy((char *) *container + type_size * (i), value, type_size);
         }
     }
@@ -134,14 +135,14 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_t n, void *value) 
 
 OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
-    size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-8) * (ptrdiff_t)sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -150,8 +151,8 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
 #endif
 
     if (length == capacity + distance / (ptrdiff_t) type_size) {
-        size_t distance_sz = -distance;
-        size_t new_capacity = capacity * 2;
+        size_type64 distance_sz = -distance;
+        size_type64 new_capacity = capacity * 2;
         iveb_erase(iveb, (char *) *container + distance);
         void *b = calloc(1, header_sz + new_capacity * type_size);
         memcpy(b, (char *) *container - (header_sz + distance_sz), header_sz);
@@ -160,26 +161,26 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
         free((char *) *container - (header_sz + distance_sz));
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
-        *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) *= 2;
+        *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance) *= 2;
         OPENCSTL_NIDX(container, -1) = distance - 1;
         iveb_insert(iveb, (char *) *container + distance,
                     (char *) *container + distance + (type_size * new_capacity), CT_DEQUE, type_size, type);
     }
     memcpy((char *) *container + type_size * length, value, type_size);
 
-    (*(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance))++;
+    (*(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance))++;
 }
 
 OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
-    size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-8) * (ptrdiff_t)sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -187,7 +188,7 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     }
 #endif
     if (distance == 0) {
-        size_t new_capacity = capacity * 2;
+        size_type64 new_capacity = capacity * 2;
         iveb_erase(iveb, (char *) *container);
         void *b = calloc(1, header_sz + new_capacity * type_size);
         memcpy(b, (char *) *container - header_sz, header_sz);
@@ -196,7 +197,7 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
         free((char *) *container - header_sz);
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
-        *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) *= 2;
+        *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance) *= 2;
         iveb_insert(iveb, (char *) *container + distance,
                     (char *) *container + distance + (type_size * new_capacity), CT_DEQUE, type_size, type);
     }
@@ -204,95 +205,95 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     memcpy((char *) *container - type_size, value, type_size);
     *container = (char *) *container - type_size;
     OPENCSTL_NIDX(container, -1) = distance + type_size - 1;
-    *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance + type_size) += 1;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance + type_size) += 1;
 }
 
 OPENCSTL_FUNC void __cstl_deque_pop_back(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
 
     verify(length > 0);
-    *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) -= 1;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance) -= 1;
 }
 
 OPENCSTL_FUNC void __cstl_deque_pop_front(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
 
-    verify(*(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance - type_size) > 0);
+    verify(*(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance - type_size) > 0);
     memcpy(*container, (char *) *container - type_size, type_size);
     *container = (char *) *container + type_size;
     OPENCSTL_NIDX(container, -1) = distance - type_size - 1;
-    *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance - type_size) -= 1;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance - type_size) -= 1;
 }
 
-OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_t n, void *value) {
+OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
-    size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-8) * (ptrdiff_t)sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
 #endif
-    size_t pos = (*(char **) it - *(char **) container) / type_size;
+    size_type64 pos = (*(char **) it - *(char **) container) / type_size;
     if (length + n > capacity + distance / (ptrdiff_t) type_size) {
         iveb_erase(iveb, (char *) *container + distance);
         capacity += n;
-        size_t alloc_sz = header_sz + capacity * type_size - distance;
+        size_type64 alloc_sz = header_sz + capacity * type_size - distance;
         void *b = realloc((char *) *container - header_sz + distance, alloc_sz);
         *container = (char *) b + header_sz - distance;
-        *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) += n;
+        *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance) += n;
         iveb_insert(iveb, (char *) *container + distance,
                     (char *) b + alloc_sz, CT_DEQUE, type_size, type);
     }
     memcpy((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
            (length - pos) * type_size);
-    for (size_t i = 0; i < n; i++) {
+    for (size_type64 i = 0; i < n; i++) {
         memcpy((char *) *container + (pos + i) * type_size, value, type_size);
     }
-    *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) += n;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance) += n;
 }
 
 OPENCSTL_FUNC void __cstl_deque_erase(void **container, void *begin, void *end) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
-    size_t pos = (*(char **) end - *(char **) begin) / type_size;
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 pos = (*(char **) end - *(char **) begin) / type_size;
 
     memmove(*(char **) begin, *(char **) end, (char *) *container + (length + 1) * type_size - *(char **) end);
-    *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) -= pos;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance) -= pos;
 }
 
 OPENCSTL_FUNC size_type __cstl_deque_size(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
 
-    return (size_type) (*(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance));
+    return (size_type) (*(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance));
 }
 
 OPENCSTL_FUNC size_type __cstl_deque_capacity(void **container) {
-    size_t capacity = OPENCSTL_NIDX(container, -3);
+    size_type64 capacity = OPENCSTL_NIDX(container, -3);
 
     return (size_type) capacity;
 }
 
-OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) {
+OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_type64 n, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
-    size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-8) * (ptrdiff_t)sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -309,15 +310,15 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_t n, void *value) 
         *container = (char *) b + header_sz;
         OPENCSTL_NIDX(container, -1) = -1;
         distance = 0;
-        *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance) = n;
+        *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance) = n;
         iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_DEQUE, type_size, type);
     }
-    *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) = n;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance) = n;
     if (length < n) {
         if (*(void **) value == NULL) {
             memset((char *) *container + length * type_size, 0, (n - length) * type_size);
         } else {
-            for (size_t i = length; i < n; i++) {
+            for (size_type64 i = length; i < n; i++) {
                 memcpy((char *) *container + i * type_size, value, type_size);
             }
         }
@@ -330,23 +331,23 @@ OPENCSTL_FUNC void *__cstl_deque_begin(void **container) {
 
 OPENCSTL_FUNC void *__cstl_deque_end(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
 
     return (char *) *container + length * type_size;
 }
 
 OPENCSTL_FUNC void *__cstl_deque_rbegin(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
 
     return (char *) *container + (length - 1) * type_size;
 }
 
 OPENCSTL_FUNC void *__cstl_deque_rend(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
 
     return (char *) *container - type_size;
 }
@@ -354,12 +355,12 @@ OPENCSTL_FUNC void *__cstl_deque_rend(void **container) {
 OPENCSTL_FUNC void __cstl_deque_clear(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
 
-    *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance) = 0;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance) = 0;
 }
 
 OPENCSTL_FUNC void __cstl_deque_free(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
+    size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
 
     iveb_erase(iveb, (char *) *container + distance);
     free((char *) *container - (header_sz - distance));
@@ -367,22 +368,22 @@ OPENCSTL_FUNC void __cstl_deque_free(void **container) {
 
 OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    //size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
-    //size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    //char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    //size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_HSIZE * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    //size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
+    //char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = *(size_t *) ((char *) *(void **) container + -8 * sizeof(size_t) + distance);
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-8) * (ptrdiff_t)sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
 #endif
-    size_t pos = (*(char **) iter_begin - *(char **) container) / type_size;
-    for (size_t i = pos; i < length; i++) {
+    size_type64 pos = (*(char **) iter_begin - *(char **) container) / type_size;
+    for (size_type64 i = pos; i < length; i++) {
         if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
             return (char *) *container + type_size * (i);
         }
@@ -396,18 +397,18 @@ OPENCSTL_FUNC size_type __cstl_deque_max_size(void **container) {
 
 OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t header_sz = *(size_t *) ((char *) *(void **) container + NIDX_HSIZE * sizeof(size_t) + distance);
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
-    size_t capacity = *(size_t *) ((char *) *(void **) container + -3 * sizeof(size_t) + distance);
-    char *type = (char *) *(size_t *) ((char *) *(void **) container + -4 * sizeof(size_t) + distance);
+    size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
 
     // 이미 꽉 차있고 앞쪽 여유도 없으면 아무것도 안 함
     if (length == capacity && distance == 0) {
         return;
     }
 
-    size_t new_capacity = length > 0 ? length : 1;
+    size_type64 new_capacity = length > 0 ? length : 1;
 
     iveb_erase(iveb, (char *) *container + distance);
     void *b = calloc(1, header_sz + new_capacity * type_size);
@@ -430,8 +431,8 @@ OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
 
 OPENCSTL_FUNC void __cstl_deque_reverse(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_t type_size = *(size_t *) ((char *) *(void **) container + NIDX_TSIZE * sizeof(size_t) + distance);
-    size_t length = *(size_t *) ((char *) *(void **) container + -2 * sizeof(size_t) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
 
     if (length < 2) {
         return;
@@ -445,7 +446,7 @@ OPENCSTL_FUNC void __cstl_deque_reverse(void **container) {
     verify(tmp != NULL);
 
     char *base = (char *) *container;
-    for (size_t i = 0, j = length - 1; i < j; i++, j--) {
+    for (size_type64 i = 0, j = length - 1; i < j; i++, j--) {
         memcpy(tmp, base + i * type_size, type_size);
         memcpy(base + i * type_size, base + j * type_size, type_size);
         memcpy(base + j * type_size, tmp, type_size);

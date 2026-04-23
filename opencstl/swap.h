@@ -42,10 +42,10 @@
 
 #define SWAP_STACK_BUF_SIZE 256
 
-void swap(void *a, void *b, size_t sz) {
+void swap(void *a, void *b, size_type64 sz) {
     unsigned char stack_buf[SWAP_STACK_BUF_SIZE];
     unsigned char *tmp;
-    size_t i;
+    size_type64 i;
 
     if (a == NULL || b == NULL || a == b || sz == 0) {
         return;

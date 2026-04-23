@@ -49,8 +49,8 @@
 // ░░░╚═╝░░░╚══════╝░╚════╝░░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝
 
 #define cstl_vector(TYPE)	__cstl_vector(sizeof(TYPE),#TYPE)
-OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
-    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
+OPENCSTL_FUNC void *__cstl_vector(size_type64 type_size, char *type) {
+    size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *block = calloc(header_sz + type_size, 1);
     if (block == NULL) {
         yikes("Failed to allocate memory for vector");
@@ -63,7 +63,7 @@ OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
 
     OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
 
-    OPENCSTL_NIDX(container, -4) = (size_t) type;
+    OPENCSTL_NIDX(container, -4) = (size_type64) type;
 
     OPENCSTL_NIDX(container, -3) = 0; //
     OPENCSTL_NIDX(container, -2) = 1; //capacity
@@ -80,15 +80,15 @@ OPENCSTL_FUNC void *__cstl_vector(size_t type_size, char *type) {
     return ptr;
 }
 
-OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    //size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
+OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_type64 n, void *value) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -108,7 +108,7 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value)
     if (value == NULL) {
         memset(*container, 0, type_size * n);
     } else {
-        for (size_t i = 0; i < n; i++) {
+        for (size_type64 i = 0; i < n; i++) {
             memcpy((char *) *container + type_size * (i), value, type_size);
         }
     }
@@ -116,14 +116,14 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_t n, void *value)
 }
 
 OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -132,7 +132,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
 #endif
     if (length == capacity) {
         iveb_erase(iveb, *container);
-        size_t new_capaciy = get_new_capacity(capacity);
+        size_type64 new_capaciy = get_new_capacity(capacity);
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             yikes("Reallocation failed at vector push_back");
@@ -160,16 +160,16 @@ OPENCSTL_FUNC size_type __cstl_vector_capacity(void **container) {
     return (size_type) OPENCSTL_NIDX(container, -2);
 }
 
-OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, void *value) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
-    size_t pos = (*(char **) iter - *(char **) container) / type_size;
+OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type64 N, void *value) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    size_type64 pos = (*(char **) iter - *(char **) container) / type_size;
     char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -178,7 +178,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
 #endif
     if (length + N >= capacity) {
         iveb_erase(iveb, *container);
-        size_t new_capaciy = get_new_capacity(capacity+N);
+        size_type64 new_capaciy = get_new_capacity(capacity+N);
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             yikes("Reallocation failed at vector insert");
@@ -189,19 +189,19 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_t N, 
     }
     memmove((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
             (length - pos) * type_size);
-    for (size_t i = 0; i < N; i++) {
+    for (size_type64 i = 0; i < N; i++) {
         memcpy((char *) *container + type_size * (pos + i), value, type_size);
     }
     OPENCSTL_NIDX(container, -1) += N;
 }
 
 OPENCSTL_FUNC void __cstl_vector_erase(void **container, void *iter_begin, void *iter_end) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    //size_t capacity = OPENCSTL_NIDX(container, -2);
-    size_t pos_begin = (*(char **) iter_begin - *(char **) container) / type_size;
-    size_t pos_end = (*(char **) iter_end - *(char **) container) / type_size;
+    //size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    //size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    size_type64 pos_begin = (*(char **) iter_begin - *(char **) container) / type_size;
+    size_type64 pos_end = (*(char **) iter_end - *(char **) container) / type_size;
     memmove((char *) *container + type_size * (pos_begin), (char *) *container + type_size * (pos_end),
             (length - pos_end) * type_size);
     OPENCSTL_NIDX(container, -1) -= (pos_end - pos_begin);
@@ -212,30 +212,30 @@ OPENCSTL_FUNC void *__cstl_vector_begin(void **container) {
 }
 
 OPENCSTL_FUNC void *__cstl_vector_end(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
     return (void *) ((char *) *container + (type_size * length));
 }
 
 OPENCSTL_FUNC void *__cstl_vector_rbegin(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
     return (void *) ((char *) *container + (type_size * (length - 1)));
 }
 
 OPENCSTL_FUNC void *__cstl_vector_rend(void **container) {
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     return (void *) ((char *) *container - (type_size));
 }
 
-OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
+OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_type64 n, void *value) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -256,7 +256,7 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
         if (value == NULL) {
             memset((char *) *container + type_size * length, 0, type_size * (n - length));
         } else {
-            for (size_t i = length; i < n; i++) {
+            for (size_type64 i = length; i < n; i++) {
                 memcpy((char *) *container + type_size * (i), value, type_size);
             }
         }
@@ -265,22 +265,22 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_t n, void *value)
 }
 
 OPENCSTL_FUNC void *__cstl_vector_find(void **container, void *iter_begin, void *value) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    //size_t capacity = OPENCSTL_NIDX(container, -2);
-    size_t pos = (*(char **) iter_begin - *(char **) container) / type_size;
+    //size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    //size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    size_type64 pos = (*(char **) iter_begin - *(char **) container) / type_size;
     //char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }
 #endif
-    for (size_t i = pos; i < length; i++) {
+    for (size_type64 i = pos; i < length; i++) {
         if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
             return (char *) *container + type_size * (i);
         }
@@ -293,17 +293,17 @@ OPENCSTL_FUNC void __cstl_vector_clear(void **container) {
 }
 
 OPENCSTL_FUNC void __cstl_vector_free(void **container) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     iveb_erase(iveb, *container);
     free((char *) (*container) - header_sz);
     *container = NULL;
 }
 
-OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    //size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
+OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_type64 n) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
     if (capacity < n) {
         iveb_erase(iveb, *container);
@@ -317,11 +317,11 @@ OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_t n) {
     }
 }
 
-OPENCSTL_FUNC void *__cstl_vector_next(void *it, size_t type_size) {
+OPENCSTL_FUNC void *__cstl_vector_next(void *it, size_type64 type_size) {
     return (char *) it + type_size;
 }
 
-OPENCSTL_FUNC void *__cstl_vector_prev(void *it, size_t type_size) {
+OPENCSTL_FUNC void *__cstl_vector_prev(void *it, size_type64 type_size) {
     return (char *) it - type_size;
 }
 
@@ -331,16 +331,16 @@ OPENCSTL_FUNC size_type __cstl_vector_max_size(void **container) {
 
 
 OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
 
     if (capacity == length) {
         return;
     }
-    size_t new_capacity = length > 0 ? length : 1;
+    size_type64 new_capacity = length > 0 ? length : 1;
 
     iveb_erase(iveb, *container);
     void *b = realloc((char *) *container - header_sz, header_sz + new_capacity * type_size);
@@ -353,10 +353,10 @@ OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
 }
 
 OPENCSTL_FUNC void __cstl_vector_reverse(void **container) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_t length = OPENCSTL_NIDX(container, -1);
-    size_t capacity = OPENCSTL_NIDX(container, -2);
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
 
     int idx = 0;

@@ -86,7 +86,7 @@ static void MsgBoxCLI(const char *format, ...) {
 
             fputs(hline, stdout);
             for (int i = 0; i < lpadding; i++) putchar(' ');
-            fwrite(line_start, 1, (size_t) len, stdout);
+            fwrite(line_start, 1, (size_type64) len, stdout);
             for (int i = 0; i < rpadding; i++) putchar(' ');
             fputs(hline, stdout);
             putchar('\n');
@@ -226,7 +226,7 @@ static const struct lang_labels *detect_lang(void) {
 
     // "ko_KR.UTF-8" -> "ko" 비교
     for (int i = 0; kLangs[i].prefix; i++) {
-        size_t n = strlen(kLangs[i].prefix);
+        size_type64 n = strlen(kLangs[i].prefix);
         if (strncmp(lang, kLangs[i].prefix, n) == 0 &&
             (lang[n] == '\0' || lang[n] == '_' || lang[n] == '.')) {
             return &kLangs[i];
@@ -243,7 +243,7 @@ static const struct lang_labels *detect_lang(void) {
 #define IDRETRY   4
 #define IDIGNORE  5
 
-static void get_exe_path(char *out, size_t n) {
+static void get_exe_path(char *out, size_type64 n) {
     ssize_t r = readlink("/proc/self/exe", out, n - 1);
     if (r < 0) r = 0;
     out[r] = '\0';
@@ -313,7 +313,7 @@ static int zenity_abort_retry_ignore(const char *title, const char *body) {
     if (code == 0) {
         return IDIGNORE; // --ok-label 클릭
     }
-    size_t Llen = strlen(out);
+    size_type64 Llen = strlen(out);
     while (Llen > 0 && (out[Llen - 1] == '\n' || out[Llen - 1] == '\r')) out[--Llen] = '\0';
 
     if (strcmp(out, L->retry_s) == 0) return IDRETRY;

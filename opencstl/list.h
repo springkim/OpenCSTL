@@ -42,9 +42,9 @@
 
 #define cstl_list(TYPE)		__cstl_list(sizeof(TYPE),#TYPE)
 #define NTAIL(N)	(N==-1?-2:N)
-OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
-    size_t header_sz = sizeof(size_t) * OPENCSTL_HEADER;
-    void *block = calloc(header_sz + sizeof(size_t), 1);
+OPENCSTL_FUNC void *__cstl_list(size_type64 type_size, char *type) {
+    size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
+    void *block = calloc(header_sz + sizeof(size_type64), 1);
     verify(block != NULL);
     void *ptr = ((char *) block) + header_sz;
     void **container = &ptr;
@@ -52,7 +52,7 @@ OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
     OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
     OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
     OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
-    OPENCSTL_NIDX(container, -4) = (size_t) type;
+    OPENCSTL_NIDX(container, -4) = (size_type64) type;
     OPENCSTL_NIDX(container, -2) = 0; //tail
     OPENCSTL_NIDX(container, -1) = 0; //length
     OPENCSTL_NIDX(container, 0) = 0; //head
@@ -61,17 +61,17 @@ OPENCSTL_FUNC void *__cstl_list(size_t type_size, char *type) {
         iveb = iveb_new();
         iveb_init = true;
     }
-    iveb_insert(iveb, ptr, (char *) ptr + sizeof(size_t), CT_LIST, type_size, type);
+    iveb_insert(iveb, ptr, (char *) ptr + sizeof(size_type64), CT_LIST, type_size, type);
     if (iveb_init) {
         atexit(__opencstl_iveb_destroy);
     }
     return ptr;
 }
 
-OPENCSTL_FUNC void *__cstl_list_node(size_t type_size) {
+OPENCSTL_FUNC void *__cstl_list_node(size_type64 type_size) {
     //[node type][prev][next] ↘ [data]
-    size_t header_sz = sizeof(void *) * NIDX_LIST_NODE_SIZE;
-    size_t node_sz = type_size + header_sz;
+    size_type64 header_sz = sizeof(void *) * NIDX_LIST_NODE_SIZE;
+    size_type64 node_sz = type_size + header_sz;
     void *ptr = (char *) calloc(node_sz, 1) + header_sz;
     void **node = &ptr;
     OPENCSTL_NIDX(node, -3) = OPENCSTL_LIST;
@@ -79,15 +79,15 @@ OPENCSTL_FUNC void *__cstl_list_node(size_t type_size) {
 }
 
 OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, int ntail, int nhead) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail)); //-1 , 0
     void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
     void *n = __cstl_list_node(type_size);
     //char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -99,16 +99,16 @@ OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, in
     if (*head == NULL && *tail == NULL) {
         *head = *tail = n;
     } else {
-        OPENCSTL_NIDX(tail, -(ntail + 2)) = (size_t) n;
-        OPENCSTL_NIDX(&n, -(nhead + 2)) = (size_t) *tail;
+        OPENCSTL_NIDX(tail, -(ntail + 2)) = (size_type64) n;
+        OPENCSTL_NIDX(&n, -(nhead + 2)) = (size_type64) *tail;
         *tail = n;
     }
     OPENCSTL_NIDX(container, -1)++;
 }
 
 OPENCSTL_FUNC void __cstl_list_pop_back_front(void **container, int ntail, int nhead) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    //size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail)); //-1 , 0
     void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
     verify(*head != NULL && *tail != NULL);
@@ -134,8 +134,8 @@ OPENCSTL_FUNC size_type __cstl_list_size(void **container) {
     return (size_type) OPENCSTL_NIDX(container, -1);
 }
 
-OPENCSTL_FUNC void __cstl_list_resize(void **container, size_t n, void *value) {
-    size_t length = OPENCSTL_NIDX(container, -1);
+OPENCSTL_FUNC void __cstl_list_resize(void **container, size_type64 n, void *value) {
+    size_type64 length = OPENCSTL_NIDX(container, -1);
     if (n < length) {
         while (n < length) {
             __cstl_list_pop_back_front((void **) container, -1, 0);
@@ -150,15 +150,15 @@ OPENCSTL_FUNC void __cstl_list_resize(void **container, size_t n, void *value) {
     OPENCSTL_NIDX(container, -1) = n;
 }
 
-OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_t N, void *value) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_type64 N, void *value) {
+    //size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     //char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -168,37 +168,37 @@ OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_t N, v
     void *nhead = __cstl_list_node(type_size);
     memcpy(nhead, value, type_size);
     void *ntail = nhead;
-    for (size_t i = 1; i < N; i++) {
+    for (size_type64 i = 1; i < N; i++) {
         void *n = __cstl_list_node(type_size);
         memcpy(n, value, type_size);
-        OPENCSTL_NIDX(&n, -2) = (size_t) ntail; //n->prev=tail
-        OPENCSTL_NIDX(&ntail, -1) = (size_t) n; //tail->next=n;
+        OPENCSTL_NIDX(&n, -2) = (size_type64) ntail; //n->prev=tail
+        OPENCSTL_NIDX(&ntail, -1) = (size_type64) n; //tail->next=n;
         ntail = n;
     }
-    OPENCSTL_NIDX(&ntail, -1) = (size_t) *iter; //n->next=iter
+    OPENCSTL_NIDX(&ntail, -1) = (size_type64) *iter; //n->next=iter
     if (*head == NULL && *tail == NULL) {
         *head = nhead;
         *tail = ntail;
     } else if (*iter != NULL) {
         if (OPENCSTL_NIDX(iter, -2) != 0) {
-            OPENCSTL_NIDX(&(OPENCSTL_NIDX(iter, -2)), -1) = (size_t) nhead; //iter->prev->next=n;
+            OPENCSTL_NIDX(&(OPENCSTL_NIDX(iter, -2)), -1) = (size_type64) nhead; //iter->prev->next=n;
         }
         OPENCSTL_NIDX(&nhead, -2) = OPENCSTL_NIDX(iter, -2); //n->prev=iter->prev
-        OPENCSTL_NIDX(iter, -2) = (size_t) ntail; //iter->prev=n;
+        OPENCSTL_NIDX(iter, -2) = (size_type64) ntail; //iter->prev=n;
         if (*iter == *head) {
             *head = nhead;
         }
     } else {
-        OPENCSTL_NIDX(tail, -1) = (size_t) nhead; //tail->next=n;
-        OPENCSTL_NIDX(&nhead, -2) = (size_t) *tail; //n->prev=tail;
+        OPENCSTL_NIDX(tail, -1) = (size_type64) nhead; //tail->next=n;
+        OPENCSTL_NIDX(&nhead, -2) = (size_type64) *tail; //n->prev=tail;
         *tail = ntail;
     }
     OPENCSTL_NIDX(container, -1) += N;
 }
 
 OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void **iter_end) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    //size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    //size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     verify(*iter_begin != NULL);
@@ -208,7 +208,7 @@ OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void *
             OPENCSTL_NIDX(head, -2) = 0;
         }
     } else {
-        OPENCSTL_NIDX(&OPENCSTL_NIDX(iter_begin, -2), -1) = (size_t) *iter_end; //begin->prev->next=end;
+        OPENCSTL_NIDX(&OPENCSTL_NIDX(iter_begin, -2), -1) = (size_type64) *iter_end; //begin->prev->next=end;
         if (*iter_end != NULL) {
             OPENCSTL_NIDX(iter_end, -2) = OPENCSTL_NIDX(iter_begin, -2); //end->prev=begin->prev
         }
@@ -253,21 +253,21 @@ OPENCSTL_FUNC void __cstl_list_clear(void **container) {
 }
 
 OPENCSTL_FUNC void __cstl_list_free(void **container) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     __cstl_list_clear(container);
     free((char *) (*container) - header_sz);
     *container = NULL;
 }
 
 OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *value) {
-    //size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    //size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     //void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     //void **head = (void **) &OPENCSTL_NIDX(container, 0);
     //char *type = (char *) OPENCSTL_NIDX(container, -4);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_t is_float = OPENCSTL_NIDX(container, -8);
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -291,12 +291,12 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
 // ███████╗██║██████╔╝░░░██║░░░░░░░░░░██║░╚═╝░██║███████╗██║░░██║╚██████╔╝███████╗░░░░░░░██████╔╝╚█████╔╝██║░░██║░░░██║░░░
 // ╚══════╝╚═╝╚═════╝░░░░╚═╝░░░░░░░░░░╚═╝░░░░░╚═╝╚══════╝╚═╝░░╚═╝░╚═════╝░╚══════╝░░░░░░░╚═════╝░░╚════╝░╚═╝░░╚═╝░░░╚═╝░░░
 OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, const void *)) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_t length = OPENCSTL_NIDX(container, -1);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
 
     (void) header_sz;
     (void) type_size;
@@ -307,7 +307,7 @@ OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, 
         return;
     }
 
-    for (size_t width = 1; width < length; width <<= 1) {
+    for (size_type64 width = 1; width < length; width <<= 1) {
         void *curr = *head;
         void *new_head = NULL;
         void *new_tail = NULL;
@@ -317,8 +317,8 @@ OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, 
             void *right = NULL;
             void *next_run = NULL;
 
-            size_t left_count = 0;
-            size_t right_count = 0;
+            size_type64 left_count = 0;
+            size_type64 right_count = 0;
 
             for (; curr != NULL && left_count < width; ++left_count) {
                 curr = (void *) OPENCSTL_NIDX(&curr, -1);
@@ -358,8 +358,8 @@ OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, 
                     new_head = pick;
                     OPENCSTL_NIDX(&pick, -2) = 0;
                 } else {
-                    OPENCSTL_NIDX(&new_tail, -1) = (size_t) pick;
-                    OPENCSTL_NIDX(&pick, -2) = (size_t) new_tail;
+                    OPENCSTL_NIDX(&new_tail, -1) = (size_type64) pick;
+                    OPENCSTL_NIDX(&pick, -2) = (size_type64) new_tail;
                 }
                 new_tail = pick;
             }
@@ -387,7 +387,7 @@ typedef struct {
     void *high;
 } __cstl_qsort_range;
 
-OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_t n) {
+OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_type64 n) {
     unsigned char buf[128];
     unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) calloc(n, 1);
     verify(tmp != NULL);
@@ -410,7 +410,7 @@ OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
     return slow;
 }
 
-OPENCSTL_FUNC void __cstl_list_median_of_three(void *low, void *high, size_t type_size,
+OPENCSTL_FUNC void __cstl_list_median_of_three(void *low, void *high, size_type64 type_size,
                                                int (*cmp)(const void *, const void *)) {
     void *mid = __cstl_list_mid_node(low, high);
     if (mid == low || mid == high) return;
@@ -420,7 +420,7 @@ OPENCSTL_FUNC void __cstl_list_median_of_three(void *low, void *high, size_t typ
     __cstl_list_swap_data(mid, high, type_size);
 }
 
-OPENCSTL_FUNC void *__cstl_list_partition(void *low, void *high, size_t type_size,
+OPENCSTL_FUNC void *__cstl_list_partition(void *low, void *high, size_type64 type_size,
                                           int (*cmp)(const void *, const void *)) {
     void *i = NULL;
     void *j = low;
@@ -441,12 +441,12 @@ OPENCSTL_FUNC void *__cstl_list_partition(void *low, void *high, size_t type_siz
 }
 
 OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, const void *)) {
-    size_t header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
-    size_t type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_t length = OPENCSTL_NIDX(container, -1);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
     (void) header_sz;
     (void) type_size;
     (void) type;
@@ -455,10 +455,10 @@ OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, 
     if (*head == NULL || *tail == NULL || length < 2) {
         return;
     }
-    size_t stack_cap = 64;
+    size_type64 stack_cap = 64;
     __cstl_qsort_range *stack = (__cstl_qsort_range *) calloc(sizeof(__cstl_qsort_range), stack_cap);
     verify(stack != NULL);
-    size_t top = 0;
+    size_type64 top = 0;
     stack[top].low = *head;
     stack[top].high = *tail;
     top++;
@@ -489,8 +489,8 @@ OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, 
                 right_hi = hi;
             }
         }
-        size_t left_cnt = 0;
-        size_t right_cnt = 0;
+        size_type64 left_cnt = 0;
+        size_type64 right_cnt = 0;
         if (left_lo != NULL) {
             void *it = left_lo;
             while (it != left_hi) {
@@ -541,7 +541,7 @@ OPENCSTL_FUNC size_type __cstl_list_max_size(void **container) {
 OPENCSTL_FUNC void __cstl_list_reverse(void **container) {
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
-    size_t length = OPENCSTL_NIDX(container, -1);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
 
     if (*head == NULL || *tail == NULL || length < 2) {
         return;
@@ -552,7 +552,7 @@ OPENCSTL_FUNC void __cstl_list_reverse(void **container) {
     while (curr != NULL) {
         void *next = (void *) OPENCSTL_NIDX(&curr, -1);
         OPENCSTL_NIDX(&curr, -1) = OPENCSTL_NIDX(&curr, -2); // next ← old prev
-        OPENCSTL_NIDX(&curr, -2) = (size_t) next; // prev ← old next
+        OPENCSTL_NIDX(&curr, -2) = (size_type64) next; // prev ← old next
         curr = next;
     }
 

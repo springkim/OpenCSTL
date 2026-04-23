@@ -75,7 +75,7 @@ typedef struct _pthread_cleanup_stack {
     void (*routine[_PTHREAD_CLEANUP_STACK_MAX])(void *);
 
     void *arg[_PTHREAD_CLEANUP_STACK_MAX];
-    size_t index;
+    size_type64 index;
     struct _pthread_cleanup_stack *next;
 } _pthread_cleanup_stack;
 

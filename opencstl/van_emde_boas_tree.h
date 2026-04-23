@@ -61,7 +61,7 @@ typedef struct {
 
 typedef struct {
     HMEntry *e;
-    size_t cap, size;
+    size_type64 cap, size;
 } HashMap;
 
 static u64 hm_hash(u64 k) {
@@ -86,19 +86,19 @@ static void hm_free(HashMap *h) {
 static void hm_set(HashMap *h, u64 key, void *val);
 
 static void hm_grow(HashMap *h) {
-    size_t oc = h->cap;
+    size_type64 oc = h->cap;
     HMEntry *oe = h->e;
     h->cap = oc * 2;
     h->e = (HMEntry *) calloc(h->cap, sizeof(HMEntry));
     h->size = 0;
-    for (size_t i = 0; i < oc; i++)
+    for (size_type64 i = 0; i < oc; i++)
         if (oe[i].used) hm_set(h, oe[i].key, oe[i].val);
     free(oe);
 }
 
 static void hm_set(HashMap *h, u64 k, void *v) {
     if (h->size * 2 >= h->cap) hm_grow(h);
-    size_t i = (size_t) (hm_hash(k) % h->cap);
+    size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used && h->e[i].key != k)
         i = (i + 1) % h->cap;
     if (!h->e[i].used) h->size++;
@@ -106,7 +106,7 @@ static void hm_set(HashMap *h, u64 k, void *v) {
 }
 
 static void *hm_get(const HashMap *h, u64 k) {
-    size_t i = (size_t) (hm_hash(k) % h->cap);
+    size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used) {
         if (h->e[i].key == k) return h->e[i].val;
         i = (i + 1) % h->cap;
@@ -115,14 +115,14 @@ static void *hm_get(const HashMap *h, u64 k) {
 }
 
 static void hm_del(HashMap *h, u64 k) {
-    size_t i = (size_t) (hm_hash(k) % h->cap);
+    size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used && h->e[i].key != k)
         i = (i + 1) % h->cap;
     if (!h->e[i].used) return;
     h->e[i].used = 0;
     h->size--;
     // 삭제 후 뒤따르는 항목들 재배치 (프로빙 체인 불변 유지)
-    size_t j = (i + 1) % h->cap;
+    size_type64 j = (i + 1) % h->cap;
     while (h->e[j].used) {
         HMEntry t = h->e[j];
         h->e[j].used = 0;
@@ -163,7 +163,7 @@ static VEB *veb_new(int bits) {
 static void veb_free(VEB *v);
 
 static void cls_free_all(HashMap *hm) {
-    for (size_t i = 0; i < hm->cap; i++)
+    for (size_type64 i = 0; i < hm->cap; i++)
         if (hm->e[i].used) veb_free((VEB *) hm->e[i].val);
     hm_free(hm);
 }
@@ -324,7 +324,7 @@ typedef struct {
     void *a; // 구간 시작 (inclusive)
     void *b; // 구간 끝   (inclusive)
     CONTAINER_TYPE ctype;
-    size_t type_size;
+    size_type64 type_size;
     char *type_name;
 } Interval;
 
@@ -353,7 +353,7 @@ HTMVEB *htm_new(void) {
 }
 
 void htm_free(HTMVEB *iv) {
-    for (size_t i = 0; i < iv->data->cap; i++)
+    for (size_type64 i = 0; i < iv->data->cap; i++)
         if (iv->data->e[i].used)
             free(iv->data->e[i].val);
     hm_free(iv->data);
@@ -406,7 +406,7 @@ IntervalVEB *iveb_new(void) {
 
 
 void iveb_free(IntervalVEB *iv) {
-    for (size_t i = 0; i < iv->data->cap; i++)
+    for (size_type64 i = 0; i < iv->data->cap; i++)
         if (iv->data->e[i].used)
             free(iv->data->e[i].val);
     hm_free(iv->data);
@@ -415,7 +415,7 @@ void iveb_free(IntervalVEB *iv) {
 }
 
 
-void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_t type_size, char *type_name) {
+void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_type64 type_size, char *type_name) {
     u64 k = (u64) (uintptr_t) a;
     Interval *it = (Interval *) hm_get(iv->data, k);
     if (!it) {
