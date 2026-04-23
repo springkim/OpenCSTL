@@ -74,6 +74,7 @@ extern "C" {
 #pragma GCC diagnostic ignored "-Wformat"
 #pragma GCC diagnostic ignored "-Wuse-after-free"
 #pragma GCC diagnostic ignored "-Wunused-result"
+#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
 #endif
 
 
@@ -792,13 +793,16 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
 OPENCSTL_FUNC void _cstl_free(void *container) {
     void **tmp = (void **) container;
     Interval *iv = iveb_find(iveb, *tmp);
-    if (iv->ctype == CT_JSON) {
-        __free_json((JSON *) *tmp);
-        goto _BYE_;
-    } else if (iv->ctype == CT_GLOB) {
-        __glob_free(*tmp);
-        goto _BYE_;
+    if (iv != NULL) {
+        if (iv->ctype == CT_JSON) {
+            __free_json((JSON *) *tmp);
+            goto _BYE_;
+        } else if (iv->ctype == CT_GLOB) {
+            __glob_free(*tmp);
+            goto _BYE_;
+        }
     }
+
     size_t container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;

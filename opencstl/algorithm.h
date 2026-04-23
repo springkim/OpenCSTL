@@ -58,6 +58,8 @@ OPENCSTL_FUNC void _cstl_fill(void *_begin, void *_end, void *_value, size_t _va
     }
 }
 
+
+
 // #define __CSTL_LOWER_BOUND_PICK(_1, _2, NAME, ...) NAME
 // #define __CSTL_LOWER_BOUND_1(a,b)    cstl_lower_bound((a),(b), NULL)
 // #define __CSTL_LOWER_BOUND_2(a,b,c) cstl_lower_bound((a), (b),(c))

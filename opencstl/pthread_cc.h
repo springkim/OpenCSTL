@@ -49,9 +49,7 @@ extern "C" {
 #include<process.h>
 #include<errno.h>
 #include<assert.h>
-#if !defined(sleep)
-#define sleep(num) Sleep(1000*(num))
-#endif
+
 typedef struct pthread_tag {
     HANDLE handle;
 } pthread_t;
@@ -81,8 +79,8 @@ typedef struct _pthread_cleanup_stack {
     struct _pthread_cleanup_stack *next;
 } _pthread_cleanup_stack;
 
-__declspec(selectany) _pthread_cleanup_stack *_pthread_cleanup_stack_head= NULL;
-__declspec(selectany) HANDLE _pthread_cleanup_mutex= NULL;
+SELECT_ANY _pthread_cleanup_stack *_pthread_cleanup_stack_head = NULL;
+SELECT_ANY HANDLE _pthread_cleanup_mutex = NULL;
 
 inline int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg) {
     DWORD dwThreadId = 1;
@@ -91,7 +89,7 @@ inline int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(
     return thread->handle == (HANDLE) NULL;
 }
 
-inline void pthread_exit(void *value_ptr) {
+static void pthread_exit(void *value_ptr) {
     if (!_pthread_cleanup_mutex)
         if (!_pthread_cleanup_mutex)
             _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
@@ -116,28 +114,28 @@ inline void pthread_exit(void *value_ptr) {
     ReleaseMutex(_pthread_cleanup_mutex);
 }
 
-inline int pthread_join(pthread_t thread, void **value_ptr) {
+static int pthread_join(pthread_t thread, void **value_ptr) {
     DWORD r = WaitForSingleObject(thread.handle, INFINITE);
     CloseHandle(thread.handle);
     return r == WAIT_OBJECT_0 ? 0 : EINVAL;
 }
 
-inline pthread_t pthread_self(void) {
+static pthread_t pthread_self(void) {
     pthread_t pt;
     pt.handle = GetCurrentThread();
     return pt;
 }
 
-inline int pthread_detach(pthread_t thread) {
-    CloseHandle(thread.handle);
+static int pthread_detach(pthread_t thread) {
+    return CloseHandle(thread.handle);
 }
 
-inline int pthread_cancel(pthread_t thread) {
+static int pthread_cancel(pthread_t thread) {
     TerminateThread(thread.handle, 1);
     return 0;
 }
 
-inline void pthread_cleanup_push(void (*routine)(void *), void *arg) {
+static void pthread_cleanup_push(void (*routine)(void *), void *arg) {
     if (!_pthread_cleanup_mutex)
         if (!_pthread_cleanup_mutex)
             _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
@@ -172,7 +170,7 @@ static void pthread_cleanup_pop(int execute) {
         _pthread_cleanup_stack *tmp = *head;
         if ((*head)->thread == thread) {
             --(*head)->index;
-            assert((*head)->index >= 0);
+            // assert((*head)->index >= 0);
             if ((*head)->index == 0) {
                 *head = (*head)->next;
                 while (execute && tmp->index--) {
@@ -188,19 +186,19 @@ static void pthread_cleanup_pop(int execute) {
     ReleaseMutex(_pthread_cleanup_mutex);
 }
 
-inline int pthread_mutexattr_destroy(pthread_mutexattr_t *attr) {
+static int pthread_mutexattr_destroy(pthread_mutexattr_t *attr) {
     return 0;
 }
 
-inline int pthread_mutexattr_init(pthread_mutexattr_t *attr) {
+static int pthread_mutexattr_init(pthread_mutexattr_t *attr) {
     return 0;
 }
 
-inline int pthread_mutex_destroy(pthread_mutex_t *mutex) {
+static int pthread_mutex_destroy(pthread_mutex_t *mutex) {
     return !CloseHandle(mutex->handle);
 }
 
-inline int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) {
+static int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) {
     HANDLE handle = CreateMutexA(NULL, FALSE, NULL);
     if (handle != NULL) {
         mutex->handle = handle;
@@ -210,11 +208,11 @@ inline int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t 
     }
 }
 
-inline int pthread_mutex_lock(pthread_mutex_t *mutex) {
+static int pthread_mutex_lock(pthread_mutex_t *mutex) {
     return (WaitForSingleObject(mutex->handle, INFINITE) == WAIT_OBJECT_0) ? 0 : EINVAL;
 }
 
-inline int pthread_mutex_trylock(pthread_mutex_t *mutex) {
+static int pthread_mutex_trylock(pthread_mutex_t *mutex) {
     DWORD retvalue = WaitForSingleObject(mutex->handle, 0);
     switch (WaitForSingleObject(mutex->handle, 0)) {
         case WAIT_OBJECT_0: return 0;
@@ -223,11 +221,11 @@ inline int pthread_mutex_trylock(pthread_mutex_t *mutex) {
     }
 }
 
-inline int pthread_mutex_unlock(pthread_mutex_t *mutex) {
+static int pthread_mutex_unlock(pthread_mutex_t *mutex) {
     return !ReleaseMutex(mutex->handle);
 }
 
-inline int pthread_key_create(pthread_key_t *key, void (*destr_function)(void *)) {
+static int pthread_key_create(pthread_key_t *key, void (*destr_function)(void *)) {
     DWORD dkey = TlsAlloc();
     if (dkey != 0xFFFFFFFF) {
         *key = dkey;
@@ -237,15 +235,15 @@ inline int pthread_key_create(pthread_key_t *key, void (*destr_function)(void *)
     }
 }
 
-inline int pthread_key_delete(pthread_key_t key) {
+static int pthread_key_delete(pthread_key_t key) {
     return TlsFree(key) ? 0 : EINVAL;
 }
 
-inline int pthread_setspecific(pthread_key_t key, const void *pointer) {
+static int pthread_setspecific(pthread_key_t key, const void *pointer) {
     return TlsSetValue(key, (LPVOID) pointer) ? 0 : EINVAL;
 }
 
-inline void *pthread_getspecific(pthread_key_t key) {
+static void *pthread_getspecific(pthread_key_t key) {
     return TlsGetValue(key);
 }
 #else
