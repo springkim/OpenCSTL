@@ -686,8 +686,9 @@ static void *_zrealloc(void *ptr, size_t new_size, char *file, char *func, int l
 #pragma clang diagnostic ignored "-Wpedantic"
 #pragma clang diagnostic ignored "-Wgnu-auto-type"
 #pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+#if !defined(OCSTL_OS_LINUX)
 #pragma clang diagnostic ignored "-Wuse-after-free"
-
+#endif
 #endif
 
 #if defined(OCSTL_CC_GCC)
@@ -700,6 +701,7 @@ static void *_zrealloc(void *ptr, size_t new_size, char *file, char *func, int l
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wformat"
 #pragma GCC diagnostic ignored "-Wuse-after-free"
+#pragma GCC diagnostic ignored "-Wunused-result"
 #endif
 
 
@@ -1553,6 +1555,8 @@ typedef enum CONTAINER_TYPE {
     CT_MAP,
     CT_UNORDERED_SET,
     CT_UNORDERED_MAP,
+    CT_JSON,
+    CT_GLOB
 } CONTAINER_TYPE;
 
 typedef struct {
@@ -2649,11 +2653,6 @@ void swap(void *a, void *b, size_t sz) {
     if (a == NULL || b == NULL || a == b || sz == 0) {
         return;
     }
-
-    /*
-     * 작은 크기는 stack buffer 사용
-     * 큰 크기는 byte-wise swap (malloc 없이)
-     */
     if (sz <= SWAP_STACK_BUF_SIZE) {
         tmp = stack_buf;
 
@@ -6690,7 +6689,7 @@ RANDOM mt19937 = {
 // ==============================================================================
 
 // ==============================================================================
-// BEGIN  chrono.h                       (depth 1)
+// BEGIN  ttime.h                        (depth 1)
 // ==============================================================================
 
 //
@@ -6731,25 +6730,20 @@ RANDOM mt19937 = {
 //
 #if !defined(_OPENCSTL_CSTL_TICKTOCK_H)
 #define _OPENCSTL_CSTL_TICKTOCK_H
+
+
 #include <stdio.h>
+
 
 #if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
 
 #include <windows.h>
 
-typedef LARGE_INTEGER watch;
-
-static watch _now() {
-    watch t;
-    QueryPerformanceCounter(&t);
-    return t;
-}
-
-static double _duration(const watch t_beg, const watch t_end) {
-    LARGE_INTEGER freq;
+static double ttime(void) {
+    LARGE_INTEGER freq, counter;
     QueryPerformanceFrequency(&freq);
-    double ms = (double) (t_end.QuadPart - t_beg.QuadPart) * 1000.0 / (double) freq.QuadPart;
-    return ms > 0 ? ms : -ms;
+    QueryPerformanceCounter(&counter);
+    return (double) counter.QuadPart * 1000.0 / (double) freq.QuadPart;
 }
 
 #elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
@@ -6757,41 +6751,21 @@ static double _duration(const watch t_beg, const watch t_end) {
 #include <sys/time.h>
 #include <time.h>
 
-typedef struct timeval watch;
-
-static watch _now(void) {
-    watch tv;
+static double ttime(void) {
+    struct timeval tv;
     gettimeofday(&tv, NULL);
-    return tv;
+    return (double) tv.tv_sec * 1000.0 + (double) tv.tv_usec / 1000.0;
 }
-
-static double _duration(const watch t_beg, const watch t_end) {
-    double ms = (t_end.tv_sec - t_beg.tv_sec) * 1000.0 +
-                (t_end.tv_usec - t_beg.tv_usec) / 1000.0;
-    return ms > 0 ? ms : -ms;
-}
-
 
 #else
 #error Unsupported compiler/platform
 #endif
-typedef watch (*now_fn)(void);
 
-typedef double (*duration_fn)(const watch, const watch);
 
-typedef struct {
-    now_fn now;
-    duration_fn duration;
-} CHRONO;
-
-static CHRONO chrono = {
-    _now,
-    _duration,
-};
 #endif
 
 // ==============================================================================
-// END    chrono.h
+// END    ttime.h
 // ==============================================================================
 
 // ==============================================================================
@@ -7506,8 +7480,9 @@ static void isort(void *base, size_t number, size_t width, CSTL_COMPARE compare)
             memcpy(arr + lo * width, tmp, width);
         }
     }
-    if (tmp != sbuf)
+    if (tmp != sbuf) {
         free(tmp);
+    }
 }
 
 #endif
@@ -8577,6 +8552,7 @@ inline void *pthread_getspecific(pthread_key_t key) {
 #include <stdlib.h>
 #include <string.h>
 // [already included: msort.h]
+// [already included: types.h]
 #ifndef PS_MAX_DEPTH
 #define PS_MAX_DEPTH 4
 #endif
@@ -8585,19 +8561,19 @@ inline void *pthread_getspecific(pthread_key_t key) {
 #define PS_SEQ_CUTOFF 4096
 #endif
 
-typedef int (*ps_cmp_t)(const void *, const void *);
+
 
 struct ps_args {
     char *base;
     char *buf;
     size_t n;
     size_t sz;
-    ps_cmp_t cmp;
+    CSTL_COMPARE cmp;
     int depth;
 };
 
 static void ps_merge(char *base, char *buf, size_t n1, size_t n2,
-                     size_t sz, ps_cmp_t cmp) {
+                     size_t sz, CSTL_COMPARE cmp) {
     char *l = base;
     char *r = base + n1 * sz;
     char *l_end = r;
@@ -9284,7 +9260,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 // [already included: crossplatform.h]
-static char *OPENCSTL_VERSION = "v1.2.9";
+static char *OPENCSTL_VERSION = "v1.3.0";
 
 static char *opencstl_version(void) {
     return OPENCSTL_VERSION;
@@ -9669,6 +9645,7 @@ static __BITSET bitset = {
 #include <stdbool.h>
 #include <ctype.h>
 // [already included: crossplatform.h]
+// [already included: van_emde_boas_tree.h]
 
 #if defined(OCSTL_OS_WINDOWS)
 #include <windows.h>
@@ -9746,7 +9723,10 @@ static char **__cstl_glob_listdir_(const char *path, int *n_out) {
     if (h == INVALID_HANDLE_VALUE) return names;
     do {
         if (strcmp(data.cFileName, ".") == 0 || strcmp(data.cFileName, "..") == 0) continue;
-        if (cnt >= cap) { cap *= 2; names = (char **) realloc(names, cap * sizeof(char *)); }
+        if (cnt >= cap) {
+            cap *= 2;
+            names = (char **) realloc(names, cap * sizeof(char *));
+        }
         size_t nl = strlen(data.cFileName);
         names[cnt] = (char *) malloc(nl + 1);
         memcpy(names[cnt], data.cFileName, nl + 1);
@@ -9759,7 +9739,10 @@ static char **__cstl_glob_listdir_(const char *path, int *n_out) {
     struct dirent *e;
     while ((e = readdir(d))) {
         if (strcmp(e->d_name, ".") == 0 || strcmp(e->d_name, "..") == 0) continue;
-        if (cnt >= cap) { cap *= 2; names = (char **) realloc(names, cap * sizeof(char *)); }
+        if (cnt >= cap) {
+            cap *= 2;
+            names = (char **) realloc(names, cap * sizeof(char *));
+        }
         size_t nl = strlen(e->d_name);
         names[cnt] = (char *) malloc(nl + 1);
         memcpy(names[cnt], e->d_name, nl + 1);
@@ -9790,11 +9773,15 @@ static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
         if (!*name) return false;
 
         if (*pat == '?') {
-            pat++; name++;
+            pat++;
+            name++;
         } else if (*pat == '[') {
             const char *p = pat + 1;
             bool negate = false;
-            if (*p == '!' || *p == '^') { negate = true; p++; }
+            if (*p == '!' || *p == '^') {
+                negate = true;
+                p++;
+            }
             bool matched = false;
             if (*p == ']') {
                 if (*name == ']') matched = true;
@@ -9817,7 +9804,8 @@ static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
             name++;
         } else {
             if (*pat != *name) return false;
-            pat++; name++;
+            pat++;
+            name++;
         }
     }
     return !*name;
@@ -9844,29 +9832,38 @@ static void __cstl_glob_parse_(const char *pat,
     if (plen >= 2 && isalpha((unsigned char) pat[0]) && pat[1] == ':') {
         if (plen >= 3 && __cstl_glob_is_sep(pat[2])) {
             base = (char *) malloc(4);
-            base[0] = pat[0]; base[1] = ':'; base[2] = '/'; base[3] = '\0';
+            base[0] = pat[0];
+            base[1] = ':';
+            base[2] = '/';
+            base[3] = '\0';
             rest = pat + 3;
         } else {
             base = (char *) malloc(3);
-            base[0] = pat[0]; base[1] = ':'; base[2] = '\0';
+            base[0] = pat[0];
+            base[1] = ':';
+            base[2] = '\0';
             rest = pat + 2;
         }
     } else if (plen >= 1 && __cstl_glob_is_sep(pat[0])) {
         base = (char *) malloc(2);
-        base[0] = '/'; base[1] = '\0';
+        base[0] = '/';
+        base[1] = '\0';
         rest = pat + 1;
     } else {
         base = (char *) malloc(2);
-        base[0] = '.'; base[1] = '\0';
+        base[0] = '.';
+        base[1] = '\0';
     }
 #else
     if (plen >= 1 && pat[0] == '/') {
         base = (char *) malloc(2);
-        base[0] = '/'; base[1] = '\0';
+        base[0] = '/';
+        base[1] = '\0';
         rest = pat + 1;
     } else {
         base = (char *) malloc(2);
-        base[0] = '.'; base[1] = '\0';
+        base[0] = '.';
+        base[1] = '\0';
     }
 #endif
 
@@ -9878,7 +9875,10 @@ static void __cstl_glob_parse_(const char *pat,
         if (__cstl_glob_is_sep(*p) || *p == '\0') {
             size_t sl = (size_t) (p - start);
             if (sl > 0) {
-                if (n >= cap) { cap *= 2; segs = (char **) realloc(segs, cap * sizeof(char *)); }
+                if (n >= cap) {
+                    cap *= 2;
+                    segs = (char **) realloc(segs, cap * sizeof(char *));
+                }
                 segs[n] = (char *) malloc(sl + 1);
                 memcpy(segs[n], start, sl);
                 segs[n][sl] = '\0';
@@ -10018,12 +10018,22 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
             memmove(s, s + 2, l - 1); // includes '\0'
         }
     }
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, r.items, r.items, CT_GLOB, 0, "glob");
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return r.items;
 }
 
-static void glob_free(char **results) {
+static void __glob_free(char **results) {
     if (!results) return;
     for (char **p = results; *p; p++) free(*p);
+    iveb_erase(iveb,results);
     free(results);
 }
 
@@ -10034,6 +10044,7 @@ static void glob_free(char **results) {
 #define glob(...) __CSTL_GLOB_PICK(__VA_ARGS__, __CSTL_GLOB_2, __CSTL_GLOB_1)(__VA_ARGS__)
 
 #endif // OPENCSTL_GLOB_H
+
 // ==============================================================================
 // END    glob.h
 // ==============================================================================
@@ -10239,6 +10250,7 @@ case IDIGNORE: break; // 무시
 #include <string.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <signal.h>
 struct lang_labels {
     const char *prefix; // LANG의 앞 2글자
     const char *abort_s;
@@ -10388,7 +10400,12 @@ static void MsgBoxGUI(const char *format, ...) {
         case IDABORT: fprintf(stderr, "abort\n");
             _exit(3);
         case IDRETRY: fprintf(stderr, "retry\n");
+#if defined(OCSTL_CC_TCC)
+            raise(SIGTRAP); // = DebugBreak (TCC: no __builtin_trap)
+#else
             __builtin_trap(); // = DebugBreak
+#endif
+            break;
         case IDIGNORE: fprintf(stderr, "ignore\n");
             break;
     }
@@ -10452,7 +10469,8 @@ static void MsgBoxGUI(const char *format, ...) {
 #include<string.h>
 #include<ctype.h>
 #include<stdbool.h>
-#if defined(OCSTL_CC_TCC)
+// [already included: van_emde_boas_tree.h]
+#if defined(OCSTL_CC_TCC) || defined(OCSTL_OS_LINUX)
 // TCC는 strtok_s / strtok_r 둘 다 없으니 직접 구현
 char *strtok_s(char *str, char *delimiters, char **last) {
     if (!delimiters || !last) return NULL;
@@ -10726,6 +10744,15 @@ JSON_TOKEN *__parse(char *json_str) {
     JSON_TOKEN *root = (JSON_TOKEN *) calloc(1, sizeof(JSON_TOKEN));
     memset(root, 0, sizeof(JSON_TOKEN));
     __parse_value(json_str, root);
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, root, root, CT_JSON, 0, "json");
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return root;
 }
 
@@ -10790,6 +10817,7 @@ static void __free_subtree(JSON_TOKEN *node) {
 
 void __free_json(JSON *root) {
     if (!root) return;
+    iveb_erase(iveb, root);
     JSON_TOKEN *c = root->children;
     while (c) {
         JSON_TOKEN *nx = c->next;
@@ -10823,10 +10851,10 @@ typedef struct JSON_CLASS {
 
     void (*dumps)(JSON *root);
 
-    void (*delete)(JSON *root);
+    //void (*delete)(JSON *root);
 } JSON_CLASS;
 
-JSON_CLASS json = {__parse, __get, _dumps, __free_json};
+JSON_CLASS json = {__parse, __get, _dumps};
 #endif //OPENCSTL_JSON_H
 
 // ==============================================================================
@@ -10897,6 +10925,7 @@ JSON_CLASS json = {__parse, __get, _dumps, __free_json};
 
 
 #endif
+
 
 // [already included: types.h]
 // [already included: verify.h]
@@ -11507,6 +11536,15 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
 }
 
 OPENCSTL_FUNC void _cstl_free(void *container) {
+    void **tmp = (void **) container;
+    Interval *iv = iveb_find(iveb, *tmp);
+    if (iv->ctype == CT_JSON) {
+        __free_json((JSON *) *tmp);
+        goto _BYE_;
+    } else if (iv->ctype == CT_GLOB) {
+        __glob_free(*tmp);
+        goto _BYE_;
+    }
     size_t container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -11546,6 +11584,8 @@ OPENCSTL_FUNC void _cstl_free(void *container) {
         default: yikes("Invalid operation");
             break;
     }
+_BYE_:
+    return;
 }
 
 OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
@@ -11657,43 +11697,6 @@ OPENCSTL_FUNC void _cstl_reverse(void *container) {
     }
 }
 
-// OPENCSTL_FUNC void ___cstl_sort(void *container, int argc, ...) {
-//     va_list vl;
-//     void *va_ptr = NULL;
-//     __cstl_va_start(vl, argc, va_ptr);
-// #if CSTL_USE_VAARG
-//     void *param1 = __cstl_va_arg_next(vl);
-//     void *param2 = __cstl_va_arg_next(vl);
-// #else
-//     void *param1 = __cstl_va_arg(va_ptr);
-//     void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
-// #endif
-//
-//
-//     size_t container_type;
-//     if (__is_deque((void **) container)) {
-//         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-//         container_type = *(size_t *) ((char *) *(void **) container + NIDX_CTYPE * sizeof(size_t) + distance);
-//     } else {
-//         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
-//     }
-//     switch (container_type) {
-//         case OPENCSTL_LIST: {
-//             if (argc == 1) {
-// #if CSTL_USE_VAARG
-//                 __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) param1);
-// #else
-//                 __cstl_list_qsort((void **) container, (int (*)(const void *, const void *)) *(void **) param1);
-// #endif
-//             }
-//         }
-//         break;
-//
-//         default: verify("Invalid operator");
-//             break;
-//     }
-//     __cstl_va_end(vl);
-// }
 
 #if defined(__linux__) || defined(__APPLE__)
 // #if !defined(__8cc__ )
@@ -11703,9 +11706,14 @@ OPENCSTL_FUNC void _cstl_reverse(void *container) {
 
 #if defined(OCSTL_CC_CLANG)
 #pragma clang diagnostic pop
+
+
+#if !defined(OCSTL_CC_CLANG)
 #pragma clang diagnostic ignored "-Wgnu-auto-type"
+
 #pragma clang diagnostic ignored "-Wgnu-statement-expression-from-macro-expansion"
 #pragma clang diagnostic ignored "-Wvariadic-macro-arguments-omitted"
+#endif
 #endif
 #if defined(OCSTL_CC_GCC)
 #pragma GCC diagnostic pop

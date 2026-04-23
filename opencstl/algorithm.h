@@ -43,6 +43,7 @@
 #include "compare.h"
 #include "iterator.h"
 #include "van_emde_boas_tree.h"
+#include "types.h"
 
 bool is_even(void *it) {
     return true;
@@ -56,6 +57,14 @@ OPENCSTL_FUNC void _cstl_fill(void *_begin, void *_end, void *_value, size_t _va
         it = cstl_next(it);
     }
 }
+
+// #define __CSTL_LOWER_BOUND_PICK(_1, _2, NAME, ...) NAME
+// #define __CSTL_LOWER_BOUND_1(a,b)    cstl_lower_bound((a),(b), NULL)
+// #define __CSTL_LOWER_BOUND_2(a,b,c) cstl_lower_bound((a), (b),(c))
+// #define lower_bound(...) __CSTL_LOWER_BOUND_PICK(__VA_ARGS__, __CSTL_LOWER_BOUND_2, __CSTL_LOWER_BOUND_1)(__VA_ARGS__)
+//
+// OPENCSTL_FUNC void cstl_lower_bound(void *_begin, void *_end, _OpenCSTLCompareFunc _cmp) {
+// }
 
 // ███╗░░░███╗██╗███╗░░██╗░░░░░░░░░░░██╗░░░░░░░███╗░░░███╗░█████╗░██╗░░██╗
 // ████╗░████║██║████╗░██║░░░░░░░░░░██╔╝░░░░░░░████╗░████║██╔══██╗╚██╗██╔╝
