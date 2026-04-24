@@ -14,7 +14,7 @@ Same `push_back`, `insert`, `begin`/`end`, same semantics.
 Header-only, no templates, no per-type macro dance.
 
 ```c
-#include <opencstl/opencstl.h>
+#include "opencstl.h"
 
 VECTOR(int) v = new_vector(int);
 push_back(v, 1);
@@ -347,8 +347,15 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
     <img width="96" height="96" src="assets/MSVC2026.png" >
     <img width="96" height="96" src="assets/MinGW64.png" >
     <img width="96" height="96" src="assets/LLVM.png" >
-    <img width="96" height="96" src="assets/GNU.png" >
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/GNU_dark.png">
+    <img alt="GNU" src="assets/GNU_light.png" height="96">
+  </picture>
     <img width="96" height="96" src="assets/tcc.png" >
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/zigcc_dark.png">
+    <img alt="GNU" src="assets/zigcc_light.png" height="96">
+  </picture>
 </p>
 
 | Compiler | Windows | macOS | Linux |
@@ -358,6 +365,7 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
 | LLVM (clang) | ✅ | ✅ | ✅ |
 | Intel (icx-cc) | ✅ | ❌ | ✅ |
 | Tiny C Compiler  (tcc) | ✅ | ✅ | ✅ |
+| zig cc | ✅ | ✅ | ✅ |
 
 ## Document
 

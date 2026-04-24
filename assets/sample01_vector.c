@@ -5,8 +5,8 @@ int main() {
     for (int i = 100; i > 0; i--) {
         push_back(v, i);
     }
-    qsort(v, size(v), sizeof(int), LESS(int));
-    for (int *it = begin(v); it != end(v); it++) {
+    sort(v, LESS(int));
+    for (int *it = begin(v); it != end(v); it = next(it)) {
         printf("%d\n", *it);
     }
     destroy(v);

@@ -29,7 +29,7 @@ add_executable(test_fstream test_fstream.c)
 add_executable(test_logging test_logging.c)
 add_executable(test_string test_string.c)
 
-if(MSVC)
+if (MSVC)
     # MSVC: /O2 + 전체 프로그램 최적화 + AVX2 + fast math
     target_compile_options(bench_sort PRIVATE
             /O2         # 최고 속도 최적화
@@ -45,11 +45,11 @@ if(MSVC)
     # /GL 사용 시 링커에도 /LTCG 필요
     target_link_options(bench_sort PRIVATE /LTCG)
 
-elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
+elseif (CMAKE_C_COMPILER_ID MATCHES "Clang")
     # Clang (Linux, macOS, Windows clang-cl 제외)
     target_compile_options(bench_sort PRIVATE
             -O3
-            -march=native       # 현재 CPU 전용 (배포용이 아니면 OK)
+            #-march=native       # 현재 CPU 전용 (배포용이 아니면 OK)
             -flto=thin          # ThinLTO (Clang이 GCC보다 빠름)
             -funroll-loops
             -fomit-frame-pointer
@@ -57,12 +57,12 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
     )
     target_link_options(bench_sort PRIVATE -flto=thin)
 
-elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU")
     # GCC / MinGW-w64
     target_compile_options(bench_sort PRIVATE
             -O3
-            -march=native       # 로컬 CPU에 맞춤
-            -mtune=native
+            #-march=native       # 로컬 CPU에 맞춤
+            #-mtune=native
             -flto               # Link-Time Optimization
             -funroll-loops      # 루프 언롤링
             -fno-plt            # PLT 간접 호출 제거 (Linux에서 유의미)
@@ -73,10 +73,10 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_link_options(bench_sort PRIVATE -flto)
 
     # MinGW에서 종종 필요한 링커 옵션
-    if(MINGW)
+    if (MINGW)
         target_link_options(bench_sort PRIVATE
                 -static-libgcc
                 -Wl,--gc-sections   # 미사용 섹션 제거
         )
-    endif()
-endif()
+    endif ()
+endif ()
