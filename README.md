@@ -1,5 +1,8 @@
 <p align="center">
-  <img width="1024" src="assets/blogo.png">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="assets/blogo_dark.png">
+        <img alt="FlashTokenizer" src="assets/blogo_light.png" width=100%>
+      </picture>
 </p>
 
 
