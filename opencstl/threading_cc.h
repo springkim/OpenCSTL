@@ -36,26 +36,16 @@
 
 #ifndef OPENCSTL_THREADING_CC_H
 #define OPENCSTL_THREADING_CC_H
-
-// _GNU_SOURCE는 반드시 모든 include보다 먼저
-#if defined(__linux__)
-#define _GNU_SOURCE
-#endif
-
 #include <stdint.h>
 #include "crossplatform.h"
-
 #if defined(OCSTL_OS_WINDOWS)
 #include <windows.h>
 #elif defined(OCSTL_OS_MACOS)
 #include <sys/sysctl.h>
-#include <mach/mach.h>
-#include <mach/mach_time.h>
-#include <mach/thread_policy.h>
 #else
 #include <unistd.h>
-#include <sched.h>   // CPU_ZERO, CPU_SET, sched_setaffinity
 #endif
+
 static int cpu_count(void) {
 #if defined(OCSTL_OS_WINDOWS)
     SYSTEM_INFO si;
@@ -119,6 +109,17 @@ static int cpu_count(void) {
 #endif
 }
 
+#if defined(OCSTL_OS_WINDOWS)
+#include <windows.h>
+#elif defined(OCSTL_OS_LINUX)
+#undef GNU_SOURCE
+#define _GNU_SOURCE
+#include <sched.h>
+#elif defined(OCSTL_OS_MACOS)
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#include <mach/thread_policy.h>
+#endif
 
 static void cpu_pin(void) {
 #if defined(OCSTL_OS_WINDOWS)
