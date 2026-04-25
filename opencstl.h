@@ -12,6 +12,12 @@
 #ifndef _OPENCSTL_AMALGAMATED_H
 #define _OPENCSTL_AMALGAMATED_H
 
+// ── System includes — unconditional, deduplicated ─────────────────────
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+
 
 // ==============================================================================
 // BEGIN  opencstl.h                     (depth 0)
@@ -201,6 +207,181 @@ extern "C" {
 // ==============================================================================
 // END    crossplatform.h
 // ==============================================================================
+
+// ==============================================================================
+// BEGIN  threading_cc.h                 (depth 1)
+// ==============================================================================
+
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+
+#ifndef OPENCSTL_THREADING_CC_H
+#define OPENCSTL_THREADING_CC_H
+#include <stdint.h>
+// [already included: crossplatform.h]
+#if defined(OCSTL_OS_WINDOWS)
+#include <windows.h>
+#elif defined(OCSTL_OS_MACOS)
+#include <sys/sysctl.h>
+#else
+#include <unistd.h>
+#endif
+
+static int cpu_count(void) {
+#if defined(OCSTL_OS_WINDOWS)
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    return (int) si.dwNumberOfProcessors;
+
+#elif defined(OCSTL_OS_MACOS)
+    int count = 0;
+    size_t size = sizeof(count);
+    // hw.logicalcpu: 하이퍼스레딩 포함 논리 코어
+    // hw.physicalcpu: 물리 코어만
+    sysctlbyname("hw.logicalcpu", &count, &size, NULL, 0);
+    return count;
+
+#else
+    int cpu_threads = 0;
+    int siblings = 0;
+    int cpu_cores = 0;
+    int got_sib = 0;
+    int got_cor = 0;
+
+    FILE *f = fopen("/proc/cpuinfo", "r");
+    if (f) {
+        char line[128];
+        while (fgets(line, sizeof(line), f)) {
+            if (strncmp(line, "processor", 9) == 0) {
+                cpu_threads++;
+            }
+            // siblings, cpu cores는 첫 번째 값만 읽으면 충분
+            if (!got_sib && strncmp(line, "siblings", 8) == 0) {
+                char *colon = strchr(line, ':');
+                if (colon) {
+                    siblings = atoi(colon + 1);
+                    got_sib = 1;
+                }
+            }
+            if (!got_cor && strncmp(line, "cpu cores", 9) == 0) {
+                char *colon = strchr(line, ':');
+                if (colon) {
+                    cpu_cores = atoi(colon + 1);
+                    got_cor = 1;
+                }
+            }
+        }
+        fclose(f);
+    }
+
+    int hyper_threading = (got_sib && got_cor && cpu_cores > 0)
+                              ? (siblings == cpu_cores * 2)
+                              : 0;
+    if (hyper_threading) {
+        cpu_threads *= 2;
+    }
+    // fallback
+    if (cpu_threads <= 0) {
+        long n = sysconf(_SC_NPROCESSORS_ONLN);
+        cpu_threads = n > 0 ? (int) n : 1;
+    }
+
+    return cpu_threads;
+#endif
+}
+
+#if defined(OCSTL_OS_WINDOWS)
+#include <windows.h>
+#elif defined(OCSTL_OS_LINUX)
+#include <sys/syscall.h>
+#include <unistd.h>
+#elif defined(OCSTL_OS_MACOS)
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#include <mach/thread_policy.h>
+#endif
+
+static void cpu_pin(void) {
+#if defined(OCSTL_OS_WINDOWS)
+    SetThreadAffinityMask(GetCurrentThread(), (DWORD_PTR) 1 << 0);
+
+#elif defined(OCSTL_OS_LINUX)
+    /* cpu_set_t cpuset; CPU_ZERO(&cpuset); CPU_SET(0, &cpuset);
+     * sched_setaffinity(0, sizeof(cpu_set_t), &cpuset);
+     * 위 매크로/함수는 _GNU_SOURCE에 의존하므로 비트마스크와 syscall로 직접 풀어 작성 */
+    unsigned long cpuset = 0UL;   /* CPU_ZERO(&cpuset) */
+    cpuset |= 1UL << 0;           /* CPU_SET(0, &cpuset) */
+    syscall(SYS_sched_setaffinity, 0, sizeof(cpuset), &cpuset);
+
+#elif defined(OCSTL_OS_MACOS)
+    // 코어 친화성 힌트
+    thread_affinity_policy_data_t affinity = {1};
+    thread_policy_set(
+        mach_thread_self(),
+        THREAD_AFFINITY_POLICY,
+        (thread_policy_t) & affinity,
+        THREAD_AFFINITY_POLICY_COUNT
+    );
+
+    mach_timebase_info_data_t tb;
+    mach_timebase_info(&tb);
+
+#define NS_TO_MACH(ns) ((uint64_t)(ns) * tb.denom / tb.numer)
+
+    thread_time_constraint_policy_data_t rt;
+    rt.period = 0; // 비주기적 — 벤치마크는 한 번 길게 돌림
+    rt.computation = NS_TO_MACH(500000000); // 50ms — 정렬 한 회 실행 예산
+    rt.constraint = NS_TO_MACH(500000000); // computation과 동일하게
+    rt.preemptible = 0; // 비선점 — 중간에 끊기지 않도록
+
+    thread_policy_set(
+        mach_thread_self(),
+        THREAD_TIME_CONSTRAINT_POLICY,
+        (thread_policy_t) & rt,
+        THREAD_TIME_CONSTRAINT_POLICY_COUNT
+    );
+
+#undef NS_TO_MACH
+#endif
+}
+#endif //OPENCSTL_THREADING_CC_H
+
+// ==============================================================================
+// END    threading_cc.h
+// ==============================================================================
 #if defined(OCSTL_CC_MSVC)
 #pragma warning(disable:4819)
 #endif
@@ -218,6 +399,12 @@ extern "C" {
 
 #pragma clang diagnostic ignored "-Wnonnull"
 #pragma clang diagnostic ignored "-Wcast-function-type-mismatch"
+
+// -Wgnu-statement-expression-from-macro-expansion
+
+#ifdef OCSTL_OS_MACOS
+#pragma clang diagnostic ignored "-Wgnu-statement-expression-from-macro-expansion"
+#endif
 
 #if !defined(OCSTL_OS_LINUX) && !defined(OCSTL_OS_WINDOWS)
 #pragma clang diagnostic ignored "-Wuse-after-free"
@@ -1512,7 +1699,40 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 // ==============================================================================
 
 //
-// Created by spring on 4/15/2026.
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
 //
 
 #ifndef OPENCSTL_VERIFY_H
@@ -1522,7 +1742,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 
 #define verify(EXPR) do { if(!(EXPR)) __verify(#EXPR,__FILE__,__LINE__); } while(0)
 
-int __verify(char *expression, char *file, int line) {
+static int __verify(char *expression, char *file, int line) {
     logging.error("Verification failed: %s, file %s, line %d",
                   expression, file, line);
     fflush(stdout);
@@ -1530,10 +1750,10 @@ int __verify(char *expression, char *file, int line) {
     abort();
 }
 
-#define fault(STR) _yikes(STR,__FILE__,__LINE__)
+#define fault(STR) do{_fault((STR),__FILE__,__LINE__);}while(0)
 
-void _yikes(char *str, char *file, int line) {
-    logging.error("Mistake failed: %s, file %s, line %d",str,file,line);
+static void _fault(char *str, char *file, int line) {
+    logging.error("Fault: %s, file %s, line %d", str, file, line);
     fflush(stdout);
     fflush(stderr);
     exit(-1);
@@ -4786,10 +5006,12 @@ OPENCSTL_FUNC void *__cstl_deque_upper_bound(void **container, void *value, CSTL
 #define OPENCSTL_SWAP_H
 #include <stddef.h>
 #include <string.h>
-
+// [already included: crossplatform.h]
+#include <stdint.h>
 #define SWAP_STACK_BUF_SIZE 256
 
-void swap(void *a, void *b, size_type64 sz) {
+
+static void swap(void *a, void *b, size_type64 sz) {
     unsigned char stack_buf[SWAP_STACK_BUF_SIZE];
     unsigned char *tmp;
     size_type64 i;
@@ -7457,7 +7679,40 @@ void *__cstl_unordered_map(size_type64 key_size, size_type64 value_size,
 // ==============================================================================
 
 //
-// Created by spring on 4/25/2026.
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
 //
 #ifndef OPENCSTL_ARRAY_H
 #define OPENCSTL_ARRAY_H
@@ -7469,13 +7724,20 @@ void *__cstl_unordered_map(size_type64 key_size, size_type64 value_size,
 // [already included: defines.h]
 // [already included: verify.h]
 
+// ░█████╗░██████╗░██████╗░░█████╗░██╗░░░██╗
+// ██╔══██╗██╔══██╗██╔══██╗██╔══██╗╚██╗░██╔╝
+// ███████║██████╔╝██████╔╝███████║░╚████╔╝░
+// ██╔══██║██╔══██╗██╔══██╗██╔══██║░░╚██╔╝░░
+// ██║░░██║██║░░██║██║░░██║██║░░██║░░░██║░░░
+// ╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░╚═╝░░░╚═╝░░░
+
 #define cstl_array(TYPE,COUNT)	__cstl_array(sizeof(TYPE),#TYPE,COUNT)
 OPENCSTL_FUNC void *__cstl_array(size_type64 type_size, char *type, size_type64 _count) {
     verify(_count !=0);
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *block = galloc(header_sz + (type_size * _count), type_size);
     if (block == NULL) {
-        //yikes("Failed to allocate memory for array");
+        fault("Failed to allocate memory for array");
         return NULL;
     }
     void *ptr = ((char *) block) + header_sz;
@@ -7584,6 +7846,126 @@ OPENCSTL_FUNC void __cstl_array_reverse(void **container) {
         idx++;
         idx_r--;
     }
+}
+
+// ░█████╗░██╗░░░░░░██████╗░░█████╗░██████╗░██╗████████╗██╗░░██╗███╗░░░███╗
+// ██╔══██╗██║░░░░░██╔════╝░██╔══██╗██╔══██╗██║╚══██╔══╝██║░░██║████╗░████║
+// ███████║██║░░░░░██║░░██╗░██║░░██║██████╔╝██║░░░██║░░░███████║██╔████╔██║
+// ██╔══██║██║░░░░░██║░░╚██╗██║░░██║██╔══██╗██║░░░██║░░░██╔══██║██║╚██╔╝██║
+// ██║░░██║███████╗╚██████╔╝╚█████╔╝██║░░██║██║░░░██║░░░██║░░██║██║░╚═╝░██║
+// ╚═╝░░╚═╝╚══════╝░╚═════╝░░╚════╝░╚═╝░░╚═╝╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░░░░╚═╝
+
+OPENCSTL_FUNC size_type64 __cstl_array_count(void **container, void *value) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
+    size_type64 cnt = 0;
+    for (int i = 0; i < length; i++) {
+        void *ptr = ((char *) *container) + (type_size * i);
+        if (is_equal(ptr, value, type_size) == 0) {
+            cnt++;
+        }
+    }
+    return cnt;
+}
+
+OPENCSTL_FUNC size_type64 __cstl_array_count_if(void **container, CSTL_COND cond) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+
+    size_type64 cnt = 0;
+    for (int i = 0; i < length; i++) {
+        void *ptr = ((char *) *container) + (type_size * i);
+        if (cond(ptr)) {
+            cnt++;
+        }
+    }
+    return cnt;
+}
+
+
+OPENCSTL_FUNC void *__cstl_array_lower_bound(void **container, void *value, CSTL_COMPARE compare) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+
+    if (length == 0) return NULL;
+
+    size_type64 L = 0;
+    size_type64 R = length;
+
+    while (L < R) {
+        size_type64 M = L + (R - L) / 2;
+        void *Mptr = ((char *) *container) + (type_size * M);
+
+        if (compare(Mptr, value) < 0)
+            L = M + 1;
+        else
+            R = M;
+    }
+    if (L >= length) return NULL;
+    return ((char *) *container) + (type_size * L);
+}
+
+OPENCSTL_FUNC void *__cstl_array_upper_bound(void **container, void *value, CSTL_COMPARE compare) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+
+    if (length == 0) return NULL;
+
+    size_type64 L = 0;
+    size_type64 R = length;
+
+    while (L < R) {
+        size_type64 M = L + (R - L) / 2;
+        void *Mptr = ((char *) *container) + (type_size * M);
+
+        if (compare(value, Mptr) < 0)
+            R = M;
+        else
+            L = M + 1;
+    }
+    if (L >= length) return NULL;
+    return ((char *) *container) + (type_size * L);
 }
 #endif //OPENCSTL_ARRAY_H
 
@@ -10186,6 +10568,7 @@ static void tsort(void *base, const size_type64 number, const size_type64 width,
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+// [already included: swap.h]
 #define PDQ_ISORT_THRESH      24
 #define PDQ_NINTHER_THRESH   128
 #define PDQ_PARTIAL_LIMIT      8
@@ -10200,7 +10583,7 @@ static void tsort(void *base, const size_type64 number, const size_type64 width,
 #define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
 #endif
 
-static inline void pdq__swap(unsigned char *a, unsigned char *b, size_type64 n) {
+static  void pdq__swap(unsigned char *a, unsigned char *b, size_type64 n) {
     if (PDQ_LIKELY(n == 8)) {
         uint64_t t;
         memcpy(&t, a, 8);
@@ -10236,8 +10619,9 @@ static void pdq_isort(unsigned char *base, size_type64 n, size_type64 sz,
                       int (*cmp)(const void *, const void *), unsigned char *tmp) {
     if (n < 2) return;
     for (size_type64 i = 1; i < n; ++i)
-        if (cmp(PDQ_ELEM(base, i), base) < 0)
+        if (cmp(PDQ_ELEM(base, i), base) < 0) {
             pdq__swap(PDQ_ELEM(base, i), base, sz);
+        }
     for (size_type64 i = 2; i < n; ++i) {
         unsigned char *c = PDQ_ELEM(base, i);
         if (cmp(c - sz, c) <= 0) continue;
@@ -11329,11 +11713,11 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
 #elif defined(__linux__) || defined(__APPLE__)
 
 // TCC supports typeof but not __auto_type; GCC/Clang support both.
-#if defined(__TINYC__)
-#define _CSTL_TYPEOF(x) typeof(x)
-#else
-#define _CSTL_TYPEOF(x) __auto_type
-#endif
+// #if defined(__TINYC__)
+// #define _CSTL_TYPEOF(x) typeof(x)
+// #else
+// #define _CSTL_TYPEOF(x) __auto_type
+// #endif
 
 #define cstl_sort(C,...) _linux_cstl_sort(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
 #define _linux_cstl_sort(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_sort ## _ ## N
@@ -11523,14 +11907,14 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
 #if !defined(_OPENCSTL_VERSION_H)
 #define _OPENCSTL_VERSION_H
 // [already included: crossplatform.h]
-static char *OPENCSTL_VERSION = "v1.3.0";
+static char *OPENCSTL_VERSION = "v1.3.2";
 
 static char *opencstl_version(void) {
     return OPENCSTL_VERSION;
 }
 
 
-char *opencstl_env(void) {
+static char *opencstl_env(void) {
     static char __opencstl_env_str[512] = {0};
 #if defined(OCSTL_CC_MSVC)
     sprintf_s(__opencstl_env_str, sizeof(__opencstl_env_str),
@@ -12375,11 +12759,16 @@ static void __glob_free(char **results) {
 #include <locale.h>
 #include <string.h>
 #include <stdarg.h>
-
+#if defined(OCSTL_OS_WINDOWS)
+#include <windows.h>
+#endif
 static void MsgBoxCLI(const char *format, ...) {
 #if defined(OCSTL_CC_MSVC)
     SetConsoleOutputCP(CP_UTF8);
 #elif defined(OCSTL_CC_TCC)
+#ifdef OCSTL_OS_WINDOWS
+    SetConsoleOutputCP(65001);
+#endif
     setvbuf(stdout, NULL, _IONBF, 0); // unbuffered — 바이트 단위 즉시 전송
 #endif
     int width = 80;
@@ -13396,157 +13785,23 @@ CSV_CLASS csv = {
 // ==============================================================================
 // [already included: mt19937.h]
 // [already included: galloc.h]
-
-// ==============================================================================
-// BEGIN  threading_cc.h                 (depth 1)
-// ==============================================================================
-
-//
-// Created by spring on 4/24/2026.
-//
-
-#ifndef OPENCSTL_THREADING_CC_H
-#define OPENCSTL_THREADING_CC_H
-#include <stdint.h>
-
-#if defined(_WIN32)
-#include <windows.h>
-#elif defined(__APPLE__)
-#include <sys/sysctl.h>
-#else
-#include <unistd.h>
-#endif
-
-int cpu_count(void) {
-#if defined(_WIN32)
-    SYSTEM_INFO si;
-    GetSystemInfo(&si);
-    return (int) si.dwNumberOfProcessors;
-
-#elif defined(__APPLE__)
-    int count = 0;
-    size_t size = sizeof(count);
-    // hw.logicalcpu: 하이퍼스레딩 포함 논리 코어
-    // hw.physicalcpu: 물리 코어만
-    sysctlbyname("hw.logicalcpu", &count, &size, NULL, 0);
-    return count;
-
-#else
-    int cpu_threads = 0;
-    int siblings = 0;
-    int cpu_cores = 0;
-    int got_sib = 0;
-    int got_cor = 0;
-
-    FILE *f = fopen("/proc/cpuinfo", "r");
-    if (f) {
-        char line[128];
-        while (fgets(line, sizeof(line), f)) {
-            if (strncmp(line, "processor", 9) == 0) {
-                cpu_threads++;
-            }
-            // siblings, cpu cores는 첫 번째 값만 읽으면 충분
-            if (!got_sib && strncmp(line, "siblings", 8) == 0) {
-                char *colon = strchr(line, ':');
-                if (colon) {
-                    siblings = atoi(colon + 1);
-                    got_sib = 1;
-                }
-            }
-            if (!got_cor && strncmp(line, "cpu cores", 9) == 0) {
-                char *colon = strchr(line, ':');
-                if (colon) {
-                    cpu_cores = atoi(colon + 1);
-                    got_cor = 1;
-                }
-            }
-        }
-        fclose(f);
-    }
-
-    int hyper_threading = (got_sib && got_cor && cpu_cores > 0)
-                              ? (siblings == cpu_cores * 2)
-                              : 0;
-    if (hyper_threading) {
-        cpu_threads *= 2;
-    }
-    // fallback
-    if (cpu_threads <= 0) {
-        long n = sysconf(_SC_NPROCESSORS_ONLN);
-        cpu_threads = n > 0 ? (int) n : 1;
-    }
-
-    return cpu_threads;
-#endif
-}
-#endif //OPENCSTL_THREADING_CC_H
-
-// ==============================================================================
-// END    threading_cc.h
-// ==============================================================================
+// [already included: threading_cc.h]
 
 
 // ==============================================================================
 // BEGIN  cio.h                          (depth 1)
 // ==============================================================================
 
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#ifndef OPENCSTL_CSTLIO_H
-#define OPENCSTL_CSTLIO_H
-
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
 // [already included: crossplatform.h]
 // [already included: defines.h]
-
-// ── Windows UTF-8 / 유니코드 초기화 ──────────────────────────────────────
 #ifdef OCSTL_OS_WINDOWS
 #include <windows.h>
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
 #ifndef CP_UTF8
-// TCC 의 minimal <windows.h> 에는 CP_UTF8 이 없음.
 #define CP_UTF8 65001
 #endif
-
 static int s_cio_unicode_init = -1;
 
 static void ocstl_ensure_unicode(void) {
@@ -13559,12 +13814,9 @@ static void ocstl_ensure_unicode(void) {
         SetConsoleMode(h, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     s_cio_unicode_init = 1;
 }
-
 #else
 #define ocstl_ensure_unicode() ((void)0)
 #endif
-
-// ── 타입 태그 ─────────────────────────────────────────────────────────────
 typedef enum {
     OCSTL_COUT_INT,
     OCSTL_COUT_UINT,
@@ -13580,30 +13832,90 @@ typedef enum {
 
 typedef struct {
     ocstl_cout_type_t type;
+
     union {
-        int                 i;
-        unsigned int        u;
-        long                l;
-        unsigned long       ul;
-        long long           ll;
-        unsigned long long  ull;
-        float               f;
-        double              d;
-        char                c;
-        const char         *s;
+        int i;
+        unsigned int u;
+        long l;
+        unsigned long ul;
+        long long ll;
+        unsigned long long ull;
+        float f;
+        double d;
+        char c;
+        const char *s;
     };
 } ocstl_val_t;
 
-static ocstl_val_t _ocstl_mk_int   (int x)                { ocstl_val_t v; v.type=OCSTL_COUT_INT;    v.i  =x; return v; }
-static ocstl_val_t _ocstl_mk_uint  (unsigned int x)        { ocstl_val_t v; v.type=OCSTL_COUT_UINT;   v.u  =x; return v; }
-static ocstl_val_t _ocstl_mk_long  (long x)                { ocstl_val_t v; v.type=OCSTL_COUT_LONG;   v.l  =x; return v; }
-static ocstl_val_t _ocstl_mk_ulong (unsigned long x)       { ocstl_val_t v; v.type=OCSTL_COUT_ULONG;  v.ul =x; return v; }
-static ocstl_val_t _ocstl_mk_llong (long long x)           { ocstl_val_t v; v.type=OCSTL_COUT_LLONG;  v.ll =x; return v; }
-static ocstl_val_t _ocstl_mk_ullong(unsigned long long x)  { ocstl_val_t v; v.type=OCSTL_COUT_ULLONG; v.ull=x; return v; }
-static ocstl_val_t _ocstl_mk_float (float x)               { ocstl_val_t v; v.type=OCSTL_COUT_FLOAT;  v.f  =x; return v; }
-static ocstl_val_t _ocstl_mk_double(double x)              { ocstl_val_t v; v.type=OCSTL_COUT_DOUBLE; v.d  =x; return v; }
-static ocstl_val_t _ocstl_mk_char  (char x)                { ocstl_val_t v; v.type=OCSTL_COUT_CHAR;   v.c  =x; return v; }
-static ocstl_val_t _ocstl_mk_str   (const char *x)         { ocstl_val_t v; v.type=OCSTL_COUT_STR;    v.s  =x; return v; }
+static ocstl_val_t _ocstl_mk_int(int x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_INT;
+    v.i = x;
+    return v;
+}
+
+static ocstl_val_t _ocstl_mk_uint(unsigned int x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_UINT;
+    v.u = x;
+    return v;
+}
+
+static ocstl_val_t _ocstl_mk_long(long x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_LONG;
+    v.l = x;
+    return v;
+}
+
+static ocstl_val_t _ocstl_mk_ulong(unsigned long x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_ULONG;
+    v.ul = x;
+    return v;
+}
+
+static ocstl_val_t _ocstl_mk_llong(long long x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_LLONG;
+    v.ll = x;
+    return v;
+}
+
+static ocstl_val_t _ocstl_mk_ullong(unsigned long long x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_ULLONG;
+    v.ull = x;
+    return v;
+}
+
+static ocstl_val_t _ocstl_mk_float(float x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_FLOAT;
+    v.f = x;
+    return v;
+}
+
+static ocstl_val_t _ocstl_mk_double(double x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_DOUBLE;
+    v.d = x;
+    return v;
+}
+
+static ocstl_val_t _ocstl_mk_char(char x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_CHAR;
+    v.c = x;
+    return v;
+}
+
+static ocstl_val_t _ocstl_mk_str(const char *x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_STR;
+    v.s = x;
+    return v;
+}
 
 #define OCSTL_VAL(x) _Generic((x),                  \
     int:                _ocstl_mk_int,              \
@@ -13618,8 +13930,6 @@ static ocstl_val_t _ocstl_mk_str   (const char *x)         { ocstl_val_t v; v.ty
     char *:             _ocstl_mk_str,              \
     const char *:       _ocstl_mk_str               \
 )(x)
-
-// ── FOR_EACH: 각 인자에 OCSTL_VAL 적용 (최대 32개) ──────────────────────
 #define OCSTL_MAP1(f,a)      f(a)
 #define OCSTL_MAP2(f,a,...)  f(a), OCSTL_MAP1(f, __VA_ARGS__)
 #define OCSTL_MAP3(f,a,...)  f(a), OCSTL_MAP2(f, __VA_ARGS__)
@@ -13652,28 +13962,24 @@ static ocstl_val_t _ocstl_mk_str   (const char *x)         { ocstl_val_t v; v.ty
 #define OCSTL_MAP30(f,a,...) f(a), OCSTL_MAP29(f, __VA_ARGS__)
 #define OCSTL_MAP31(f,a,...) f(a), OCSTL_MAP30(f, __VA_ARGS__)
 #define OCSTL_MAP32(f,a,...) f(a), OCSTL_MAP31(f, __VA_ARGS__)
-
 #define OCSTL_MAP_SEL( \
     _1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16, \
     _17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,_31,_32, N,...) \
     OCSTL_MAP##N
-
 #define OCSTL_MAP(f,...) \
     OCSTL_MAP_SEL(__VA_ARGS__, \
         32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17, \
         16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1)(f, __VA_ARGS__)
 
-// ── Rust 스타일 포맷 스펙 ────────────────────────────────────────────────
-// {[fill]align? sign? #? 0? width? .precision? type?}
 typedef struct {
-    char  fill;        // default ' '
-    char  align;       // '<' '>' '^' 0
-    char  sign;        // '+' or 0
-    bool  alt;         // '#'
-    bool  zero_pad;    // '0' flag
-    int   width;       // -1 if unspecified
-    int   precision;   // -1 if unspecified
-    char  type;        // 'x' 'X' 'b' 'o' 'e' 'E' 'f' 'g' or 0
+    char fill;
+    char align;
+    char sign;
+    bool alt;
+    bool zero_pad;
+    int width;
+    int precision;
+    char type;
 } ocstl_fmt_spec_t;
 
 static void ocstl_spec_init(ocstl_fmt_spec_t *s) {
@@ -13689,9 +13995,7 @@ static void ocstl_spec_init(ocstl_fmt_spec_t *s) {
 
 static bool ocstl_is_align(char c) { return c == '<' || c == '>' || c == '^'; }
 
-// p 가 ':' 직후를 가리킨다고 가정. '}' 까지 파싱 후 그 위치 반환.
 static const char *ocstl_parse_spec(const char *p, ocstl_fmt_spec_t *spec) {
-    // [fill]align — fill 은 align 앞 한 글자
     if (p[0] && p[1] && ocstl_is_align(p[1])) {
         spec->fill = p[0];
         spec->align = p[1];
@@ -13700,26 +14004,35 @@ static const char *ocstl_parse_spec(const char *p, ocstl_fmt_spec_t *spec) {
         spec->align = p[0];
         p += 1;
     }
-    // sign
-    if (*p == '+') { spec->sign = '+'; p++; }
-    // alt
-    if (*p == '#') { spec->alt = true; p++; }
-    // zero pad
-    if (*p == '0') { spec->zero_pad = true; p++; }
-    // width
+    if (*p == '+') {
+        spec->sign = '+';
+        p++;
+    }
+    if (*p == '#') {
+        spec->alt = true;
+        p++;
+    }
+    if (*p == '0') {
+        spec->zero_pad = true;
+        p++;
+    }
     if (*p >= '0' && *p <= '9') {
         int w = 0;
-        while (*p >= '0' && *p <= '9') { w = w * 10 + (*p - '0'); p++; }
+        while (*p >= '0' && *p <= '9') {
+            w = w * 10 + (*p - '0');
+            p++;
+        }
         spec->width = w;
     }
-    // precision
     if (*p == '.') {
         p++;
         int pr = 0;
-        while (*p >= '0' && *p <= '9') { pr = pr * 10 + (*p - '0'); p++; }
+        while (*p >= '0' && *p <= '9') {
+            pr = pr * 10 + (*p - '0');
+            p++;
+        }
         spec->precision = pr;
     }
-    // type
     if (*p && *p != '}') {
         spec->type = *p;
         p++;
@@ -13727,13 +14040,10 @@ static const char *ocstl_parse_spec(const char *p, ocstl_fmt_spec_t *spec) {
     return p;
 }
 
-// ── 정렬 / 패딩 적용 ──────────────────────────────────────────────────────
 static void ocstl_emit_pad(char ch, int n) {
     for (int i = 0; i < n; i++) putchar(ch);
 }
 
-// core 문자열을 width / align / fill 에 맞춰 출력.
-// number_pad: true 면 0-pad 시 sign/prefix 뒤에 0 패딩(기존 STL 관례).
 static void ocstl_emit_padded(const char *core, int core_len,
                               const ocstl_fmt_spec_t *spec,
                               int sign_prefix_len) {
@@ -13745,25 +14055,20 @@ static void ocstl_emit_padded(const char *core, int core_len,
     int pad = width - core_len;
     char align = spec->align;
     char fill = spec->fill;
-
-    // 숫자 + zero_pad + 명시적 align 없음 → '0' 으로 right-align (sign/prefix 뒤)
     if (align == 0 && spec->zero_pad && sign_prefix_len >= 0) {
-        // sign/prefix 먼저 출력
         fwrite(core, 1, sign_prefix_len, stdout);
         ocstl_emit_pad('0', pad);
         fwrite(core + sign_prefix_len, 1, core_len - sign_prefix_len, stdout);
         return;
     }
-
-    if (align == 0) align = (sign_prefix_len >= 0) ? '>' : '<'; // 숫자 기본 right, 문자열 기본 left
-
+    if (align == 0) align = (sign_prefix_len >= 0) ? '>' : '<';
     if (align == '<') {
         fwrite(core, 1, core_len, stdout);
         ocstl_emit_pad(fill, pad);
     } else if (align == '>') {
         ocstl_emit_pad(fill, pad);
         fwrite(core, 1, core_len, stdout);
-    } else { // '^'
+    } else {
         int left = pad / 2;
         int right = pad - left;
         ocstl_emit_pad(fill, left);
@@ -13772,8 +14077,6 @@ static void ocstl_emit_padded(const char *core, int core_len,
     }
 }
 
-// ── 정수 → 문자열 (진법, sign, alt prefix 처리) ───────────────────────────
-// 결과는 buf 에 기록, 반환은 len. sign_prefix_len 에는 sign + prefix 길이 기록.
 static int ocstl_format_int(char *buf, int bufsz,
                             unsigned long long uval, bool negative,
                             const ocstl_fmt_spec_t *spec,
@@ -13782,46 +14085,45 @@ static int ocstl_format_int(char *buf, int bufsz,
     bool upper = false;
     const char *prefix = "";
     switch (spec->type) {
-        case 'x': base = 16; break;
-        case 'X': base = 16; upper = true; break;
-        case 'o': base = 8; break;
-        case 'b': base = 2; break;
+        case 'x': base = 16;
+            break;
+        case 'X': base = 16;
+            upper = true;
+            break;
+        case 'o': base = 8;
+            break;
+        case 'b': base = 2;
+            break;
         default: break;
     }
     if (spec->alt) {
-        if      (spec->type == 'x') prefix = "0x";
+        if (spec->type == 'x') prefix = "0x";
         else if (spec->type == 'X') prefix = "0X";
         else if (spec->type == 'b') prefix = "0b";
         else if (spec->type == 'o') prefix = "0o";
     }
-
-    // 숫자 부분을 역순으로 변환
     char tmp[80];
     int tlen = 0;
     if (uval == 0) tmp[tlen++] = '0';
     while (uval > 0) {
-        unsigned digit = (unsigned)(uval % (unsigned long long)base);
-        char c = (digit < 10) ? (char)('0' + digit)
-                              : (char)((upper ? 'A' : 'a') + (digit - 10));
+        unsigned digit = (unsigned) (uval % (unsigned long long) base);
+        char c = (digit < 10)
+                     ? (char) ('0' + digit)
+                     : (char) ((upper ? 'A' : 'a') + (digit - 10));
         tmp[tlen++] = c;
         uval /= base;
     }
-
     int pos = 0;
-    // sign
     if (negative) buf[pos++] = '-';
     else if (spec->sign == '+' && base == 10) buf[pos++] = '+';
-    // prefix
     int plen = (int) strlen(prefix);
     for (int i = 0; i < plen; i++) buf[pos++] = prefix[i];
     *sign_prefix_len = pos;
-    // 숫자
     for (int i = tlen - 1; i >= 0 && pos < bufsz - 1; i--) buf[pos++] = tmp[i];
     buf[pos] = '\0';
     return pos;
 }
 
-// ── float → 문자열 ───────────────────────────────────────────────────────
 static int ocstl_format_float(char *buf, int bufsz, double dval,
                               const ocstl_fmt_spec_t *spec,
                               int *sign_prefix_len) {
@@ -13832,7 +14134,6 @@ static int ocstl_format_float(char *buf, int bufsz, double dval,
     char type = spec->type ? spec->type : 'f';
     if (type != 'f' && type != 'e' && type != 'E' && type != 'g' && type != 'G') type = 'f';
     snprintf(fmt, sizeof fmt, "%%.%d%c", prec, type);
-
     int pos = 0;
     if (negative) buf[pos++] = '-';
     else if (spec->sign == '+') buf[pos++] = '+';
@@ -13842,45 +14143,43 @@ static int ocstl_format_float(char *buf, int bufsz, double dval,
     return pos + n;
 }
 
-// ── 단일 값 출력 (스펙 적용) ──────────────────────────────────────────────
 static void ocstl_print_val(const ocstl_val_t *v, const ocstl_fmt_spec_t *spec) {
     char buf[128];
     int len = 0;
-    int sign_prefix_len = -1; // -1 = 비-숫자
-
+    int sign_prefix_len = -1;
     switch (v->type) {
         case OCSTL_COUT_INT: {
             long long sv = v->i;
             len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long)(sv < 0 ? -sv : sv),
+                                   (unsigned long long) (sv < 0 ? -sv : sv),
                                    sv < 0, spec, &sign_prefix_len);
             break;
         }
         case OCSTL_COUT_LONG: {
             long long sv = v->l;
             len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long)(sv < 0 ? -sv : sv),
+                                   (unsigned long long) (sv < 0 ? -sv : sv),
                                    sv < 0, spec, &sign_prefix_len);
             break;
         }
         case OCSTL_COUT_LLONG: {
             long long sv = v->ll;
             len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long)(sv < 0 ? -sv : sv),
+                                   (unsigned long long) (sv < 0 ? -sv : sv),
                                    sv < 0, spec, &sign_prefix_len);
             break;
         }
         case OCSTL_COUT_UINT:
-            len = ocstl_format_int(buf, sizeof buf, (unsigned long long)v->u, false, spec, &sign_prefix_len);
+            len = ocstl_format_int(buf, sizeof buf, (unsigned long long) v->u, false, spec, &sign_prefix_len);
             break;
         case OCSTL_COUT_ULONG:
-            len = ocstl_format_int(buf, sizeof buf, (unsigned long long)v->ul, false, spec, &sign_prefix_len);
+            len = ocstl_format_int(buf, sizeof buf, (unsigned long long) v->ul, false, spec, &sign_prefix_len);
             break;
         case OCSTL_COUT_ULLONG:
             len = ocstl_format_int(buf, sizeof buf, v->ull, false, spec, &sign_prefix_len);
             break;
         case OCSTL_COUT_FLOAT:
-            len = ocstl_format_float(buf, sizeof buf, (double)v->f, spec, &sign_prefix_len);
+            len = ocstl_format_float(buf, sizeof buf, (double) v->f, spec, &sign_prefix_len);
             break;
         case OCSTL_COUT_DOUBLE:
             len = ocstl_format_float(buf, sizeof buf, v->d, spec, &sign_prefix_len);
@@ -13893,21 +14192,17 @@ static void ocstl_print_val(const ocstl_val_t *v, const ocstl_fmt_spec_t *spec) 
         }
         case OCSTL_COUT_STR: {
             const char *s = v->s ? v->s : "(null)";
-            ocstl_emit_padded(s, (int)strlen(s), spec, -1);
+            ocstl_emit_padded(s, (int) strlen(s), spec, -1);
             return;
         }
     }
     ocstl_emit_padded(buf, len, spec, sign_prefix_len);
 }
 
-// ── {} 포맷 파서 ──────────────────────────────────────────────────────────
-// {{ → '{',  }} → '}',  {[:spec]} → 다음 인자 적용
 static void ocstl_print_impl(const char *fmt, const ocstl_val_t *args, int n) {
     int idx = 0;
     const char *p = fmt;
-
     ocstl_ensure_unicode();
-
     while (*p) {
         if (p[0] == '{' && p[1] == '{') {
             putchar('{');
@@ -13916,7 +14211,6 @@ static void ocstl_print_impl(const char *fmt, const ocstl_val_t *args, int n) {
             putchar('}');
             p += 2;
         } else if (p[0] == '{') {
-            // 플레이스홀더
             const char *q = p + 1;
             ocstl_fmt_spec_t spec;
             ocstl_spec_init(&spec);
@@ -13927,24 +14221,17 @@ static void ocstl_print_impl(const char *fmt, const ocstl_val_t *args, int n) {
                 if (idx < n) ocstl_print_val(&args[idx++], &spec);
                 p = q + 1;
             } else {
-                // '}' 없음: 그대로 출력
-                putchar((unsigned char)*p++);
+                putchar((unsigned char) *p++);
             }
         } else {
-            putchar((unsigned char)*p++);
+            putchar((unsigned char) *p++);
         }
     }
 }
 
-// ── 인자 수 기반 분기 (ARGN + 토큰 페이스트) ─────────────────────────────
-// fmt 만 있는 N=1 케이스를 단독 처리. N>=2 는 개별 할당으로 ocstl_val_t 배열 구성.
-// 주의: TCC 0.9.27 은 array initializer 안에서 _Generic 을 여러 번 평가하면
-// "index too large" 로 실패하므로 일괄 init 대신 분리된 statement 로 채운다.
 #define _OCSTL_PRINT_N1(fmt) \
     do { ocstl_ensure_unicode(); ocstl_print_impl((fmt), NULL, 0); } while (0)
-
 #define _OCSTL_PRINT_1(fmt) _OCSTL_PRINT_N1(fmt)
-
 #define _OCSTL_PRINT_2(fmt, _a) do {                                                       \
     ocstl_val_t _args[1];                                                                  \
     _args[0] = OCSTL_VAL(_a);                                                              \
@@ -14021,16 +14308,10 @@ static void ocstl_print_impl(const char *fmt, const ocstl_val_t *args, int n) {
 #define _OCSTL_PRINT_30(...) _OCSTL_PRINT_NX(__VA_ARGS__)
 #define _OCSTL_PRINT_31(...) _OCSTL_PRINT_NX(__VA_ARGS__)
 #define _OCSTL_PRINT_32(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-
 #define _OCSTL_PASTE2(a, b) a##b
 #define _OCSTL_PASTE(a, b)  _OCSTL_PASTE2(a, b)
-
-// 외부 디스패치 매크로: print(fmt, ...) → _OCSTL_PRINT_<N>(fmt, ...)
-// N = ARGN(__VA_ARGS__) — fmt 포함한 총 인자 개수.
 #define print(...)   _OCSTL_PASTE(_OCSTL_PRINT_, ARGN(__VA_ARGS__))(__VA_ARGS__)
 #define println(...) do { print(__VA_ARGS__); putchar('\n'); } while (0)
-
-#endif // OPENCSTL_CSTLIO_H
 
 // ==============================================================================
 // END    cio.h

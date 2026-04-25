@@ -552,14 +552,14 @@ int main(void) {
     //
     // destroy(arr);
     //
-    // int cnt = cpu_count();
-    // printf("cnt: %d\n", cnt);
+
     //
     // printf("random_device: %lu\n", random_device());
     // //verify("Error message");
     // cstl_vector_test3();
     // cstl_set_test01();
     // return 0;
+    cpu_pin();
     test01();
 
     // float a = 0;
@@ -568,6 +568,7 @@ int main(void) {
 
     //MsgBoxGUI("Test GUI Message");
 
-
+    int cnt = cpu_count();
+    printf("cnt: %d\n", cnt);
     return 0;
 }

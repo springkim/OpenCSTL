@@ -112,9 +112,8 @@ static int cpu_count(void) {
 #if defined(OCSTL_OS_WINDOWS)
 #include <windows.h>
 #elif defined(OCSTL_OS_LINUX)
-#undef GNU_SOURCE
-#define _GNU_SOURCE
-#include <sched.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 #elif defined(OCSTL_OS_MACOS)
 #include <mach/mach.h>
 #include <mach/mach_time.h>
@@ -126,10 +125,12 @@ static void cpu_pin(void) {
     SetThreadAffinityMask(GetCurrentThread(), (DWORD_PTR) 1 << 0);
 
 #elif defined(OCSTL_OS_LINUX)
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(0, &cpuset);
-    sched_setaffinity(0, sizeof(cpu_set_t), &cpuset);
+    /* cpu_set_t cpuset; CPU_ZERO(&cpuset); CPU_SET(0, &cpuset);
+     * sched_setaffinity(0, sizeof(cpu_set_t), &cpuset);
+     * 위 매크로/함수는 _GNU_SOURCE에 의존하므로 비트마스크와 syscall로 직접 풀어 작성 */
+    unsigned long cpuset = 0UL;   /* CPU_ZERO(&cpuset) */
+    cpuset |= 1UL << 0;           /* CPU_SET(0, &cpuset) */
+    syscall(SYS_sched_setaffinity, 0, sizeof(cpuset), &cpuset);
 
 #elif defined(OCSTL_OS_MACOS)
     // 코어 친화성 힌트
