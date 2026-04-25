@@ -5,7 +5,7 @@ int main() {
 
     bitset.set_at(b, 10,true);
     bitset.set_at(b, 0,true);
-    int cnt = bitset.count(b);
+    int cnt = bitset.count_bits(b);
     printf("%d\n", cnt);
 
     char *str = bitset.to_string(b);

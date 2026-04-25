@@ -484,8 +484,8 @@ OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
 
 OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_TSIZE) * (ptrdiff_t)sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
 
     for (size_type64 i = length - 1; i > 0; i--) {
         size_type64 rng_idx = __mt19937_64_next() % (i + 1);
@@ -525,7 +525,7 @@ void __mt19937_shuffle(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) &container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
     }
@@ -573,4 +573,65 @@ RANDOM mt19937 = {
     __mt19937_shuffle
 };
 
+// ██████╗░░█████╗░███╗░░██╗██████╗░░█████╗░███╗░░░███╗░░░░░░██████╗░███████╗██╗░░░██╗██╗░█████╗░███████╗
+// ██╔══██╗██╔══██╗████╗░██║██╔══██╗██╔══██╗████╗░████║░░░░░░██╔══██╗██╔════╝██║░░░██║██║██╔══██╗██╔════╝
+// ██████╔╝███████║██╔██╗██║██║░░██║██║░░██║██╔████╔██║░░░░░░██║░░██║█████╗░░╚██╗░██╔╝██║██║░░╚═╝█████╗░░
+// ██╔══██╗██╔══██║██║╚████║██║░░██║██║░░██║██║╚██╔╝██║░░░░░░██║░░██║██╔══╝░░░╚████╔╝░██║██║░░██╗██╔══╝░░
+// ██║░░██║██║░░██║██║░╚███║██████╔╝╚█████╔╝██║░╚═╝░██║█████╗██████╔╝███████╗░░╚██╔╝░░██║╚█████╔╝███████╗
+// ╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝╚═════╝░░╚════╝░╚═╝░░░░░╚═╝╚════╝╚═════╝░╚══════╝░░░╚═╝░░░╚═╝░╚════╝░╚══════╝
+#include <time.h>
+#if defined(OCSTL_OS_WINDOWS)
+#include <windows.h>
+// RtlGenRandom = SystemFunction036, advapi32에 포함 (MinGW 기본 링크)
+#define RtlGenRandom SystemFunction036
+
+BOOLEAN NTAPI RtlGenRandom(PVOID RandomBuffer, ULONG RandomBufferLength);
+#elif defined(__APPLE__)
+#include <sys/types.h>
+#elif defined(__linux__)
+#include <sys/syscall.h>
+#include <unistd.h>
+#include <errno.h>
+#endif
+static uint64_t random_device(void) {
+    uint64_t val = 0;
+#if defined(OCSTL_CC_TCC)
+    val  = (uint64_t)time(NULL);
+    val ^= (uint64_t)(uintptr_t)&val;       // 스택 주소 XOR
+    val ^= val << 21;
+    val ^= val >> 35;
+    val ^= val << 4;
+#elif defined(OCSTL_OS_WINDOWS)
+    RtlGenRandom(&val, sizeof(val));
+
+#elif defined(__APPLE__)
+    arc4random_buf(&val, sizeof(val));
+
+#elif defined(__linux__)
+    size_t done = 0;
+    while (done < sizeof(val)) {
+        long ret = syscall(SYS_getrandom,
+                           (char *) &val + done, sizeof(val) - done, 0);
+        if (ret < 0) {
+            if (errno == EINTR) continue;
+            FILE *f = fopen("/dev/urandom", "rb");
+            if (f) {
+                fread((char *) &val + done, 1, sizeof(val) - done, f);
+                fclose(f);
+            }
+            break;
+        }
+        done += (size_t) ret;
+    }
+
+#else
+    FILE *f = fopen("/dev/urandom", "rb");
+    if (f) {
+        fread(&val, sizeof(val), 1, f);
+        fclose(f);
+    }
+#endif
+
+    return val;
+}
 #endif //OPENCSTL_MT19937_H

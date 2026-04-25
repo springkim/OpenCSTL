@@ -43,10 +43,15 @@ static char *opencstl_version(void) {
     return OPENCSTL_VERSION;
 }
 
-static char __opencstl_env_str[512] = {0};
 
 char *opencstl_env(void) {
+    static char __opencstl_env_str[512] = {0};
+#if defined(OCSTL_CC_MSVC)
+    sprintf_s(__opencstl_env_str, sizeof(__opencstl_env_str),
+              "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
+#else
     sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
+#endif
     return __opencstl_env_str;
 }
 #endif //_OPENCSTL_VERSION_H

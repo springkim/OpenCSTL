@@ -46,7 +46,6 @@ extern "C" {
 #if defined(OCSTL_OS_WINDOWS)
 
 #include<windows.h>
-#include<process.h>
 #include<errno.h>
 #include<assert.h>
 
@@ -82,7 +81,7 @@ typedef struct _pthread_cleanup_stack {
 SELECT_ANY _pthread_cleanup_stack *_pthread_cleanup_stack_head = NULL;
 SELECT_ANY HANDLE _pthread_cleanup_mutex = NULL;
 
-inline int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg) {
+static int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg) {
     DWORD dwThreadId = 1;
     HANDLE handle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) start_routine, arg, 0, &dwThreadId);
     thread->handle = (HANDLE) handle;

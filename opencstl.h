@@ -67,6 +67,189 @@ extern "C" {
 #endif
 
 // ==============================================================================
+// BEGIN  crossplatform.h                (depth 1)
+// ==============================================================================
+
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#ifndef _OPENCSTL_CROSSPLATFORM_H
+#define _OPENCSTL_CROSSPLATFORM_H
+
+
+// ░█████╗░░██████╗
+// ██╔══██╗██╔════╝
+// ██║░░██║╚█████╗░
+// ██║░░██║░╚═══██╗
+// ╚█████╔╝██████╔╝
+// ░╚════╝░╚═════╝░
+#if defined(_WIN32) || defined(_WIN64)
+#define OCSTL_OS_STR "Windows"
+#define OCSTL_OS_WINDOWS
+#elif defined(__linux__)
+#define OCSTL_OS_STR "Linux"
+#define OCSTL_OS_LINUX
+#elif defined(__APPLE__)
+#define OCSTL_OS_STR "MacOS"
+#define OCSTL_OS_MACOS
+#endif
+
+// ░█████╗░░█████╗░███╗░░░███╗██████╗░██╗██╗░░░░░███████╗██████
+// ██╔══██╗██╔══██╗████╗░████║██╔══██╗██║██║░░░░░██╔════╝██╔══██╗
+// ██║░░╚═╝██║░░██║██╔████╔██║██████╔╝██║██║░░░░░█████╗░░██████╔╝
+// ██║░░██╗██║░░██║██║╚██╔╝██║██╔═══╝░██║██║░░░░░██╔══╝░░██╔══██╗
+// ╚█████╔╝╚█████╔╝██║░╚═╝░██║██║░░░░░██║███████╗███████╗██║░░██║
+// ░╚════╝░░╚════╝░╚═╝░░░░░╚═╝╚═╝░░░░░╚═╝╚══════╝╚══════╝╚═╝░░╚═╝
+#if defined(__POCC__)
+#define OCSTL_CC_STR "PellesC"
+#define OCSTL_CC_POCC
+#elif defined(__NVCC__)
+#define OCSTL_CC_STR "NVCC"
+#define OCSTL_CC_NVCC
+#elif defined(__clang__)
+#define OCSTL_CC_STR "Clang"
+#define OCSTL_CC_CLANG
+#elif defined(__TINYC__)
+#define OCSTL_CC_STR "TCC"
+#define OCSTL_CC_TCC
+#elif defined(_MSC_VER)
+#define OCSTL_CC_STR "MSVC"
+#define OCSTL_CC_MSVC
+#elif defined(__GNUC__)
+#define OCSTL_CC_STR "GCC"
+#define OCSTL_CC_GCC
+#endif
+
+
+// ░█████╗░░░░░░░██╗░░░██╗███████╗██████╗░░██████╗██╗░█████╗░███╗░░██╗
+// ██╔══██╗░░░░░░██║░░░██║██╔════╝██╔══██╗██╔════╝██║██╔══██╗████╗░██║
+// ██║░░╚═╝█████╗╚██╗░██╔╝█████╗░░██████╔╝╚█████╗░██║██║░░██║██╔██╗██║
+// ██║░░██╗╚════╝░╚████╔╝░██╔══╝░░██╔══██╗░╚═══██╗██║██║░░██║██║╚████║
+// ╚█████╔╝░░░░░░░░╚██╔╝░░███████╗██║░░██║██████╔╝██║╚█████╔╝██║░╚███║
+// ░╚════╝░░░░░░░░░░╚═╝░░░╚══════╝╚═╝░░╚═╝╚═════╝░╚═╝░╚════╝░╚═╝░░╚══╝
+
+#if defined(__STDC_VERSION__)
+#   if __STDC_VERSION__ >= 202311L
+#define OCSTL_C_VERSION_STR "C23"
+#define OCSTL_C_VERSION_23
+#   elif __STDC_VERSION__ >= 201710L
+#define OCSTL_C_VERSION_STR "C17 (C18)"
+#define OCSTL_C_VERSION_17
+#   elif __STDC_VERSION__ >= 201112L
+#define OCSTL_C_VERSION_STR "C11"
+#define OCSTL_C_VERSION_11
+#   elif __STDC_VERSION__ >= 199901L
+#define OCSTL_C_VERSION_STR "C99"
+#define OCSTL_C_VERSION_99
+#   else
+#define OCSTL_C_VERSION_STR "C94 (AMD1)"
+#define OCSTL_C_VERSION_94
+#   endif
+#elif defined(__STDC__)
+#define OCSTL_C_VERSION_STR "C89 (C90)"
+#define OCSTL_C_VERSION_89
+#else
+#define OCSTL_C_VERSION_STR "pre-ANSI C (K&R)"
+#define OCSTL_C_VERSION_PRE_ANSI
+#endif
+
+
+// ░█████╗░██████╗░████████╗██╗███╗░░░███╗██╗███████╗███████╗
+// ██╔══██╗██╔══██╗╚══██╔══╝██║████╗░████║██║╚════██║██╔════╝
+// ██║░░██║██████╔╝░░░██║░░░██║██╔████╔██║██║░░███╔═╝█████╗░░
+// ██║░░██║██╔═══╝░░░░██║░░░██║██║╚██╔╝██║██║██╔══╝░░██╔══╝░░
+// ╚█████╔╝██║░░░░░░░░██║░░░██║██║░╚═╝░██║██║███████╗███████╗
+// ░╚════╝░╚═╝░░░░░░░░╚═╝░░░╚═╝╚═╝░░░░░╚═╝╚═╝╚══════╝╚══════╝
+
+#if defined(_DEBUG) || !defined(NDEBUG)
+#define OCSTL_DEBUG
+#else
+#define OCSTL_RELEASE
+#endif
+
+
+#endif //_OPENCSTL_CROSSPLATFORM_H
+
+// ==============================================================================
+// END    crossplatform.h
+// ==============================================================================
+#if defined(OCSTL_CC_MSVC)
+#pragma warning(disable:4819)
+#endif
+#if defined(OCSTL_CC_CLANG)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic ignored "-Wunused-value"
+#pragma clang diagnostic ignored "-Wsign-compare"
+#pragma clang diagnostic ignored "-Wpedantic"
+#pragma clang diagnostic ignored "-Wgnu-auto-type"
+#pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+
+#pragma clang diagnostic ignored "-Wnonnull"
+#pragma clang diagnostic ignored "-Wcast-function-type-mismatch"
+
+#if !defined(OCSTL_OS_LINUX) && !defined(OCSTL_OS_WINDOWS)
+#pragma clang diagnostic ignored "-Wuse-after-free"
+#endif
+#endif
+
+#if defined(OCSTL_CC_GCC)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wuse-after-free"
+#pragma GCC diagnostic ignored "-Wunused-result"
+#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
+#pragma GCC diagnostic ignored "-Wnonnull"
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#pragma GCC diagnostic ignored "-Wformat="
+#pragma GCC diagnostic ignored "-Wnonnull"
+#endif
+
+
+// ==============================================================================
 // BEGIN  zalloc.h                       (depth 1)
 // ==============================================================================
 
@@ -210,6 +393,9 @@ extern "C" {
 
 typedef int (*CSTL_COMPARE)(const void *, const void *);
 
+typedef bool (*CSTL_COND)(const void *);
+
+
 typedef int size_type;
 typedef long long size_type64;
 
@@ -239,146 +425,7 @@ typedef wchar_t wchar;
 
 
 
-// ==============================================================================
-// BEGIN  crossplatform.h                (depth 4)
-// ==============================================================================
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#ifndef _OPENCSTL_CROSSPLATFORM_H
-#define _OPENCSTL_CROSSPLATFORM_H
-
-
-// ░█████╗░░██████╗
-// ██╔══██╗██╔════╝
-// ██║░░██║╚█████╗░
-// ██║░░██║░╚═══██╗
-// ╚█████╔╝██████╔╝
-// ░╚════╝░╚═════╝░
-#if defined(_WIN32) || defined(_WIN64)
-#define OCSTL_OS_STR "Windows"
-#define OCSTL_OS_WINDOWS
-#elif defined(__linux__)
-#define OCSTL_OS_STR "Linux"
-#define OCSTL_OS_LINUX
-#elif defined(__APPLE__)
-#define OCSTL_OS_STR "MacOS"
-#define OCSTL_OS_MACOS
-#endif
-
-// ░█████╗░░█████╗░███╗░░░███╗██████╗░██╗██╗░░░░░███████╗██████
-// ██╔══██╗██╔══██╗████╗░████║██╔══██╗██║██║░░░░░██╔════╝██╔══██╗
-// ██║░░╚═╝██║░░██║██╔████╔██║██████╔╝██║██║░░░░░█████╗░░██████╔╝
-// ██║░░██╗██║░░██║██║╚██╔╝██║██╔═══╝░██║██║░░░░░██╔══╝░░██╔══██╗
-// ╚█████╔╝╚█████╔╝██║░╚═╝░██║██║░░░░░██║███████╗███████╗██║░░██║
-// ░╚════╝░░╚════╝░╚═╝░░░░░╚═╝╚═╝░░░░░╚═╝╚══════╝╚══════╝╚═╝░░╚═╝
-#if defined(__POCC__)
-#define OCSTL_CC_STR "PellesC"
-#define OCSTL_CC_POCC
-#elif defined(__NVCC__)
-#define OCSTL_CC_STR "NVCC"
-#define OCSTL_CC_NVCC
-#elif defined(__clang__)
-#define OCSTL_CC_STR "Clang"
-#define OCSTL_CC_CLANG
-#elif defined(__TINYC__)
-#define OCSTL_CC_STR "TCC"
-#define OCSTL_CC_TCC
-#elif defined(_MSC_VER)
-#define OCSTL_CC_STR "MSVC"
-#define OCSTL_CC_MSVC
-#elif defined(__GNUC__)
-#define OCSTL_CC_STR "GCC"
-#define OCSTL_CC_GCC
-#endif
-
-
-// ░█████╗░░░░░░░██╗░░░██╗███████╗██████╗░░██████╗██╗░█████╗░███╗░░██╗
-// ██╔══██╗░░░░░░██║░░░██║██╔════╝██╔══██╗██╔════╝██║██╔══██╗████╗░██║
-// ██║░░╚═╝█████╗╚██╗░██╔╝█████╗░░██████╔╝╚█████╗░██║██║░░██║██╔██╗██║
-// ██║░░██╗╚════╝░╚████╔╝░██╔══╝░░██╔══██╗░╚═══██╗██║██║░░██║██║╚████║
-// ╚█████╔╝░░░░░░░░╚██╔╝░░███████╗██║░░██║██████╔╝██║╚█████╔╝██║░╚███║
-// ░╚════╝░░░░░░░░░░╚═╝░░░╚══════╝╚═╝░░╚═╝╚═════╝░╚═╝░╚════╝░╚═╝░░╚══╝
-
-#if defined(__STDC_VERSION__)
-#   if __STDC_VERSION__ >= 202311L
-#define OCSTL_C_VERSION_STR "C23"
-#define OCSTL_C_VERSION_23
-#   elif __STDC_VERSION__ >= 201710L
-#define OCSTL_C_VERSION_STR "C17 (C18)"
-#define OCSTL_C_VERSION_17
-#   elif __STDC_VERSION__ >= 201112L
-#define OCSTL_C_VERSION_STR "C11"
-#define OCSTL_C_VERSION_11
-#   elif __STDC_VERSION__ >= 199901L
-#define OCSTL_C_VERSION_STR "C99"
-#define OCSTL_C_VERSION_99
-#   else
-#define OCSTL_C_VERSION_STR "C94 (AMD1)"
-#define OCSTL_C_VERSION_94
-#   endif
-#elif defined(__STDC__)
-#define OCSTL_C_VERSION_STR "C89 (C90)"
-#define OCSTL_C_VERSION_89
-#else
-#define OCSTL_C_VERSION_STR "pre-ANSI C (K&R)"
-#define OCSTL_C_VERSION_PRE_ANSI
-#endif
-
-
-// ░█████╗░██████╗░████████╗██╗███╗░░░███╗██╗███████╗███████╗
-// ██╔══██╗██╔══██╗╚══██╔══╝██║████╗░████║██║╚════██║██╔════╝
-// ██║░░██║██████╔╝░░░██║░░░██║██╔████╔██║██║░░███╔═╝█████╗░░
-// ██║░░██║██╔═══╝░░░░██║░░░██║██║╚██╔╝██║██║██╔══╝░░██╔══╝░░
-// ╚█████╔╝██║░░░░░░░░██║░░░██║██║░╚═╝░██║██║███████╗███████╗
-// ░╚════╝░╚═╝░░░░░░░░╚═╝░░░╚═╝╚═╝░░░░░╚═╝╚═╝╚══════╝╚══════╝
-
-#if defined(_DEBUG) || !defined(NDEBUG)
-#define OCSTL_DEBUG
-#else
-#define OCSTL_RELEASE
-#endif
-
-
-#endif //_OPENCSTL_CROSSPLATFORM_H
-
-// ==============================================================================
-// END    crossplatform.h
-// ==============================================================================
+// [already included: crossplatform.h]
 
 #ifdef OCSTL_OS_WINDOWS
 #include <windows.h>
@@ -453,14 +500,14 @@ static int __vcprintln(const char *color, const char *format, va_list args) {
     return ret;
 }
 
-static char *__vcsprintf(const char *format, ...) {
-    static char buf[1024] = {0};
-    va_list args;
-    va_start(args, format);
-    vsprintf(buf, format, args);
-    va_end(args);
-    return buf;
-}
+// static char *__vcsprintf(const char *format, ...) {
+//     static char buf[1024] = {0};
+//     va_list args;
+//     va_start(args, format);
+//     vsprintf(buf, format, args);
+//     va_end(args);
+//     return buf;
+// }
 
 #if defined(OCSTL_OS_MACOS)
 
@@ -603,6 +650,87 @@ static const LOGGING logging = {
 // ==============================================================================
 // END    logging.h
 // ==============================================================================
+
+// ==============================================================================
+// BEGIN  salloc.h                       (depth 3)
+// ==============================================================================
+
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, Woo Cheol, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_C_ALLOCA_H)
+#define _OPENCSTL_C_ALLOCA_H
+
+#if defined(__linux__) || defined(__APPLE__)
+#include <alloca.h>
+#define salloc(size) (void*)alloca(size)
+#elif defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#define salloc(size) _alloca(size)
+#else
+#error "No Alloca Function"
+#endif
+
+
+#endif //_OPENCSTL_C_ALLOCA_H
+
+// ==============================================================================
+// END    salloc.h
+// ==============================================================================
+
+// ==============================================================================
+// BEGIN  galloc.h                       (depth 3)
+// ==============================================================================
+
+//
+// Created by spring on 4/24/2026.
+//
+
+#ifndef OPENCSTL_GALLOC_H
+#define OPENCSTL_GALLOC_H
+
+#define OCSTL_1MB   (1024UL * 1024UL)
+#define OCSTL_128MB (OCSTL_1MB * 128UL)
+#define OCSTL_512MB (OCSTL_1MB * 512UL)
+unsigned char OCSTL_GBLOCK[OCSTL_512MB]; // BSS
+unsigned char OCSTL_DBLOCK[OCSTL_1MB] = {0}; //DATA
+#endif //OPENCSTL_GALLOC_H
+
+// ==============================================================================
+// END    galloc.h
+// ==============================================================================
 //#include "van_emde_boas_tree.h"
 #define _1MB (1024*1024)
 #define _512KB (1024*512)
@@ -620,10 +748,10 @@ ZMEM zmem[8192] = {0};
 size_type64 zalloc_size = 0;
 size_type64 zalloc_count = 0;
 
-static void zinsert(void *ptr, char *file, char *func, int line) {
+static void zinsert(void *ptr, char *file, const char *func, int line) {
     zmem[zalloc_size].ptr = ptr;
     zmem[zalloc_size].file = file;
-    zmem[zalloc_size].func = func;
+    zmem[zalloc_size].func = (char*)func;
     zmem[zalloc_size].line = line;
     zalloc_size++;
     zalloc_count++;
@@ -673,6 +801,7 @@ static void opencstl_exit(void) {
 }
 #endif
 #ifdef OPENCSTL_TRACER
+
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
@@ -682,7 +811,6 @@ static int opencstl_init(void) {
     //memset(zalloc_vector, 0, SZ);
 
     logging.debug("OpenCSTL tracer start");
-
     //htm = htm_new();
 
     //mt19937.seed(time(NULL));
@@ -723,7 +851,7 @@ static void zfree(void *ptr) {
 }
 
 
-static void *_zcalloc(size_type64 cnt, size_type64 sz, char *file, char *func, int line) {
+static void *_zcalloc(size_type64 cnt, size_type64 sz, char *file, const char *func, int line) {
     void *ptr = ocalloc(cnt, sz);
     if (ptr) {
         zinsert(ptr, file, func, line);
@@ -732,7 +860,7 @@ static void *_zcalloc(size_type64 cnt, size_type64 sz, char *file, char *func, i
 }
 
 
-static void *_zmalloc(size_type64 sz, char *file, char *func, int line) {
+static void *_zmalloc(size_type64 sz, char *file, const char *func, int line) {
     void *ptr = omalloc(sz);
     if (ptr) {
         zinsert(ptr, file, func, line);
@@ -741,7 +869,7 @@ static void *_zmalloc(size_type64 sz, char *file, char *func, int line) {
 }
 
 
-static void *_zrealloc(void *ptr, size_type64 new_size, char *file, char *func, int line) {
+static void *_zrealloc(void *ptr, size_type64 new_size, char *file, const char *func, int line) {
     if (ptr == NULL) {
         return _zmalloc(new_size, file, func, line);
     }
@@ -782,37 +910,6 @@ static void *_zrealloc(void *ptr, size_type64 new_size, char *file, char *func, 
 
 // [already included: tracer.h]
 // [already included: zalloc.h]
-// [already included: crossplatform.h]
-
-#if defined(OCSTL_CC_CLANG)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat"
-#pragma clang diagnostic ignored "-Wunused-parameter"
-#pragma clang diagnostic ignored "-Wunused-variable"
-#pragma clang diagnostic ignored "-Wunused-function"
-#pragma clang diagnostic ignored "-Wunused-value"
-#pragma clang diagnostic ignored "-Wsign-compare"
-#pragma clang diagnostic ignored "-Wpedantic"
-#pragma clang diagnostic ignored "-Wgnu-auto-type"
-#pragma clang diagnostic ignored "-Wsometimes-uninitialized"
-#if !defined(OCSTL_OS_LINUX)
-#pragma clang diagnostic ignored "-Wuse-after-free"
-#endif
-#endif
-
-#if defined(OCSTL_CC_GCC)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wunused-function"
-#pragma GCC diagnostic ignored "-Wunused-value"
-#pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wpedantic"
-#pragma GCC diagnostic ignored "-Wformat"
-#pragma GCC diagnostic ignored "-Wuse-after-free"
-#pragma GCC diagnostic ignored "-Wunused-result"
-#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
-#endif
 
 
 #define USE_CSTL_FUNC
@@ -889,13 +986,18 @@ static void *_zrealloc(void *ptr, size_type64 new_size, char *file, char *func, 
 int __verify(char *expression, char *file, int line) {
     logging.error("Verification failed: %s, file %s, line %d",
                   expression, file, line);
+    fflush(stdout);
+    fflush(stderr);
     abort();
 }
 
 #define yikes(STR) _yikes(STR,__FILE__,__LINE__)
 
 void _yikes(char *str, char *file, int line) {
-    logging.error("Mistake failed: %s, file %s, line %d");
+    logging.error("Mistake failed: %s, file %s, line %d",str,file,line);
+    fflush(stdout);
+    fflush(stderr);
+    exit(-1);
 }
 #endif //OPENCSTL_VERIFY_H
 
@@ -1259,10 +1361,10 @@ typedef struct {
     string_unary_fn to_lower;
     string_match_fn starts_with;
     string_match_fn ends_with;
-    string_count_fn count;
+    string_count_fn count_str;
     string_join_fn join;
     string_concat_fn concat;
-    string_unary_fn reverse;
+    string_unary_fn reverse_str;
     string_pred_fn is_digit;
     string_pred_fn is_alpha;
     string_pred_fn is_alnum;
@@ -1666,7 +1768,9 @@ typedef enum CONTAINER_TYPE {
     CT_UNORDERED_SET,
     CT_UNORDERED_MAP,
     CT_JSON,
-    CT_GLOB
+    CT_GLOB,
+    CT_CSV,
+    CT_BITSET,
 } CONTAINER_TYPE;
 
 typedef struct {
@@ -1693,6 +1797,17 @@ typedef struct {
     VEB *veb;
     HashMap *data;
 } HTMVEB;
+
+typedef struct {
+    unsigned char *p1;
+    unsigned char *p2;
+    int type_size;
+} GInterval;
+
+typedef struct {
+    VEB *veb;
+    HashMap *data;
+} GIntervalVEB;
 
 HTMVEB *htm_new(void) {
     HTMVEB *iv = (HTMVEB *) calloc(1, sizeof(HTMVEB));
@@ -1745,6 +1860,13 @@ HashtableManager *htm_find(HTMVEB *iv, void *x) {
     return ((uintptr_t) x <= (uintptr_t) it->p2) ? it : NULL;
 }
 
+// ██╗███╗░░██╗████████╗███████╗██████╗░██╗░░░██╗░█████╗░██╗░░░░░
+// ██║████╗░██║╚══██╔══╝██╔════╝██╔══██╗██║░░░██║██╔══██╗██║░░░░░
+// ██║██╔██╗██║░░░██║░░░█████╗░░██████╔╝╚██╗░██╔╝███████║██║░░░░░
+// ██║██║╚████║░░░██║░░░██╔══╝░░██╔══██╗░╚████╔╝░██╔══██║██║░░░░░
+// ██║██║░╚███║░░░██║░░░███████╗██║░░██║░░╚██╔╝░░██║░░██║███████╗
+// ╚═╝╚═╝░░╚══╝░░░╚═╝░░░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚══════╝
+
 
 IntervalVEB *iveb_new(void) {
     IntervalVEB *iv = (IntervalVEB *) calloc(1, sizeof(IntervalVEB));
@@ -1791,6 +1913,7 @@ void iveb_erase(IntervalVEB *iv, void *a) {
 
 
 Interval *iveb_find(IntervalVEB *iv, void *x) {
+    if (iv == NULL) return NULL;
     u64 key = (u64) (uintptr_t) x;
     u64 start = veb_floor(iv->veb, key);
     if (start == VEB_EMPTY) return NULL;
@@ -1799,11 +1922,403 @@ Interval *iveb_find(IntervalVEB *iv, void *x) {
     return ((uintptr_t) x <= (uintptr_t) it->b) ? it : NULL;
 }
 
+//==================================
+
+// [already included: galloc.h]
+
+// Power-of-two bucket allocator over OCSTL_DBLOCK.
+// Each alloc is rounded up to the next power of two; bucket indices are
+// the log2 of the rounded size minus _DBLOCK_MIN_SHIFT. Bump pointer
+// for fresh slots, LIFO free list per bucket for reuse.
+#define _DBLOCK_MIN_SHIFT    4   // 16 B
+#define _DBLOCK_MAX_SHIFT    20  // 1 MB
+#define _DBLOCK_NUM_BUCKETS  (_DBLOCK_MAX_SHIFT - _DBLOCK_MIN_SHIFT + 1)
+
+typedef struct _OCSTLDBlockNode {
+    struct _OCSTLDBlockNode *next;
+} _OCSTLDBlockNode;
+
+static size_type64 _ocstl_dblock_bump = 0;
+static _OCSTLDBlockNode *_ocstl_dblock_freelist[_DBLOCK_NUM_BUCKETS] = {NULL};
+
+static int _ocstl_dblock_bucket(size_type64 sz) {
+    int sh = _DBLOCK_MIN_SHIFT;
+    size_type64 s = (size_type64) 1 << sh;
+    while (s < sz) {
+        s <<= 1;
+        sh++;
+    }
+    return sh - _DBLOCK_MIN_SHIFT;
+}
+
+static void *_ocstl_dblock_alloc(size_type64 sz) {
+    int b = _ocstl_dblock_bucket(sz);
+    size_type64 real = (size_type64) 1 << (b + _DBLOCK_MIN_SHIFT);
+    if (_ocstl_dblock_freelist[b]) {
+        _OCSTLDBlockNode *n = _ocstl_dblock_freelist[b];
+        _ocstl_dblock_freelist[b] = n->next;
+        memset(n, 0, real);
+        return n;
+    }
+    if (_ocstl_dblock_bump + real > OCSTL_1MB) return NULL;
+    void *p = &OCSTL_DBLOCK[_ocstl_dblock_bump];
+    _ocstl_dblock_bump += real;
+    memset(p, 0, real);
+    return p;
+}
+
+static void _ocstl_dblock_free(void *p, size_type64 sz) {
+    if (!p) return;
+    int b = _ocstl_dblock_bucket(sz);
+    _OCSTLDBlockNode *n = (_OCSTLDBlockNode *) p;
+    n->next = _ocstl_dblock_freelist[b];
+    _ocstl_dblock_freelist[b] = n;
+}
+
+// ---- DBLOCK-backed HashMap (giveb-only; reuses pure helpers hm_hash, hm_get) ----
+
+static void giveb_hm_set(HashMap *h, u64 key, void *val); // fwd
+
+static HashMap *giveb_hm_new(void) {
+    HashMap *h = (HashMap *) _ocstl_dblock_alloc(sizeof(HashMap));
+    h->cap = HM_INIT_CAP;
+    h->e = (HMEntry *) _ocstl_dblock_alloc(h->cap * sizeof(HMEntry));
+    return h;
+}
+
+static void giveb_hm_free(HashMap *h) {
+    _ocstl_dblock_free(h->e, h->cap * sizeof(HMEntry));
+    _ocstl_dblock_free(h, sizeof(HashMap));
+}
+
+static void giveb_hm_grow(HashMap *h) {
+    size_type64 oc = h->cap;
+    HMEntry *oe = h->e;
+    h->cap = oc * 2;
+    h->e = (HMEntry *) _ocstl_dblock_alloc(h->cap * sizeof(HMEntry));
+    h->size = 0;
+    for (size_type64 i = 0; i < oc; i++)
+        if (oe[i].used) giveb_hm_set(h, oe[i].key, oe[i].val);
+    _ocstl_dblock_free(oe, oc * sizeof(HMEntry));
+}
+
+static void giveb_hm_set(HashMap *h, u64 k, void *v) {
+    if (h->size * 2 >= h->cap) giveb_hm_grow(h);
+    size_type64 i = (size_type64) (hm_hash(k) % h->cap);
+    while (h->e[i].used && h->e[i].key != k)
+        i = (i + 1) % h->cap;
+    if (!h->e[i].used) h->size++;
+    h->e[i] = (HMEntry){k, v, 1};
+}
+
+static void giveb_hm_del(HashMap *h, u64 k) {
+    size_type64 i = (size_type64) (hm_hash(k) % h->cap);
+    while (h->e[i].used && h->e[i].key != k)
+        i = (i + 1) % h->cap;
+    if (!h->e[i].used) return;
+    h->e[i].used = 0;
+    h->size--;
+    size_type64 j = (i + 1) % h->cap;
+    while (h->e[j].used) {
+        HMEntry t = h->e[j];
+        h->e[j].used = 0;
+        h->size--;
+        giveb_hm_set(h, t.key, t.val);
+        j = (j + 1) % h->cap;
+    }
+}
+
+// ---- DBLOCK-backed VEB (giveb-only; reuses pure helpers veb_empty, cls_get,
+// veb_pred, veb_floor, veb_succ, vhi, vlo, vidx, lo_b, hi_b) ----
+
+static VEB *giveb_veb_new(int bits) {
+    VEB *v = (VEB *) _ocstl_dblock_alloc(sizeof(VEB));
+    v->bits = bits;
+    v->min = VEB_EMPTY;
+    v->max = VEB_EMPTY;
+    if (bits > 1) v->cls = giveb_hm_new();
+    return v;
+}
+
+static void giveb_veb_free(VEB *v);
+
+static void giveb_cls_free_all(HashMap *hm) {
+    for (size_type64 i = 0; i < hm->cap; i++)
+        if (hm->e[i].used) giveb_veb_free((VEB *) hm->e[i].val);
+    giveb_hm_free(hm);
+}
+
+static void giveb_veb_free(VEB *v) {
+    if (!v) return;
+    if (v->bits > 1) {
+        giveb_veb_free(v->sum);
+        if (v->cls) giveb_cls_free_all(v->cls);
+    }
+    _ocstl_dblock_free(v, sizeof(VEB));
+}
+
+static VEB *giveb_cls_or_new(VEB *v, u64 h) {
+    VEB *c = (VEB *) hm_get(v->cls, h);
+    if (!c) {
+        c = giveb_veb_new(lo_b(v->bits));
+        giveb_hm_set(v->cls, h, c);
+    }
+    return c;
+}
+
+static VEB *giveb_sum_or_new(VEB *v) {
+    if (!v->sum) v->sum = giveb_veb_new(hi_b(v->bits));
+    return v->sum;
+}
+
+static void giveb_veb_ins(VEB *v, u64 x) {
+    if (veb_empty(v)) {
+        v->min = v->max = x;
+        return;
+    }
+    if (x < v->min) {
+        u64 t = v->min;
+        v->min = x;
+        x = t;
+    }
+    if (v->bits == 1) {
+        if (x > v->max) v->max = x;
+        return;
+    }
+    u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
+    VEB *c = giveb_cls_or_new(v, h);
+    if (veb_empty(c)) giveb_veb_ins(giveb_sum_or_new(v), h);
+    giveb_veb_ins(c, l);
+    if (x > v->max) v->max = x;
+}
+
+static void giveb_veb_del(VEB *v, u64 x) {
+    if (v->min == v->max) {
+        v->min = v->max = VEB_EMPTY;
+        return;
+    }
+    if (v->bits == 1) {
+        v->min = v->max = (x == 0) ? 1 : 0;
+        return;
+    }
+    if (x == v->min) {
+        if (!v->sum || veb_empty(v->sum)) {
+            v->min = v->max = VEB_EMPTY;
+            return;
+        }
+        u64 fh = v->sum->min;
+        VEB *fc = cls_get(v, fh);
+        v->min = x = vidx(fh, fc->min, v->bits);
+    }
+    u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
+    VEB *c = cls_get(v, h);
+    if (!c) return;
+    giveb_veb_del(c, l);
+    if (veb_empty(c)) {
+        giveb_hm_del(v->cls, h);
+        giveb_veb_free(c);
+        if (v->sum) giveb_veb_del(v->sum, h);
+        if (x == v->max) {
+            if (!v->sum || veb_empty(v->sum)) v->max = v->min;
+            else {
+                u64 lh = v->sum->max;
+                VEB *lc = cls_get(v, lh);
+                v->max = vidx(lh, lc->max, v->bits);
+            }
+        }
+    } else if (x == v->max) {
+        v->max = vidx(h, c->max, v->bits);
+    }
+}
+
+// ---- giveb public API (DBLOCK-only) ----
+
+GIntervalVEB *giveb_new(void) {
+    GIntervalVEB *iv = (GIntervalVEB *) _ocstl_dblock_alloc(sizeof(GIntervalVEB));
+    iv->veb = giveb_veb_new(64);
+    iv->data = giveb_hm_new();
+    return iv;
+}
+
+
+void giveb_free(GIntervalVEB *iv) {
+    for (size_type64 i = 0; i < iv->data->cap; i++)
+        if (iv->data->e[i].used)
+            _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval));
+    giveb_hm_free(iv->data);
+    giveb_veb_free(iv->veb);
+    _ocstl_dblock_free(iv, sizeof(GIntervalVEB));
+}
+
+
+void giveb_insert(GIntervalVEB *iv, void *a, void *b, int type_size) {
+    u64 k = (u64) (uintptr_t) a;
+    GInterval *it = (GInterval *) hm_get(iv->data, k);
+    if (!it) {
+        it = (GInterval *) _ocstl_dblock_alloc(sizeof(GInterval));
+        giveb_hm_set(iv->data, k, it);
+        giveb_veb_ins(iv->veb, k);
+    }
+    it->p1 = a;
+    it->p2 = b;
+    it->type_size = type_size;
+}
+
+
+void giveb_erase(GIntervalVEB *iv, void *a) {
+    u64 key = (u64) (uintptr_t) a;
+    u64 start = veb_floor(iv->veb, key);
+    if (start == VEB_EMPTY) return;
+    GInterval *it = (GInterval *) hm_get(iv->data, start);
+    if (!it) return;
+    if ((uintptr_t) a > (uintptr_t) it->p2) return;
+    _ocstl_dblock_free(it, sizeof(GInterval));
+    giveb_hm_del(iv->data, start);
+    giveb_veb_del(iv->veb, start);
+}
+
+GInterval *giveb_find(GIntervalVEB *iv, void *x) {
+    if (iv==NULL) return NULL;
+    u64 key = (u64) (uintptr_t) x;
+    u64 start = veb_floor(iv->veb, key);
+    if (start == VEB_EMPTY) return NULL;
+    GInterval *it = (GInterval *) hm_get(iv->data, start);
+    if (!it) return NULL;
+    return ((uintptr_t) x <= (uintptr_t) it->p2) ? it : NULL;
+}
+
+static u64 veb_succ(VEB *v, u64 x) {
+    if (veb_empty(v) || x >= v->max) return VEB_EMPTY;
+    if (x < v->min) return v->min;
+    if (v->bits == 1) return 1; // x==0, max==1 보장
+
+    u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
+    VEB *c = cls_get(v, h);
+
+    // 같은 클러스터 내에 l보다 큰 원소가 있으면 반환
+    if (c && !veb_empty(c) && l < c->max) {
+        u64 nl = veb_succ(c, l);
+        return vidx(h, nl, v->bits);
+    }
+
+    // 다음 비어있지 않은 클러스터의 최솟값 반환
+    u64 nh = (v->sum && !veb_empty(v->sum))
+                 ? veb_succ(v->sum, h)
+                 : VEB_EMPTY;
+    if (nh == VEB_EMPTY) return VEB_EMPTY;
+    VEB *nc = cls_get(v, nh);
+    if (!nc) return VEB_EMPTY;
+    return vidx(nh, nc->min, v->bits);
+}
+
+void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
+    if (!iv || sz == 0) return NULL;
+
+    void *block_start = (void *) OCSTL_GBLOCK;
+    void *block_end = (void *) (OCSTL_GBLOCK + OCSTL_512MB);
+
+    // GBLOCK 전체가 비어있으면 시작 주소 바로 반환
+    if (veb_empty(iv->veb)) {
+        if (sz <= OCSTL_512MB) {
+            giveb_insert(iv, block_start,
+                         (void *) ((unsigned char *) block_start + sz - 1), type_size);
+            return block_start;
+        }
+        return NULL;
+    }
+
+    u64 cur_key = iv->veb->min;
+
+    // GBLOCK 시작 ~ 첫 번째 구간 사이 확인
+    GInterval *first = (GInterval *) hm_get(iv->data, cur_key);
+    if (first) {
+        u64 gap_start = (u64) (uintptr_t) block_start;
+        u64 gap_end = (u64) (uintptr_t) first->p1;
+        if (gap_end > gap_start && gap_end - gap_start >= sz) {
+            void *p = (void *) (uintptr_t) gap_start;
+            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), type_size);
+            return p;
+        }
+    }
+
+    // 등록된 구간 사이 빈 틈 탐색
+    while (cur_key != VEB_EMPTY) {
+        GInterval *cur = (GInterval *) hm_get(iv->data, cur_key);
+        if (!cur) break;
+
+        u64 gap_start = (u64) (uintptr_t) cur->p2 + 1;
+        u64 next_key = veb_succ(iv->veb, cur_key);
+
+        u64 gap_end = (next_key != VEB_EMPTY)
+                          ? (u64) (uintptr_t) ((GInterval *) hm_get(iv->data, next_key))->p1
+                          : (u64) (uintptr_t) block_end;
+
+        // GBLOCK 범위 clamp
+        if (gap_start < (u64) (uintptr_t) block_start)
+            gap_start = (u64) (uintptr_t) block_start;
+        if (gap_end > (u64) (uintptr_t) block_end)
+            gap_end = (u64) (uintptr_t) block_end;
+
+        if (gap_end > gap_start && gap_end - gap_start >= sz) {
+            void *p = (void *) (uintptr_t) gap_start;
+            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), type_size);
+            return p;
+        }
+
+        if (next_key == VEB_EMPTY) break;
+        cur_key = next_key;
+    }
+
+    return NULL; // GBLOCK 내 sz 크기의 빈 공간 없음
+}
+
+
+static GIntervalVEB *giveb = NULL;
+
+
 static IntervalVEB *iveb = NULL;
+
 static HTMVEB *htm = NULL;
+
+void __opencstl_giveb_destroy(void) {
+    giveb_free(giveb);
+}
+
+void __cstl_htm_destroy(void) {
+    htm_free(htm);
+}
 
 void __opencstl_iveb_destroy(void) {
     iveb_free(iveb);
+}
+#ifdef OPENCSTL_TRACER
+void *_garray_ctx = NULL;
+#define galloc(SZ,tsz)  (_garray_ctx=_galloc(SZ,tsz));zinsert(_garray_ctx,__FILE__,__func__,__LINE__);
+#define gfree(P) _gfree(P);zremove(P);
+#else
+#define galloc(SZ,TSZ) _galloc(SZ ,TSZ)
+#define gfree(P) _gfree(P)
+#endif
+static void *_galloc(size_type64 sz, size_type64 type_size) {
+    bool giveb_init = false;
+    if (giveb == NULL) {
+        giveb = giveb_new();
+        giveb_init = true;
+    }
+    void *p = giveb_alloc(giveb, sz, type_size);
+    if (p == NULL) {
+        return NULL;
+    }
+    giveb_insert(giveb, p, (char *) p + (sz), type_size);
+    if (giveb_init) {
+        atexit(__opencstl_giveb_destroy);
+    }
+
+    return p;
+}
+
+static void _gfree(void *p) {
+    giveb_erase(giveb, p);
 }
 #endif //_OPENCSTL_VAN_EMDE_BOAS_TREE_H
 
@@ -1856,6 +2371,7 @@ void __opencstl_iveb_destroy(void) {
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
+
 #if !defined(_OPENCSTL_DEFINES_H)
 #define _OPENCSTL_DEFINES_H
 
@@ -1889,6 +2405,7 @@ void __opencstl_iveb_destroy(void) {
 #define OPENCSTL_PRIORITY_QUEUE	7
 #define OPENCSTL_UNORDERED_SET	8
 #define OPENCSTL_UNORDERED_MAP	9
+#define OPENCSTL_ARRAY          10
 
 
 #if defined(OPENCSTL_OS_WINDOWS)
@@ -2006,6 +2523,7 @@ typedef long long _opencstl_ll_ua;
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
+
 #define _cstl_deref(P) (__extension__ ({ \
     __typeof__(*(P)) _cstl_rv; \
     __builtin_memcpy(&_cstl_rv, (const void *)(P), sizeof(_cstl_rv)); \
@@ -2054,15 +2572,35 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define cstl_shrink_to_fit(container) _cstl_shrink_to_fit(&(container))
 #define cstl_max_size(container) _cstl_max_size(&container)
 #define cstl_reverse(container) _cstl_reverse(&(container))
+
+
+#define cstl_count(container,...)	_cstl_count(&(container),__VA_ARGS__)
+#define cstl_count_if(container,...)	_cstl_count_if(&(container),__VA_ARGS__)
+#define cstl_lower_bound(container,...)	_cstl_lower_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_upper_bound(container,...)	_cstl_upper_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+
 #elif defined(__linux__) || defined(__APPLE__)
 
 // TCC supports typeof but not __auto_type; GCC/Clang support both.
-#if defined(__TINYC__)
-#define _CSTL_TYPEOF(x) typeof(x)
-#else
-#define _CSTL_TYPEOF(x) __auto_type
-#endif
+// #if defined(__TINYC__)
+// #define _CSTL_TYPEOF(x) typeof(x)
+// #else
+// #define _CSTL_TYPEOF(x) __auto_type
+// #endif
 
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+// C23 표준 typeof
+#define _CSTL_TYPEOF(x)  typeof(x)
+#elif defined(__cplusplus)
+// C++: decltype
+#define _CSTL_TYPEOF(x)  decltype(x)
+#elif defined(__GNUC__) || defined(__clang__) || defined(__TINYC__)
+// GCC/Clang/TCC: __typeof__ (경고 없음, __auto_type 대신)
+#define _CSTL_TYPEOF(x)  __typeof__(x)
+#else
+// MSVC 등 fallback
+#define _CSTL_TYPEOF(x)  void*
+#endif
 
 #define cstl_push_back(C,...) _linux_cstl_push_back(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
 #define _linux_cstl_push_back(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_back ## _ ## N
@@ -2142,6 +2680,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define _cstl_assign_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
 #define _cstl_assign_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
 #define _cstl_assign_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+
 #define cstl_find(C,...) _linux_cstl_find(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
 #define _linux_cstl_find(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_find ## _ ## N
 #define _cstl_find_0(C,argc)    ({_CSTL_TYPEOF(&C) __0=&C;_cstl_find( __0,argc);})
@@ -2186,6 +2725,54 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define cstl_max_size(container) _cstl_max_size(&container)
 #define cstl_shrink_to_fit(container) _cstl_shrink_to_fit(&(container))
 #define cstl_reverse(container) _cstl_reverse(&(container))
+
+
+#define cstl_count(C,...) _linux_cstl_count(C,__VA_ARGS__, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
+#define _linux_cstl_count(C,_1, _2, _3, _4, _5, N, ...) _cstl_count ## _ ## N
+#define _cstl_count_0(C)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count( __0);}))
+#define _cstl_count_1(C,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_count( __0,&__1);}))
+#define _cstl_count_2(C,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_count( __0,&__1,&__2);}))
+#define _cstl_count_3(C,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_count( __0,&__1,&__2,&__3);}))
+#define _cstl_count_4(C,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_count( __0,&__1,&__2,&__3,&__4);}))
+#define _cstl_count_5(C,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_count( __0,&__1,&__2,&__3,&__4,&__5);}))
+
+#define cstl_count_if(C,...) _linux_cstl_count_if(C,__VA_ARGS__, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
+#define _linux_cstl_count_if(C,_1, _2, _3, _4, _5, N, ...) _cstl_count_if ## _ ## N
+#define _cstl_count_if_0(C)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0);}))
+#define _cstl_count_if_1(C,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1);}))
+#define _cstl_count_if_2(C,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2);}))
+#define _cstl_count_if_3(C,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2,_3);}))
+#define _cstl_count_if_4(C,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2,_3,_4);}))
+#define _cstl_count_if_5(C,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2,_3,_4,_5);}))
+
+#define cstl_lower_bound(C,...) _linux_cstl_lower_bound(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_lower_bound(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_lower_bound ## _ ## N
+#define _cstl_lower_bound_0(C,argc)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_lower_bound( __0,argc);}))
+#define _cstl_lower_bound_1(C,argc,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_lower_bound( __0,argc,&__1);}))
+#define _cstl_lower_bound_2(C,argc,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_lower_bound( __0,argc,&__1,&__2);}))
+#define _cstl_lower_bound_3(C,argc,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_lower_bound( __0,argc,&__1,&__2,&__3);}))
+#define _cstl_lower_bound_4(C,argc,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4);}))
+#define _cstl_lower_bound_5(C,argc,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
+#define _cstl_lower_bound_6(C,argc,_1,_2,_3,_4,_5,_6)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
+#define _cstl_lower_bound_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
+#define _cstl_lower_bound_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
+#define _cstl_lower_bound_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
+#define _cstl_lower_bound_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
+
+#define cstl_upper_bound(C,...) _linux_cstl_upper_bound(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_upper_bound(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_upper_bound ## _ ## N
+#define _cstl_upper_bound_0(C,argc)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_upper_bound( __0,argc);}))
+#define _cstl_upper_bound_1(C,argc,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_upper_bound( __0,argc,&__1);}))
+#define _cstl_upper_bound_2(C,argc,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_upper_bound( __0,argc,&__1,&__2);}))
+#define _cstl_upper_bound_3(C,argc,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_upper_bound( __0,argc,&__1,&__2,&__3);}))
+#define _cstl_upper_bound_4(C,argc,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4);}))
+#define _cstl_upper_bound_5(C,argc,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
+#define _cstl_upper_bound_6(C,argc,_1,_2,_3,_4,_5,_6)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
+#define _cstl_upper_bound_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
+#define _cstl_upper_bound_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
+#define _cstl_upper_bound_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
+#define _cstl_upper_bound_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
+
 #endif
 
 
@@ -2200,6 +2787,487 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 // END    defines.h
 // ==============================================================================
 // [already included: types.h]
+
+// ==============================================================================
+// BEGIN  compare.h                      (depth 2)
+// ==============================================================================
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+
+#ifndef OPENCSTL_COMPARE_H
+#define OPENCSTL_COMPARE_H
+#include <string.h>
+// [already included: types.h]
+#include<float.h>
+typedef const void *CVP;
+
+typedef int (*_OpenCSTLCompareFunc)(CVP a, CVP b);
+
+typedef int (*_OpenCSTLEqualsFunc)(CVP a, CVP b, size_t _);
+
+#define _SAFE_COMPARE(TYPE,X,Y)  (*(TYPE *) (X) > *(TYPE *) (Y)) - (*(TYPE *) (X) < *(TYPE *) (Y))
+
+int less_int32(CVP a, CVP b) {
+    return _SAFE_COMPARE(int, a, b);
+}
+
+int less_uint32(CVP a, CVP b) {
+    return _SAFE_COMPARE(unsigned int, a, b);
+}
+
+int less_int64(CVP a, CVP b) {
+    return _SAFE_COMPARE(long long, a, b);
+}
+
+int less_uint64(CVP a, CVP b) {
+    return _SAFE_COMPARE(unsigned long long, a, b);
+}
+
+int less_float(CVP a, CVP b) {
+    return (*(float *) a > *(float *) b) - (*(float *) a < *(float *) b);
+}
+
+int less_double(CVP a, CVP b) {
+    return (*(double *) a > *(double *) b) - (*(double *) a < *(double *) b);
+}
+
+int less_string(CVP a, CVP b) {
+    return strcmp(*(char **) a, *(char **) b);
+}
+
+int greater_int32(CVP a, CVP b) {
+    return less_int32(b, a);
+}
+
+int greater_uint32(CVP a, CVP b) {
+    return less_uint32(b, a);
+}
+
+int greater_int64(CVP a, CVP b) {
+    return less_int64(b, a);
+}
+
+int greater_uint64(CVP a, CVP b) {
+    return less_uint64(b, a);
+}
+
+int greater_float(CVP a, CVP b) {
+    return less_float(b, a);
+}
+
+int greater_double(CVP a, CVP b) {
+    return less_double(b, a);
+}
+
+int greater_string(CVP a, CVP b) {
+    return less_string(b, a);
+}
+
+_OpenCSTLCompareFunc CSTL_LESS(const char *type_str) {
+    while (*type_str == ' ') type_str++;
+
+    const char *end = type_str + strlen(type_str);
+    while (end > type_str && *(end - 1) == ' ') end--;
+
+    char buf[256];
+    size_type64 len = end - type_str;
+    if (len >= sizeof(buf)) return NULL;
+
+    memcpy(buf, type_str, len);
+    buf[len] = '\0';
+
+    if (strcmp(buf, "float") == 0) return less_float;
+    if (strcmp(buf, "double") == 0) return less_double;
+    if (strcmp(buf, "int") == 0) return less_int32;
+    if (strcmp(buf, "long long") == 0) return less_int64;
+    if (strcmp(buf, "unsigned long long") == 0) return less_uint64;
+    if (strcmp(buf, "unsigned int") == 0) return less_uint32;
+    if (strcmp(buf, "char*") == 0) return less_string;
+    if (strcmp(buf, "char *") == 0) return less_string;
+
+
+    return NULL;
+}
+
+_OpenCSTLCompareFunc CSTL_GREATER(const char *type_str) {
+    while (*type_str == ' ') type_str++;
+
+    const char *end = type_str + strlen(type_str);
+    while (end > type_str && *(end - 1) == ' ') end--;
+
+    char buf[256];
+    size_type64 len = end - type_str;
+    if (len >= sizeof(buf)) return NULL;
+
+    memcpy(buf, type_str, len);
+    buf[len] = '\0';
+
+    if (strcmp(buf, "float") == 0) return greater_float;
+    if (strcmp(buf, "double") == 0) return greater_double;
+    if (strcmp(buf, "int") == 0) return greater_int32;
+    if (strcmp(buf, "long long") == 0) return greater_int64;
+    if (strcmp(buf, "unsigned long long") == 0) return greater_uint64;
+    if (strcmp(buf, "unsigned int") == 0) return greater_uint32;
+    if (strcmp(buf, "char*") == 0) return greater_string;
+    if (strcmp(buf, "char *") == 0) return greater_string;
+
+    return NULL;
+}
+
+#define LESS(TYPE)    CSTL_LESS(#TYPE)
+#define GREATER(TYPE) CSTL_GREATER(#TYPE)
+
+
+int _memcmp1(const void *a, const void *b) { return memcmp(a, b, 1); }
+int _memcmp2(const void *a, const void *b) { return memcmp(a, b, 2); }
+int _memcmp3(const void *a, const void *b) { return memcmp(a, b, 3); }
+int _memcmp4(const void *a, const void *b) { return memcmp(a, b, 4); }
+int _memcmp5(const void *a, const void *b) { return memcmp(a, b, 5); }
+int _memcmp6(const void *a, const void *b) { return memcmp(a, b, 6); }
+int _memcmp7(const void *a, const void *b) { return memcmp(a, b, 7); }
+int _memcmp8(const void *a, const void *b) { return memcmp(a, b, 8); }
+int _memcmp9(const void *a, const void *b) { return memcmp(a, b, 9); }
+int _memcmp10(const void *a, const void *b) { return memcmp(a, b, 10); }
+int _memcmp11(const void *a, const void *b) { return memcmp(a, b, 11); }
+int _memcmp12(const void *a, const void *b) { return memcmp(a, b, 12); }
+int _memcmp13(const void *a, const void *b) { return memcmp(a, b, 13); }
+int _memcmp14(const void *a, const void *b) { return memcmp(a, b, 14); }
+int _memcmp15(const void *a, const void *b) { return memcmp(a, b, 15); }
+int _memcmp16(const void *a, const void *b) { return memcmp(a, b, 16); }
+int _memcmp17(const void *a, const void *b) { return memcmp(a, b, 17); }
+int _memcmp18(const void *a, const void *b) { return memcmp(a, b, 18); }
+int _memcmp19(const void *a, const void *b) { return memcmp(a, b, 19); }
+int _memcmp20(const void *a, const void *b) { return memcmp(a, b, 20); }
+int _memcmp21(const void *a, const void *b) { return memcmp(a, b, 21); }
+int _memcmp22(const void *a, const void *b) { return memcmp(a, b, 22); }
+int _memcmp23(const void *a, const void *b) { return memcmp(a, b, 23); }
+int _memcmp24(const void *a, const void *b) { return memcmp(a, b, 24); }
+int _memcmp25(const void *a, const void *b) { return memcmp(a, b, 25); }
+int _memcmp26(const void *a, const void *b) { return memcmp(a, b, 26); }
+int _memcmp27(const void *a, const void *b) { return memcmp(a, b, 27); }
+int _memcmp28(const void *a, const void *b) { return memcmp(a, b, 28); }
+int _memcmp29(const void *a, const void *b) { return memcmp(a, b, 29); }
+int _memcmp30(const void *a, const void *b) { return memcmp(a, b, 30); }
+int _memcmp31(const void *a, const void *b) { return memcmp(a, b, 31); }
+int _memcmp32(const void *a, const void *b) { return memcmp(a, b, 32); }
+int _memcmp33(const void *a, const void *b) { return memcmp(a, b, 33); }
+int _memcmp34(const void *a, const void *b) { return memcmp(a, b, 34); }
+int _memcmp35(const void *a, const void *b) { return memcmp(a, b, 35); }
+int _memcmp36(const void *a, const void *b) { return memcmp(a, b, 36); }
+int _memcmp37(const void *a, const void *b) { return memcmp(a, b, 37); }
+int _memcmp38(const void *a, const void *b) { return memcmp(a, b, 38); }
+int _memcmp39(const void *a, const void *b) { return memcmp(a, b, 39); }
+int _memcmp40(const void *a, const void *b) { return memcmp(a, b, 40); }
+int _memcmp41(const void *a, const void *b) { return memcmp(a, b, 41); }
+int _memcmp42(const void *a, const void *b) { return memcmp(a, b, 42); }
+int _memcmp43(const void *a, const void *b) { return memcmp(a, b, 43); }
+int _memcmp44(const void *a, const void *b) { return memcmp(a, b, 44); }
+int _memcmp45(const void *a, const void *b) { return memcmp(a, b, 45); }
+int _memcmp46(const void *a, const void *b) { return memcmp(a, b, 46); }
+int _memcmp47(const void *a, const void *b) { return memcmp(a, b, 47); }
+int _memcmp48(const void *a, const void *b) { return memcmp(a, b, 48); }
+int _memcmp49(const void *a, const void *b) { return memcmp(a, b, 49); }
+int _memcmp50(const void *a, const void *b) { return memcmp(a, b, 50); }
+int _memcmp51(const void *a, const void *b) { return memcmp(a, b, 51); }
+int _memcmp52(const void *a, const void *b) { return memcmp(a, b, 52); }
+int _memcmp53(const void *a, const void *b) { return memcmp(a, b, 53); }
+int _memcmp54(const void *a, const void *b) { return memcmp(a, b, 54); }
+int _memcmp55(const void *a, const void *b) { return memcmp(a, b, 55); }
+int _memcmp56(const void *a, const void *b) { return memcmp(a, b, 56); }
+int _memcmp57(const void *a, const void *b) { return memcmp(a, b, 57); }
+int _memcmp58(const void *a, const void *b) { return memcmp(a, b, 58); }
+int _memcmp59(const void *a, const void *b) { return memcmp(a, b, 59); }
+int _memcmp60(const void *a, const void *b) { return memcmp(a, b, 60); }
+int _memcmp61(const void *a, const void *b) { return memcmp(a, b, 61); }
+int _memcmp62(const void *a, const void *b) { return memcmp(a, b, 62); }
+int _memcmp63(const void *a, const void *b) { return memcmp(a, b, 63); }
+int _memcmp64(const void *a, const void *b) { return memcmp(a, b, 64); }
+int _memcmp65(const void *a, const void *b) { return memcmp(a, b, 65); }
+int _memcmp66(const void *a, const void *b) { return memcmp(a, b, 66); }
+int _memcmp67(const void *a, const void *b) { return memcmp(a, b, 67); }
+int _memcmp68(const void *a, const void *b) { return memcmp(a, b, 68); }
+int _memcmp69(const void *a, const void *b) { return memcmp(a, b, 69); }
+int _memcmp70(const void *a, const void *b) { return memcmp(a, b, 70); }
+int _memcmp71(const void *a, const void *b) { return memcmp(a, b, 71); }
+int _memcmp72(const void *a, const void *b) { return memcmp(a, b, 72); }
+int _memcmp73(const void *a, const void *b) { return memcmp(a, b, 73); }
+int _memcmp74(const void *a, const void *b) { return memcmp(a, b, 74); }
+int _memcmp75(const void *a, const void *b) { return memcmp(a, b, 75); }
+int _memcmp76(const void *a, const void *b) { return memcmp(a, b, 76); }
+int _memcmp77(const void *a, const void *b) { return memcmp(a, b, 77); }
+int _memcmp78(const void *a, const void *b) { return memcmp(a, b, 78); }
+int _memcmp79(const void *a, const void *b) { return memcmp(a, b, 79); }
+int _memcmp80(const void *a, const void *b) { return memcmp(a, b, 80); }
+int _memcmp81(const void *a, const void *b) { return memcmp(a, b, 81); }
+int _memcmp82(const void *a, const void *b) { return memcmp(a, b, 82); }
+int _memcmp83(const void *a, const void *b) { return memcmp(a, b, 83); }
+int _memcmp84(const void *a, const void *b) { return memcmp(a, b, 84); }
+int _memcmp85(const void *a, const void *b) { return memcmp(a, b, 85); }
+int _memcmp86(const void *a, const void *b) { return memcmp(a, b, 86); }
+int _memcmp87(const void *a, const void *b) { return memcmp(a, b, 87); }
+int _memcmp88(const void *a, const void *b) { return memcmp(a, b, 88); }
+int _memcmp89(const void *a, const void *b) { return memcmp(a, b, 89); }
+int _memcmp90(const void *a, const void *b) { return memcmp(a, b, 90); }
+int _memcmp91(const void *a, const void *b) { return memcmp(a, b, 91); }
+int _memcmp92(const void *a, const void *b) { return memcmp(a, b, 92); }
+int _memcmp93(const void *a, const void *b) { return memcmp(a, b, 93); }
+int _memcmp94(const void *a, const void *b) { return memcmp(a, b, 94); }
+int _memcmp95(const void *a, const void *b) { return memcmp(a, b, 95); }
+int _memcmp96(const void *a, const void *b) { return memcmp(a, b, 96); }
+int _memcmp97(const void *a, const void *b) { return memcmp(a, b, 97); }
+int _memcmp98(const void *a, const void *b) { return memcmp(a, b, 98); }
+int _memcmp99(const void *a, const void *b) { return memcmp(a, b, 99); }
+int _memcmp100(const void *a, const void *b) { return memcmp(a, b, 100); }
+int _memcmp101(const void *a, const void *b) { return memcmp(a, b, 101); }
+int _memcmp102(const void *a, const void *b) { return memcmp(a, b, 102); }
+int _memcmp103(const void *a, const void *b) { return memcmp(a, b, 103); }
+int _memcmp104(const void *a, const void *b) { return memcmp(a, b, 104); }
+int _memcmp105(const void *a, const void *b) { return memcmp(a, b, 105); }
+int _memcmp106(const void *a, const void *b) { return memcmp(a, b, 106); }
+int _memcmp107(const void *a, const void *b) { return memcmp(a, b, 107); }
+int _memcmp108(const void *a, const void *b) { return memcmp(a, b, 108); }
+int _memcmp109(const void *a, const void *b) { return memcmp(a, b, 109); }
+int _memcmp110(const void *a, const void *b) { return memcmp(a, b, 110); }
+int _memcmp111(const void *a, const void *b) { return memcmp(a, b, 111); }
+int _memcmp112(const void *a, const void *b) { return memcmp(a, b, 112); }
+int _memcmp113(const void *a, const void *b) { return memcmp(a, b, 113); }
+int _memcmp114(const void *a, const void *b) { return memcmp(a, b, 114); }
+int _memcmp115(const void *a, const void *b) { return memcmp(a, b, 115); }
+int _memcmp116(const void *a, const void *b) { return memcmp(a, b, 116); }
+int _memcmp117(const void *a, const void *b) { return memcmp(a, b, 117); }
+int _memcmp118(const void *a, const void *b) { return memcmp(a, b, 118); }
+int _memcmp119(const void *a, const void *b) { return memcmp(a, b, 119); }
+int _memcmp120(const void *a, const void *b) { return memcmp(a, b, 120); }
+int _memcmp121(const void *a, const void *b) { return memcmp(a, b, 121); }
+int _memcmp122(const void *a, const void *b) { return memcmp(a, b, 122); }
+int _memcmp123(const void *a, const void *b) { return memcmp(a, b, 123); }
+int _memcmp124(const void *a, const void *b) { return memcmp(a, b, 124); }
+int _memcmp125(const void *a, const void *b) { return memcmp(a, b, 125); }
+int _memcmp126(const void *a, const void *b) { return memcmp(a, b, 126); }
+int _memcmp127(const void *a, const void *b) { return memcmp(a, b, 127); }
+int _memcmp128(const void *a, const void *b) { return memcmp(a, b, 128); }
+_OpenCSTLCompareFunc _memcmp_funcs[128 + 1] = {
+    NULL,
+    _memcmp1,
+    _memcmp2,
+    _memcmp3,
+    _memcmp4,
+    _memcmp5,
+    _memcmp6,
+    _memcmp7,
+    _memcmp8,
+    _memcmp9,
+    _memcmp10,
+    _memcmp11,
+    _memcmp12,
+    _memcmp13,
+    _memcmp14,
+    _memcmp15,
+    _memcmp16,
+    _memcmp17,
+    _memcmp18,
+    _memcmp19,
+    _memcmp20,
+    _memcmp21,
+    _memcmp22,
+    _memcmp23,
+    _memcmp24,
+    _memcmp25,
+    _memcmp26,
+    _memcmp27,
+    _memcmp28,
+    _memcmp29,
+    _memcmp30,
+    _memcmp31,
+    _memcmp32,
+    _memcmp33,
+    _memcmp34,
+    _memcmp35,
+    _memcmp36,
+    _memcmp37,
+    _memcmp38,
+    _memcmp39,
+    _memcmp40,
+    _memcmp41,
+    _memcmp42,
+    _memcmp43,
+    _memcmp44,
+    _memcmp45,
+    _memcmp46,
+    _memcmp47,
+    _memcmp48,
+    _memcmp49,
+    _memcmp50,
+    _memcmp51,
+    _memcmp52,
+    _memcmp53,
+    _memcmp54,
+    _memcmp55,
+    _memcmp56,
+    _memcmp57,
+    _memcmp58,
+    _memcmp59,
+    _memcmp60,
+    _memcmp61,
+    _memcmp62,
+    _memcmp63,
+    _memcmp64,
+    _memcmp65,
+    _memcmp66,
+    _memcmp67,
+    _memcmp68,
+    _memcmp69,
+    _memcmp70,
+    _memcmp71,
+    _memcmp72,
+    _memcmp73,
+    _memcmp74,
+    _memcmp75,
+    _memcmp76,
+    _memcmp77,
+    _memcmp78,
+    _memcmp79,
+    _memcmp80,
+    _memcmp81,
+    _memcmp82,
+    _memcmp83,
+    _memcmp84,
+    _memcmp85,
+    _memcmp86,
+    _memcmp87,
+    _memcmp88,
+    _memcmp89,
+    _memcmp90,
+    _memcmp91,
+    _memcmp92,
+    _memcmp93,
+    _memcmp94,
+    _memcmp95,
+    _memcmp96,
+    _memcmp97,
+    _memcmp98,
+    _memcmp99,
+    _memcmp100,
+    _memcmp101,
+    _memcmp102,
+    _memcmp103,
+    _memcmp104,
+    _memcmp105,
+    _memcmp106,
+    _memcmp107,
+    _memcmp108,
+    _memcmp109,
+    _memcmp110,
+    _memcmp111,
+    _memcmp112,
+    _memcmp113,
+    _memcmp114,
+    _memcmp115,
+    _memcmp116,
+    _memcmp117,
+    _memcmp118,
+    _memcmp119,
+    _memcmp120,
+    _memcmp121,
+    _memcmp122,
+    _memcmp123,
+    _memcmp124,
+    _memcmp125,
+    _memcmp126,
+    _memcmp127,
+    _memcmp128,
+};
+// ███████╗░██████╗░██╗░░░██╗░█████╗░██╗░░░░░░██████╗
+// ██╔════╝██╔═══██╗██║░░░██║██╔══██╗██║░░░░░██╔════╝
+// █████╗░░██║██╗██║██║░░░██║███████║██║░░░░░╚█████╗░
+// ██╔══╝░░╚██████╔╝██║░░░██║██╔══██║██║░░░░░░╚═══██╗
+// ███████╗░╚═██╔═╝░╚██████╔╝██║░░██║███████╗██████╔╝
+// ╚══════╝░░░╚═╝░░░░╚═════╝░╚═╝░░╚═╝╚══════╝╚═════╝░
+#define CSTL_FLOAT_EPS   1e-6f
+#define CSTL_DOUBLE_EPS  1e-9
+
+int _cstl_equals_float(CVP a, CVP b, size_t dummy) {
+    float a1 = *(float *) a;
+    float b1 = *(float *) b;
+
+    float diff = a1 - b1;
+    if (diff < 0)diff = -diff;
+    return diff < CSTL_FLOAT_EPS;
+}
+
+int _cstl_equals_double(CVP a, CVP b, size_t dummy) {
+    double a1 = *(double *) a;
+    double b1 = *(double *) b;
+    double diff = a1 - b1;
+    if (diff < 0)diff = -diff;
+    return diff < CSTL_DOUBLE_EPS;
+}
+
+int _cstl_equals_str(CVP a, CVP b, size_t dummy) {
+    return strcmp(*(char **) a, *(char **) b) == 0;
+}
+
+_OpenCSTLEqualsFunc CSTL_EQUALS(const char *type_str) {
+    while (*type_str == ' ') type_str++;
+
+    const char *end = type_str + strlen(type_str);
+    while (end > type_str && *(end - 1) == ' ') end--;
+
+    char buf[256];
+    size_type64 len = end - type_str;
+    if (len >= sizeof(buf)) return NULL;
+
+    memcpy(buf, type_str, len);
+    buf[len] = '\0';
+
+    if (strcmp(buf, "float") == 0) return _cstl_equals_float;
+    if (strcmp(buf, "double") == 0) return _cstl_equals_double;
+    if (strcmp(buf, "char*") == 0) return _cstl_equals_str;
+    if (strcmp(buf, "char *") == 0) return _cstl_equals_str;
+
+
+    return memcmp;
+}
+#endif //OPENCSTL_COMPARE_H
+
+// ==============================================================================
+// END    compare.h
+// ==============================================================================
 OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
     if (OPENCSTL_NIDX(container, -1) < 0)
         return 1;
@@ -2256,8 +3324,8 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_type64 n, void *va
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     //size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
-    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
-    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
 #if !defined(__linux__)
     float valuef = 0.0F;
     if (strcmp(type, "float") == 0) {
@@ -2274,8 +3342,8 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_type64 n, void *va
     *container = ((char *) b) + header_sz;
     OPENCSTL_NIDX(container, -1) = -1;
     distance = 0;
-    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance) = n;
-    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance) = n;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance) = n;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance) = n;
     iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_DEQUE, type_size, type);
 
     if (value == NULL) {
@@ -2291,12 +3359,12 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
-    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
-    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-8) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -2315,26 +3383,26 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
         free((char *) *container - (header_sz + distance_sz));
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
-        *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance) *= 2;
+        *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance) *= 2;
         OPENCSTL_NIDX(container, -1) = distance - 1;
         iveb_insert(iveb, (char *) *container + distance,
                     (char *) *container + distance + (type_size * new_capacity), CT_DEQUE, type_size, type);
     }
     memcpy((char *) *container + type_size * length, value, type_size);
 
-    (*(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance))++;
+    (*(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance))++;
 }
 
 OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
-    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
-    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-8) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -2351,7 +3419,7 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
         free((char *) *container - header_sz);
         *container = ((char *) b + (header_sz + distance * type_size));
         distance = -distance * type_size;
-        *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance) *= 2;
+        *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance) *= 2;
         iveb_insert(iveb, (char *) *container + distance,
                     (char *) *container + distance + (type_size * new_capacity), CT_DEQUE, type_size, type);
     }
@@ -2359,15 +3427,15 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     memcpy((char *) *container - type_size, value, type_size);
     *container = (char *) *container - type_size;
     OPENCSTL_NIDX(container, -1) = distance + type_size - 1;
-    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance + type_size) += 1;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance + type_size) += 1;
 }
 
 OPENCSTL_FUNC void __cstl_deque_pop_back(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
 
     verify(length > 0);
-    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance) -= 1;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance) -= 1;
 }
 
 OPENCSTL_FUNC void __cstl_deque_pop_front(void **container) {
@@ -2378,19 +3446,19 @@ OPENCSTL_FUNC void __cstl_deque_pop_front(void **container) {
     memcpy(*container, (char *) *container - type_size, type_size);
     *container = (char *) *container + type_size;
     OPENCSTL_NIDX(container, -1) = distance - type_size - 1;
-    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance - type_size) -= 1;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance - type_size) -= 1;
 }
 
 OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
-    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
-    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-8) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -2404,7 +3472,7 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n
         size_type64 alloc_sz = header_sz + capacity * type_size - distance;
         void *b = realloc((char *) *container - header_sz + distance, alloc_sz);
         *container = (char *) b + header_sz - distance;
-        *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance) += n;
+        *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance) += n;
         iveb_insert(iveb, (char *) *container + distance,
                     (char *) b + alloc_sz, CT_DEQUE, type_size, type);
     }
@@ -2413,23 +3481,23 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n
     for (size_type64 i = 0; i < n; i++) {
         memcpy((char *) *container + (pos + i) * type_size, value, type_size);
     }
-    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance) += n;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance) += n;
 }
 
 OPENCSTL_FUNC void __cstl_deque_erase(void **container, void *begin, void *end) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 pos = (*(char **) end - *(char **) begin) / type_size;
 
     memmove(*(char **) begin, *(char **) end, (char *) *container + (length + 1) * type_size - *(char **) end);
-    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance) -= pos;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance) -= pos;
 }
 
 OPENCSTL_FUNC size_type __cstl_deque_size(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
 
-    return (size_type) (*(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance));
+    return (size_type) (*(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance));
 }
 
 OPENCSTL_FUNC size_type __cstl_deque_capacity(void **container) {
@@ -2442,12 +3510,12 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_type64 n, void *va
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
-    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
-    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-8) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -2464,10 +3532,10 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_type64 n, void *va
         *container = (char *) b + header_sz;
         OPENCSTL_NIDX(container, -1) = -1;
         distance = 0;
-        *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance) = n;
+        *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance) = n;
         iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_DEQUE, type_size, type);
     }
-    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance) = n;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance) = n;
     if (length < n) {
         if (*(void **) value == NULL) {
             memset((char *) *container + length * type_size, 0, (n - length) * type_size);
@@ -2486,7 +3554,7 @@ OPENCSTL_FUNC void *__cstl_deque_begin(void **container) {
 OPENCSTL_FUNC void *__cstl_deque_end(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
 
     return (char *) *container + length * type_size;
 }
@@ -2494,7 +3562,7 @@ OPENCSTL_FUNC void *__cstl_deque_end(void **container) {
 OPENCSTL_FUNC void *__cstl_deque_rbegin(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
 
     return (char *) *container + (length - 1) * type_size;
 }
@@ -2509,7 +3577,7 @@ OPENCSTL_FUNC void *__cstl_deque_rend(void **container) {
 OPENCSTL_FUNC void __cstl_deque_clear(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
 
-    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance) = 0;
+    *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance) = 0;
 }
 
 OPENCSTL_FUNC void __cstl_deque_free(void **container) {
@@ -2524,12 +3592,12 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     //size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_HSIZE * (ptrdiff_t)sizeof(size_type64) + distance);
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     //size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
     //char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
 
 #if !defined(__linux__) && !defined(__APPLE__)
-    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-8) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
         valuef = (float) *(double *) value;
@@ -2553,9 +3621,9 @@ OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
-    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
-    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
 
     // 이미 꽉 차있고 앞쪽 여유도 없으면 아무것도 안 함
     if (length == capacity && distance == 0) {
@@ -2586,7 +3654,7 @@ OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
 OPENCSTL_FUNC void __cstl_deque_reverse(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
 
     if (length < 2) {
         return;
@@ -2609,6 +3677,117 @@ OPENCSTL_FUNC void __cstl_deque_reverse(void **container) {
     if (tmp != stackbuf) {
         free(tmp);
     }
+}
+
+// ░█████╗░██╗░░░░░░██████╗░░█████╗░██████╗░██╗████████╗██╗░░██╗███╗░░░███╗
+// ██╔══██╗██║░░░░░██╔════╝░██╔══██╗██╔══██╗██║╚══██╔══╝██║░░██║████╗░████║
+// ███████║██║░░░░░██║░░██╗░██║░░██║██████╔╝██║░░░██║░░░███████║██╔████╔██║
+// ██╔══██║██║░░░░░██║░░╚██╗██║░░██║██╔══██╗██║░░░██║░░░██╔══██║██║╚██╔╝██║
+// ██║░░██║███████╗╚██████╔╝╚█████╔╝██║░░██║██║░░░██║░░░██║░░██║██║░╚═╝░██║
+// ╚═╝░░╚═╝╚══════╝░╚═════╝░░╚════╝░╚═╝░░╚═╝╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░░░░╚═╝
+
+OPENCSTL_FUNC size_type64 __cstl_deque_count(void **container, void *value) {
+    ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+    char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    _OpenCSTLEqualsFunc is_equal = CSTL_EQUALS(type);
+    size_type64 cnt = 0;
+    for (size_type64 i = 0; i < length; i++) {
+        void *ptr = (char *) *container + (type_size * i);
+        if (is_equal(ptr, value, type_size) == 0) {
+            cnt++;
+        }
+    }
+    return cnt;
+}
+
+OPENCSTL_FUNC size_type64 __cstl_deque_count_if(void **container, CSTL_COND cond) {
+    ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+
+    size_type64 cnt = 0;
+    for (size_type64 i = 0; i < length; i++) {
+        void *ptr = (char *) *container + (type_size * i);
+        if (cond(ptr)) {
+            cnt++;
+        }
+    }
+    return cnt;
+}
+
+OPENCSTL_FUNC void *__cstl_deque_lower_bound(void **container, void *value, CSTL_COMPARE compare) {
+    ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+
+    if (length == 0) return NULL;
+
+    size_type64 L = 0;
+    size_type64 R = length;
+
+    while (L < R) {
+        size_type64 M = L + (R - L) / 2;
+        void *Mptr = ((char *) *container) + (type_size * M);
+
+        if (compare(Mptr, value) < 0)
+            L = M + 1;
+        else
+            R = M;
+    }
+    if (L >= length) return NULL;
+    return ((char *) *container) + (type_size * L);
+}
+
+OPENCSTL_FUNC void *__cstl_deque_upper_bound(void **container, void *value, CSTL_COMPARE compare) {
+    ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+
+    if (length == 0) return NULL;
+
+    size_type64 L = 0;
+    size_type64 R = length;
+
+    while (L < R) {
+        size_type64 M = L + (R - L) / 2;
+        void *Mptr = ((char *) *container) + (type_size * M);
+
+        if (compare(value, Mptr) < 0)
+            R = M;
+        else
+            L = M + 1;
+    }
+    if (L >= length) return NULL;
+    return ((char *) *container) + (type_size * L);
 }
 #endif // if !defined(_OPENCSTL_DEQUE_H)
 
@@ -2806,6 +3985,7 @@ static int get_new_capacity(int _capacity) {
 // ==============================================================================
 // END    utility.h
 // ==============================================================================
+// [already included: compare.h]
 // ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
 // ██║░░░██║██╔════╝██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗
 // ╚██╗░██╔╝█████╗░░██║░░╚═╝░░░██║░░░██║░░██║██████╔╝
@@ -2943,7 +4123,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type6
 #endif
     if (length + N >= capacity) {
         iveb_erase(iveb, *container);
-        size_type64 new_capaciy = get_new_capacity(capacity+N);
+        size_type64 new_capaciy = get_new_capacity(capacity + N);
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             yikes("Reallocation failed at vector insert");
@@ -3134,7 +4314,126 @@ OPENCSTL_FUNC void __cstl_vector_reverse(void **container) {
     }
 }
 
+// ░█████╗░██╗░░░░░░██████╗░░█████╗░██████╗░██╗████████╗██╗░░██╗███╗░░░███╗
+// ██╔══██╗██║░░░░░██╔════╝░██╔══██╗██╔══██╗██║╚══██╔══╝██║░░██║████╗░████║
+// ███████║██║░░░░░██║░░██╗░██║░░██║██████╔╝██║░░░██║░░░███████║██╔████╔██║
+// ██╔══██║██║░░░░░██║░░╚██╗██║░░██║██╔══██╗██║░░░██║░░░██╔══██║██║╚██╔╝██║
+// ██║░░██║███████╗╚██████╔╝╚█████╔╝██║░░██║██║░░░██║░░░██║░░██║██║░╚═╝░██║
+// ╚═╝░░╚═╝╚══════╝░╚═════╝░░╚════╝░╚═╝░░╚═╝╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░░░░╚═╝
 
+
+OPENCSTL_FUNC size_type64 __cstl_vector_count(void **container, void *value) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    _OpenCSTLEqualsFunc is_equal = CSTL_EQUALS(type);
+    size_type64 cnt = 0;
+    for (int i = 0; i < length; i++) {
+        void *ptr = ((char *) *container) + (type_size * i);
+        if (is_equal(ptr, value, type_size) == 0) {
+            cnt++;
+        }
+    }
+    return cnt;
+}
+
+OPENCSTL_FUNC size_type64 __cstl_vector_count_if(void **container, CSTL_COND cond) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+
+    size_type64 cnt = 0;
+    for (int i = 0; i < length; i++) {
+        void *ptr = ((char *) *container) + (type_size * i);
+        if (cond(ptr)) {
+            cnt++;
+        }
+    }
+    return cnt;
+}
+
+
+OPENCSTL_FUNC void *__cstl_vector_lower_bound(void **container, void *value, CSTL_COMPARE compare) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+
+    if (length == 0) return NULL;
+
+    size_type64 L = 0;
+    size_type64 R = length;
+
+    while (L < R) {
+        size_type64 M = L + (R - L) / 2;
+        void *Mptr = ((char *) *container) + (type_size * M);
+
+        if (compare(Mptr, value) < 0)
+            L = M + 1;
+        else
+            R = M;
+    }
+    if (L >= length) return NULL;
+    return ((char *) *container) + (type_size * L);
+}
+
+OPENCSTL_FUNC void *__cstl_vector_upper_bound(void **container, void *value, CSTL_COMPARE compare) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+
+    if (length == 0) return NULL;
+
+    size_type64 L = 0;
+    size_type64 R = length;
+
+    while (L < R) {
+        size_type64 M = L + (R - L) / 2;
+        void *Mptr = ((char *) *container) + (type_size * M);
+
+        if (compare(value, Mptr) < 0)
+            R = M;
+        else
+            L = M + 1;
+    }
+    if (L >= length) return NULL;
+    return ((char *) *container) + (type_size * L);
+}
 #endif
 
 // ==============================================================================
@@ -4220,10 +5519,8 @@ OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
         if (r == 0) {
             return *root;
         } else if (r > 0) {
-            //to left
             root = (void ***) &OPENCSTL_NIDX(root, L);
         } else {
-            //to right
             root = (void ***) &OPENCSTL_NIDX(root, R);
         }
     }
@@ -4444,65 +5741,7 @@ OPENCSTL_FUNC void *__cstl_stack(size_type64 type_size, char *type) {
 
 // [already included: vector.h]
 // [already included: error.h]
-
-// ==============================================================================
-// BEGIN  salloc.h                       (depth 2)
-// ==============================================================================
-
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2026, Kim Bomm, Woo Cheol, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#if !defined(_OPENCSTL_C_ALLOCA_H)
-#define _OPENCSTL_C_ALLOCA_H
-
-#if defined(__linux__) || defined(__APPLE__)
-#include <alloca.h>
-#define salloc(size) (void*)alloca(size)
-#elif defined(_WIN32) || defined(_WIN64)
-#include <malloc.h>
-#define salloc(size) _alloca(size)
-#else
-#error "No Alloca Function"
-#endif
-
-
-#endif //_OPENCSTL_C_ALLOCA_H
-
-// ==============================================================================
-// END    salloc.h
-// ==============================================================================
+// [already included: salloc.h]
 
 
 #define cstl_queue(TYPE)	__cstl_queue(sizeof(TYPE),#TYPE)
@@ -4721,7 +5960,7 @@ OPENCSTL_ALWAYS_INLINE bool __ht_key_eq(const void *a, const void *b, size_type6
 #define OPENCSTL_XXH64_P4  9650029242287828579ULL
 #define OPENCSTL_XXH64_P5  2870177450012600261ULL
 
-OPENCSTL_FUNC size_type64 hash32(void *_key) {
+OPENCSTL_FUNC size_type64 _cstl_hash32(void *_key) {
     unsigned int h = *(unsigned int *) _key;
     h ^= h >> 15;
     h *= OPENCSTL_XXH32_P2;
@@ -4731,7 +5970,7 @@ OPENCSTL_FUNC size_type64 hash32(void *_key) {
     return (size_type64) h;
 }
 
-OPENCSTL_FUNC size_type64 hash64(void *_key) {
+OPENCSTL_FUNC size_type64 _cstl_hash64(void *_key) {
     unsigned long long x = *(unsigned long long *) _key;
     x ^= x >> 33;
     x *= OPENCSTL_XXH64_P2;
@@ -4741,7 +5980,7 @@ OPENCSTL_FUNC size_type64 hash64(void *_key) {
     return (size_type64) x;
 }
 
-OPENCSTL_FUNC size_type64 hash(void *_key, size_type64 len) {
+OPENCSTL_FUNC size_type64 _cstl_hash(void *_key, size_type64 len) {
     const unsigned char *p = (const unsigned char *) _key;
     const unsigned char *end = p + len;
     unsigned long long h64;
@@ -4859,7 +6098,7 @@ OPENCSTL_ALWAYS_INLINE size_type64 hash_mixer(void *key, size_type64 n) {
         memcpy(&v, key, 8);
         return (size_type64) __ht_mum(v ^ s1, s0);
     }
-    return (size_type64) hash(key, n);
+    return (size_type64) _cstl_hash(key, n);
 }
 
 OPENCSTL_ALWAYS_INLINE uint8_t __ht_ctrl(size_type64 h) {
@@ -5209,9 +6448,7 @@ void __cstl_hashtable_reserve(void **container, size_type64 n) {
                (char *) new_ctrl, (int) type_size);
 }
 
-void __cstl_htm_destroy(void) {
-    htm_free(htm);
-}
+
 
 // ██╗░░░██╗███╗░░██╗░█████╗░██████╗░██████╗░███████╗██████╗░███████╗██████╗░░░░░░░░██████╗███████╗████████╗
 // ██║░░░██║████╗░██║██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██╔══██╗░░░░░░██╔════╝██╔════╝╚══██╔══╝
@@ -5313,6 +6550,145 @@ void *__cstl_unordered_map(size_type64 key_size, size_type64 value_size,
 // ==============================================================================
 // END    hashtable.h
 // ==============================================================================
+
+// ==============================================================================
+// BEGIN  array.h                        (depth 1)
+// ==============================================================================
+
+//
+// Created by spring on 4/25/2026.
+//
+#ifndef OPENCSTL_ARRAY_H
+#define OPENCSTL_ARRAY_H
+// [already included: zalloc.h]
+// [already included: van_emde_boas_tree.h]
+// [already included: swap.h]
+// [already included: utility.h]
+// [already included: compare.h]
+// [already included: defines.h]
+// [already included: verify.h]
+
+#define cstl_array(TYPE,COUNT)	__cstl_array(sizeof(TYPE),#TYPE,COUNT)
+OPENCSTL_FUNC void *__cstl_array(size_type64 type_size, char *type, size_type64 _count) {
+    verify(_count !=0);
+    size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
+    void *block = galloc(header_sz + (type_size * _count), type_size);
+    if (block == NULL) {
+        //yikes("Failed to allocate memory for array");
+        return NULL;
+    }
+    void *ptr = ((char *) block) + header_sz;
+    void **container = &ptr;
+    OPENCSTL_NIDX(container, NIDX_CTYPE) = OPENCSTL_ARRAY;
+    OPENCSTL_NIDX(container, NIDX_HSIZE) = header_sz;
+    OPENCSTL_NIDX(container, NIDX_TSIZE) = type_size;
+
+    OPENCSTL_NIDX(container, -8) = !strcmp(type, "float");
+
+    OPENCSTL_NIDX(container, -4) = (size_type64) type;
+
+    OPENCSTL_NIDX(container, -3) = 0; //
+    OPENCSTL_NIDX(container, -2) = _count; //capacity
+    OPENCSTL_NIDX(container, -1) = _count; //length
+    return ptr;
+}
+
+
+OPENCSTL_FUNC size_type __cstl_array_size(void **container) {
+    return (size_type) OPENCSTL_NIDX(container, -1);
+}
+
+OPENCSTL_FUNC size_type __cstl_array_capacity(void **container) {
+    return (size_type) OPENCSTL_NIDX(container, -2);
+}
+
+OPENCSTL_FUNC size_type __cstl_array_max_size(void **container) {
+    return (size_type) OPENCSTL_NIDX(container, -2);
+}
+
+OPENCSTL_FUNC void *__cstl_array_begin(void **container) {
+    return (void *) *container;
+}
+
+OPENCSTL_FUNC void *__cstl_array_end(void **container) {
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    return (void *) ((char *) *container + (type_size * length));
+}
+
+OPENCSTL_FUNC void *__cstl_array_rbegin(void **container) {
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    return (void *) ((char *) *container + (type_size * (length - 1)));
+}
+
+OPENCSTL_FUNC void *__cstl_array_rend(void **container) {
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    return (void *) ((char *) *container - (type_size));
+}
+
+OPENCSTL_FUNC void *__cstl_array_find(void **container, void *iter_begin, void *value) {
+    //size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    //size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    size_type64 pos = (*(char **) iter_begin - *(char **) container) / type_size;
+    //char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    for (size_type64 i = pos; i < length; i++) {
+        if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
+            return (char *) *container + type_size * (i);
+        }
+    }
+    return NULL;
+}
+
+OPENCSTL_FUNC void __cstl_array_free(void **container) {
+#ifdef OPENCSTL_TRACER
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    gfree((char *) (*container) - header_sz);
+#else
+    gfree(*container);
+#endif
+}
+
+OPENCSTL_FUNC void *__cstl_array_next(void *it, size_type64 type_size) {
+    return (char *) it + type_size;
+}
+
+OPENCSTL_FUNC void *__cstl_array_prev(void *it, size_type64 type_size) {
+    return (char *) it - type_size;
+}
+
+OPENCSTL_FUNC void __cstl_array_reverse(void **container) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+    size_type64 idx = 0;
+    size_type64 idx_r = length - 1;
+
+    while (idx < idx_r) {
+        swap((char *) *container + type_size * (idx), (char *) *container + type_size * (idx_r), type_size);
+        idx++;
+        idx_r--;
+    }
+}
+#endif //OPENCSTL_ARRAY_H
+
+// ==============================================================================
+// END    array.h
+// ==============================================================================
 /// Algorithm
 
 // ==============================================================================
@@ -5360,433 +6736,7 @@ void *__cstl_unordered_map(size_type64 key_size, size_type64 value_size,
 
 
 // [already included: defines.h]
-
-// ==============================================================================
-// BEGIN  compare.h                      (depth 2)
-// ==============================================================================
-
- //
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-
-#ifndef OPENCSTL_COMPARE_H
-#define OPENCSTL_COMPARE_H
-#include <string.h>
-typedef const void *CVP;
-
-typedef int (*_OpenCSTLCompareFunc)(CVP a, CVP b);
-
-#define _SAFE_COMPARE(TYPE,X,Y)  (*(TYPE *) (X) > *(TYPE *) (Y)) - (*(TYPE *) (X) < *(TYPE *) (Y))
-
-int less_int32(CVP a, CVP b) {
-    return _SAFE_COMPARE(int, a, b);
-}
-
-int less_uint32(CVP a, CVP b) {
-    return _SAFE_COMPARE(unsigned int, a, b);
-}
-
-int less_int64(CVP a, CVP b) {
-    return _SAFE_COMPARE(long long, a, b);
-}
-
-int less_uint64(CVP a, CVP b) {
-    return _SAFE_COMPARE(unsigned long long, a, b);
-}
-
-int less_float(CVP a, CVP b) {
-    return (*(float *) a > *(float *) b) - (*(float *) a < *(float *) b);
-}
-
-int less_double(CVP a, CVP b) {
-    return (*(double *) a > *(double *) b) - (*(double *) a < *(double *) b);
-}
-
-int less_string(CVP a, CVP b) {
-    return strcmp(*(char **) a, *(char **) b);
-}
-
-int greater_int32(CVP a, CVP b) {
-    return less_int32(b, a);
-}
-
-int greater_uint32(CVP a, CVP b) {
-    return less_uint32(b, a);
-}
-
-int greater_int64(CVP a, CVP b) {
-    return less_int64(b, a);
-}
-
-int greater_uint64(CVP a, CVP b) {
-    return less_uint64(b, a);
-}
-
-int greater_float(CVP a, CVP b) {
-    return less_float(b, a);
-}
-
-int greater_double(CVP a, CVP b) {
-    return less_double(b, a);
-}
-
-int greater_string(CVP a, CVP b) {
-    return less_string(b, a);
-}
-
-_OpenCSTLCompareFunc CSTL_LESS(const char *type_str) {
-    while (*type_str == ' ') type_str++;
-
-    const char *end = type_str + strlen(type_str);
-    while (end > type_str && *(end - 1) == ' ') end--;
-
-    char buf[256];
-    size_type64 len = end - type_str;
-    if (len >= sizeof(buf)) return NULL;
-
-    memcpy(buf, type_str, len);
-    buf[len] = '\0';
-
-    if (strcmp(buf, "float") == 0) return less_float;
-    if (strcmp(buf, "double") == 0) return less_double;
-    if (strcmp(buf, "int") == 0) return less_int32;
-    if (strcmp(buf, "long long") == 0) return less_int64;
-    if (strcmp(buf, "unsigned long long") == 0) return less_uint64;
-    if (strcmp(buf, "unsigned int") == 0) return less_uint32;
-    if (strcmp(buf, "char*") == 0) return less_string;
-    if (strcmp(buf, "char *") == 0) return less_string;
-
-    return NULL;
-}
-
-_OpenCSTLCompareFunc CSTL_GREATER(const char *type_str) {
-    while (*type_str == ' ') type_str++;
-
-    const char *end = type_str + strlen(type_str);
-    while (end > type_str && *(end - 1) == ' ') end--;
-
-    char buf[256];
-    size_type64 len = end - type_str;
-    if (len >= sizeof(buf)) return NULL;
-
-    memcpy(buf, type_str, len);
-    buf[len] = '\0';
-
-    if (strcmp(buf, "float") == 0) return greater_float;
-    if (strcmp(buf, "double") == 0) return greater_double;
-    if (strcmp(buf, "int") == 0) return greater_int32;
-    if (strcmp(buf, "long long") == 0) return greater_int64;
-    if (strcmp(buf, "unsigned long long") == 0) return greater_uint64;
-    if (strcmp(buf, "unsigned int") == 0) return greater_uint32;
-    if (strcmp(buf, "char*") == 0) return greater_string;
-    if (strcmp(buf, "char *") == 0) return greater_string;
-
-    return NULL;
-}
-
-#define LESS(TYPE)    CSTL_LESS(#TYPE)
-#define GREATER(TYPE) CSTL_GREATER(#TYPE)
-
-
-int _memcmp1(const void *a, const void *b) { return memcmp(a, b, 1); }
-int _memcmp2(const void *a, const void *b) { return memcmp(a, b, 2); }
-int _memcmp3(const void *a, const void *b) { return memcmp(a, b, 3); }
-int _memcmp4(const void *a, const void *b) { return memcmp(a, b, 4); }
-int _memcmp5(const void *a, const void *b) { return memcmp(a, b, 5); }
-int _memcmp6(const void *a, const void *b) { return memcmp(a, b, 6); }
-int _memcmp7(const void *a, const void *b) { return memcmp(a, b, 7); }
-int _memcmp8(const void *a, const void *b) { return memcmp(a, b, 8); }
-int _memcmp9(const void *a, const void *b) { return memcmp(a, b, 9); }
-int _memcmp10(const void *a, const void *b) { return memcmp(a, b, 10); }
-int _memcmp11(const void *a, const void *b) { return memcmp(a, b, 11); }
-int _memcmp12(const void *a, const void *b) { return memcmp(a, b, 12); }
-int _memcmp13(const void *a, const void *b) { return memcmp(a, b, 13); }
-int _memcmp14(const void *a, const void *b) { return memcmp(a, b, 14); }
-int _memcmp15(const void *a, const void *b) { return memcmp(a, b, 15); }
-int _memcmp16(const void *a, const void *b) { return memcmp(a, b, 16); }
-int _memcmp17(const void *a, const void *b) { return memcmp(a, b, 17); }
-int _memcmp18(const void *a, const void *b) { return memcmp(a, b, 18); }
-int _memcmp19(const void *a, const void *b) { return memcmp(a, b, 19); }
-int _memcmp20(const void *a, const void *b) { return memcmp(a, b, 20); }
-int _memcmp21(const void *a, const void *b) { return memcmp(a, b, 21); }
-int _memcmp22(const void *a, const void *b) { return memcmp(a, b, 22); }
-int _memcmp23(const void *a, const void *b) { return memcmp(a, b, 23); }
-int _memcmp24(const void *a, const void *b) { return memcmp(a, b, 24); }
-int _memcmp25(const void *a, const void *b) { return memcmp(a, b, 25); }
-int _memcmp26(const void *a, const void *b) { return memcmp(a, b, 26); }
-int _memcmp27(const void *a, const void *b) { return memcmp(a, b, 27); }
-int _memcmp28(const void *a, const void *b) { return memcmp(a, b, 28); }
-int _memcmp29(const void *a, const void *b) { return memcmp(a, b, 29); }
-int _memcmp30(const void *a, const void *b) { return memcmp(a, b, 30); }
-int _memcmp31(const void *a, const void *b) { return memcmp(a, b, 31); }
-int _memcmp32(const void *a, const void *b) { return memcmp(a, b, 32); }
-int _memcmp33(const void *a, const void *b) { return memcmp(a, b, 33); }
-int _memcmp34(const void *a, const void *b) { return memcmp(a, b, 34); }
-int _memcmp35(const void *a, const void *b) { return memcmp(a, b, 35); }
-int _memcmp36(const void *a, const void *b) { return memcmp(a, b, 36); }
-int _memcmp37(const void *a, const void *b) { return memcmp(a, b, 37); }
-int _memcmp38(const void *a, const void *b) { return memcmp(a, b, 38); }
-int _memcmp39(const void *a, const void *b) { return memcmp(a, b, 39); }
-int _memcmp40(const void *a, const void *b) { return memcmp(a, b, 40); }
-int _memcmp41(const void *a, const void *b) { return memcmp(a, b, 41); }
-int _memcmp42(const void *a, const void *b) { return memcmp(a, b, 42); }
-int _memcmp43(const void *a, const void *b) { return memcmp(a, b, 43); }
-int _memcmp44(const void *a, const void *b) { return memcmp(a, b, 44); }
-int _memcmp45(const void *a, const void *b) { return memcmp(a, b, 45); }
-int _memcmp46(const void *a, const void *b) { return memcmp(a, b, 46); }
-int _memcmp47(const void *a, const void *b) { return memcmp(a, b, 47); }
-int _memcmp48(const void *a, const void *b) { return memcmp(a, b, 48); }
-int _memcmp49(const void *a, const void *b) { return memcmp(a, b, 49); }
-int _memcmp50(const void *a, const void *b) { return memcmp(a, b, 50); }
-int _memcmp51(const void *a, const void *b) { return memcmp(a, b, 51); }
-int _memcmp52(const void *a, const void *b) { return memcmp(a, b, 52); }
-int _memcmp53(const void *a, const void *b) { return memcmp(a, b, 53); }
-int _memcmp54(const void *a, const void *b) { return memcmp(a, b, 54); }
-int _memcmp55(const void *a, const void *b) { return memcmp(a, b, 55); }
-int _memcmp56(const void *a, const void *b) { return memcmp(a, b, 56); }
-int _memcmp57(const void *a, const void *b) { return memcmp(a, b, 57); }
-int _memcmp58(const void *a, const void *b) { return memcmp(a, b, 58); }
-int _memcmp59(const void *a, const void *b) { return memcmp(a, b, 59); }
-int _memcmp60(const void *a, const void *b) { return memcmp(a, b, 60); }
-int _memcmp61(const void *a, const void *b) { return memcmp(a, b, 61); }
-int _memcmp62(const void *a, const void *b) { return memcmp(a, b, 62); }
-int _memcmp63(const void *a, const void *b) { return memcmp(a, b, 63); }
-int _memcmp64(const void *a, const void *b) { return memcmp(a, b, 64); }
-int _memcmp65(const void *a, const void *b) { return memcmp(a, b, 65); }
-int _memcmp66(const void *a, const void *b) { return memcmp(a, b, 66); }
-int _memcmp67(const void *a, const void *b) { return memcmp(a, b, 67); }
-int _memcmp68(const void *a, const void *b) { return memcmp(a, b, 68); }
-int _memcmp69(const void *a, const void *b) { return memcmp(a, b, 69); }
-int _memcmp70(const void *a, const void *b) { return memcmp(a, b, 70); }
-int _memcmp71(const void *a, const void *b) { return memcmp(a, b, 71); }
-int _memcmp72(const void *a, const void *b) { return memcmp(a, b, 72); }
-int _memcmp73(const void *a, const void *b) { return memcmp(a, b, 73); }
-int _memcmp74(const void *a, const void *b) { return memcmp(a, b, 74); }
-int _memcmp75(const void *a, const void *b) { return memcmp(a, b, 75); }
-int _memcmp76(const void *a, const void *b) { return memcmp(a, b, 76); }
-int _memcmp77(const void *a, const void *b) { return memcmp(a, b, 77); }
-int _memcmp78(const void *a, const void *b) { return memcmp(a, b, 78); }
-int _memcmp79(const void *a, const void *b) { return memcmp(a, b, 79); }
-int _memcmp80(const void *a, const void *b) { return memcmp(a, b, 80); }
-int _memcmp81(const void *a, const void *b) { return memcmp(a, b, 81); }
-int _memcmp82(const void *a, const void *b) { return memcmp(a, b, 82); }
-int _memcmp83(const void *a, const void *b) { return memcmp(a, b, 83); }
-int _memcmp84(const void *a, const void *b) { return memcmp(a, b, 84); }
-int _memcmp85(const void *a, const void *b) { return memcmp(a, b, 85); }
-int _memcmp86(const void *a, const void *b) { return memcmp(a, b, 86); }
-int _memcmp87(const void *a, const void *b) { return memcmp(a, b, 87); }
-int _memcmp88(const void *a, const void *b) { return memcmp(a, b, 88); }
-int _memcmp89(const void *a, const void *b) { return memcmp(a, b, 89); }
-int _memcmp90(const void *a, const void *b) { return memcmp(a, b, 90); }
-int _memcmp91(const void *a, const void *b) { return memcmp(a, b, 91); }
-int _memcmp92(const void *a, const void *b) { return memcmp(a, b, 92); }
-int _memcmp93(const void *a, const void *b) { return memcmp(a, b, 93); }
-int _memcmp94(const void *a, const void *b) { return memcmp(a, b, 94); }
-int _memcmp95(const void *a, const void *b) { return memcmp(a, b, 95); }
-int _memcmp96(const void *a, const void *b) { return memcmp(a, b, 96); }
-int _memcmp97(const void *a, const void *b) { return memcmp(a, b, 97); }
-int _memcmp98(const void *a, const void *b) { return memcmp(a, b, 98); }
-int _memcmp99(const void *a, const void *b) { return memcmp(a, b, 99); }
-int _memcmp100(const void *a, const void *b) { return memcmp(a, b, 100); }
-int _memcmp101(const void *a, const void *b) { return memcmp(a, b, 101); }
-int _memcmp102(const void *a, const void *b) { return memcmp(a, b, 102); }
-int _memcmp103(const void *a, const void *b) { return memcmp(a, b, 103); }
-int _memcmp104(const void *a, const void *b) { return memcmp(a, b, 104); }
-int _memcmp105(const void *a, const void *b) { return memcmp(a, b, 105); }
-int _memcmp106(const void *a, const void *b) { return memcmp(a, b, 106); }
-int _memcmp107(const void *a, const void *b) { return memcmp(a, b, 107); }
-int _memcmp108(const void *a, const void *b) { return memcmp(a, b, 108); }
-int _memcmp109(const void *a, const void *b) { return memcmp(a, b, 109); }
-int _memcmp110(const void *a, const void *b) { return memcmp(a, b, 110); }
-int _memcmp111(const void *a, const void *b) { return memcmp(a, b, 111); }
-int _memcmp112(const void *a, const void *b) { return memcmp(a, b, 112); }
-int _memcmp113(const void *a, const void *b) { return memcmp(a, b, 113); }
-int _memcmp114(const void *a, const void *b) { return memcmp(a, b, 114); }
-int _memcmp115(const void *a, const void *b) { return memcmp(a, b, 115); }
-int _memcmp116(const void *a, const void *b) { return memcmp(a, b, 116); }
-int _memcmp117(const void *a, const void *b) { return memcmp(a, b, 117); }
-int _memcmp118(const void *a, const void *b) { return memcmp(a, b, 118); }
-int _memcmp119(const void *a, const void *b) { return memcmp(a, b, 119); }
-int _memcmp120(const void *a, const void *b) { return memcmp(a, b, 120); }
-int _memcmp121(const void *a, const void *b) { return memcmp(a, b, 121); }
-int _memcmp122(const void *a, const void *b) { return memcmp(a, b, 122); }
-int _memcmp123(const void *a, const void *b) { return memcmp(a, b, 123); }
-int _memcmp124(const void *a, const void *b) { return memcmp(a, b, 124); }
-int _memcmp125(const void *a, const void *b) { return memcmp(a, b, 125); }
-int _memcmp126(const void *a, const void *b) { return memcmp(a, b, 126); }
-int _memcmp127(const void *a, const void *b) { return memcmp(a, b, 127); }
-int _memcmp128(const void *a, const void *b) { return memcmp(a, b, 128); }
-_OpenCSTLCompareFunc _memcmp_funcs[128 + 1] = {
-    NULL,
-    _memcmp1,
-    _memcmp2,
-    _memcmp3,
-    _memcmp4,
-    _memcmp5,
-    _memcmp6,
-    _memcmp7,
-    _memcmp8,
-    _memcmp9,
-    _memcmp10,
-    _memcmp11,
-    _memcmp12,
-    _memcmp13,
-    _memcmp14,
-    _memcmp15,
-    _memcmp16,
-    _memcmp17,
-    _memcmp18,
-    _memcmp19,
-    _memcmp20,
-    _memcmp21,
-    _memcmp22,
-    _memcmp23,
-    _memcmp24,
-    _memcmp25,
-    _memcmp26,
-    _memcmp27,
-    _memcmp28,
-    _memcmp29,
-    _memcmp30,
-    _memcmp31,
-    _memcmp32,
-    _memcmp33,
-    _memcmp34,
-    _memcmp35,
-    _memcmp36,
-    _memcmp37,
-    _memcmp38,
-    _memcmp39,
-    _memcmp40,
-    _memcmp41,
-    _memcmp42,
-    _memcmp43,
-    _memcmp44,
-    _memcmp45,
-    _memcmp46,
-    _memcmp47,
-    _memcmp48,
-    _memcmp49,
-    _memcmp50,
-    _memcmp51,
-    _memcmp52,
-    _memcmp53,
-    _memcmp54,
-    _memcmp55,
-    _memcmp56,
-    _memcmp57,
-    _memcmp58,
-    _memcmp59,
-    _memcmp60,
-    _memcmp61,
-    _memcmp62,
-    _memcmp63,
-    _memcmp64,
-    _memcmp65,
-    _memcmp66,
-    _memcmp67,
-    _memcmp68,
-    _memcmp69,
-    _memcmp70,
-    _memcmp71,
-    _memcmp72,
-    _memcmp73,
-    _memcmp74,
-    _memcmp75,
-    _memcmp76,
-    _memcmp77,
-    _memcmp78,
-    _memcmp79,
-    _memcmp80,
-    _memcmp81,
-    _memcmp82,
-    _memcmp83,
-    _memcmp84,
-    _memcmp85,
-    _memcmp86,
-    _memcmp87,
-    _memcmp88,
-    _memcmp89,
-    _memcmp90,
-    _memcmp91,
-    _memcmp92,
-    _memcmp93,
-    _memcmp94,
-    _memcmp95,
-    _memcmp96,
-    _memcmp97,
-    _memcmp98,
-    _memcmp99,
-    _memcmp100,
-    _memcmp101,
-    _memcmp102,
-    _memcmp103,
-    _memcmp104,
-    _memcmp105,
-    _memcmp106,
-    _memcmp107,
-    _memcmp108,
-    _memcmp109,
-    _memcmp110,
-    _memcmp111,
-    _memcmp112,
-    _memcmp113,
-    _memcmp114,
-    _memcmp115,
-    _memcmp116,
-    _memcmp117,
-    _memcmp118,
-    _memcmp119,
-    _memcmp120,
-    _memcmp121,
-    _memcmp122,
-    _memcmp123,
-    _memcmp124,
-    _memcmp125,
-    _memcmp126,
-    _memcmp127,
-    _memcmp128,
-};
-
-
-#endif //OPENCSTL_COMPARE_H
-
-// ==============================================================================
-// END    compare.h
-// ==============================================================================
+// [already included: compare.h]
 
 // ==============================================================================
 // BEGIN  iterator.h                     (depth 2)
@@ -5857,14 +6807,20 @@ OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
 }
 
 OPENCSTL_FUNC void *_cstl_next(void *it) {
+    // UNOREDRES_SET, UNORDERED_MAP
     if (__is_hashtable_iter(it)) {
         return __cstl_hashtable_next_prev(it, -1);
     }
     Interval *iv = iveb_find(iveb, it);
+    // VECTOR, DEQUE
     if (iv != NULL) {
         if (iv->ctype == CT_VECTOR || iv->ctype == CT_DEQUE) {
             return __cstl_vector_next(it, iv->type_size);
         }
+    }
+    GInterval *giv = giveb_find(giveb, it);
+    if (giv != NULL) {
+        return __cstl_array_next(it, giv->type_size);
     }
     size_type64 node_type = OPENCSTL_NIDX(&it, -3);
     switch (node_type) {
@@ -5900,6 +6856,10 @@ OPENCSTL_FUNC void *_cstl_prev(void *it) {
             return __cstl_vector_prev(it, iv->type_size);
         }
     }
+    GInterval *giv = giveb_find(giveb, it);
+    if (giv != NULL) {
+        return __cstl_array_prev(it, giv->type_size);
+    }
     size_type64 node_type = OPENCSTL_NIDX(&it, -3);
     switch (node_type) {
         case OPENCSTL_LIST: {
@@ -5928,11 +6888,15 @@ OPENCSTL_FUNC void *_cstl_begin(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            return __cstl_array_begin((void **) container);
+        }
+        break;
         case OPENCSTL_VECTOR: {
             return __cstl_vector_begin((void **) container);
         }
@@ -5965,11 +6929,15 @@ OPENCSTL_FUNC void *_cstl_rbegin(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            return __cstl_array_rbegin((void **) container);
+        }
+        break;
         case OPENCSTL_VECTOR: {
             return __cstl_vector_rbegin((void **) container);
         }
@@ -6002,11 +6970,15 @@ OPENCSTL_FUNC void *_cstl_end(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            return __cstl_array_end((void **) container);
+        }
+        break;
         case OPENCSTL_VECTOR: {
             return __cstl_vector_end((void **) container);
         }
@@ -6039,11 +7011,15 @@ OPENCSTL_FUNC void *_cstl_rend(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            return __cstl_array_rend((void **) container);
+        }
+        break;
         case OPENCSTL_VECTOR: {
             return __cstl_vector_rend((void **) container);
         }
@@ -6079,8 +7055,10 @@ OPENCSTL_FUNC void *_cstl_rend(void *container) {
 // [already included: van_emde_boas_tree.h]
 // [already included: types.h]
 
-bool is_even(void *it) {
-    return true;
+
+bool is_even(const void *it) {
+    int val = *(int *) it;
+    return val % 2 == 0;
 }
 
 #define fill(_First, _Last, _Value) _cstl_fill(_First, _Last, &(__typeof__(_Value)){_Value}, sizeof(_Value))
@@ -6092,7 +7070,198 @@ OPENCSTL_FUNC void _cstl_fill(void *_begin, void *_end, void *_value, size_type6
     }
 }
 
+// ░█████╗░██╗░░░░░░██████╗░░█████╗░██████╗░██╗████████╗██╗░░██╗███╗░░░███╗
+// ██╔══██╗██║░░░░░██╔════╝░██╔══██╗██╔══██╗██║╚══██╔══╝██║░░██║████╗░████║
+// ███████║██║░░░░░██║░░██╗░██║░░██║██████╔╝██║░░░██║░░░███████║██╔████╔██║
+// ██╔══██║██║░░░░░██║░░╚██╗██║░░██║██╔══██╗██║░░░██║░░░██╔══██║██║╚██╔╝██║
+// ██║░░██║███████╗╚██████╔╝╚█████╔╝██║░░██║██║░░░██║░░░██║░░██║██║░╚═╝░██║
+// ╚═╝░░╚═╝╚══════╝░╚═════╝░░╚════╝░╚═╝░░╚═╝╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░░░░╚═╝
 
+
+OPENCSTL_FUNC size_type64 _cstl_count(void *container, ...) {
+    va_list vl;
+    void *va_ptr = NULL;
+    __cstl_va_start(vl, container, va_ptr);
+#if CSTL_USE_VAARG
+    void *param1 = __cstl_va_arg_next(vl);
+#else
+    void *param1 = __cstl_va_arg(va_ptr);
+#endif
+    size_type64 container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    size_type64 cnt = 0;
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            cnt = __cstl_vector_count((void **) container, param1);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            cnt = __cstl_deque_count((void **) container, param1);
+        }
+        break;
+        default: {
+            yikes("Unsupported container type");
+        }
+        break;
+    }
+    __cstl_va_end(vl);
+    return cnt;
+}
+
+OPENCSTL_FUNC size_type64 _cstl_count_if(void *container, ...) {
+    va_list vl;
+    void *va_ptr = NULL;
+    __cstl_va_start(vl, container, va_ptr);
+#if CSTL_USE_VAARG
+    void *param1 = __cstl_va_arg_next(vl);
+#else
+    void *param1 = __cstl_va_arg(va_ptr);
+#endif
+    size_type64 container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    size_type64 cnt = 0;
+#if CSTL_USE_VAARG
+    CSTL_COND cond = (CSTL_COND) param1;
+#else
+    CSTL_COND cond = *(CSTL_COND *) param1;
+#endif
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            cnt = __cstl_vector_count_if((void **) container, cond);
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            cnt = __cstl_deque_count_if((void **) container, cond);
+        }
+        break;
+        default: {
+            yikes("Unsupported container type");
+        }
+        break;
+    }
+    __cstl_va_end(vl);
+    return cnt;
+}
+
+OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
+    va_list vl;
+    void *va_ptr = NULL;
+    __cstl_va_start(vl, argc, va_ptr);
+#if CSTL_USE_VAARG
+    void *param1 = __cstl_va_arg_next(vl);
+    void *param2 = __cstl_va_arg_next(vl);
+    void *param3 = __cstl_va_arg_next(vl);
+#else
+    void *param1 = __cstl_va_arg(va_ptr);
+    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
+    void *param3 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 2);
+#endif
+    size_type64 container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    void *ret = NULL;
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            if (argc >= 3) {
+                yikes("Not implemented");
+            } else {
+                if (argc == 1) {
+                    size_type64 type_size = OPENCSTL_NIDX((void**)container, NIDX_TSIZE);
+                    param2 = _memcmp_funcs[type_size];
+                }
+                ret = __cstl_vector_lower_bound((void **) container, param1, param2);
+            }
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            if (argc >= 3) {
+                yikes("Not implemented");
+            } else {
+                if (argc == 1) {
+                    ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+                    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+                    param2 = _memcmp_funcs[type_size];
+                }
+                ret = __cstl_deque_lower_bound((void **) container, param1, param2);
+            }
+        }
+        break;
+
+        default: yikes("Invalid operation");
+            break;
+    }
+    __cstl_va_end(vl);
+    return ret;
+}
+
+OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
+    va_list vl;
+    void *va_ptr = NULL;
+    __cstl_va_start(vl, argc, va_ptr);
+#if CSTL_USE_VAARG
+    void *param1 = __cstl_va_arg_next(vl);
+    void *param2 = __cstl_va_arg_next(vl);
+    void *param3 = __cstl_va_arg_next(vl);
+#else
+    void *param1 = __cstl_va_arg(va_ptr);
+    void *param2 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
+    void *param3 = __cstl_va_arg((char *) va_ptr + sizeof(void *) * 2);
+#endif
+    size_type64 container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    void *ret = NULL;
+    switch (container_type) {
+        case OPENCSTL_VECTOR: {
+            if (argc >= 3) {
+                yikes("Not implemented");
+            } else {
+                if (argc == 1) {
+                    size_type64 type_size = OPENCSTL_NIDX((void**)container, NIDX_TSIZE);
+                    param2 = _memcmp_funcs[type_size];
+                }
+                ret = __cstl_vector_upper_bound((void **) container, param1, param2);
+            }
+        }
+        break;
+        case OPENCSTL_DEQUE: {
+            if (argc >= 3) {
+                yikes("Not implemented");
+            } else {
+                if (argc == 1) {
+                    ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+                    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
+                    param2 = _memcmp_funcs[type_size];
+                }
+                ret = __cstl_deque_upper_bound((void **) container, param1, param2);
+            }
+        }
+        break;
+
+        default: yikes("Invalid operation");
+            break;
+    }
+    __cstl_va_end(vl);
+    return ret;
+}
 
 // #define __CSTL_LOWER_BOUND_PICK(_1, _2, NAME, ...) NAME
 // #define __CSTL_LOWER_BOUND_1(a,b)    cstl_lower_bound((a),(b), NULL)
@@ -6117,27 +7286,65 @@ OPENCSTL_FUNC void _cstl_fill(void *_begin, void *_end, void *_value, size_type6
 #endif
 
 
-#define max_element(...) _MAX_ELEMENT_DISPATCH(__VA_ARGS__, NULL)
-#define _MAX_ELEMENT_DISPATCH(_begin, _end, _cmp, ...) _cstl_max_element(_begin, _end, (_OpenCSTLCompareFunc)(_cmp))
+#define max_element(C, ...) _cstl_max_element(&(C), ##__VA_ARGS__, NULL)
+#define min_element(C, ...) _cstl_min_element(&(C), ##__VA_ARGS__, NULL)
 
-OPENCSTL_FUNC void *_cstl_max_element(void *_begin, void *_end, _OpenCSTLCompareFunc _cmp) {
+OPENCSTL_FUNC size_type64 __cstl_minmax_container_type(void *container) {
+    size_type64 container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_ARRAY:
+        case OPENCSTL_VECTOR:
+        case OPENCSTL_DEQUE:
+        case OPENCSTL_SET:
+        case OPENCSTL_MAP:
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP:
+            break;
+        default:
+            yikes("max_element/min_element: unsupported container type");
+    }
+    return container_type;
+}
+
+OPENCSTL_FUNC void *_cstl_max_element(void *container, ...) {
+    __cstl_minmax_container_type(container);
+
+    va_list vl;
+    void *va_ptr = NULL;
+    __cstl_va_start(vl, container, va_ptr);
+#if CSTL_USE_VAARG
+    _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) __cstl_va_arg_next(vl);
+#else
+    _OpenCSTLCompareFunc cmp = *(_OpenCSTLCompareFunc *) __cstl_va_arg(va_ptr);
+#endif
+    __cstl_va_end(vl);
+
+    void *_begin = _cstl_begin(container);
+    void *_end = _cstl_end(container);
+
     if (_begin == _end) {
         return _end;
     }
 
-    if (_cmp == NULL) {
+    if (cmp == NULL) {
         Interval *tm = iveb_find(iveb, _begin);
-        _cmp = LESS(tm->type_name);
-        if (_cmp == NULL) {
-            _cmp = _memcmp_funcs[tm->type_size];
+        cmp = LESS(tm->type_name);
+        if (cmp == NULL) {
+            cmp = _memcmp_funcs[tm->type_size];
         }
-        verify(_cmp != NULL);
+        verify(cmp != NULL);
     }
 
     void *max_it = _begin;
     void *it = cstl_next(_begin);
     while (it != _end) {
-        if (_cmp(it, max_it) > 0) {
+        if (cmp(it, max_it) > 0) {
             max_it = it;
         }
         it = cstl_next(it);
@@ -6145,27 +7352,39 @@ OPENCSTL_FUNC void *_cstl_max_element(void *_begin, void *_end, _OpenCSTLCompare
     return max_it;
 }
 
-#define min_element(...) _MIN_ELEMENT_DISPATCH(__VA_ARGS__, NULL)
-#define _MIN_ELEMENT_DISPATCH(_begin, _end, _cmp, ...) _cstl_min_element(_begin, _end, (_OpenCSTLCompareFunc)(_cmp))
+OPENCSTL_FUNC void *_cstl_min_element(void *container, ...) {
+    __cstl_minmax_container_type(container);
 
-OPENCSTL_FUNC void *_cstl_min_element(void *_begin, void *_end, _OpenCSTLCompareFunc _cmp) {
+    va_list vl;
+    void *va_ptr = NULL;
+    __cstl_va_start(vl, container, va_ptr);
+#if CSTL_USE_VAARG
+    _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) __cstl_va_arg_next(vl);
+#else
+    _OpenCSTLCompareFunc cmp = *(_OpenCSTLCompareFunc *) __cstl_va_arg(va_ptr);
+#endif
+    __cstl_va_end(vl);
+
+    void *_begin = _cstl_begin(container);
+    void *_end = _cstl_end(container);
+
     if (_begin == _end) {
         return _end;
     }
 
-    if (_cmp == NULL) {
+    if (cmp == NULL) {
         Interval *tm = iveb_find(iveb, _begin);
-        _cmp = LESS(tm->type_name);
-        if (_cmp == NULL) {
-            _cmp = _memcmp_funcs[tm->type_size];
+        cmp = LESS(tm->type_name);
+        if (cmp == NULL) {
+            cmp = _memcmp_funcs[tm->type_size];
         }
-        verify(_cmp != NULL);
+        verify(cmp != NULL);
     }
 
     void *min_it = _begin;
     void *it = cstl_next(_begin);
     while (it != _end) {
-        if (_cmp(it, min_it) < 0) {
+        if (cmp(it, min_it) < 0) {
             min_it = it;
         }
         it = cstl_next(it);
@@ -6671,8 +7890,8 @@ OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
 
 OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_TSIZE) * (ptrdiff_t)sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
 
     for (size_type64 i = length - 1; i > 0; i--) {
         size_type64 rng_idx = __mt19937_64_next() % (i + 1);
@@ -6712,7 +7931,7 @@ void __mt19937_shuffle(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) &container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
     }
@@ -6760,6 +7979,67 @@ RANDOM mt19937 = {
     __mt19937_shuffle
 };
 
+// ██████╗░░█████╗░███╗░░██╗██████╗░░█████╗░███╗░░░███╗░░░░░░██████╗░███████╗██╗░░░██╗██╗░█████╗░███████╗
+// ██╔══██╗██╔══██╗████╗░██║██╔══██╗██╔══██╗████╗░████║░░░░░░██╔══██╗██╔════╝██║░░░██║██║██╔══██╗██╔════╝
+// ██████╔╝███████║██╔██╗██║██║░░██║██║░░██║██╔████╔██║░░░░░░██║░░██║█████╗░░╚██╗░██╔╝██║██║░░╚═╝█████╗░░
+// ██╔══██╗██╔══██║██║╚████║██║░░██║██║░░██║██║╚██╔╝██║░░░░░░██║░░██║██╔══╝░░░╚████╔╝░██║██║░░██╗██╔══╝░░
+// ██║░░██║██║░░██║██║░╚███║██████╔╝╚█████╔╝██║░╚═╝░██║█████╗██████╔╝███████╗░░╚██╔╝░░██║╚█████╔╝███████╗
+// ╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝╚═════╝░░╚════╝░╚═╝░░░░░╚═╝╚════╝╚═════╝░╚══════╝░░░╚═╝░░░╚═╝░╚════╝░╚══════╝
+#include <time.h>
+#if defined(OCSTL_OS_WINDOWS)
+#include <windows.h>
+// RtlGenRandom = SystemFunction036, advapi32에 포함 (MinGW 기본 링크)
+#define RtlGenRandom SystemFunction036
+
+BOOLEAN NTAPI RtlGenRandom(PVOID RandomBuffer, ULONG RandomBufferLength);
+#elif defined(__APPLE__)
+#include <sys/types.h>
+#elif defined(__linux__)
+#include <sys/syscall.h>
+#include <unistd.h>
+#include <errno.h>
+#endif
+static uint64_t random_device(void) {
+    uint64_t val = 0;
+#if defined(OCSTL_CC_TCC)
+    val  = (uint64_t)time(NULL);
+    val ^= (uint64_t)(uintptr_t)&val;       // 스택 주소 XOR
+    val ^= val << 21;
+    val ^= val >> 35;
+    val ^= val << 4;
+#elif defined(OCSTL_OS_WINDOWS)
+    RtlGenRandom(&val, sizeof(val));
+
+#elif defined(__APPLE__)
+    arc4random_buf(&val, sizeof(val));
+
+#elif defined(__linux__)
+    size_t done = 0;
+    while (done < sizeof(val)) {
+        long ret = syscall(SYS_getrandom,
+                           (char *) &val + done, sizeof(val) - done, 0);
+        if (ret < 0) {
+            if (errno == EINTR) continue;
+            FILE *f = fopen("/dev/urandom", "rb");
+            if (f) {
+                fread((char *) &val + done, 1, sizeof(val) - done, f);
+                fclose(f);
+            }
+            break;
+        }
+        done += (size_t) ret;
+    }
+
+#else
+    FILE *f = fopen("/dev/urandom", "rb");
+    if (f) {
+        fread(&val, sizeof(val), 1, f);
+        fclose(f);
+    }
+#endif
+
+    return val;
+}
 #endif //OPENCSTL_MT19937_H
 
 // ==============================================================================
@@ -7012,7 +8292,7 @@ FILE *__cstl_fwrite_all(FILE *fp, const char *buf) {
     fpm_append(new_fp, filepath);
     if (!new_fp) return NULL;
     size_type64 len = strlen(buf);
-    fwrite(buf, 1, len, new_fp) == len;
+    fwrite(buf, 1, len, new_fp);
     return new_fp;
 }
 
@@ -7036,7 +8316,7 @@ typedef struct FSTREAM {
     cstl_fwrite_all_fn write;
 } FSTREAM;
 
-FSTREAM fstream = {
+FSTREAM file = {
     __cstl_fopen,
     __cstl_fclose,
     __cstl_get_line,
@@ -8413,7 +9693,6 @@ extern "C" {
 #if defined(OCSTL_OS_WINDOWS)
 
 #include<windows.h>
-#include<process.h>
 #include<errno.h>
 #include<assert.h>
 
@@ -8449,7 +9728,7 @@ typedef struct _pthread_cleanup_stack {
 SELECT_ANY _pthread_cleanup_stack *_pthread_cleanup_stack_head = NULL;
 SELECT_ANY HANDLE _pthread_cleanup_mutex = NULL;
 
-inline int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg) {
+static int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg) {
     DWORD dwThreadId = 1;
     HANDLE handle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) start_routine, arg, 0, &dwThreadId);
     thread->handle = (HANDLE) handle;
@@ -8636,7 +9915,6 @@ static void *pthread_getspecific(pthread_key_t key) {
 #ifndef PS_SEQ_CUTOFF
 #define PS_SEQ_CUTOFF 4096
 #endif
-
 
 
 struct ps_args {
@@ -8978,12 +10256,7 @@ static void rsort64(int64_t *__base, size_type64 n) {
 // ==============================================================================
 // END    rsort.h
 // ==============================================================================
-// #if !defined(cstl_stable_sort)
-// #define cstl_stable_sort tsort
-// #endif
-// #if !defined(cstl_unstable_sort)
-// #define cstl_unstable_sort pdqsort
-// #endif
+
 
 // ██╗░░░██╗███╗░░██╗░██████╗████████╗░█████╗░██████╗░██╗░░░░░███████╗░░░░░░░██████╗░█████╗░██████╗░████████╗
 // ██║░░░██║████╗░██║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝
@@ -9036,9 +10309,9 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
         }
         break;
         case OPENCSTL_DEQUE: {
-            size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(NIDX_TSIZE) * (ptrdiff_t)sizeof(size_type64) + distance);
-            size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
-            char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
+            size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
+            size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+            char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
             _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
@@ -9108,9 +10381,9 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
         }
         break;
         case OPENCSTL_DEQUE: {
-            size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(NIDX_TSIZE) * (ptrdiff_t)sizeof(size_type64) + distance);
-            size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
-            char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
+            size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
+            size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+            char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
             _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
@@ -9255,9 +10528,9 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
         }
         break;
         case OPENCSTL_DEQUE: {
-            size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(NIDX_TSIZE) * (ptrdiff_t)sizeof(size_type64) + distance);
-            size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
-            char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
+            size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
+            size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+            char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
             _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
@@ -9345,21 +10618,15 @@ static char *opencstl_version(void) {
     return OPENCSTL_VERSION;
 }
 
-static char __opencstl_env_str[512] = {0};
-
-#if defined(OCSTL_CC_CLANG)
-static const char __ocstl_clang_ver[] = __clang_version__;
-#define __OCSTL_CC_STR \
-((__ocstl_clang_ver[sizeof(__ocstl_clang_ver)-2] == ' ') ? "zig cc" : OCSTL_CC_STR)
-#else
-#define __OCSTL_CC_STR OCSTL_CC_STR
-#endif
 
 char *opencstl_env(void) {
-#ifdef __clang_version__
-    logging.info(__clang_version__);
+    static char __opencstl_env_str[512] = {0};
+#if defined(OCSTL_CC_MSVC)
+    sprintf_s(__opencstl_env_str, sizeof(__opencstl_env_str),
+              "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
+#else
+    sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
 #endif
-    sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, __OCSTL_CC_STR, OCSTL_C_VERSION_STR);
     return __opencstl_env_str;
 }
 #endif //_OPENCSTL_VERSION_H
@@ -9414,7 +10681,7 @@ char *opencstl_env(void) {
 // [already included: zalloc.h]
 // [already included: crossplatform.h]
 
-int __popcnt_sw(int v) {
+static inline int __popcnt_sw(int v) {
     v = (v & 0x55555555) + ((v >> 1) & 0x55555555);
     v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
     v = (v & 0x0f0f0f0f) + ((v >> 4) & 0x0f0f0f0f);
@@ -9423,7 +10690,7 @@ int __popcnt_sw(int v) {
     return v;
 }
 
-int __popcnt64_sw(long long v) {
+static inline int __popcnt64_sw(long long v) {
     v = (v & 0x5555555555555555LL) + ((v >> 1) & 0x5555555555555555LL);
     v = (v & 0x3333333333333333LL) + ((v >> 2) & 0x3333333333333333LL);
     v = (v & 0x0f0f0f0f0f0f0f0fLL) + ((v >> 4) & 0x0f0f0f0f0f0f0f0fLL);
@@ -9473,12 +10740,23 @@ typedef struct {
 
 #define new_bitset(N) __cstl_bitset(N)
 
-BITSET __cstl_bitset(size_type n) {
+static BITSET __cstl_bitset(size_type n) {
     size_type cap = __cstl_bitset_capacity(n);
     BITSET b;
     b.nbits = n;
     b.bits = (ubyte_x *) calloc(cap, 1);
+
     b.str = (char *) calloc(b.nbits + 1, 1);
+
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, b.bits, b.bits + cap, CT_BITSET, 0, "bitset");
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return b;
 }
 
@@ -9508,7 +10786,7 @@ typedef char * (*bitset_fn7)(BITSET b);
 // ██╔══██╗██║░░░██║░░░░╚═══██╗██╔══╝░░░░░██║░░░░░░░░░██║██║╚██╔╝██║██╔═══╝░██║░░░░░
 // ██████╦╝██║░░░██║░░░██████╔╝███████╗░░░██║░░░█████╗██║██║░╚═╝░██║██║░░░░░███████╗
 // ╚═════╝░╚═╝░░░╚═╝░░░╚═════╝░╚══════╝░░░╚═╝░░░╚════╝╚═╝╚═╝░░░░░╚═╝╚═╝░░░░░╚══════╝
-void __cstl_bitset_set(BITSET b) {
+static void __cstl_bitset_set(BITSET b) {
     // 모든 비트를 1로 설정
     size_type cap = __cstl_bitset_capacity(b.nbits);
     memset(b.bits, 0xFF, cap);
@@ -9519,13 +10797,13 @@ void __cstl_bitset_set(BITSET b) {
     }
 }
 
-void __cstl_bitset_reset(BITSET b) {
+static void __cstl_bitset_reset(BITSET b) {
     // 모든 비트를 0으로 설정
     size_type cap = __cstl_bitset_capacity(b.nbits);
     memset(b.bits, 0, cap);
 }
 
-void __cstl_bitset_set_at(BITSET b, size_type idx, bool val) {
+static void __cstl_bitset_set_at(BITSET b, size_type idx, bool val) {
     // idx번째 비트를 val로 설정
     size_type byte_idx = idx / 8;
     size_type bit_idx = idx % 8;
@@ -9536,7 +10814,7 @@ void __cstl_bitset_set_at(BITSET b, size_type idx, bool val) {
     }
 }
 
-size_type __cstl_bitset_count(BITSET b) {
+static size_type __cstl_bitset_count(BITSET b) {
     // 1로 설정된 비트의 개수를 반환
     size_type cap = __cstl_bitset_capacity(b.nbits);
     size_type64 count = 0;
@@ -9557,10 +10835,10 @@ size_type __cstl_bitset_count(BITSET b) {
     for (; i < cap; i++) {
         count += __popcnt((int) b.bits[i]);
     }
-    return count;
+    return (size_type) count;
 }
 
-bool __cstl_bitset_all(BITSET b) {
+static bool __cstl_bitset_all(BITSET b) {
     // 모든 비트가 1인지 검사
     if (b.nbits == 0) return true;
     size_type full_bytes = b.nbits / 8;
@@ -9575,7 +10853,7 @@ bool __cstl_bitset_all(BITSET b) {
     return true;
 }
 
-bool __cstl_bitset_any(BITSET b) {
+static bool __cstl_bitset_any(BITSET b) {
     // 하나라도 1인 비트가 있는지 검사
     if (b.nbits == 0) return false;
     size_type full_bytes = b.nbits / 8;
@@ -9590,12 +10868,12 @@ bool __cstl_bitset_any(BITSET b) {
     return false;
 }
 
-bool __cstl_bitset_none(BITSET b) {
+static bool __cstl_bitset_none(BITSET b) {
     // 모든 비트가 0인지 검사
     return !__cstl_bitset_any(b);
 }
 
-void __cstl_bitset_flip(BITSET b) {
+static void __cstl_bitset_flip(BITSET b) {
     // 모든 비트를 반전
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
@@ -9608,7 +10886,7 @@ void __cstl_bitset_flip(BITSET b) {
     }
 }
 
-void __cstl_bitset_flip_at(BITSET b, size_type idx) {
+static void __cstl_bitset_flip_at(BITSET b, size_type idx) {
     // 특정 위치의 비트를 반전
     size_type byte_idx = idx / 8;
     size_type bit_idx = idx % 8;
@@ -9616,12 +10894,12 @@ void __cstl_bitset_flip_at(BITSET b, size_type idx) {
 }
 
 
-size_type __cstl_bitset_nbits(BITSET b) {
+static size_type __cstl_bitset_nbits(BITSET b) {
     // 비트셋의 크기(비트 수)를 반환
     return b.nbits;
 }
 
-bool __cstl_bitset_test(BITSET b, size_type idx) {
+static bool __cstl_bitset_test(BITSET b, size_type idx) {
     // 특정 위치의 비트가 1인지 검사
     size_type byte_idx = idx / 8;
     size_type bit_idx = idx % 8;
@@ -9629,7 +10907,7 @@ bool __cstl_bitset_test(BITSET b, size_type idx) {
 }
 
 
-char *__cstl_bitset_to_string(BITSET b) {
+static char *__cstl_bitset_to_string(BITSET b) {
     // 비트셋을 문자열로 변환 (MSB가 앞, C++ bitset::to_string과 동일)
     for (size_type i = 0; i < b.nbits; i++) {
         size_type bit_pos = b.nbits - 1 - i;
@@ -9639,7 +10917,8 @@ char *__cstl_bitset_to_string(BITSET b) {
     return b.str;
 }
 
-void __cstl_bitset_free(BITSET b) {
+static void __cstl_bitset_free(BITSET b) {
+    iveb_erase(iveb, b.bits);
     free(b.bits);
     free(b.str);
 }
@@ -9648,7 +10927,7 @@ typedef struct {
     bitset_fn1 set;
     bitset_fn1 reset;
     bitset_fn2 set_at;
-    bitset_fn3 count;
+    bitset_fn3 count_bits;
     bitset_fn4 all;
     bitset_fn4 any;
     bitset_fn4 none;
@@ -9657,7 +10936,6 @@ typedef struct {
     bitset_fn3 nbits;
     bitset_fn6 test;
     bitset_fn7 to_string;
-    bitset_fn1 free;
 } __BITSET;
 
 static __BITSET bitset = {
@@ -9673,7 +10951,6 @@ static __BITSET bitset = {
     __cstl_bitset_nbits,
     __cstl_bitset_test,
     __cstl_bitset_to_string,
-    __cstl_bitset_free
 };
 
 #endif //OPENCSTL_BITSET_H
@@ -10250,19 +11527,24 @@ static void MsgBoxCLI(const char *format, ...) {
 }
 
 #if defined(OCSTL_OS_WINDOWS)
+
+#if defined(OCSTL_CC_GCC_)
+#pragma comment(lib, "user32.lib")
+#endif
+
 static char *_MsgTitle(void) {
     static char buf[1024] = {0};
 
 #if defined(OCSTL_CC_GCC)
-sprintf(buf, "%s", "GNU gcc Runtime Library");
+    sprintf(buf, "%s", "GNU gcc Runtime Library");
 #elif defined(OCSTL_CC_MSVC)
-sprintf(buf, "%s", "Microsoft Visual C Runtime Library");
+    sprintf_s(buf, sizeof(buf), "%s", "Microsoft Visual C Runtime Library");
 #elif defined(OCSTL_CC_CLANG)
-sprintf(buf, "%s", "LLVM clang Runtime Library");
+    sprintf(buf, "%s", "LLVM clang Runtime Library");
 #elif defined(OCSTL_CC_TCC)
-sprintf(buf, "%s", "TCC Runtime Library");
+    sprintf(buf, "%s", "TCC Runtime Library");
 #endif
-return buf;
+    return buf;
 }
 
 typedef int (WINAPI *PFN_MessageBoxExA)(HWND, LPCSTR, LPCSTR, UINT, WORD);
@@ -10278,53 +11560,53 @@ static void MsgBoxGUI(const char *format, ...) {
     va_end(args);;
 
 #ifdef OCSTL_OS_WINDOWS
-int r = 0;
+    int r = 0;
 
-// 2) MessageBoxExA 포인터 얻기 (컴파일러별)
+    // 2) MessageBoxExA 포인터 얻기 (컴파일러별)
 #ifdef OCSTL_CC_TCC
-HMODULE h = LoadLibraryA("user32.dll");
-PFN_MessageBoxExA pMessageBoxExA = h
-                                       ? (PFN_MessageBoxExA) GetProcAddress(h, "MessageBoxExA")
-                                       : NULL;
+    HMODULE h = LoadLibraryA("user32.dll");
+    PFN_MessageBoxExA pMessageBoxExA = h
+                                           ? (PFN_MessageBoxExA) GetProcAddress(h, "MessageBoxExA")
+                                           : NULL;
 #else
-HMODULE h = NULL;
-PFN_MessageBoxExA pMessageBoxExA = MessageBoxExA;
+    HMODULE h = NULL;
+    PFN_MessageBoxExA pMessageBoxExA = MessageBoxExA;
 #endif
 
-// 3) 컴파일러 무관하게 동일한 템플릿으로 본문 빌드
-char path[MAX_PATH];
-GetModuleFileNameA(NULL, path, sizeof(path));
+    // 3) 컴파일러 무관하게 동일한 템플릿으로 본문 빌드
+    char path[MAX_PATH];
+    GetModuleFileNameA(NULL, path, sizeof(path));
 
-char buf[2048]; // path(260) + userMsg(1024) + 템플릿 여유
-snprintf(buf, sizeof(buf),
+    char buf[2048]; // path(260) + userMsg(1024) + 템플릿 여유
+    snprintf(buf, sizeof(buf),
              "Runtime Error!\n\n"
              "Program: %s\n\n"
              "MsgBoxGUI() has been called\n\n"
              "%s\n\n"
              "(Press Retry to debug the application)",
-         path, userMsg);
+             path, userMsg);
 
-// 4) 다이얼로그 표시
+    // 4) 다이얼로그 표시
     if (pMessageBoxExA) {
-    r = pMessageBoxExA(
-        NULL,
-        buf,
-        _MsgTitle(),
-        MB_ABORTRETRYIGNORE | MB_ICONERROR | MB_DEFBUTTON3 | MB_TASKMODAL,
-        0
-    );
-}
+        r = pMessageBoxExA(
+            NULL,
+            buf,
+            _MsgTitle(),
+            MB_ABORTRETRYIGNORE | MB_ICONERROR | MB_DEFBUTTON3 | MB_TASKMODAL,
+            0
+        );
+    }
 
-// 5) 정리는 반드시 MessageBox 호출 후에
+    // 5) 정리는 반드시 MessageBox 호출 후에
     if (h) FreeLibrary(h);
 
     switch (r) {
-case IDABORT: ExitProcess(3);
-    break; // 중단
-case IDRETRY: DebugBreak();
-    break; // 다시 시도 → 디버거 어태치
-case IDIGNORE: break; // 무시
-}
+        case IDABORT: ExitProcess(3);
+            break; // 중단
+        case IDRETRY: DebugBreak();
+            break; // 다시 시도 → 디버거 어태치
+        case IDIGNORE: break; // 무시
+    }
 #endif
 }
 #elif defined(OCSTL_OS_LINUX)
@@ -10341,6 +11623,7 @@ case IDIGNORE: break; // 무시
 #include <stdio.h>
 #include <fcntl.h>
 #include <signal.h>
+
 struct lang_labels {
     const char *prefix; // LANG의 앞 2글자
     const char *abort_s;
@@ -10475,7 +11758,7 @@ static void MsgBoxGUI(const char *format, ...) {
     char path[PATH_MAX];
     get_exe_path(path, sizeof(path));
 
-    char buf[1024];
+    char buf[8192] = {0};
     snprintf(buf, sizeof(buf),
              "<b>Runtime Error!</b>\n\n"
              "Program: %s\n\n"
@@ -10491,11 +11774,11 @@ static void MsgBoxGUI(const char *format, ...) {
             _exit(3);
         case IDRETRY: fprintf(stderr, "retry\n");
 #if defined(OCSTL_CC_TCC)
-            raise(SIGTRAP); // = DebugBreak (TCC: no __builtin_trap)
+raise(SIGTRAP); // = DebugBreak (TCC: no __builtin_trap)
 #else
-            __builtin_trap(); // = DebugBreak
+__builtin_trap(); // = DebugBreak
 #endif
-            break;
+break;
         case IDIGNORE: fprintf(stderr, "ignore\n");
             break;
     }
@@ -10590,6 +11873,8 @@ char *strtok_s(char *str, char *delimiters, char **last) {
     }
     return token;
 }
+#elif defined(OCSTL_OS_MACOS) || defined(OCSTL_CC_GCC)
+#define strtok_s strtok_r
 #elif !defined(OCSTL_CC_MSVC)
 
 #endif
@@ -10950,7 +12235,344 @@ JSON_CLASS json = {__parse, __get, _dumps};
 // ==============================================================================
 // END    json.h
 // ==============================================================================
+
+// ==============================================================================
+// BEGIN  csv.h                          (depth 1)
+// ==============================================================================
+
+//
+// Created by spring on 4/24/2026.
+//
+
+#ifndef OPENCSTL_CSV_H
+#define OPENCSTL_CSV_H
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+// [already included: van_emde_boas_tree.h]
+// [already included: verify.h]
+// [already included: fstream.h]
+
+typedef struct {
+    char ***table;
+    char **header;
+    int rows; // height
+    int cols; // width
+} CSV;
+
+// dst == NULL이면 길이만 측정 (pass 1), dst != NULL이면 기록 (pass 2)
+static const char *csv__next_field(const char *p, const char *end,
+                                   char *dst, size_t *out_len, int *eol) {
+    size_t len = 0;
+    *eol = 0;
+    if (p >= end) {
+        *out_len = 0;
+        *eol = 1;
+        return p;
+    }
+
+    if (*p == '"') {
+        p++;
+        while (p < end) {
+            if (*p == '"') {
+                if (p + 1 < end && *(p + 1) == '"') {
+                    // escaped quote
+                    if (dst) dst[len] = '"';
+                    len++;
+                    p += 2;
+                } else {
+                    p++;
+                    break;
+                }
+            } else {
+                if (dst) dst[len] = *p;
+                len++;
+                p++;
+            }
+        }
+    } else {
+        while (p < end && *p != ',' && *p != '\r' && *p != '\n') {
+            if (dst) dst[len] = *p;
+            len++;
+            p++;
+        }
+    }
+    if (dst) dst[len] = '\0';
+    *out_len = len;
+
+    if (p >= end) { *eol = 1; } else if (*p == '\r') {
+        p++;
+        if (p < end && *p == '\n') p++;
+        *eol = 1;
+    } else if (*p == '\n') {
+        p++;
+        *eol = 1;
+    } else if (*p == ',') { p++; }
+
+    return p;
+}
+
+static CSV __parse_csv(char *csv_path, bool is_header) {
+    CSV ret;
+    ret.table = NULL;
+    ret.header = NULL;
+    ret.rows = 0;
+    ret.cols = 0;
+    // ret.table에 데이터 저장
+    // is_header가 true이면 header에 cols 길이만큼 문자열 배열로 할당.
+    // is_header가 false이면 NULL,
+    // rows는 헤더를 제외한 행 개수
+
+    // ── 파일 전체를 한 번에 읽기 ─────────────────────────────────────────
+    FILE *f = file.open(csv_path, "rb");
+    if (!f) return ret;
+    fseek(f, 0, SEEK_END);
+    long fsz = ftell(f);
+    rewind(f);
+    verify(fsz > 0);
+
+
+    char *buf = (char *) malloc((size_t) fsz);
+    verify(buf!=NULL);
+
+    fread(buf, 1, (size_t) fsz, f);
+    file.close(f);
+
+    const char *end = buf + fsz;
+
+    // ── Pass 1: 행 수 / 열 수 / 문자열 바이트 합산 ──────────────────────
+    int total_rows = 0;
+    int max_cols = 0;
+    size_t str_bytes = 0;
+    int row_cap = 64;
+    int *row_cols = (int *) malloc(row_cap * sizeof(int));
+    verify(row_cols!=NULL);
+
+
+    const char *p = buf;
+    while (p < end) {
+        if (total_rows == row_cap) {
+            row_cap *= 2;
+            int *tmp = (int *) realloc(row_cols, row_cap * sizeof(int));
+            verify(tmp!=NULL);
+            row_cols = tmp;
+        }
+        int ncols = 0;
+        int eol = 0;
+        while (!eol) {
+            size_t flen;
+            const char *next = csv__next_field(p, end, NULL, &flen, &eol);
+            if (next == p) goto done_pass1;
+            str_bytes += flen + 1; // +1 for '\0'
+            ncols++;
+            p = next;
+        }
+        if (ncols == 0) break;
+        row_cols[total_rows++] = ncols;
+        if (ncols > max_cols) max_cols = ncols;
+    }
+done_pass1:;
+
+    // 짧은 행 패딩용 빈 문자열 공간
+    for (int i = 0; i < total_rows; i++)
+        if (row_cols[i] < max_cols)
+            str_bytes += (size_t) (max_cols - row_cols[i]);
+
+    // ── 단일 블록 레이아웃 ────────────────────────────────────────────────
+    // [ char**  row_ptrs  : data_rows * sizeof(char**)         ]  ← table[i]
+    // [ char*   cell_ptrs : data_rows * max_cols * sizeof(char*)]  ← table[i][j]
+    // [ char*   hdr_ptrs  : max_cols * sizeof(char*)  (헤더 시) ]  ← header[j]
+    // [ char    sdata     : 가변 문자열 밀집 패킹               ]
+
+    int data_rows = is_header
+                        ? (total_rows > 0 ? total_rows - 1 : 0)
+                        : total_rows;
+    size_t off1 = (size_t) data_rows * sizeof(char **);
+    size_t off2 = (size_t) data_rows * (size_t) max_cols * sizeof(char *);
+    size_t off3 = is_header ? (size_t) max_cols * sizeof(char *) : 0;
+
+    char *mem = (char *) malloc(off1 + off2 + off3 + str_bytes);
+    verify(mem!=NULL);
+
+    char ***table = (char ***) mem;
+    char **cells = (char **) (mem + off1);
+    char **hdr = is_header ? (char **) (mem + off1 + off2) : NULL;
+    char *sdata = mem + off1 + off2 + off3;
+
+    // row_ptrs 세팅
+    for (int i = 0; i < data_rows; i++)
+        table[i] = cells + i * max_cols;
+
+    // ── Pass 2: 문자열 기록 + 포인터 세팅 ───────────────────────────────
+    p = buf;
+    char *sp = sdata;
+
+    // 헤더 행 처리
+    if (is_header && total_rows > 0) {
+        int j = 0, eol = 0;
+        while (!eol && j < row_cols[0]) {
+            size_t flen;
+            hdr[j] = sp;
+            p = csv__next_field(p, end, sp, &flen, &eol);
+            sp += flen + 1;
+            j++;
+        }
+        for (; j < max_cols; j++) {
+            hdr[j] = sp;
+            *sp++ = '\0';
+        } // 패딩
+    }
+
+    // 데이터 행 처리
+    int start = is_header ? 1 : 0;
+    for (int i = start; i < total_rows; i++) {
+        int di = i - start, j = 0, eol = 0;
+        while (!eol && j < row_cols[i]) {
+            size_t flen;
+            table[di][j] = sp;
+            p = csv__next_field(p, end, sp, &flen, &eol);
+            sp += flen + 1;
+            j++;
+        }
+        for (; j < max_cols; j++) {
+            table[di][j] = sp;
+            *sp++ = '\0';
+        } // 패딩
+    }
+
+    free(row_cols);
+    free(buf);
+
+    ret.table = table;
+    ret.header = hdr;
+    ret.rows = data_rows;
+    ret.cols = max_cols;
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, table, table, CT_CSV, 0, "csv");
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
+    return ret;
+}
+
+// free는 블록 하나만 해제하면 끝
+void __free_csv(CSV *csv) {
+    iveb_erase(iveb, csv->table);
+    free(csv->table);
+    csv->table = NULL;
+    csv->header = NULL;
+    csv->rows = 0;
+    csv->cols = 0;
+}
+
+typedef struct CSV_CLASS {
+    CSV (*parse)(char *csv_path,bool is_header);
+} CSV_CLASS;
+
+CSV_CLASS csv = {
+    __parse_csv
+};
+#endif //OPENCSTL_CSV_H
+
+// ==============================================================================
+// END    csv.h
+// ==============================================================================
 // [already included: mt19937.h]
+// [already included: galloc.h]
+
+// ==============================================================================
+// BEGIN  threading_cc.h                 (depth 1)
+// ==============================================================================
+
+//
+// Created by spring on 4/24/2026.
+//
+
+#ifndef OPENCSTL_THREADING_CC_H
+#define OPENCSTL_THREADING_CC_H
+#include <stdint.h>
+
+#if defined(_WIN32)
+#include <windows.h>
+#elif defined(__APPLE__)
+#include <sys/sysctl.h>
+#else
+#include <unistd.h>
+#endif
+
+int cpu_count(void) {
+#if defined(_WIN32)
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    return (int) si.dwNumberOfProcessors;
+
+#elif defined(__APPLE__)
+    int count = 0;
+    size_t size = sizeof(count);
+    // hw.logicalcpu: 하이퍼스레딩 포함 논리 코어
+    // hw.physicalcpu: 물리 코어만
+    sysctlbyname("hw.logicalcpu", &count, &size, NULL, 0);
+    return count;
+
+#else
+    int cpu_threads = 0;
+    int siblings = 0;
+    int cpu_cores = 0;
+    int got_sib = 0;
+    int got_cor = 0;
+
+    FILE *f = fopen("/proc/cpuinfo", "r");
+    if (f) {
+        char line[128];
+        while (fgets(line, sizeof(line), f)) {
+            if (strncmp(line, "processor", 9) == 0) {
+                cpu_threads++;
+            }
+            // siblings, cpu cores는 첫 번째 값만 읽으면 충분
+            if (!got_sib && strncmp(line, "siblings", 8) == 0) {
+                char *colon = strchr(line, ':');
+                if (colon) {
+                    siblings = atoi(colon + 1);
+                    got_sib = 1;
+                }
+            }
+            if (!got_cor && strncmp(line, "cpu cores", 9) == 0) {
+                char *colon = strchr(line, ':');
+                if (colon) {
+                    cpu_cores = atoi(colon + 1);
+                    got_cor = 1;
+                }
+            }
+        }
+        fclose(f);
+    }
+
+    int hyper_threading = (got_sib && got_cor && cpu_cores > 0)
+                              ? (siblings == cpu_cores * 2)
+                              : 0;
+    if (hyper_threading) {
+        cpu_threads *= 2;
+    }
+    // fallback
+    if (cpu_threads <= 0) {
+        long n = sysconf(_SC_NPROCESSORS_ONLN);
+        cpu_threads = n > 0 ? (int) n : 1;
+    }
+
+    return cpu_threads;
+#endif
+}
+#endif //OPENCSTL_THREADING_CC_H
+
+// ==============================================================================
+// END    threading_cc.h
+// ==============================================================================
+
+#define ARRAY(TYPE)             TYPE*
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**
 #define SET(TYPE)               TYPE**
@@ -11000,6 +12622,11 @@ JSON_CLASS json = {__parse, __get, _dumps};
 #define rbegin          cstl_rbegin
 #define rend            cstl_rend
 
+#define count           cstl_count
+#define count_if        cstl_count_if
+#define lower_bound     cstl_lower_bound
+#define upper_bound     cstl_upper_bound
+
 
 #define new_deque           cstl_deque
 #define new_list            cstl_list
@@ -11035,7 +12662,7 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -11077,7 +12704,7 @@ OPENCSTL_FUNC void _cstl_push(void *container, ...) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -11112,7 +12739,7 @@ OPENCSTL_FUNC void _cstl_push_back(void *container, ...) {
 
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -11149,7 +12776,7 @@ OPENCSTL_FUNC void _cstl_push_front(void *container, ...) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -11172,7 +12799,7 @@ OPENCSTL_FUNC void _cstl_pop(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -11198,7 +12825,7 @@ OPENCSTL_FUNC void _cstl_pop_back(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -11222,12 +12849,16 @@ OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     size_type sz = 0;
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            sz = __cstl_array_max_size((void **) container);
+        }
+        break;
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_max_size((void **) container);
         }
@@ -11252,40 +12883,12 @@ OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
     return sz;
 }
 
-// OPENCSTL_FUNC size_type _cst_shrink_to_fit(void *container) {
-//     size_type64 container_type;
-//     if (__is_deque((void **) container)) {
-//         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-//         container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
-//     } else {
-//         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
-//     }
-//     size_type sz = 0;
-//     switch (container_type) {
-//         case OPENCSTL_VECTOR: {
-//            sz =  __cstl_vector_shrink_to_fit((void **) container);
-//         }
-//         break;
-//         case OPENCSTL_LIST: {
-//            sz =  __cstl_list_max_size((void **) container);
-//         }
-//         break;
-//         case OPENCSTL_DEQUE: {
-//             sz = __cstl_deque_shrink_to_fit((void **) container);
-//         }
-//         break;
-//         default: {
-//             verify("Invalid operator");
-//         }
-//     }
-//     return es;
-// }
 
 OPENCSTL_FUNC void _cstl_pop_front(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -11305,12 +12908,16 @@ OPENCSTL_FUNC size_type _cstl_size(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     size_type sz = 0;
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            sz = __cstl_array_size((void **) container);
+        }
+        break;
         case OPENCSTL_PRIORITY_QUEUE:
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_size((void **) container);
@@ -11344,12 +12951,16 @@ OPENCSTL_FUNC size_type _cstl_capacity(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     size_type sz = 0;
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            sz = __cstl_array_capacity((void **) container);
+        }
+        break;
         case OPENCSTL_STACK:
         case OPENCSTL_QUEUE:
         case OPENCSTL_PRIORITY_QUEUE:
@@ -11389,7 +13000,7 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -11457,7 +13068,7 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -11516,7 +13127,7 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -11547,7 +13158,7 @@ OPENCSTL_FUNC void _cstl_clear(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -11587,12 +13198,16 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     size_type64 sz = 0;
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            sz = __cstl_array_size((void **) container);
+        }
+        break;
         case OPENCSTL_PRIORITY_QUEUE:
         case OPENCSTL_VECTOR: {
             sz = __cstl_vector_size((void **) container);
@@ -11627,25 +13242,43 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
 
 OPENCSTL_FUNC void _cstl_free(void *container) {
     void **tmp = (void **) container;
-    Interval *iv = iveb_find(iveb, *tmp);
-    if (iv != NULL) {
-        if (iv->ctype == CT_JSON) {
-            __free_json((JSON *) *tmp);
+    if (iveb != NULL) {
+        // BITSET's first field is `nbits` (a value), not a pointer, so iveb was
+        // keyed on its `.bits` field. Probe that first to correctly detect BITSET.
+        BITSET *bs = (BITSET *) container;
+        Interval *iv_bs = iveb_find(iveb, bs->bits);
+        if (iv_bs != NULL && iv_bs->ctype == CT_BITSET) {
+            __cstl_bitset_free(*bs);
             goto _BYE_;
-        } else if (iv->ctype == CT_GLOB) {
-            __glob_free(*tmp);
-            goto _BYE_;
+        }
+
+        Interval *iv = iveb_find(iveb, *tmp);
+        if (iv != NULL) {
+            if (iv->ctype == CT_JSON) {
+                __free_json((JSON *) *tmp);
+                goto _BYE_;
+            } else if (iv->ctype == CT_GLOB) {
+                __glob_free(*tmp);
+                goto _BYE_;
+            } else if (iv->ctype == CT_CSV) {
+                __free_csv((CSV *) tmp);
+                goto _BYE_;
+            }
         }
     }
 
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            __cstl_array_free((void **) container);
+        }
+        break;
         case OPENCSTL_VECTOR: {
             __cstl_vector_free((void **) container);
         }
@@ -11697,11 +13330,16 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            if (argc == 1) return __cstl_array_find((void **) container, (void **) container, param2);
+            else return __cstl_array_find((void **) container, param1, param2);
+        }
+        break;
         case OPENCSTL_VECTOR: {
             if (argc == 1) return __cstl_vector_find((void **) container, container, param1);
             else return __cstl_vector_find((void **) container, param1, param2);
@@ -11741,7 +13379,7 @@ OPENCSTL_FUNC void _cstl_shrink_to_fit(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
@@ -11766,11 +13404,15 @@ OPENCSTL_FUNC void _cstl_reverse(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)NIDX_CTYPE * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            __cstl_array_reverse((void **) container);
+        }
+        break;
         case OPENCSTL_VECTOR: {
             __cstl_vector_reverse((void **) container);
         }

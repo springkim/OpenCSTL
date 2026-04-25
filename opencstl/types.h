@@ -47,7 +47,14 @@
 #include<stdbool.h>
 #include<assert.h>
 
+
 typedef int (*CSTL_COMPARE)(const void *, const void *);
+
+typedef int (*CSTL_COMPARE_BYTES)(const void *, const void *, size_t);
+typedef int (*CSTL_EQUALS_FN)(const void *, const void *, size_t);
+
+typedef bool (*CSTL_COND)(const void *);
+
 
 typedef int size_type;
 typedef long long size_type64;

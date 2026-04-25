@@ -486,10 +486,8 @@ OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
         if (r == 0) {
             return *root;
         } else if (r > 0) {
-            //to left
             root = (void ***) &OPENCSTL_NIDX(root, L);
         } else {
-            //to right
             root = (void ***) &OPENCSTL_NIDX(root, R);
         }
     }

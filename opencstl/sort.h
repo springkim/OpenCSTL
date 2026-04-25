@@ -51,12 +51,7 @@
 #include "compare.h"
 #include "bestsort.h"
 #include "rsort.h"
-// #if !defined(cstl_stable_sort)
-// #define cstl_stable_sort tsort
-// #endif
-// #if !defined(cstl_unstable_sort)
-// #define cstl_unstable_sort pdqsort
-// #endif
+
 
 // ██╗░░░██╗███╗░░██╗░██████╗████████╗░█████╗░██████╗░██╗░░░░░███████╗░░░░░░░██████╗░█████╗░██████╗░████████╗
 // ██║░░░██║████╗░██║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝
@@ -78,7 +73,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
             char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
             size_type64 length = (size_type64) OPENCSTL_NIDX(&container, -1);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -95,7 +90,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
         case OPENCSTL_LIST: {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
             char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -109,10 +104,10 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
         }
         break;
         case OPENCSTL_DEQUE: {
-            size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(NIDX_TSIZE) * (ptrdiff_t)sizeof(size_type64) + distance);
-            size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
-            char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
+            size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+            char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -151,7 +146,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
             char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
             size_type64 length = (size_type64) OPENCSTL_NIDX(&container, -1);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -167,7 +162,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
         case OPENCSTL_LIST: {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
             char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -181,10 +176,10 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
         }
         break;
         case OPENCSTL_DEQUE: {
-            size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(NIDX_TSIZE) * (ptrdiff_t)sizeof(size_type64) + distance);
-            size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
-            char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
+            size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+            char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -275,7 +270,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
             char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
             size_type64 length = (size_type64) OPENCSTL_NIDX(&container, -1);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -299,7 +294,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
         case OPENCSTL_LIST: {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
             char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -328,10 +323,10 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
         }
         break;
         case OPENCSTL_DEQUE: {
-            size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(NIDX_TSIZE) * (ptrdiff_t)sizeof(size_type64) + distance);
-            size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
-            char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
+            size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+            char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -340,6 +335,8 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
             }
             if (cmp == NULL) {
                 yikes("Compare function is NULL");
+                return 0;
+                return 0;
                 return 0;
             }
             for (size_type64 i = 1; i < length; i++) {

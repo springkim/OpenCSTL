@@ -44,10 +44,12 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
-// ============================================================
-// string function implementations
-// ============================================================
-
+// ░██████╗████████╗██████╗░██╗███╗░░██╗░██████╗░
+// ██╔════╝╚══██╔══╝██╔══██╗██║████╗░██║██╔════╝░
+// ╚█████╗░░░░██║░░░██████╔╝██║██╔██╗██║██║░░██╗░
+// ░╚═══██╗░░░██║░░░██╔══██╗██║██║╚████║██║░░╚██╗
+// ██████╔╝░░░██║░░░██║░░██║██║██║░╚███║╚██████╔╝
+// ╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░
 static char *__cstl_string_substr(char *src, int pos, int len) {
     verify(strlen(src) >= pos + len);
     char *ret = (char *) calloc(len + 1, sizeof(char));
@@ -55,7 +57,7 @@ static char *__cstl_string_substr(char *src, int pos, int len) {
     return ret;
 }
 
-char **__cstl_string_split(const char *src, const char *sep, int *n) {
+static char **__cstl_string_split(const char *src, const char *sep, int *n) {
     int len = (int) strlen(src);
     int sep_len = (int) strlen(sep);
 
@@ -95,7 +97,7 @@ char **__cstl_string_split(const char *src, const char *sep, int *n) {
 }
 
 
-char *__cstl_string_replace(char *src, char *from, char *to) {
+static char *__cstl_string_replace(char *src, char *from, char *to) {
     int len = strlen(src);
     int from_len = strlen(from);
     int to_len = strlen(to);
@@ -124,7 +126,7 @@ char *__cstl_string_replace(char *src, char *from, char *to) {
     return ret;
 }
 
-char *__cstl_string_ltrim(const char *src) {
+static char *__cstl_string_ltrim(const char *src) {
     const char *p = src;
     while (*p && isspace((unsigned char) *p)) p++;
     size_type64 len = strlen(p);
@@ -133,7 +135,7 @@ char *__cstl_string_ltrim(const char *src) {
     return ret;
 }
 
-char *__cstl_string_rtrim(const char *src) {
+static char *__cstl_string_rtrim(const char *src) {
     size_type64 len = strlen(src);
     while (len > 0 && isspace((unsigned char) src[len - 1])) len--;
     char *ret = (char *) malloc(len + 1);
@@ -142,7 +144,7 @@ char *__cstl_string_rtrim(const char *src) {
     return ret;
 }
 
-char *__cstl_string_trim(const char *src) {
+static char *__cstl_string_trim(const char *src) {
     const char *begin = src;
     while (*begin && isspace((unsigned char) *begin)) begin++;
     const char *end = src + strlen(src);
@@ -154,7 +156,7 @@ char *__cstl_string_trim(const char *src) {
     return ret;
 }
 
-char *__cstl_string_to_upper(const char *src) {
+static char *__cstl_string_to_upper(const char *src) {
     size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
     for (size_type64 i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
@@ -162,7 +164,7 @@ char *__cstl_string_to_upper(const char *src) {
     return ret;
 }
 
-char *__cstl_string_to_lower(const char *src) {
+static char *__cstl_string_to_lower(const char *src) {
     size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
     for (size_type64 i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
@@ -170,19 +172,19 @@ char *__cstl_string_to_lower(const char *src) {
     return ret;
 }
 
-bool __cstl_string_starts_with(const char *src, const char *prefix) {
+static bool __cstl_string_starts_with(const char *src, const char *prefix) {
     size_type64 plen = strlen(prefix);
     return strncmp(src, prefix, plen) == 0;
 }
 
-bool __cstl_string_ends_with(const char *src, const char *suffix) {
+static bool __cstl_string_ends_with(const char *src, const char *suffix) {
     size_type64 slen = strlen(src);
     size_type64 flen = strlen(suffix);
     if (flen > slen) return false;
     return memcmp(src + slen - flen, suffix, flen) == 0;
 }
 
-int __cstl_string_count(const char *src, const char *sub) {
+static int __cstl_string_count(const char *src, const char *sub) {
     int count = 0;
     size_type64 sub_len = strlen(sub);
     if (sub_len == 0) return 0;
@@ -194,7 +196,7 @@ int __cstl_string_count(const char *src, const char *sub) {
     return count;
 }
 
-char *__cstl_string_join(char **parts, int n, const char *delim) {
+static char *__cstl_string_join(char **parts, int n, const char *delim) {
     if (n <= 0) {
         char *empty = (char *) malloc(1);
         *empty = '\0';
@@ -220,7 +222,7 @@ char *__cstl_string_join(char **parts, int n, const char *delim) {
     return ret;
 }
 
-char *__cstl_string_concat(const char *a, const char *b) {
+static char *__cstl_string_concat(const char *a, const char *b) {
     size_type64 alen = strlen(a);
     size_type64 blen = strlen(b);
     char *ret = (char *) malloc(alen + blen + 1);
@@ -229,7 +231,7 @@ char *__cstl_string_concat(const char *a, const char *b) {
     return ret;
 }
 
-char *__cstl_string_reverse(const char *src) {
+static char *__cstl_string_reverse(const char *src) {
     size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
     for (size_type64 i = 0; i < len; i++) ret[i] = src[len - 1 - i];
@@ -237,35 +239,35 @@ char *__cstl_string_reverse(const char *src) {
     return ret;
 }
 
-bool __cstl_string_is_digit(const char *src) {
+static bool __cstl_string_is_digit(const char *src) {
     if (!*src) return false;
     for (const char *p = src; *p; p++)
         if (!isdigit((unsigned char) *p)) return false;
     return true;
 }
 
-bool __cstl_string_is_alpha(const char *src) {
+static bool __cstl_string_is_alpha(const char *src) {
     if (!*src) return false;
     for (const char *p = src; *p; p++)
         if (!isalpha((unsigned char) *p)) return false;
     return true;
 }
 
-bool __cstl_string_is_alnum(const char *src) {
+static bool __cstl_string_is_alnum(const char *src) {
     if (!*src) return false;
     for (const char *p = src; *p; p++)
         if (!isalnum((unsigned char) *p)) return false;
     return true;
 }
 
-bool __cstl_string_is_space(const char *src) {
+static bool __cstl_string_is_space(const char *src) {
     if (!*src) return false;
     for (const char *p = src; *p; p++)
         if (!isspace((unsigned char) *p)) return false;
     return true;
 }
 
-int *__cstl_string_kmp(char *src, char *pattern, int *count) {
+static int *__cstl_string_kmp(char *src, char *pattern, int *count) {
     if (count != NULL) *count = 0;
 
     if (src == NULL || pattern == NULL || count == NULL) {
@@ -397,7 +399,7 @@ typedef struct {
     string_unary_fn to_lower;
     string_match_fn starts_with;
     string_match_fn ends_with;
-    string_count_fn count;
+    string_count_fn count_str;
     string_join_fn join;
     string_concat_fn concat;
     string_unary_fn reverse;

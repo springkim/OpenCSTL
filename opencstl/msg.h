@@ -106,20 +106,23 @@ static void MsgBoxCLI(const char *format, ...) {
 
 #if defined(OCSTL_OS_WINDOWS)
 
+#if defined(OCSTL_CC_GCC_)
 #pragma comment(lib, "user32.lib")
+#endif
+
 static char *_MsgTitle(void) {
     static char buf[1024] = {0};
 
 #if defined(OCSTL_CC_GCC)
-sprintf(buf, "%s", "GNU gcc Runtime Library");
+    sprintf(buf, "%s", "GNU gcc Runtime Library");
 #elif defined(OCSTL_CC_MSVC)
-sprintf(buf, "%s", "Microsoft Visual C Runtime Library");
+    sprintf_s(buf, sizeof(buf), "%s", "Microsoft Visual C Runtime Library");
 #elif defined(OCSTL_CC_CLANG)
-sprintf(buf, "%s", "LLVM clang Runtime Library");
+    sprintf(buf, "%s", "LLVM clang Runtime Library");
 #elif defined(OCSTL_CC_TCC)
-sprintf(buf, "%s", "TCC Runtime Library");
+    sprintf(buf, "%s", "TCC Runtime Library");
 #endif
-return buf;
+    return buf;
 }
 
 typedef int (WINAPI *PFN_MessageBoxExA)(HWND, LPCSTR, LPCSTR, UINT, WORD);
@@ -135,53 +138,53 @@ static void MsgBoxGUI(const char *format, ...) {
     va_end(args);;
 
 #ifdef OCSTL_OS_WINDOWS
-int r = 0;
+    int r = 0;
 
-// 2) MessageBoxExA 포인터 얻기 (컴파일러별)
+    // 2) MessageBoxExA 포인터 얻기 (컴파일러별)
 #ifdef OCSTL_CC_TCC
-HMODULE h = LoadLibraryA("user32.dll");
-PFN_MessageBoxExA pMessageBoxExA = h
-                                       ? (PFN_MessageBoxExA) GetProcAddress(h, "MessageBoxExA")
-                                       : NULL;
+    HMODULE h = LoadLibraryA("user32.dll");
+    PFN_MessageBoxExA pMessageBoxExA = h
+                                           ? (PFN_MessageBoxExA) GetProcAddress(h, "MessageBoxExA")
+                                           : NULL;
 #else
-HMODULE h = NULL;
-PFN_MessageBoxExA pMessageBoxExA = MessageBoxExA;
+    HMODULE h = NULL;
+    PFN_MessageBoxExA pMessageBoxExA = MessageBoxExA;
 #endif
 
-// 3) 컴파일러 무관하게 동일한 템플릿으로 본문 빌드
-char path[MAX_PATH];
-GetModuleFileNameA(NULL, path, sizeof(path));
+    // 3) 컴파일러 무관하게 동일한 템플릿으로 본문 빌드
+    char path[MAX_PATH];
+    GetModuleFileNameA(NULL, path, sizeof(path));
 
-char buf[2048]; // path(260) + userMsg(1024) + 템플릿 여유
-snprintf(buf, sizeof(buf),
+    char buf[2048]; // path(260) + userMsg(1024) + 템플릿 여유
+    snprintf(buf, sizeof(buf),
              "Runtime Error!\n\n"
              "Program: %s\n\n"
              "MsgBoxGUI() has been called\n\n"
              "%s\n\n"
              "(Press Retry to debug the application)",
-         path, userMsg);
+             path, userMsg);
 
-// 4) 다이얼로그 표시
+    // 4) 다이얼로그 표시
     if (pMessageBoxExA) {
-    r = pMessageBoxExA(
-        NULL,
-        buf,
-        _MsgTitle(),
-        MB_ABORTRETRYIGNORE | MB_ICONERROR | MB_DEFBUTTON3 | MB_TASKMODAL,
-        0
-    );
-}
+        r = pMessageBoxExA(
+            NULL,
+            buf,
+            _MsgTitle(),
+            MB_ABORTRETRYIGNORE | MB_ICONERROR | MB_DEFBUTTON3 | MB_TASKMODAL,
+            0
+        );
+    }
 
-// 5) 정리는 반드시 MessageBox 호출 후에
+    // 5) 정리는 반드시 MessageBox 호출 후에
     if (h) FreeLibrary(h);
 
     switch (r) {
-case IDABORT: ExitProcess(3);
-    break; // 중단
-case IDRETRY: DebugBreak();
-    break; // 다시 시도 → 디버거 어태치
-case IDIGNORE: break; // 무시
-}
+        case IDABORT: ExitProcess(3);
+            break; // 중단
+        case IDRETRY: DebugBreak();
+            break; // 다시 시도 → 디버거 어태치
+        case IDIGNORE: break; // 무시
+    }
 #endif
 }
 #elif defined(OCSTL_OS_LINUX)
@@ -198,6 +201,7 @@ case IDIGNORE: break; // 무시
 #include <stdio.h>
 #include <fcntl.h>
 #include <signal.h>
+
 struct lang_labels {
     const char *prefix; // LANG의 앞 2글자
     const char *abort_s;
@@ -332,7 +336,7 @@ static void MsgBoxGUI(const char *format, ...) {
     char path[PATH_MAX];
     get_exe_path(path, sizeof(path));
 
-    char buf[1024];
+    char buf[8192] = {0};
     snprintf(buf, sizeof(buf),
              "<b>Runtime Error!</b>\n\n"
              "Program: %s\n\n"
@@ -348,11 +352,11 @@ static void MsgBoxGUI(const char *format, ...) {
             _exit(3);
         case IDRETRY: fprintf(stderr, "retry\n");
 #if defined(OCSTL_CC_TCC)
-            raise(SIGTRAP); // = DebugBreak (TCC: no __builtin_trap)
+raise(SIGTRAP); // = DebugBreak (TCC: no __builtin_trap)
 #else
-            __builtin_trap(); // = DebugBreak
+__builtin_trap(); // = DebugBreak
 #endif
-            break;
+break;
         case IDIGNORE: fprintf(stderr, "ignore\n");
             break;
     }

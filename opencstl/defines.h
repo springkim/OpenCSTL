@@ -35,8 +35,10 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
+
 #if !defined(_OPENCSTL_DEFINES_H)
 #define _OPENCSTL_DEFINES_H
+#include "opencstl.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #define OPENCSTL_OS_WINDOWS
@@ -68,6 +70,7 @@
 #define OPENCSTL_PRIORITY_QUEUE	7
 #define OPENCSTL_UNORDERED_SET	8
 #define OPENCSTL_UNORDERED_MAP	9
+#define OPENCSTL_ARRAY          10
 
 
 #if defined(OPENCSTL_OS_WINDOWS)
@@ -185,6 +188,7 @@ typedef long long _opencstl_ll_ua;
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
+
 #define _cstl_deref(P) (__extension__ ({ \
     __typeof__(*(P)) _cstl_rv; \
     __builtin_memcpy(&_cstl_rv, (const void *)(P), sizeof(_cstl_rv)); \
@@ -232,16 +236,38 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 #define cstl_shrink_to_fit(container) _cstl_shrink_to_fit(&(container))
 #define cstl_max_size(container) _cstl_max_size(&container)
+
 #define cstl_reverse(container) _cstl_reverse(&(container))
+
+
+//#define cstl_count(container,...)	_cstl_count(&(container),__VA_ARGS__)
+
+#define cstl_count_if(container,...)	_cstl_count_if(&(container),__VA_ARGS__)
+#define cstl_lower_bound(container,...)	_cstl_lower_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_upper_bound(container,...)	_cstl_upper_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+
 #elif defined(__linux__) || defined(__APPLE__)
 
 // TCC supports typeof but not __auto_type; GCC/Clang support both.
-#if defined(__TINYC__)
-#define _CSTL_TYPEOF(x) typeof(x)
-#else
-#define _CSTL_TYPEOF(x) __auto_type
-#endif
+// #if defined(__TINYC__)
+// #define _CSTL_TYPEOF(x) typeof(x)
+// #else
+// #define _CSTL_TYPEOF(x) __auto_type
+// #endif
 
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+// C23 표준 typeof
+#define _CSTL_TYPEOF(x)  typeof(x)
+#elif defined(__cplusplus)
+// C++: decltype
+#define _CSTL_TYPEOF(x)  decltype(x)
+#elif defined(__GNUC__) || defined(__clang__) || defined(__TINYC__)
+// GCC/Clang/TCC: __typeof__ (경고 없음, __auto_type 대신)
+#define _CSTL_TYPEOF(x)  __typeof__(x)
+#else
+// MSVC 등 fallback
+#define _CSTL_TYPEOF(x)  void*
+#endif
 
 #define cstl_push_back(C,...) _linux_cstl_push_back(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
 #define _linux_cstl_push_back(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_back ## _ ## N
@@ -321,6 +347,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define _cstl_assign_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
 #define _cstl_assign_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
 #define _cstl_assign_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+
 #define cstl_find(C,...) _linux_cstl_find(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
 #define _linux_cstl_find(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_find ## _ ## N
 #define _cstl_find_0(C,argc)    ({_CSTL_TYPEOF(&C) __0=&C;_cstl_find( __0,argc);})
@@ -365,6 +392,54 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define cstl_max_size(container) _cstl_max_size(&container)
 #define cstl_shrink_to_fit(container) _cstl_shrink_to_fit(&(container))
 #define cstl_reverse(container) _cstl_reverse(&(container))
+
+
+#define cstl_count(C,...) _linux_cstl_count(C,__VA_ARGS__, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
+#define _linux_cstl_count(C,_1, _2, _3, _4, _5, N, ...) _cstl_count ## _ ## N
+#define _cstl_count_0(C)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count( __0);}))
+#define _cstl_count_1(C,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_count( __0,&__1);}))
+#define _cstl_count_2(C,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_count( __0,&__1,&__2);}))
+#define _cstl_count_3(C,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_count( __0,&__1,&__2,&__3);}))
+#define _cstl_count_4(C,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_count( __0,&__1,&__2,&__3,&__4);}))
+#define _cstl_count_5(C,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_count( __0,&__1,&__2,&__3,&__4,&__5);}))
+
+#define cstl_count_if(C,...) _linux_cstl_count_if(C,__VA_ARGS__, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
+#define _linux_cstl_count_if(C,_1, _2, _3, _4, _5, N, ...) _cstl_count_if ## _ ## N
+#define _cstl_count_if_0(C)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0);}))
+#define _cstl_count_if_1(C,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1);}))
+#define _cstl_count_if_2(C,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2);}))
+#define _cstl_count_if_3(C,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2,_3);}))
+#define _cstl_count_if_4(C,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2,_3,_4);}))
+#define _cstl_count_if_5(C,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2,_3,_4,_5);}))
+
+#define cstl_lower_bound(C,...) _linux_cstl_lower_bound(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_lower_bound(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_lower_bound ## _ ## N
+#define _cstl_lower_bound_0(C,argc)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_lower_bound( __0,argc);}))
+#define _cstl_lower_bound_1(C,argc,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_lower_bound( __0,argc,&__1);}))
+#define _cstl_lower_bound_2(C,argc,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_lower_bound( __0,argc,&__1,&__2);}))
+#define _cstl_lower_bound_3(C,argc,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_lower_bound( __0,argc,&__1,&__2,&__3);}))
+#define _cstl_lower_bound_4(C,argc,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4);}))
+#define _cstl_lower_bound_5(C,argc,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
+#define _cstl_lower_bound_6(C,argc,_1,_2,_3,_4,_5,_6)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
+#define _cstl_lower_bound_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
+#define _cstl_lower_bound_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
+#define _cstl_lower_bound_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
+#define _cstl_lower_bound_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
+
+#define cstl_upper_bound(C,...) _linux_cstl_upper_bound(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_upper_bound(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_upper_bound ## _ ## N
+#define _cstl_upper_bound_0(C,argc)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_upper_bound( __0,argc);}))
+#define _cstl_upper_bound_1(C,argc,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_upper_bound( __0,argc,&__1);}))
+#define _cstl_upper_bound_2(C,argc,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_upper_bound( __0,argc,&__1,&__2);}))
+#define _cstl_upper_bound_3(C,argc,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_upper_bound( __0,argc,&__1,&__2,&__3);}))
+#define _cstl_upper_bound_4(C,argc,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4);}))
+#define _cstl_upper_bound_5(C,argc,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
+#define _cstl_upper_bound_6(C,argc,_1,_2,_3,_4,_5,_6)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
+#define _cstl_upper_bound_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
+#define _cstl_upper_bound_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
+#define _cstl_upper_bound_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
+#define _cstl_upper_bound_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
+
 #endif
 
 

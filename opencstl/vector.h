@@ -41,6 +41,7 @@
 #include "van_emde_boas_tree.h"
 #include "swap.h"
 #include "utility.h"
+#include "compare.h"
 // ██╗░░░██╗███████╗░█████╗░████████╗░█████╗░██████╗░
 // ██║░░░██║██╔════╝██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗
 // ╚██╗░██╔╝█████╗░░██║░░╚═╝░░░██║░░░██║░░██║██████╔╝
@@ -178,7 +179,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type6
 #endif
     if (length + N >= capacity) {
         iveb_erase(iveb, *container);
-        size_type64 new_capaciy = get_new_capacity(capacity+N);
+        size_type64 new_capaciy = get_new_capacity(capacity + N);
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             yikes("Reallocation failed at vector insert");
@@ -369,5 +370,124 @@ OPENCSTL_FUNC void __cstl_vector_reverse(void **container) {
     }
 }
 
+// ░█████╗░██╗░░░░░░██████╗░░█████╗░██████╗░██╗████████╗██╗░░██╗███╗░░░███╗
+// ██╔══██╗██║░░░░░██╔════╝░██╔══██╗██╔══██╗██║╚══██╔══╝██║░░██║████╗░████║
+// ███████║██║░░░░░██║░░██╗░██║░░██║██████╔╝██║░░░██║░░░███████║██╔████╔██║
+// ██╔══██║██║░░░░░██║░░╚██╗██║░░██║██╔══██╗██║░░░██║░░░██╔══██║██║╚██╔╝██║
+// ██║░░██║███████╗╚██████╔╝╚█████╔╝██║░░██║██║░░░██║░░░██║░░██║██║░╚═╝░██║
+// ╚═╝░░╚═╝╚══════╝░╚═════╝░░╚════╝░╚═╝░░╚═╝╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░░░░╚═╝
 
+
+OPENCSTL_FUNC size_type64 __cstl_vector_count(void **container, void *value) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+    CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
+    size_type64 cnt = 0;
+    for (int i = 0; i < length; i++) {
+        void *ptr = ((char *) *container) + (type_size * i);
+        if (is_equal(ptr, value, type_size) == 0) {
+            cnt++;
+        }
+    }
+    return cnt;
+}
+
+OPENCSTL_FUNC size_type64 __cstl_vector_count_if(void **container, CSTL_COND cond) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+
+    size_type64 cnt = 0;
+    for (int i = 0; i < length; i++) {
+        void *ptr = ((char *) *container) + (type_size * i);
+        if (cond(ptr)) {
+            cnt++;
+        }
+    }
+    return cnt;
+}
+
+
+OPENCSTL_FUNC void *__cstl_vector_lower_bound(void **container, void *value, CSTL_COMPARE compare) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+
+    if (length == 0) return NULL;
+
+    size_type64 L = 0;
+    size_type64 R = length;
+
+    while (L < R) {
+        size_type64 M = L + (R - L) / 2;
+        void *Mptr = ((char *) *container) + (type_size * M);
+
+        if (compare(Mptr, value) < 0)
+            L = M + 1;
+        else
+            R = M;
+    }
+    if (L >= length) return NULL;
+    return ((char *) *container) + (type_size * L);
+}
+
+OPENCSTL_FUNC void *__cstl_vector_upper_bound(void **container, void *value, CSTL_COMPARE compare) {
+    size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
+    size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
+    size_type64 length = OPENCSTL_NIDX(container, -1);
+    size_type64 capacity = OPENCSTL_NIDX(container, -2);
+    char *type = (char *) OPENCSTL_NIDX(container, -4);
+
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
+    float valuef = 0.0F;
+    if (is_float) {
+        valuef = (float) *(double *) value;
+        value = &valuef;
+    }
+#endif
+
+    if (length == 0) return NULL;
+
+    size_type64 L = 0;
+    size_type64 R = length;
+
+    while (L < R) {
+        size_type64 M = L + (R - L) / 2;
+        void *Mptr = ((char *) *container) + (type_size * M);
+
+        if (compare(value, Mptr) < 0)
+            R = M;
+        else
+            L = M + 1;
+    }
+    if (L >= length) return NULL;
+    return ((char *) *container) + (type_size * L);
+}
 #endif

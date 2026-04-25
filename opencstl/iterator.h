@@ -63,14 +63,20 @@ OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
 }
 
 OPENCSTL_FUNC void *_cstl_next(void *it) {
+    // UNOREDRES_SET, UNORDERED_MAP
     if (__is_hashtable_iter(it)) {
         return __cstl_hashtable_next_prev(it, -1);
     }
     Interval *iv = iveb_find(iveb, it);
+    // VECTOR, DEQUE
     if (iv != NULL) {
         if (iv->ctype == CT_VECTOR || iv->ctype == CT_DEQUE) {
             return __cstl_vector_next(it, iv->type_size);
         }
+    }
+    GInterval *giv = giveb_find(giveb, it);
+    if (giv != NULL) {
+        return __cstl_array_next(it, giv->type_size);
     }
     size_type64 node_type = OPENCSTL_NIDX(&it, -3);
     switch (node_type) {
@@ -106,6 +112,10 @@ OPENCSTL_FUNC void *_cstl_prev(void *it) {
             return __cstl_vector_prev(it, iv->type_size);
         }
     }
+    GInterval *giv = giveb_find(giveb, it);
+    if (giv != NULL) {
+        return __cstl_array_prev(it, giv->type_size);
+    }
     size_type64 node_type = OPENCSTL_NIDX(&it, -3);
     switch (node_type) {
         case OPENCSTL_LIST: {
@@ -134,11 +144,15 @@ OPENCSTL_FUNC void *_cstl_begin(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            return __cstl_array_begin((void **) container);
+        }
+        break;
         case OPENCSTL_VECTOR: {
             return __cstl_vector_begin((void **) container);
         }
@@ -171,11 +185,15 @@ OPENCSTL_FUNC void *_cstl_rbegin(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            return __cstl_array_rbegin((void **) container);
+        }
+        break;
         case OPENCSTL_VECTOR: {
             return __cstl_vector_rbegin((void **) container);
         }
@@ -208,11 +226,15 @@ OPENCSTL_FUNC void *_cstl_end(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            return __cstl_array_end((void **) container);
+        }
+        break;
         case OPENCSTL_VECTOR: {
             return __cstl_vector_end((void **) container);
         }
@@ -245,11 +267,15 @@ OPENCSTL_FUNC void *_cstl_rend(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
     }
     switch (container_type) {
+        case OPENCSTL_ARRAY: {
+            return __cstl_array_rend((void **) container);
+        }
+        break;
         case OPENCSTL_VECTOR: {
             return __cstl_vector_rend((void **) container);
         }

@@ -11,16 +11,15 @@ set(EXE_NAME OpenCSTL)
 add_executable(${EXE_NAME} main.c)
 
 if (MSVC)
-    target_compile_options(${EXE_NAME} PRIVATE /W4 /utf-8)
-
+    target_compile_options(${EXE_NAME} PRIVATE /W3 /utf-8 /std:c11)
 else ()
     target_compile_options(${EXE_NAME} PRIVATE -Wall -Wextra -Wpedantic)
 endif ()
 
 
-add_executable(test test.c)
+add_executable(test_glob test.c)
 if (MSVC)
-    target_compile_options(test PRIVATE /utf-8)
+    target_compile_options(test_glob PRIVATE /utf-8)
 
 endif ()
 
@@ -80,3 +79,19 @@ elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU")
         )
     endif ()
 endif ()
+
+
+# ------------------------------------------------------------------
+# Unit tests (Unity, vendored under tests/unity/)
+# ------------------------------------------------------------------
+enable_testing()
+
+add_executable(test_deque_algorithm
+        tests/test_deque_algorithm.c
+        tests/unity/unity.c
+)
+target_include_directories(test_deque_algorithm PRIVATE ${CMAKE_SOURCE_DIR} tests/unity)
+if (MSVC)
+    target_compile_options(test_deque_algorithm PRIVATE /utf-8)
+endif ()
+add_test(NAME test_deque_algorithm COMMAND test_deque_algorithm)

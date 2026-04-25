@@ -7,7 +7,7 @@ int main() {
     int count = 0;
     int *pos = string.kmp(s, p, &count);
 
-
+    string.reverse(s);
     for (int i = 0; i < count; i++) {
         printf("%d\n", pos[i]);
     }

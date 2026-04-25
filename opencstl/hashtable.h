@@ -110,7 +110,7 @@ OPENCSTL_ALWAYS_INLINE bool __ht_key_eq(const void *a, const void *b, size_type6
 #define OPENCSTL_XXH64_P4  9650029242287828579ULL
 #define OPENCSTL_XXH64_P5  2870177450012600261ULL
 
-OPENCSTL_FUNC size_type64 hash32(void *_key) {
+OPENCSTL_FUNC size_type64 _cstl_hash32(void *_key) {
     unsigned int h = *(unsigned int *) _key;
     h ^= h >> 15;
     h *= OPENCSTL_XXH32_P2;
@@ -120,7 +120,7 @@ OPENCSTL_FUNC size_type64 hash32(void *_key) {
     return (size_type64) h;
 }
 
-OPENCSTL_FUNC size_type64 hash64(void *_key) {
+OPENCSTL_FUNC size_type64 _cstl_hash64(void *_key) {
     unsigned long long x = *(unsigned long long *) _key;
     x ^= x >> 33;
     x *= OPENCSTL_XXH64_P2;
@@ -130,7 +130,7 @@ OPENCSTL_FUNC size_type64 hash64(void *_key) {
     return (size_type64) x;
 }
 
-OPENCSTL_FUNC size_type64 hash(void *_key, size_type64 len) {
+OPENCSTL_FUNC size_type64 _cstl_hash(void *_key, size_type64 len) {
     const unsigned char *p = (const unsigned char *) _key;
     const unsigned char *end = p + len;
     unsigned long long h64;
@@ -248,7 +248,7 @@ OPENCSTL_ALWAYS_INLINE size_type64 hash_mixer(void *key, size_type64 n) {
         memcpy(&v, key, 8);
         return (size_type64) __ht_mum(v ^ s1, s0);
     }
-    return (size_type64) hash(key, n);
+    return (size_type64) _cstl_hash(key, n);
 }
 
 OPENCSTL_ALWAYS_INLINE uint8_t __ht_ctrl(size_type64 h) {
@@ -598,9 +598,7 @@ void __cstl_hashtable_reserve(void **container, size_type64 n) {
                (char *) new_ctrl, (int) type_size);
 }
 
-void __cstl_htm_destroy(void) {
-    htm_free(htm);
-}
+
 
 // ██╗░░░██╗███╗░░██╗░█████╗░██████╗░██████╗░███████╗██████╗░███████╗██████╗░░░░░░░░██████╗███████╗████████╗
 // ██║░░░██║████╗░██║██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██╔══██╗░░░░░░██╔════╝██╔════╝╚══██╔══╝

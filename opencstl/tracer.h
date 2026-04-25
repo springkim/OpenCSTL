@@ -43,6 +43,8 @@
 #include <string.h>
 #include "types.h"
 #include "logging.h"
+#include "salloc.h"
+#include "galloc.h"
 //#include "van_emde_boas_tree.h"
 #define _1MB (1024*1024)
 #define _512KB (1024*512)
@@ -60,10 +62,10 @@ ZMEM zmem[8192] = {0};
 size_type64 zalloc_size = 0;
 size_type64 zalloc_count = 0;
 
-static void zinsert(void *ptr, char *file, char *func, int line) {
+static void zinsert(void *ptr, char *file, const char *func, int line) {
     zmem[zalloc_size].ptr = ptr;
     zmem[zalloc_size].file = file;
-    zmem[zalloc_size].func = func;
+    zmem[zalloc_size].func = (char*)func;
     zmem[zalloc_size].line = line;
     zalloc_size++;
     zalloc_count++;
@@ -113,6 +115,7 @@ static void opencstl_exit(void) {
 }
 #endif
 #ifdef OPENCSTL_TRACER
+
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
@@ -122,7 +125,6 @@ static int opencstl_init(void) {
     //memset(zalloc_vector, 0, SZ);
 
     logging.debug("OpenCSTL tracer start");
-
     //htm = htm_new();
 
     //mt19937.seed(time(NULL));

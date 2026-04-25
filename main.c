@@ -87,12 +87,13 @@ void cstl_vector_test2(void) {
 void cstl_vector_test3(void) {
     MsgBoxCLI("OpenCSTL / VECTOR TEST03");
     VECTOR(int) vec = new_vector(int);
-    const size_type N = 100;
+    const size_type N = 50;
+    assign(vec, N);
     for (int i = 0; i < N; i++) {
-        push_back(vec, mt19937.randint(-N, N));
+        push_back(vec, mt19937.randint(-10, 10));
     }
-
-    pmsort(vec, size(vec), sizeof(int), LESS(int));
+    sort(vec);
+    //pmsort(vec, size(vec), sizeof(int), LESS(int));
     for (int i = 0; i < size(vec); i++) {
         printf("[%d]", vec[i]);
         if (i < size(vec) - 1) {
@@ -102,7 +103,13 @@ void cstl_vector_test3(void) {
         }
     }
 
+    int cnt = count_if(vec, is_even);
+    logging.warning("count (is_even): %d", cnt);
 
+    int *it = lower_bound(vec, 1);
+    printf("%d\n", *it);
+    it = upper_bound(vec, 1);
+    printf("%d\n", *it);
     destroy(vec);
 }
 
@@ -212,6 +219,18 @@ void cstl_map_test01(void) {
     puts("");
     printf("size : %d\n", size(tree));
     destroy(tree);
+}
+
+void cstl_map_test02(void) {
+    CSV data = csv.parse("../example.csv", true);
+    void *p = LESS(short);
+    printf("rows: %d\ncols: %d\n", data.rows, data.cols);
+
+    for (int i = 0; i < data.rows; i++) {
+        //puts(data.table[i][0]);
+        printf("[%d][%s]\n", i, data.table[i][1]);
+    }
+    destroy(data);
 }
 
 void cstl_deque_test01(void) {
@@ -397,7 +416,7 @@ void cstl_unordered_set_test02(void) {
     MsgBoxCLI("OpenCSTL / UNORDERED_SET TEST02");
     UNORDERED_SET(int) v = new_unordered_set(int);
     double t_beg = ttime();
-    for (int i = 0; i < 500000  ; ++i) {
+    for (int i = 0; i < 500000; ++i) {
         insert(v, mt19937.randint(0,10000000));
     }
     double t_end = ttime();
@@ -407,10 +426,44 @@ void cstl_unordered_set_test02(void) {
     destroy(v);
 }
 
+void test_bitset(void) {
+    MsgBoxCLI("OpenCSTL / BITSET TEST");
+    BITSET bs = new_bitset(100);
+    for (int i = 0; i < 100; i++) {
+        bool b = false;
+        if (i % 3 == 0) {
+            b = true;
+        }
+        bitset.set_at(bs, i, b);
+    }
+    printf("count: %d\n", bitset.count(bs));
+    puts(bitset.to_string(bs));
+
+    destroy(bs);
+}
+
+void test_string(void) {
+    char *s = "aabxaabxaap";
+    char *p = "a";
+    int count = 0;
+    int *pos = string.kmp(s, p, &count);
+
+
+    for (int i = 0; i < count; i++) {
+        printf("%d\n", pos[i]);
+    }
+    char* r = string.reverse(s);
+    printf("%s\n", r);
+    free(pos);
+    free(r);
+}
+
+
 void test01(void) {
     cstl_vector_test01();
     cstl_vector_test2();
     cstl_vector_test3();
+
     cstl_vector_test4();
     cstl_list_test01();
 
@@ -428,17 +481,20 @@ void test01(void) {
 
     cstl_unordered_set_test01();
     cstl_unordered_set_test02();
+    test_bitset();
+    test_string();
+
 }
 
 
 void test03(void) {
-    FILE *fp = fstream.open("../words_random.txt", "r");
+    FILE *fp = file.open("../words_random.txt", "r");
     VECTOR(char*) words = new_vector(char*);
     char *line = NULL;
-    while ((line = fstream.getline(fp)) != NULL) {
+    while ((line = file.getline(fp)) != NULL) {
         push_back(words, line);
     }
-    fstream.close(fp);
+    file.close(fp);
 
 
     for (int i = 0; i < size(words); i++) {
@@ -451,20 +507,59 @@ void test03(void) {
 }
 
 void test04(void) {
-    FILE *fp = fstream.open("../words_random.txt", "r");
-    char *file = fstream.read(fp);
-    fstream.close(fp);
-    printf("%s\n", file);
-    free(file);
+    FILE *fp = file.open("../words_random.txt", "r");
+    char *data = file.read(fp);
+    file.close(fp);
+    printf("%s\n", data);
+    free(data);
 }
 
+int main1(void) {
+    logging.info(opencstl_env());
+    logging.info(opencstl_version());
+    int   n   = 6;
+    float f   = 3.14f;
+    char *s   = "hello";
 
+    print("no args\n");                       // fputs 경로
+    print("Total: {}, diff: {}\n", n, f);     // int + float
+    println("str={}, char={}", s, 'A');        // \n 자동
+    print("escaped {{ and }}\n");              // { } 리터럴
+    println("값: {:30}", (long)1234567890L);      // long
+}
 int main(void) {
     logging.info(opencstl_env());
     logging.info(opencstl_version());
 
-    //verify("Error message");
 
+    // return 0;
+    // VECTOR(int) vec = new_vector(int);
+    // for (int i = 0; i <10;  i++) {
+    //     push_back(vec,i);
+    // }
+    // for (int* it=begin(vec); it != end(vec); it=next(it)) {
+    //     printf("%d\n", *it);
+    // }
+    // destroy(vec);
+    //
+    //
+    //
+    // ARRAY(int) arr = cstl_array(int, 10);
+    //
+    // for (int* it=begin(arr); it != end(arr); it=next(it)) {
+    //     printf("%d\n", *it);
+    // }
+    //
+    // destroy(arr);
+    //
+    // int cnt = cpu_count();
+    // printf("cnt: %d\n", cnt);
+    //
+    // printf("random_device: %lu\n", random_device());
+    // //verify("Error message");
+    // cstl_vector_test3();
+    // cstl_set_test01();
+    // return 0;
     test01();
 
     // float a = 0;

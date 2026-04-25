@@ -40,7 +40,7 @@
 #include "zalloc.h"
 #include "crossplatform.h"
 
-int __popcnt_sw(int v) {
+static inline int __popcnt_sw(int v) {
     v = (v & 0x55555555) + ((v >> 1) & 0x55555555);
     v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
     v = (v & 0x0f0f0f0f) + ((v >> 4) & 0x0f0f0f0f);
@@ -49,7 +49,7 @@ int __popcnt_sw(int v) {
     return v;
 }
 
-int __popcnt64_sw(long long v) {
+static inline int __popcnt64_sw(long long v) {
     v = (v & 0x5555555555555555LL) + ((v >> 1) & 0x5555555555555555LL);
     v = (v & 0x3333333333333333LL) + ((v >> 2) & 0x3333333333333333LL);
     v = (v & 0x0f0f0f0f0f0f0f0fLL) + ((v >> 4) & 0x0f0f0f0f0f0f0f0fLL);
@@ -99,12 +99,23 @@ typedef struct {
 
 #define new_bitset(N) __cstl_bitset(N)
 
-BITSET __cstl_bitset(size_type n) {
+static BITSET __cstl_bitset(size_type n) {
     size_type cap = __cstl_bitset_capacity(n);
     BITSET b;
     b.nbits = n;
     b.bits = (ubyte_x *) calloc(cap, 1);
+
     b.str = (char *) calloc(b.nbits + 1, 1);
+
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, b.bits, b.bits + cap, CT_BITSET, 0, "bitset");
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return b;
 }
 
@@ -134,7 +145,7 @@ typedef char * (*bitset_fn7)(BITSET b);
 // ██╔══██╗██║░░░██║░░░░╚═══██╗██╔══╝░░░░░██║░░░░░░░░░██║██║╚██╔╝██║██╔═══╝░██║░░░░░
 // ██████╦╝██║░░░██║░░░██████╔╝███████╗░░░██║░░░█████╗██║██║░╚═╝░██║██║░░░░░███████╗
 // ╚═════╝░╚═╝░░░╚═╝░░░╚═════╝░╚══════╝░░░╚═╝░░░╚════╝╚═╝╚═╝░░░░░╚═╝╚═╝░░░░░╚══════╝
-void __cstl_bitset_set(BITSET b) {
+static void __cstl_bitset_set(BITSET b) {
     // 모든 비트를 1로 설정
     size_type cap = __cstl_bitset_capacity(b.nbits);
     memset(b.bits, 0xFF, cap);
@@ -145,13 +156,13 @@ void __cstl_bitset_set(BITSET b) {
     }
 }
 
-void __cstl_bitset_reset(BITSET b) {
+static void __cstl_bitset_reset(BITSET b) {
     // 모든 비트를 0으로 설정
     size_type cap = __cstl_bitset_capacity(b.nbits);
     memset(b.bits, 0, cap);
 }
 
-void __cstl_bitset_set_at(BITSET b, size_type idx, bool val) {
+static void __cstl_bitset_set_at(BITSET b, size_type idx, bool val) {
     // idx번째 비트를 val로 설정
     size_type byte_idx = idx / 8;
     size_type bit_idx = idx % 8;
@@ -162,7 +173,7 @@ void __cstl_bitset_set_at(BITSET b, size_type idx, bool val) {
     }
 }
 
-size_type __cstl_bitset_count(BITSET b) {
+static size_type __cstl_bitset_count(BITSET b) {
     // 1로 설정된 비트의 개수를 반환
     size_type cap = __cstl_bitset_capacity(b.nbits);
     size_type64 count = 0;
@@ -183,10 +194,10 @@ size_type __cstl_bitset_count(BITSET b) {
     for (; i < cap; i++) {
         count += __popcnt((int) b.bits[i]);
     }
-    return count;
+    return (size_type) count;
 }
 
-bool __cstl_bitset_all(BITSET b) {
+static bool __cstl_bitset_all(BITSET b) {
     // 모든 비트가 1인지 검사
     if (b.nbits == 0) return true;
     size_type full_bytes = b.nbits / 8;
@@ -201,7 +212,7 @@ bool __cstl_bitset_all(BITSET b) {
     return true;
 }
 
-bool __cstl_bitset_any(BITSET b) {
+static bool __cstl_bitset_any(BITSET b) {
     // 하나라도 1인 비트가 있는지 검사
     if (b.nbits == 0) return false;
     size_type full_bytes = b.nbits / 8;
@@ -216,12 +227,12 @@ bool __cstl_bitset_any(BITSET b) {
     return false;
 }
 
-bool __cstl_bitset_none(BITSET b) {
+static bool __cstl_bitset_none(BITSET b) {
     // 모든 비트가 0인지 검사
     return !__cstl_bitset_any(b);
 }
 
-void __cstl_bitset_flip(BITSET b) {
+static void __cstl_bitset_flip(BITSET b) {
     // 모든 비트를 반전
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
@@ -234,7 +245,7 @@ void __cstl_bitset_flip(BITSET b) {
     }
 }
 
-void __cstl_bitset_flip_at(BITSET b, size_type idx) {
+static void __cstl_bitset_flip_at(BITSET b, size_type idx) {
     // 특정 위치의 비트를 반전
     size_type byte_idx = idx / 8;
     size_type bit_idx = idx % 8;
@@ -242,12 +253,12 @@ void __cstl_bitset_flip_at(BITSET b, size_type idx) {
 }
 
 
-size_type __cstl_bitset_nbits(BITSET b) {
+static size_type __cstl_bitset_nbits(BITSET b) {
     // 비트셋의 크기(비트 수)를 반환
     return b.nbits;
 }
 
-bool __cstl_bitset_test(BITSET b, size_type idx) {
+static bool __cstl_bitset_test(BITSET b, size_type idx) {
     // 특정 위치의 비트가 1인지 검사
     size_type byte_idx = idx / 8;
     size_type bit_idx = idx % 8;
@@ -255,7 +266,7 @@ bool __cstl_bitset_test(BITSET b, size_type idx) {
 }
 
 
-char *__cstl_bitset_to_string(BITSET b) {
+static char *__cstl_bitset_to_string(BITSET b) {
     // 비트셋을 문자열로 변환 (MSB가 앞, C++ bitset::to_string과 동일)
     for (size_type i = 0; i < b.nbits; i++) {
         size_type bit_pos = b.nbits - 1 - i;
@@ -265,7 +276,8 @@ char *__cstl_bitset_to_string(BITSET b) {
     return b.str;
 }
 
-void __cstl_bitset_free(BITSET b) {
+static void __cstl_bitset_free(BITSET b) {
+    iveb_erase(iveb, b.bits);
     free(b.bits);
     free(b.str);
 }
@@ -283,7 +295,6 @@ typedef struct {
     bitset_fn3 nbits;
     bitset_fn6 test;
     bitset_fn7 to_string;
-    bitset_fn1 free;
 } __BITSET;
 
 static __BITSET bitset = {
@@ -299,7 +310,6 @@ static __BITSET bitset = {
     __cstl_bitset_nbits,
     __cstl_bitset_test,
     __cstl_bitset_to_string,
-    __cstl_bitset_free
 };
 
 #endif //OPENCSTL_BITSET_H

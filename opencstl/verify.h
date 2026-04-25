@@ -12,12 +12,17 @@
 int __verify(char *expression, char *file, int line) {
     logging.error("Verification failed: %s, file %s, line %d",
                   expression, file, line);
+    fflush(stdout);
+    fflush(stderr);
     abort();
 }
 
 #define yikes(STR) _yikes(STR,__FILE__,__LINE__)
 
 void _yikes(char *str, char *file, int line) {
-    logging.error("Mistake failed: %s, file %s, line %d");
+    logging.error("Mistake failed: %s, file %s, line %d",str,file,line);
+    fflush(stdout);
+    fflush(stderr);
+    exit(-1);
 }
 #endif //OPENCSTL_VERIFY_H

@@ -51,7 +51,6 @@
 #endif
 
 
-
 struct ps_args {
     char *base;
     char *buf;
