@@ -42,11 +42,15 @@
 #include <locale.h>
 #include <string.h>
 #include <stdarg.h>
+#include <windows.h>
 
 static void MsgBoxCLI(const char *format, ...) {
 #if defined(OCSTL_CC_MSVC)
     SetConsoleOutputCP(CP_UTF8);
 #elif defined(OCSTL_CC_TCC)
+#ifdef OCSTL_OS_WINDOWS
+    SetConsoleOutputCP(65001);
+#endif
     setvbuf(stdout, NULL, _IONBF, 0); // unbuffered — 바이트 단위 즉시 전송
 #endif
     int width = 80;

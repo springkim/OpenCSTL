@@ -2,8 +2,6 @@
 #include "opencstl/opencstl.h"
 
 int main() {
-
-
     char **files = glob("../*.c");
     for (char **p = files; *p; p++) {
         printf("%s\n", *p);

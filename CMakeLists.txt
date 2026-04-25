@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(OpenCSTL C CXX)
 
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
 
@@ -17,7 +17,7 @@ else ()
 endif ()
 
 
-add_executable(test_glob test.c)
+add_executable(test_glob test_gmp.c)
 if (MSVC)
     target_compile_options(test_glob PRIVATE /utf-8)
 
@@ -27,22 +27,35 @@ add_executable(bench_sort bench_sort.c)
 add_executable(test_fstream test_fstream.c)
 add_executable(test_logging test_logging.c)
 add_executable(test_string test_string.c)
+add_executable(test_gmp test_gmp.c)
 
+#if (MSVC)
+#    target_compile_options(test_gmp PRIVATE /W3 /utf-8 /std:c11)
+#else ()
+#    target_compile_options(test_gmp PRIVATE -Wall -Wextra -Wpedantic)
+#endif ()
 if (MSVC)
+    # _Generic (C11) + UTF-8 한글 주석 처리.
+    target_compile_options(bench_sort PRIVATE /utf-8 /std:c11)
+
     # MSVC: /O2 + 전체 프로그램 최적화 + AVX2 + fast math
+    # Debug 빌드는 /RTC1 (런타임 체크) 가 자동 추가되어 /O2 와 충돌하므로
+    # 최적화 플래그는 non-Debug 구성에서만 적용.
     target_compile_options(bench_sort PRIVATE
-            /O2         # 최고 속도 최적화
-            /Oi         # intrinsic 사용
-            /Ot         # 속도 우선 (크기 아님)
-            /Oy         # frame pointer 생략
-            /GL         # Whole Program Optimization (LTO 상응)
-            /Gw         # 전역 변수 최적화
-            /fp:fast    # 부동소수점 빠르게 (정렬엔 영향 없지만 관례)
-            /arch:AVX512  # AVX2 명령어 허용 (최신 CPU 기준)
-            /DNDEBUG
+            $<$<NOT:$<CONFIG:Debug>>:/O2>          # 최고 속도 최적화
+            $<$<NOT:$<CONFIG:Debug>>:/Oi>          # intrinsic 사용
+            $<$<NOT:$<CONFIG:Debug>>:/Ot>          # 속도 우선 (크기 아님)
+            $<$<NOT:$<CONFIG:Debug>>:/Oy>          # frame pointer 생략
+            $<$<NOT:$<CONFIG:Debug>>:/GL>          # Whole Program Optimization
+            $<$<NOT:$<CONFIG:Debug>>:/Gw>          # 전역 변수 최적화
+            $<$<NOT:$<CONFIG:Debug>>:/fp:fast>     # 부동소수점 빠르게
+            $<$<NOT:$<CONFIG:Debug>>:/arch:AVX512> # AVX 명령어 허용
+            $<$<NOT:$<CONFIG:Debug>>:/DNDEBUG>
     )
     # /GL 사용 시 링커에도 /LTCG 필요
-    target_link_options(bench_sort PRIVATE /LTCG)
+    target_link_options(bench_sort PRIVATE
+            $<$<NOT:$<CONFIG:Debug>>:/LTCG>
+    )
 
 elseif (CMAKE_C_COMPILER_ID MATCHES "Clang")
     # Clang (Linux, macOS, Windows clang-cl 제외)

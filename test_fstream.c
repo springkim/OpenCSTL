@@ -8,7 +8,7 @@ int main() {
     char *buf = file.read(fp);
 
     puts(buf);
-    char *buf2 = string.reverse_str(buf);
+    char *buf2 = string.reverse(buf);
     puts(buf2);
 
     FILE *fp2 = file.write(fp, buf2);

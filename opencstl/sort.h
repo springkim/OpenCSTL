@@ -81,7 +81,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
             }
 
             cstl_unstable_sort(container, length, type_size, cmp);
@@ -98,7 +98,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
             }
             __cstl_list_qsort(&container, cmp);
         }
@@ -115,13 +115,13 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
             }
             cstl_unstable_sort(container, length, type_size, cmp);
         }
         break;
         default: {
-            yikes("Invalid Operation");
+            fault("Invalid Operation");
         }
         break;
     }
@@ -154,7 +154,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
             }
             cstl_best_stable_sort(container, length, type_size, cmp);
         }
@@ -170,7 +170,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
             }
             __cstl_list_msort(&container, cmp);
         }
@@ -187,13 +187,13 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
             }
             cstl_best_stable_sort(container, length, type_size, cmp);
         }
         break;
         default: {
-            yikes("Invalid Operation");
+            fault("Invalid Operation");
         }
         break;
     }
@@ -215,11 +215,11 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
 #elif defined(__linux__) || defined(__APPLE__)
 
 // TCC supports typeof but not __auto_type; GCC/Clang support both.
-#if defined(__TINYC__)
-#define _CSTL_TYPEOF(x) typeof(x)
-#else
-#define _CSTL_TYPEOF(x) __auto_type
-#endif
+// #if defined(__TINYC__)
+// #define _CSTL_TYPEOF(x) typeof(x)
+// #else
+// #define _CSTL_TYPEOF(x) __auto_type
+// #endif
 
 #define cstl_sort(C,...) _linux_cstl_sort(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
 #define _linux_cstl_sort(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_sort ## _ ## N
@@ -278,7 +278,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
                 return 0;
             }
             for (size_type64 i = 1; i < length; i++) {
@@ -302,7 +302,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
                 return 0;
             }
             void *it = cstl_begin(container);
@@ -334,7 +334,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
                 return 0;
                 return 0;
                 return 0;
@@ -349,7 +349,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
         }
         break;
         default: {
-            yikes("Invalid Operation");
+            fault("Invalid Operation");
             return 0;
         }
         break;

@@ -95,7 +95,7 @@ OPENCSTL_FUNC size_type64 _cstl_count(void *container, ...) {
         }
         break;
         default: {
-            yikes("Unsupported container type");
+            fault("Unsupported container type");
         }
         break;
     }
@@ -143,7 +143,7 @@ OPENCSTL_FUNC size_type64 _cstl_count_if(void *container, ...) {
         }
         break;
         default: {
-            yikes("Unsupported container type");
+            fault("Unsupported container type");
         }
         break;
     }
@@ -175,7 +175,7 @@ OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             if (argc >= 3) {
-                yikes("Not implemented");
+                fault("Not implemented");
             } else {
                 if (argc == 1) {
                     size_type64 type_size = OPENCSTL_NIDX((void**)container, NIDX_TSIZE);
@@ -187,7 +187,7 @@ OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
         break;
         case OPENCSTL_DEQUE: {
             if (argc >= 3) {
-                yikes("Not implemented");
+                fault("Not implemented");
             } else {
                 if (argc == 1) {
                     ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -199,7 +199,7 @@ OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
         }
         break;
 
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -230,7 +230,7 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             if (argc >= 3) {
-                yikes("Not implemented");
+                fault("Not implemented");
             } else {
                 if (argc == 1) {
                     size_type64 type_size = OPENCSTL_NIDX((void**)container, NIDX_TSIZE);
@@ -242,7 +242,7 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
         break;
         case OPENCSTL_DEQUE: {
             if (argc >= 3) {
-                yikes("Not implemented");
+                fault("Not implemented");
             } else {
                 if (argc == 1) {
                     ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -254,7 +254,7 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
         }
         break;
 
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -305,7 +305,7 @@ OPENCSTL_FUNC size_type64 __cstl_minmax_container_type(void *container) {
         case OPENCSTL_UNORDERED_MAP:
             break;
         default:
-            yikes("max_element/min_element: unsupported container type");
+            fault("max_element/min_element: unsupported container type");
     }
     return container_type;
 }

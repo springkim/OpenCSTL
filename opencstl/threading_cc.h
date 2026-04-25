@@ -1,26 +1,58 @@
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
-// Created by spring on 4/24/2026.
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
 //
 
 #ifndef OPENCSTL_THREADING_CC_H
 #define OPENCSTL_THREADING_CC_H
 #include <stdint.h>
-
-#if defined(_WIN32)
+#include "crossplatform.h"
+#if defined(OCSTL_OS_WINDOWS)
 #include <windows.h>
-#elif defined(__APPLE__)
+#elif defined(OCSTL_OS_MACOS)
 #include <sys/sysctl.h>
 #else
 #include <unistd.h>
 #endif
 
-int cpu_count(void) {
-#if defined(_WIN32)
+static int cpu_count(void) {
+#if defined(OCSTL_OS_WINDOWS)
     SYSTEM_INFO si;
     GetSystemInfo(&si);
     return (int) si.dwNumberOfProcessors;
 
-#elif defined(__APPLE__)
+#elif defined(OCSTL_OS_MACOS)
     int count = 0;
     size_t size = sizeof(count);
     // hw.logicalcpu: 하이퍼스레딩 포함 논리 코어
@@ -74,6 +106,59 @@ int cpu_count(void) {
     }
 
     return cpu_threads;
+#endif
+}
+
+#if defined(OCSTL_OS_WINDOWS)
+#include <windows.h>
+#elif defined(OCSTL_OS_LINUX)
+#define _GNU_SOURCE
+#include <sched.h>
+#elif defined(OCSTL_OS_MACOS)
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#include <mach/thread_policy.h>
+#endif
+
+static void cpu_pin(void) {
+#if defined(OCSTL_OS_WINDOWS)
+    SetThreadAffinityMask(GetCurrentThread(), (DWORD_PTR) 1 << 0);
+
+#elif defined(OCSTL_OS_LINUX)
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(0, &cpuset);
+    sched_setaffinity(0, sizeof(cpu_set_t), &cpuset);
+
+#elif defined(OCSTL_OS_MACOS)
+    // 코어 친화성 힌트
+    thread_affinity_policy_data_t affinity = {1};
+    thread_policy_set(
+        mach_thread_self(),
+        THREAD_AFFINITY_POLICY,
+        (thread_policy_t) & affinity,
+        THREAD_AFFINITY_POLICY_COUNT
+    );
+
+    mach_timebase_info_data_t tb;
+    mach_timebase_info(&tb);
+
+#define NS_TO_MACH(ns) ((uint64_t)(ns) * tb.denom / tb.numer)
+
+    thread_time_constraint_policy_data_t rt;
+    rt.period = 0; // 비주기적 — 벤치마크는 한 번 길게 돌림
+    rt.computation = NS_TO_MACH(500000000); // 50ms — 정렬 한 회 실행 예산
+    rt.constraint = NS_TO_MACH(500000000); // computation과 동일하게
+    rt.preemptible = 0; // 비선점 — 중간에 끊기지 않도록
+
+    thread_policy_set(
+        mach_thread_self(),
+        THREAD_TIME_CONSTRAINT_POLICY,
+        (thread_policy_t) & rt,
+        THREAD_TIME_CONSTRAINT_POLICY_COUNT
+    );
+
+#undef NS_TO_MACH
 #endif
 }
 #endif //OPENCSTL_THREADING_CC_H

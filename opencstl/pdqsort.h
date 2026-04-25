@@ -41,6 +41,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "swap.h"
 #define PDQ_ISORT_THRESH      24
 #define PDQ_NINTHER_THRESH   128
 #define PDQ_PARTIAL_LIMIT      8
@@ -55,7 +56,7 @@
 #define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
 #endif
 
-static inline void pdq__swap(unsigned char *a, unsigned char *b, size_type64 n) {
+static  void pdq__swap(unsigned char *a, unsigned char *b, size_type64 n) {
     if (PDQ_LIKELY(n == 8)) {
         uint64_t t;
         memcpy(&t, a, 8);
@@ -91,8 +92,9 @@ static void pdq_isort(unsigned char *base, size_type64 n, size_type64 sz,
                       int (*cmp)(const void *, const void *), unsigned char *tmp) {
     if (n < 2) return;
     for (size_type64 i = 1; i < n; ++i)
-        if (cmp(PDQ_ELEM(base, i), base) < 0)
+        if (cmp(PDQ_ELEM(base, i), base) < 0) {
             pdq__swap(PDQ_ELEM(base, i), base, sz);
+        }
     for (size_type64 i = 2; i < n; ++i) {
         unsigned char *c = PDQ_ELEM(base, i);
         if (cmp(c - sz, c) <= 0) continue;

@@ -60,6 +60,12 @@ extern "C" {
 #pragma clang diagnostic ignored "-Wnonnull"
 #pragma clang diagnostic ignored "-Wcast-function-type-mismatch"
 
+// -Wgnu-statement-expression-from-macro-expansion
+
+#ifdef OCSTL_OS_MACOS
+#pragma clang diagnostic ignored "-Wgnu-statement-expression-from-macro-expansion"
+#endif
+
 #if !defined(OCSTL_OS_LINUX) && !defined(OCSTL_OS_WINDOWS)
 #pragma clang diagnostic ignored "-Wuse-after-free"
 #endif
@@ -231,7 +237,7 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             if (argc >= 3) {
-                yikes("Not implemented");
+                fault("Not implemented");
             } else {
                 if (argc == 1) {
                     param2 = NULL;
@@ -248,7 +254,7 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
             __cstl_deque_assign((void **) container, *(int *) param1, param2);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -280,7 +286,7 @@ OPENCSTL_FUNC void _cstl_push(void *container, ...) {
             __cstl_priority_queue_push((void **) container, value);
         }
         break;
-        default: yikes("Invalid operator");
+        default: fault("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
@@ -319,7 +325,7 @@ OPENCSTL_FUNC void _cstl_push_back(void *container, ...) {
             __cstl_deque_push_back((void **) container, param1);
         }
         break;
-        default: yikes("Invalid operator");
+        default: fault("Invalid operator");
             break;
     }
 
@@ -351,7 +357,7 @@ OPENCSTL_FUNC void _cstl_push_front(void *container, ...) {
             __cstl_deque_push_front((void **) container, param1);
         }
         break;
-        default: yikes("Invalid operator");
+        default: fault("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
@@ -378,7 +384,7 @@ OPENCSTL_FUNC void _cstl_pop(void *container) {
             __cstl_priority_queue_pop((void **) container);
         }
         break;
-        default: yikes("Invalid operator");
+        default: fault("Invalid operator");
             break;
     }
 }
@@ -439,7 +445,7 @@ OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
         }
         break;
         default: {
-            yikes("Invalid operator");
+            fault("Invalid operator");
         }
     }
     return sz;
@@ -503,7 +509,7 @@ OPENCSTL_FUNC size_type _cstl_size(void *container) {
             sz = __cstl_hashtable_size((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     return sz;
@@ -539,7 +545,7 @@ OPENCSTL_FUNC size_type _cstl_capacity(void *container) {
             sz = __cstl_hashtable_capacity((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     return sz;
@@ -586,29 +592,29 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
         case OPENCSTL_MAP: {
             if (argc == 2) __cstl_tree_insert((void **) container, param1, param2);
             else
-                yikes("Invalid operation");
+                fault("Invalid operation");
         }
         break;
         case OPENCSTL_SET: {
             if (argc == 1) __cstl_tree_insert((void **) container, param1,NULL);
             else
-                yikes("Invalid operation");
+                fault("Invalid operation");
         }
         break;
         case OPENCSTL_UNORDERED_MAP: {
             if (argc == 2)__cstl_hashtable_insert((void **) container, param1, param2);
             else
-                yikes("Invalid operation");
+                fault("Invalid operation");
         }
         break;
         case OPENCSTL_UNORDERED_SET: {
             if (argc == 1) {
                 __cstl_hashtable_insert((void **) container, param1,NULL);
             } else
-                yikes("Invalid operation");
+                fault("Invalid operation");
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
 
@@ -668,7 +674,7 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
             __cstl_hashtable_erase((void **) container, *(void **) param1);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -709,7 +715,7 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
             __cstl_deque_resize((void **) container, *(int *) param1, &param2);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -750,7 +756,7 @@ OPENCSTL_FUNC void _cstl_clear(void *container) {
         }
         break;
         default: {
-            yikes("Invalid operation");
+            fault("Invalid operation");
         }
         break;
     }
@@ -796,7 +802,7 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
         }
         break;
         default: {
-            yikes("Invalid operation");
+            fault("Invalid operation");
         };
     }
     return sz ? false : true;
@@ -869,7 +875,7 @@ OPENCSTL_FUNC void _cstl_free(void *container) {
             __cstl_hashtable_free((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
 _BYE_:
@@ -929,7 +935,7 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
             return __cstl_hashtable_find((void **) container, param1);
         }
         break;
-        default: yikes("Invalid operator");
+        default: fault("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
@@ -956,7 +962,7 @@ OPENCSTL_FUNC void _cstl_shrink_to_fit(void *container) {
         break;
 
         default: {
-            yikes("Invalid operation");
+            fault("Invalid operation");
         }
         break;
     }
@@ -988,7 +994,7 @@ OPENCSTL_FUNC void _cstl_reverse(void *container) {
         }
         break;
         default: {
-            yikes("Invalid operation");
+            fault("Invalid operation");
         }
         break;
     }

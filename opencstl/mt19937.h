@@ -542,7 +542,7 @@ void __mt19937_shuffle(void *container) {
             __cstl_list_shuffle((void **) &container);
         }
         break;
-        default: yikes("Invalid operator");
+        default: fault("Invalid operator");
             break;
     }
 }

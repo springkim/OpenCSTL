@@ -111,6 +111,8 @@ int sort_test() {
     return 0;
 }
 
+
 int main() {
+    cpu_pin();
     sort_test();
 }

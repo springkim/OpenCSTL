@@ -39,10 +39,12 @@
 #define OPENCSTL_SWAP_H
 #include <stddef.h>
 #include <string.h>
-
+#include "crossplatform.h"
+#include <stdint.h>
 #define SWAP_STACK_BUF_SIZE 256
 
-void swap(void *a, void *b, size_type64 sz) {
+
+static void swap(void *a, void *b, size_type64 sz) {
     unsigned char stack_buf[SWAP_STACK_BUF_SIZE];
     unsigned char *tmp;
     size_type64 i;

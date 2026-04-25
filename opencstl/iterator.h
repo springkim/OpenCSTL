@@ -95,7 +95,7 @@ OPENCSTL_FUNC void *_cstl_next(void *it) {
         }
         break;
         default: {
-            yikes("Invalid operation");
+            fault("Invalid operation");
         }
         break;
     }
@@ -134,7 +134,7 @@ OPENCSTL_FUNC void *_cstl_prev(void *it) {
         break;
 
         default: {
-            yikes("Invalid operation");
+            fault("Invalid operation");
         }
     }
     return NULL;
@@ -175,7 +175,7 @@ OPENCSTL_FUNC void *_cstl_begin(void *container) {
             return __cstl_hashtable_begin((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     return NULL;
@@ -216,7 +216,7 @@ OPENCSTL_FUNC void *_cstl_rbegin(void *container) {
             return __cstl_hashtable_rbegin((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     return NULL;
@@ -257,7 +257,7 @@ OPENCSTL_FUNC void *_cstl_end(void *container) {
             return __cstl_hashtable_end((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     return NULL;
@@ -298,7 +298,7 @@ OPENCSTL_FUNC void *_cstl_rend(void *container) {
             return __cstl_hashtable_rend((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     return NULL;

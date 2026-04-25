@@ -12,12 +12,6 @@
 #ifndef _OPENCSTL_AMALGAMATED_H
 #define _OPENCSTL_AMALGAMATED_H
 
-// ── System includes — unconditional, deduplicated ─────────────────────
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
-
 
 // ==============================================================================
 // BEGIN  opencstl.h                     (depth 0)
@@ -391,7 +385,11 @@ extern "C" {
 #include<stdbool.h>
 #include<assert.h>
 
+
 typedef int (*CSTL_COMPARE)(const void *, const void *);
+
+typedef int (*CSTL_COMPARE_BYTES)(const void *, const void *, size_t);
+typedef int (*CSTL_EQUALS_FN)(const void *, const void *, size_t);
 
 typedef bool (*CSTL_COND)(const void *);
 
@@ -422,8 +420,49 @@ typedef wchar_t wchar;
 // BEGIN  logging.h                      (depth 3)
 // ==============================================================================
 
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(_OPENCSTL_LOGGING_H)
+#define _OPENCSTL_LOGGING_H
 
-
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
 
 // [already included: crossplatform.h]
 
@@ -646,6 +685,7 @@ static const LOGGING logging = {
     //_logging_message
 };
 
+#endif
 
 // ==============================================================================
 // END    logging.h
@@ -715,18 +755,59 @@ static const LOGGING logging = {
 // ==============================================================================
 
 //
-// Created by spring on 4/24/2026.
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
 //
 
-#ifndef OPENCSTL_GALLOC_H
-#define OPENCSTL_GALLOC_H
 
-#define OCSTL_1MB   (1024UL * 1024UL)
-#define OCSTL_128MB (OCSTL_1MB * 128UL)
-#define OCSTL_512MB (OCSTL_1MB * 512UL)
-unsigned char OCSTL_GBLOCK[OCSTL_512MB]; // BSS
-unsigned char OCSTL_DBLOCK[OCSTL_1MB] = {0}; //DATA
-#endif //OPENCSTL_GALLOC_H
+#if !defined(b0ba2bcee842f587b495a9dac23cc19df2528f0d7d48d49aa5462b025137a965)
+#define b0ba2bcee842f587b495a9dac23cc19df2528f0d7d48d49aa5462b025137a965
+
+#define ___OCSTL_1MB   (1024UL * 1024UL)
+#define ___OCSTL_128MB (___OCSTL_1MB * 128UL)
+#define ___OCSTL_512MB (___OCSTL_1MB * 512UL)
+
+#if defined(OPENCSTL_GBLOCK_MB)
+#define ___OCSTL_GBLOCK_SIZE (___OCSTL_1MB * OPENCSTL_GBLOCK_MB)
+#else
+#define ___OCSTL_GBLOCK_SIZE (___OCSTL_512MB)
+#endif
+
+unsigned char OCSTL_GBLOCK[___OCSTL_GBLOCK_SIZE]; // BSS
+unsigned char OCSTL_DBLOCK[___OCSTL_1MB] = {0}; //DATA
+#endif
 
 // ==============================================================================
 // END    galloc.h
@@ -909,7 +990,465 @@ static void *_zrealloc(void *ptr, size_type64 new_size, char *file, const char *
 // ==============================================================================
 
 // [already included: tracer.h]
-// [already included: zalloc.h]
+
+// ==============================================================================
+// BEGIN  defines.h                      (depth 1)
+// ==============================================================================
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+
+#if !defined(_OPENCSTL_DEFINES_H)
+#define _OPENCSTL_DEFINES_H
+// [already included: opencstl.h]
+
+#if defined(_WIN32) || defined(_WIN64)
+#define OPENCSTL_OS_WINDOWS
+#elif defined(__linux__)
+#define OPENCSTL_OS_LINUX
+#elif defined(__APPLE__)
+#define OPENCSTL_OS_OSX
+#endif
+
+#if defined(__clang__)
+#define OPENCSTL_CC_CLANG
+#elif defined(_MSC_VER)
+#define OPENCSTL_CC_MSVC
+#elif defined(__GNUC__)
+#define OPENCSTL_CC_GCC
+
+#endif
+
+//#define OPENCSTL_ARRAYBASE	0x80	//b10000000
+//#define OPENCSTL_NODEBASE	0x40	//b01000000
+
+#define OPENCSTL_SET		    0
+#define OPENCSTL_MAP		    1
+#define OPENCSTL_VECTOR		    2
+#define OPENCSTL_LIST		    3
+#define OPENCSTL_DEQUE		    4
+#define OPENCSTL_STACK		    5
+#define OPENCSTL_QUEUE		    6
+#define OPENCSTL_PRIORITY_QUEUE	7
+#define OPENCSTL_UNORDERED_SET	8
+#define OPENCSTL_UNORDERED_MAP	9
+#define OPENCSTL_ARRAY          10
+
+
+#if defined(OPENCSTL_OS_WINDOWS)
+#include<Windows.h>
+#endif
+
+//For access header element
+//OPENCSTL_AccessContainerAsIndex
+
+
+#if defined(__GNUC__) || defined(__clang__)
+typedef long long __attribute__((__aligned__(1), __may_alias__)) _opencstl_ll_ua;
+#elif defined(_MSC_VER)
+typedef long long __unaligned _opencstl_ll_ua;
+#else
+typedef long long _opencstl_ll_ua;
+#endif
+#define OPENCSTL_NIDX(container,nidx) (((_opencstl_ll_ua*)*container)[(nidx)])
+
+#define OPENCSTL_HEADER	(12)
+#define NIDX_CTYPE	    (-12)	// container type
+#define NIDX_HSIZE	    (-11)	// header size
+#define NIDX_TSIZE	    (-10)	// type size
+
+#define NIDX_LIST_NODE_SIZE	(3)
+#define NIDX_TREE_NODE_SIZE	(5)
+//OPENCSTL_HEAP_MACROS
+#define HEAP_PARENT(I)	    (((I)-1)>>1)
+#define HEAP_LEFT(I)		(((I)<<1)+1)
+#define HEAP_RIGHT(I)	    (((I)<<1)+2)
+
+#if defined(_MSC_VER)
+#   define ARGN(...)  INTERNAL_EXPAND_ARGS_PRIVATE(INTERNAL_ARGS_AUGMENTER(__VA_ARGS__))
+#   define INTERNAL_ARGS_AUGMENTER(...) unused, __VA_ARGS__
+#   define INTERNAL_EXPAND(x) x
+#   define INTERNAL_EXPAND_ARGS_PRIVATE(...) INTERNAL_EXPAND(INTERNAL_GET_ARG_COUNT_PRIVATE(__VA_ARGS__, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
+#   define INTERNAL_GET_ARG_COUNT_PRIVATE(_1_, _2_, _3_, _4_, _5_, _6_, _7_, _8_, _9_, _10_, _11_, _12_, _13_, _14_, _15_, _16_, _17_, _18_, _19_, _20_, _21_, _22_, _23_, _24_, _25_, _26_, _27_, _28_, _29_, _30_, _31_, _32_, _33_, _34_, _35_, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, count, ...) count
+#else // Non-Microsoft compilers
+#   define ARGN(...) INTERNAL_GET_ARG_COUNT_PRIVATE(0, ## __VA_ARGS__, 70, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+#   define INTERNAL_GET_ARG_COUNT_PRIVATE(_0, _1_, _2_, _3_, _4_, _5_, _6_, _7_, _8_, _9_, _10_, _11_, _12_, _13_, _14_, _15_, _16_, _17_, _18_, _19_, _20_, _21_, _22_, _23_, _24_, _25_, _26_, _27_, _28_, _29_, _30_, _31_, _32_, _33_, _34_, _35_, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, count, ...) count
+#endif
+
+#endif
+
+
+//#define cstl_value(iter,TYPE)	(*(TYPE*)(iter+1))
+
+#if defined(OCSTL_CC_MSVC)
+// MSVC: __unaligned 키워드로 비정렬 로드 허용
+#define cstl_value(iter, TYPE) \
+(*(TYPE __unaligned *)((char *)(iter) + sizeof(*(iter))))
+#else
+// GCC / Clang / zig cc: compound literal + memcpy
+// memcpy 반환값은 dst 포인터이므로 *(TYPE*) 역참조하면 정렬된 값을 읽음
+#define cstl_value(iter, TYPE) \
+(*(TYPE *)memcpy(&(TYPE){0}, (char *)(iter) + sizeof(*(iter)), sizeof(TYPE)))
+#endif
+
+// CSTL_USE_VAARG=0: Windows only (values passed directly on stack)
+// CSTL_USE_VAARG=1: Linux/macOS (macros pass pointers via &__1; standard va_arg is correct)
+#if defined(_WIN32) || defined(_WIN64)
+#  define CSTL_USE_VAARG 0
+#else
+#  define CSTL_USE_VAARG 1
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+// On Windows the dispatch macros pass values directly (not pointer-to-value).
+// va_arg(vl,void*) would read the value itself, so use PTR arithmetic instead.
+#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=(void*)V;
+#define __cstl_va_arg(PTR)	(PTR)
+// Windows: __cstl_va_arg_next is unused (Windows uses PTR-based path),
+// but define it to avoid compile errors if referenced.
+#define __cstl_va_arg_next(V)	(NULL)
+#define __cstl_va_end(V)	va_end(V)
+#else
+
+// On Linux/macOS (GCC, Clang, TCC) the dispatch macros pass &__N (address of a local copy)
+// for each arg. So va_arg(vl, void*) returns void** -- we must dereference to get the actual value.
+#define __cstl_va_start(V,C,beg)	va_start(V,C)
+#define __cstl_va_arg_next(V)	    va_arg((V),void*)
+#define __cstl_va_end(V)	        va_end(V)
+#endif
+
+//Unary Functions
+#define cstl_pop(container)	        _cstl_pop(&(container))
+#define cstl_pop_back(container)	_cstl_pop_back(&(container))
+#define cstl_pop_front(container)	_cstl_pop_front(&(container))
+#define cstl_size(container)	    _cstl_size(&(container))
+#define cstl_capacity(container)	_cstl_capacity(&(container))
+#define cstl_next(iterator)	        _cstl_next(iterator)
+#define cstl_prev(iterator)	        _cstl_prev(iterator)
+#define cstl_begin(container)	    _cstl_begin(&(container))
+#define cstl_rbegin(container)	    _cstl_rbegin(&(container))
+#define cstl_end(container)	        _cstl_end(&(container))
+#define cstl_rend(container)	    _cstl_rend(&(container))
+#define cstl_clear(container)	    _cstl_clear(&(container))
+#define cstl_empty(container)	    _cstl_empty(&(container))
+#define cstl_free(container)	    _cstl_free(&(container))
+// #define cstl_max_capacity(container) _cstl_max_size(&(container))
+//Macro only functions
+
+#define _cstl_deque_type(container) (*(_opencstl_ll_ua *)((char*)*(void**)container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
+#ifdef _MSC_VER
+#pragma warning(disable:4047)
+#pragma warning(disable:4477)
+#pragma warning(disable:4313)
+#elif defined(__GNUC__) || defined(__clang__)
+// #pragma GCC diagnostic push
+// #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
+// #pragma GCC diagnostic ignored "-Wint-conversion"
+#if !defined(__clang__)
+//#pragma GCC diagnostic ignored "-Wno-lto-type-mismatch"
+#endif
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+
+#define _cstl_deref(P) (__extension__ ({ \
+    __typeof__(*(P)) _cstl_rv; \
+    __builtin_memcpy(&_cstl_rv, (const void *)(P), sizeof(_cstl_rv)); \
+    _cstl_rv; \
+}))
+#else
+#define _cstl_deref(P) (*(P))
+#endif
+#define _cstl_err_ptr (void*)(size_type64)0
+
+#define cstl_front(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
+_cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C):_cstl_err_ptr) :\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C):\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)(*(void**)C):_cstl_err_ptr)))
+
+#define cstl_back(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
+_cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C+cstl_size(C)-1):_cstl_err_ptr) :\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C+cstl_size(C)-1):\
+(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)((void**)C)[-2]:_cstl_err_ptr)))
+
+#if defined(__GNUC__) || defined(__clang__)
+// #pragma GCC diagnostic pop
+#endif
+
+#define OPENCSTL_DEQUE_NIDX(container, nidx) (*(_opencstl_ll_ua *)((char*)*(void**)container + (ptrdiff_t)(nidx) * (ptrdiff_t)sizeof(size_type64) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
+#define _cstl_stack_top(container)   *container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
+// cstl_top: (void**)&container explicit cast for strict compilers (MinGW64, Windows Clang).
+#define cstl_top(container)   __is_deque((void**)&container)?\
+OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) : (container[0]):\
+(OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[0]))   //priority queue
+
+
+#define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
+
+
+#if defined(_WIN32) || defined(_WIN64)
+
+#define cstl_push(container,...)	_cstl_push(&(container),__VA_ARGS__)
+#define cstl_push_back(container,...)	_cstl_push_back(&(container),__VA_ARGS__)
+#define cstl_push_front(container,...)	_cstl_push_front(&(container),__VA_ARGS__)
+#define cstl_insert(container,...)	_cstl_insert(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_erase(container,...)	_cstl_erase(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_resize(container,...)	_cstl_resize(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_assign(container,...)	_cstl_assign(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_shrink_to_fit(container) _cstl_shrink_to_fit(&(container))
+#define cstl_max_size(container) _cstl_max_size(&container)
+
+#define cstl_reverse(container) _cstl_reverse(&(container))
+
+
+//#define cstl_count(container,...)	_cstl_count(&(container),__VA_ARGS__)
+
+#define cstl_count_if(container,...)	_cstl_count_if(&(container),__VA_ARGS__)
+#define cstl_lower_bound(container,...)	_cstl_lower_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_upper_bound(container,...)	_cstl_upper_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+
+#elif defined(__linux__) || defined(__APPLE__)
+
+// TCC supports typeof but not __auto_type; GCC/Clang support both.
+// #if defined(__TINYC__)
+// #define _CSTL_TYPEOF(x) typeof(x)
+// #else
+// #define _CSTL_TYPEOF(x) __auto_type
+// #endif
+
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+// C23 표준 typeof
+#define _CSTL_TYPEOF(x)  typeof(x)
+#elif defined(__cplusplus)
+// C++: decltype
+#define _CSTL_TYPEOF(x)  decltype(x)
+#elif defined(__GNUC__) || defined(__clang__) || defined(__TINYC__)
+// GCC/Clang/TCC: __typeof__ (경고 없음, __auto_type 대신)
+#define _CSTL_TYPEOF(x)  __typeof__(x)
+#else
+// MSVC 등 fallback
+#define _CSTL_TYPEOF(x)  void*
+#endif
+
+#define cstl_push_back(C,...) _linux_cstl_push_back(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
+#define _linux_cstl_push_back(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_back ## _ ## N
+#define _cstl_push_back_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push_back( __0);}
+#define _cstl_push_back_1(C,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_push_back( __0,&__1);}
+#define _cstl_push_back_2(C,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_push_back( __0,&__1,&__2);}
+#define _cstl_push_back_3(C,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_push_back( __0,&__1,&__2,&__3);}
+#define _cstl_push_back_4(C,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_push_back( __0,&__1,&__2,&__3,&__4);}
+#define _cstl_push_back_5(C,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_push_back_6(C,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_push_back_7(C,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_push_back_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_push_back_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_push_back_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_push_front(C,...) _linux_cstl_push_front(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
+#define _linux_cstl_push_front(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_front ## _ ## N
+#define _cstl_push_front_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push_front( __0);}
+#define _cstl_push_front_1(C,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_push_front( __0,&__1);}
+#define _cstl_push_front_2(C,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_push_front( __0,&__1,&__2);}
+#define _cstl_push_front_3(C,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_push_front( __0,&__1,&__2,&__3);}
+#define _cstl_push_front_4(C,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_push_front( __0,&__1,&__2,&__3,&__4);}
+#define _cstl_push_front_5(C,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_push_front_6(C,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_push_front_7(C,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_push_front_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_push_front_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_push_front_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_insert(C,...) _linux_cstl_insert(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_insert(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_insert ## _ ## N
+#define _cstl_insert_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_insert( __0,argc);}
+#define _cstl_insert_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_insert( __0,argc,&__1);}
+#define _cstl_insert_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_insert( __0,argc,&__1,&__2);}
+#define _cstl_insert_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_insert( __0,argc,&__1,&__2,&__3);}
+#define _cstl_insert_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_insert_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_insert_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_insert_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_insert_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_insert_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_insert_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_erase(C,...) _linux_cstl_erase(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_erase(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_erase ## _ ## N
+#define _cstl_erase_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_erase( __0,argc);}
+#define _cstl_erase_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_erase( __0,argc,&__1);}
+#define _cstl_erase_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_erase( __0,argc,&__1,&__2);}
+#define _cstl_erase_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_erase( __0,argc,&__1,&__2,&__3);}
+#define _cstl_erase_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_erase_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_erase_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_erase_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_erase_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_erase_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_erase_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_resize(C,...) _linux_cstl_resize(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_resize(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_resize ## _ ## N
+#define _cstl_resize_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_resize( __0,argc);}
+#define _cstl_resize_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_resize( __0,argc,&__1);}
+#define _cstl_resize_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_resize( __0,argc,&__1,&__2);}
+#define _cstl_resize_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_resize( __0,argc,&__1,&__2,&__3);}
+#define _cstl_resize_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_resize_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_resize_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_resize_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_resize_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_resize_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_resize_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+#define cstl_assign(C,...) _linux_cstl_assign(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_assign(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_assign ## _ ## N
+#define _cstl_assign_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_assign( __0,argc);}
+#define _cstl_assign_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_assign( __0,argc,&__1);}
+#define _cstl_assign_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_assign( __0,argc,&__1,&__2);}
+#define _cstl_assign_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_assign( __0,argc,&__1,&__2,&__3);}
+#define _cstl_assign_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4);}
+#define _cstl_assign_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_assign_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_assign_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_assign_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_assign_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_assign_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+
+#define cstl_find(C,...) _linux_cstl_find(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_find(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_find ## _ ## N
+#define _cstl_find_0(C,argc)    ({_CSTL_TYPEOF(&C) __0=&C;_cstl_find( __0,argc);})
+#define _cstl_find_1(C,argc,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_find( __0,argc,&__1);}))
+#define _cstl_find_2(C,argc,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_find( __0,argc,&__1,&__2);}))
+#define _cstl_find_3(C,argc,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_find( __0,argc,&__1,&__2,&__3);}))
+#define _cstl_find_4(C,argc,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_find( __0,argc,&__1,&__2,&__3,&__4);}))
+#define _cstl_find_5(C,argc,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
+#define _cstl_find_6(C,argc,_1,_2,_3,_4,_5,_6)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
+#define _cstl_find_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
+#define _cstl_find_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
+#define _cstl_find_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
+#define _cstl_find_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
+#define cstl_push(C,...) _linux_cstl_push(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
+#define _linux_cstl_push(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push ## _ ## N
+#define _cstl_push_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push( __0);}
+#define _cstl_push_1(C,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_push( __0,&__1);}
+#define _cstl_push_2(C,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_push( __0,&__1,&__2);}
+#define _cstl_push_3(C,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_push( __0,&__1,&__2,&__3);}
+#define _cstl_push_4(C,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_push( __0,&__1,&__2,&__3,&__4);}
+#define _cstl_push_5(C,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5);}
+#define _cstl_push_6(C,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
+#define _cstl_push_7(C,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
+#define _cstl_push_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
+#define _cstl_push_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
+#define _cstl_push_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
+
+
+// #define cstl_max_size(C,...) ({void* _() {_linux_cstl_max_size(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)}_;});
+// #define _linux_cstl_max_size(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_max_size ## _ ## N
+// #define _cstl_max_size_0(C) _cstl_max_size(&C)
+// #define _cstl_max_size_1(C,...) _cstl_max_size(&C)
+// #define _cstl_max_size_2(C,...) _cstl_max_size(&C)
+// #define _cstl_max_size_3(C,...) _cstl_max_size(&C)
+// #define _cstl_max_size_4(C,...) _cstl_max_size(&C)
+// #define _cstl_max_size_5(C,...) _cstl_max_size(&C)
+// #define _cstl_max_size_6(C,...) _cstl_max_size(&C)
+// #define _cstl_max_size_7(C,...) _cstl_max_size(&C)
+// #define _cstl_max_size_8(C,...) _cstl_max_size(&C)
+// #define _cstl_max_size_9(C,...) _cstl_max_size(&C)
+// #define _cstl_max_size_10(C,...) _cstl_max_size(&C)
+#define cstl_max_size(container) _cstl_max_size(&container)
+#define cstl_shrink_to_fit(container) _cstl_shrink_to_fit(&(container))
+#define cstl_reverse(container) _cstl_reverse(&(container))
+
+
+#define cstl_count(C,...) _linux_cstl_count(C,__VA_ARGS__, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
+#define _linux_cstl_count(C,_1, _2, _3, _4, _5, N, ...) _cstl_count ## _ ## N
+#define _cstl_count_0(C)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count( __0);}))
+#define _cstl_count_1(C,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_count( __0,&__1);}))
+#define _cstl_count_2(C,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_count( __0,&__1,&__2);}))
+#define _cstl_count_3(C,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_count( __0,&__1,&__2,&__3);}))
+#define _cstl_count_4(C,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_count( __0,&__1,&__2,&__3,&__4);}))
+#define _cstl_count_5(C,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_count( __0,&__1,&__2,&__3,&__4,&__5);}))
+
+#define cstl_count_if(C,...) _linux_cstl_count_if(C,__VA_ARGS__, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
+#define _linux_cstl_count_if(C,_1, _2, _3, _4, _5, N, ...) _cstl_count_if ## _ ## N
+#define _cstl_count_if_0(C)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0);}))
+#define _cstl_count_if_1(C,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1);}))
+#define _cstl_count_if_2(C,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2);}))
+#define _cstl_count_if_3(C,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2,_3);}))
+#define _cstl_count_if_4(C,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2,_3,_4);}))
+#define _cstl_count_if_5(C,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2,_3,_4,_5);}))
+
+#define cstl_lower_bound(C,...) _linux_cstl_lower_bound(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_lower_bound(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_lower_bound ## _ ## N
+#define _cstl_lower_bound_0(C,argc)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_lower_bound( __0,argc);}))
+#define _cstl_lower_bound_1(C,argc,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_lower_bound( __0,argc,&__1);}))
+#define _cstl_lower_bound_2(C,argc,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_lower_bound( __0,argc,&__1,&__2);}))
+#define _cstl_lower_bound_3(C,argc,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_lower_bound( __0,argc,&__1,&__2,&__3);}))
+#define _cstl_lower_bound_4(C,argc,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4);}))
+#define _cstl_lower_bound_5(C,argc,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
+#define _cstl_lower_bound_6(C,argc,_1,_2,_3,_4,_5,_6)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
+#define _cstl_lower_bound_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
+#define _cstl_lower_bound_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
+#define _cstl_lower_bound_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
+#define _cstl_lower_bound_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
+
+#define cstl_upper_bound(C,...) _linux_cstl_upper_bound(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _linux_cstl_upper_bound(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_upper_bound ## _ ## N
+#define _cstl_upper_bound_0(C,argc)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_upper_bound( __0,argc);}))
+#define _cstl_upper_bound_1(C,argc,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_upper_bound( __0,argc,&__1);}))
+#define _cstl_upper_bound_2(C,argc,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_upper_bound( __0,argc,&__1,&__2);}))
+#define _cstl_upper_bound_3(C,argc,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_upper_bound( __0,argc,&__1,&__2,&__3);}))
+#define _cstl_upper_bound_4(C,argc,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4);}))
+#define _cstl_upper_bound_5(C,argc,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
+#define _cstl_upper_bound_6(C,argc,_1,_2,_3,_4,_5,_6)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
+#define _cstl_upper_bound_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
+#define _cstl_upper_bound_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
+#define _cstl_upper_bound_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
+#define _cstl_upper_bound_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
+
+#endif
+
+
+#if defined(_WIN32) || defined(_WIN64)
+#define SELECT_ANY	__declspec(selectany)
+#elif defined(__linux__) || defined(__APPLE__)
+#define SELECT_ANY	__attribute__((weak))
+#endif
+#define OPENCSTL_FUNC	static
+
+// ==============================================================================
+// END    defines.h
+// ==============================================================================
 
 
 #define USE_CSTL_FUNC
@@ -991,7 +1530,7 @@ int __verify(char *expression, char *file, int line) {
     abort();
 }
 
-#define yikes(STR) _yikes(STR,__FILE__,__LINE__)
+#define fault(STR) _yikes(STR,__FILE__,__LINE__)
 
 void _yikes(char *str, char *file, int line) {
     logging.error("Mistake failed: %s, file %s, line %d",str,file,line);
@@ -1008,10 +1547,12 @@ void _yikes(char *str, char *file, int line) {
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
-// ============================================================
-// string function implementations
-// ============================================================
-
+// ░██████╗████████╗██████╗░██╗███╗░░██╗░██████╗░
+// ██╔════╝╚══██╔══╝██╔══██╗██║████╗░██║██╔════╝░
+// ╚█████╗░░░░██║░░░██████╔╝██║██╔██╗██║██║░░██╗░
+// ░╚═══██╗░░░██║░░░██╔══██╗██║██║╚████║██║░░╚██╗
+// ██████╔╝░░░██║░░░██║░░██║██║██║░╚███║╚██████╔╝
+// ╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░
 static char *__cstl_string_substr(char *src, int pos, int len) {
     verify(strlen(src) >= pos + len);
     char *ret = (char *) calloc(len + 1, sizeof(char));
@@ -1019,7 +1560,7 @@ static char *__cstl_string_substr(char *src, int pos, int len) {
     return ret;
 }
 
-char **__cstl_string_split(const char *src, const char *sep, int *n) {
+static char **__cstl_string_split(const char *src, const char *sep, int *n) {
     int len = (int) strlen(src);
     int sep_len = (int) strlen(sep);
 
@@ -1059,7 +1600,7 @@ char **__cstl_string_split(const char *src, const char *sep, int *n) {
 }
 
 
-char *__cstl_string_replace(char *src, char *from, char *to) {
+static char *__cstl_string_replace(char *src, char *from, char *to) {
     int len = strlen(src);
     int from_len = strlen(from);
     int to_len = strlen(to);
@@ -1088,7 +1629,7 @@ char *__cstl_string_replace(char *src, char *from, char *to) {
     return ret;
 }
 
-char *__cstl_string_ltrim(const char *src) {
+static char *__cstl_string_ltrim(const char *src) {
     const char *p = src;
     while (*p && isspace((unsigned char) *p)) p++;
     size_type64 len = strlen(p);
@@ -1097,7 +1638,7 @@ char *__cstl_string_ltrim(const char *src) {
     return ret;
 }
 
-char *__cstl_string_rtrim(const char *src) {
+static char *__cstl_string_rtrim(const char *src) {
     size_type64 len = strlen(src);
     while (len > 0 && isspace((unsigned char) src[len - 1])) len--;
     char *ret = (char *) malloc(len + 1);
@@ -1106,7 +1647,7 @@ char *__cstl_string_rtrim(const char *src) {
     return ret;
 }
 
-char *__cstl_string_trim(const char *src) {
+static char *__cstl_string_trim(const char *src) {
     const char *begin = src;
     while (*begin && isspace((unsigned char) *begin)) begin++;
     const char *end = src + strlen(src);
@@ -1118,7 +1659,7 @@ char *__cstl_string_trim(const char *src) {
     return ret;
 }
 
-char *__cstl_string_to_upper(const char *src) {
+static char *__cstl_string_to_upper(const char *src) {
     size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
     for (size_type64 i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
@@ -1126,7 +1667,7 @@ char *__cstl_string_to_upper(const char *src) {
     return ret;
 }
 
-char *__cstl_string_to_lower(const char *src) {
+static char *__cstl_string_to_lower(const char *src) {
     size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
     for (size_type64 i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
@@ -1134,19 +1675,19 @@ char *__cstl_string_to_lower(const char *src) {
     return ret;
 }
 
-bool __cstl_string_starts_with(const char *src, const char *prefix) {
+static bool __cstl_string_starts_with(const char *src, const char *prefix) {
     size_type64 plen = strlen(prefix);
     return strncmp(src, prefix, plen) == 0;
 }
 
-bool __cstl_string_ends_with(const char *src, const char *suffix) {
+static bool __cstl_string_ends_with(const char *src, const char *suffix) {
     size_type64 slen = strlen(src);
     size_type64 flen = strlen(suffix);
     if (flen > slen) return false;
     return memcmp(src + slen - flen, suffix, flen) == 0;
 }
 
-int __cstl_string_count(const char *src, const char *sub) {
+static int __cstl_string_count(const char *src, const char *sub) {
     int count = 0;
     size_type64 sub_len = strlen(sub);
     if (sub_len == 0) return 0;
@@ -1158,7 +1699,7 @@ int __cstl_string_count(const char *src, const char *sub) {
     return count;
 }
 
-char *__cstl_string_join(char **parts, int n, const char *delim) {
+static char *__cstl_string_join(char **parts, int n, const char *delim) {
     if (n <= 0) {
         char *empty = (char *) malloc(1);
         *empty = '\0';
@@ -1184,7 +1725,7 @@ char *__cstl_string_join(char **parts, int n, const char *delim) {
     return ret;
 }
 
-char *__cstl_string_concat(const char *a, const char *b) {
+static char *__cstl_string_concat(const char *a, const char *b) {
     size_type64 alen = strlen(a);
     size_type64 blen = strlen(b);
     char *ret = (char *) malloc(alen + blen + 1);
@@ -1193,7 +1734,7 @@ char *__cstl_string_concat(const char *a, const char *b) {
     return ret;
 }
 
-char *__cstl_string_reverse(const char *src) {
+static char *__cstl_string_reverse(const char *src) {
     size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
     for (size_type64 i = 0; i < len; i++) ret[i] = src[len - 1 - i];
@@ -1201,35 +1742,35 @@ char *__cstl_string_reverse(const char *src) {
     return ret;
 }
 
-bool __cstl_string_is_digit(const char *src) {
+static bool __cstl_string_is_digit(const char *src) {
     if (!*src) return false;
     for (const char *p = src; *p; p++)
         if (!isdigit((unsigned char) *p)) return false;
     return true;
 }
 
-bool __cstl_string_is_alpha(const char *src) {
+static bool __cstl_string_is_alpha(const char *src) {
     if (!*src) return false;
     for (const char *p = src; *p; p++)
         if (!isalpha((unsigned char) *p)) return false;
     return true;
 }
 
-bool __cstl_string_is_alnum(const char *src) {
+static bool __cstl_string_is_alnum(const char *src) {
     if (!*src) return false;
     for (const char *p = src; *p; p++)
         if (!isalnum((unsigned char) *p)) return false;
     return true;
 }
 
-bool __cstl_string_is_space(const char *src) {
+static bool __cstl_string_is_space(const char *src) {
     if (!*src) return false;
     for (const char *p = src; *p; p++)
         if (!isspace((unsigned char) *p)) return false;
     return true;
 }
 
-int *__cstl_string_kmp(char *src, char *pattern, int *count) {
+static int *__cstl_string_kmp(char *src, char *pattern, int *count) {
     if (count != NULL) *count = 0;
 
     if (src == NULL || pattern == NULL || count == NULL) {
@@ -1364,7 +1905,7 @@ typedef struct {
     string_count_fn count_str;
     string_join_fn join;
     string_concat_fn concat;
-    string_unary_fn reverse_str;
+    string_unary_fn reverse;
     string_pred_fn is_digit;
     string_pred_fn is_alpha;
     string_pred_fn is_alnum;
@@ -1960,7 +2501,7 @@ static void *_ocstl_dblock_alloc(size_type64 sz) {
         memset(n, 0, real);
         return n;
     }
-    if (_ocstl_dblock_bump + real > OCSTL_1MB) return NULL;
+    if (_ocstl_dblock_bump + real > ___OCSTL_1MB) return NULL;
     void *p = &OCSTL_DBLOCK[_ocstl_dblock_bump];
     _ocstl_dblock_bump += real;
     memset(p, 0, real);
@@ -2215,11 +2756,11 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
     if (!iv || sz == 0) return NULL;
 
     void *block_start = (void *) OCSTL_GBLOCK;
-    void *block_end = (void *) (OCSTL_GBLOCK + OCSTL_512MB);
+    void *block_end = (void *) (OCSTL_GBLOCK + ___OCSTL_512MB);
 
     // GBLOCK 전체가 비어있으면 시작 주소 바로 반환
     if (veb_empty(iv->veb)) {
-        if (sz <= OCSTL_512MB) {
+        if (sz <= ___OCSTL_512MB) {
             giveb_insert(iv, block_start,
                          (void *) ((unsigned char *) block_start + sz - 1), type_size);
             return block_start;
@@ -2330,462 +2871,7 @@ static void _gfree(void *p) {
 #pragma warning(disable:4308)
 #pragma warning(disable:4307)
 #endif
-
-// ==============================================================================
-// BEGIN  defines.h                      (depth 2)
-// ==============================================================================
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-
-#if !defined(_OPENCSTL_DEFINES_H)
-#define _OPENCSTL_DEFINES_H
-
-#if defined(_WIN32) || defined(_WIN64)
-#define OPENCSTL_OS_WINDOWS
-#elif defined(__linux__)
-#define OPENCSTL_OS_LINUX
-#elif defined(__APPLE__)
-#define OPENCSTL_OS_OSX
-#endif
-
-#if defined(__clang__)
-#define OPENCSTL_CC_CLANG
-#elif defined(_MSC_VER)
-#define OPENCSTL_CC_MSVC
-#elif defined(__GNUC__)
-#define OPENCSTL_CC_GCC
-
-#endif
-
-//#define OPENCSTL_ARRAYBASE	0x80	//b10000000
-//#define OPENCSTL_NODEBASE	0x40	//b01000000
-
-#define OPENCSTL_SET		    0
-#define OPENCSTL_MAP		    1
-#define OPENCSTL_VECTOR		    2
-#define OPENCSTL_LIST		    3
-#define OPENCSTL_DEQUE		    4
-#define OPENCSTL_STACK		    5
-#define OPENCSTL_QUEUE		    6
-#define OPENCSTL_PRIORITY_QUEUE	7
-#define OPENCSTL_UNORDERED_SET	8
-#define OPENCSTL_UNORDERED_MAP	9
-#define OPENCSTL_ARRAY          10
-
-
-#if defined(OPENCSTL_OS_WINDOWS)
-#include<Windows.h>
-#endif
-
-//For access header element
-//OPENCSTL_AccessContainerAsIndex
-
-
-#if defined(__GNUC__) || defined(__clang__)
-typedef long long __attribute__((__aligned__(1), __may_alias__)) _opencstl_ll_ua;
-#elif defined(_MSC_VER)
-typedef long long __unaligned _opencstl_ll_ua;
-#else
-typedef long long _opencstl_ll_ua;
-#endif
-#define OPENCSTL_NIDX(container,nidx) (((_opencstl_ll_ua*)*container)[(nidx)])
-
-#define OPENCSTL_HEADER	(12)
-#define NIDX_CTYPE	    (-12)	// container type
-#define NIDX_HSIZE	    (-11)	// header size
-#define NIDX_TSIZE	    (-10)	// type size
-
-#define NIDX_LIST_NODE_SIZE	(3)
-#define NIDX_TREE_NODE_SIZE	(5)
-//OPENCSTL_HEAP_MACROS
-#define HEAP_PARENT(I)	    (((I)-1)>>1)
-#define HEAP_LEFT(I)		(((I)<<1)+1)
-#define HEAP_RIGHT(I)	    (((I)<<1)+2)
-
-#if defined(_MSC_VER)
-#   define ARGN(...)  INTERNAL_EXPAND_ARGS_PRIVATE(INTERNAL_ARGS_AUGMENTER(__VA_ARGS__))
-#   define INTERNAL_ARGS_AUGMENTER(...) unused, __VA_ARGS__
-#   define INTERNAL_EXPAND(x) x
-#   define INTERNAL_EXPAND_ARGS_PRIVATE(...) INTERNAL_EXPAND(INTERNAL_GET_ARG_COUNT_PRIVATE(__VA_ARGS__, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
-#   define INTERNAL_GET_ARG_COUNT_PRIVATE(_1_, _2_, _3_, _4_, _5_, _6_, _7_, _8_, _9_, _10_, _11_, _12_, _13_, _14_, _15_, _16_, _17_, _18_, _19_, _20_, _21_, _22_, _23_, _24_, _25_, _26_, _27_, _28_, _29_, _30_, _31_, _32_, _33_, _34_, _35_, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, count, ...) count
-#else // Non-Microsoft compilers
-#   define ARGN(...) INTERNAL_GET_ARG_COUNT_PRIVATE(0, ## __VA_ARGS__, 70, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-#   define INTERNAL_GET_ARG_COUNT_PRIVATE(_0, _1_, _2_, _3_, _4_, _5_, _6_, _7_, _8_, _9_, _10_, _11_, _12_, _13_, _14_, _15_, _16_, _17_, _18_, _19_, _20_, _21_, _22_, _23_, _24_, _25_, _26_, _27_, _28_, _29_, _30_, _31_, _32_, _33_, _34_, _35_, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, _64, _65, _66, _67, _68, _69, _70, count, ...) count
-#endif
-
-#endif
-
-
-//#define cstl_value(iter,TYPE)	(*(TYPE*)(iter+1))
-
-#if defined(OCSTL_CC_MSVC)
-// MSVC: __unaligned 키워드로 비정렬 로드 허용
-#define cstl_value(iter, TYPE) \
-(*(TYPE __unaligned *)((char *)(iter) + sizeof(*(iter))))
-#else
-// GCC / Clang / zig cc: compound literal + memcpy
-// memcpy 반환값은 dst 포인터이므로 *(TYPE*) 역참조하면 정렬된 값을 읽음
-#define cstl_value(iter, TYPE) \
-(*(TYPE *)memcpy(&(TYPE){0}, (char *)(iter) + sizeof(*(iter)), sizeof(TYPE)))
-#endif
-
-// CSTL_USE_VAARG=0: Windows only (values passed directly on stack)
-// CSTL_USE_VAARG=1: Linux/macOS (macros pass pointers via &__1; standard va_arg is correct)
-#if defined(_WIN32) || defined(_WIN64)
-#  define CSTL_USE_VAARG 0
-#else
-#  define CSTL_USE_VAARG 1
-#endif
-
-#if defined(_WIN32) || defined(_WIN64)
-// On Windows the dispatch macros pass values directly (not pointer-to-value).
-// va_arg(vl,void*) would read the value itself, so use PTR arithmetic instead.
-#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=(void*)V;
-#define __cstl_va_arg(PTR)	(PTR)
-// Windows: __cstl_va_arg_next is unused (Windows uses PTR-based path),
-// but define it to avoid compile errors if referenced.
-#define __cstl_va_arg_next(V)	(NULL)
-#define __cstl_va_end(V)	va_end(V)
-#else
-
-// On Linux/macOS (GCC, Clang, TCC) the dispatch macros pass &__N (address of a local copy)
-// for each arg. So va_arg(vl, void*) returns void** -- we must dereference to get the actual value.
-#define __cstl_va_start(V,C,beg)	va_start(V,C)
-#define __cstl_va_arg_next(V)	    va_arg((V),void*)
-#define __cstl_va_end(V)	        va_end(V)
-#endif
-
-//Unary Functions
-#define cstl_pop(container)	        _cstl_pop(&(container))
-#define cstl_pop_back(container)	_cstl_pop_back(&(container))
-#define cstl_pop_front(container)	_cstl_pop_front(&(container))
-#define cstl_size(container)	    _cstl_size(&(container))
-#define cstl_capacity(container)	_cstl_capacity(&(container))
-#define cstl_next(iterator)	        _cstl_next(iterator)
-#define cstl_prev(iterator)	        _cstl_prev(iterator)
-#define cstl_begin(container)	    _cstl_begin(&(container))
-#define cstl_rbegin(container)	    _cstl_rbegin(&(container))
-#define cstl_end(container)	        _cstl_end(&(container))
-#define cstl_rend(container)	    _cstl_rend(&(container))
-#define cstl_clear(container)	    _cstl_clear(&(container))
-#define cstl_empty(container)	    _cstl_empty(&(container))
-#define cstl_free(container)	    _cstl_free(&(container))
-// #define cstl_max_capacity(container) _cstl_max_size(&(container))
-//Macro only functions
-
-#define _cstl_deque_type(container) (*(_opencstl_ll_ua *)((char*)*(void**)container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t)sizeof(size_type64) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
-#ifdef _MSC_VER
-#pragma warning(disable:4047)
-#pragma warning(disable:4477)
-#pragma warning(disable:4313)
-#elif defined(__GNUC__) || defined(__clang__)
-// #pragma GCC diagnostic push
-// #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
-// #pragma GCC diagnostic ignored "-Wint-conversion"
-#if !defined(__clang__)
-//#pragma GCC diagnostic ignored "-Wno-lto-type-mismatch"
-#endif
-#endif
-
-#if defined(__GNUC__) || defined(__clang__)
-
-#define _cstl_deref(P) (__extension__ ({ \
-    __typeof__(*(P)) _cstl_rv; \
-    __builtin_memcpy(&_cstl_rv, (const void *)(P), sizeof(_cstl_rv)); \
-    _cstl_rv; \
-}))
-#else
-#define _cstl_deref(P) (*(P))
-#endif
-#define _cstl_err_ptr (void*)(size_type64)0
-
-#define cstl_front(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
-_cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C):_cstl_err_ptr) :\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C):\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)(*(void**)C):_cstl_err_ptr)))
-
-#define cstl_back(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
-_cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C+cstl_size(C)-1):_cstl_err_ptr) :\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C+cstl_size(C)-1):\
-(OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)((void**)C)[-2]:_cstl_err_ptr)))
-
-#if defined(__GNUC__) || defined(__clang__)
-// #pragma GCC diagnostic pop
-#endif
-
-#define OPENCSTL_DEQUE_NIDX(container, nidx) (*(_opencstl_ll_ua *)((char*)*(void**)container + (ptrdiff_t)(nidx) * (ptrdiff_t)sizeof(size_type64) + (OPENCSTL_NIDX(((void**)container), -1) + 1)))
-#define _cstl_stack_top(container)   *container[OPENCSTL_DEQUE_NIDX(container, -2) -1]
-// cstl_top: (void**)&container explicit cast for strict compilers (MinGW64, Windows Clang).
-#define cstl_top(container)   __is_deque((void**)&container)?\
-OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&container) : (container[0]):\
-(OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE)==OPENCSTL_PRIORITY_QUEUE?(*container):(container[0]))   //priority queue
-
-
-#define cstl_reserve(container,n)	_cstl_reserve(&(container),n)
-
-
-#if defined(_WIN32) || defined(_WIN64)
-
-#define cstl_push(container,...)	_cstl_push(&(container),__VA_ARGS__)
-#define cstl_push_back(container,...)	_cstl_push_back(&(container),__VA_ARGS__)
-#define cstl_push_front(container,...)	_cstl_push_front(&(container),__VA_ARGS__)
-#define cstl_insert(container,...)	_cstl_insert(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_erase(container,...)	_cstl_erase(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_resize(container,...)	_cstl_resize(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_assign(container,...)	_cstl_assign(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_shrink_to_fit(container) _cstl_shrink_to_fit(&(container))
-#define cstl_max_size(container) _cstl_max_size(&container)
-#define cstl_reverse(container) _cstl_reverse(&(container))
-
-
-#define cstl_count(container,...)	_cstl_count(&(container),__VA_ARGS__)
-#define cstl_count_if(container,...)	_cstl_count_if(&(container),__VA_ARGS__)
-#define cstl_lower_bound(container,...)	_cstl_lower_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_upper_bound(container,...)	_cstl_upper_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-
-#elif defined(__linux__) || defined(__APPLE__)
-
-// TCC supports typeof but not __auto_type; GCC/Clang support both.
-// #if defined(__TINYC__)
-// #define _CSTL_TYPEOF(x) typeof(x)
-// #else
-// #define _CSTL_TYPEOF(x) __auto_type
-// #endif
-
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
-// C23 표준 typeof
-#define _CSTL_TYPEOF(x)  typeof(x)
-#elif defined(__cplusplus)
-// C++: decltype
-#define _CSTL_TYPEOF(x)  decltype(x)
-#elif defined(__GNUC__) || defined(__clang__) || defined(__TINYC__)
-// GCC/Clang/TCC: __typeof__ (경고 없음, __auto_type 대신)
-#define _CSTL_TYPEOF(x)  __typeof__(x)
-#else
-// MSVC 등 fallback
-#define _CSTL_TYPEOF(x)  void*
-#endif
-
-#define cstl_push_back(C,...) _linux_cstl_push_back(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
-#define _linux_cstl_push_back(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_back ## _ ## N
-#define _cstl_push_back_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push_back( __0);}
-#define _cstl_push_back_1(C,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_push_back( __0,&__1);}
-#define _cstl_push_back_2(C,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_push_back( __0,&__1,&__2);}
-#define _cstl_push_back_3(C,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_push_back( __0,&__1,&__2,&__3);}
-#define _cstl_push_back_4(C,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_push_back( __0,&__1,&__2,&__3,&__4);}
-#define _cstl_push_back_5(C,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_push_back_6(C,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_push_back_7(C,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_push_back_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_push_back_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_push_back_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push_back( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-#define cstl_push_front(C,...) _linux_cstl_push_front(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
-#define _linux_cstl_push_front(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_front ## _ ## N
-#define _cstl_push_front_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push_front( __0);}
-#define _cstl_push_front_1(C,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_push_front( __0,&__1);}
-#define _cstl_push_front_2(C,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_push_front( __0,&__1,&__2);}
-#define _cstl_push_front_3(C,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_push_front( __0,&__1,&__2,&__3);}
-#define _cstl_push_front_4(C,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_push_front( __0,&__1,&__2,&__3,&__4);}
-#define _cstl_push_front_5(C,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_push_front_6(C,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_push_front_7(C,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_push_front_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_push_front_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_push_front_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push_front( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-#define cstl_insert(C,...) _linux_cstl_insert(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
-#define _linux_cstl_insert(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_insert ## _ ## N
-#define _cstl_insert_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_insert( __0,argc);}
-#define _cstl_insert_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_insert( __0,argc,&__1);}
-#define _cstl_insert_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_insert( __0,argc,&__1,&__2);}
-#define _cstl_insert_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_insert( __0,argc,&__1,&__2,&__3);}
-#define _cstl_insert_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_insert_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_insert_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_insert_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_insert_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_insert_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_insert_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_insert( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-#define cstl_erase(C,...) _linux_cstl_erase(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
-#define _linux_cstl_erase(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_erase ## _ ## N
-#define _cstl_erase_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_erase( __0,argc);}
-#define _cstl_erase_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_erase( __0,argc,&__1);}
-#define _cstl_erase_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_erase( __0,argc,&__1,&__2);}
-#define _cstl_erase_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_erase( __0,argc,&__1,&__2,&__3);}
-#define _cstl_erase_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_erase_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_erase_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_erase_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_erase_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_erase_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_erase_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_erase( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-#define cstl_resize(C,...) _linux_cstl_resize(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
-#define _linux_cstl_resize(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_resize ## _ ## N
-#define _cstl_resize_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_resize( __0,argc);}
-#define _cstl_resize_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_resize( __0,argc,&__1);}
-#define _cstl_resize_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_resize( __0,argc,&__1,&__2);}
-#define _cstl_resize_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_resize( __0,argc,&__1,&__2,&__3);}
-#define _cstl_resize_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_resize_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_resize_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_resize_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_resize_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_resize_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_resize_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_resize( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-#define cstl_assign(C,...) _linux_cstl_assign(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
-#define _linux_cstl_assign(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_assign ## _ ## N
-#define _cstl_assign_0(C,argc)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_assign( __0,argc);}
-#define _cstl_assign_1(C,argc,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_assign( __0,argc,&__1);}
-#define _cstl_assign_2(C,argc,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_assign( __0,argc,&__1,&__2);}
-#define _cstl_assign_3(C,argc,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_assign( __0,argc,&__1,&__2,&__3);}
-#define _cstl_assign_4(C,argc,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4);}
-#define _cstl_assign_5(C,argc,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_assign_6(C,argc,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_assign_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_assign_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_assign_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_assign_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_assign( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-
-#define cstl_find(C,...) _linux_cstl_find(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
-#define _linux_cstl_find(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_find ## _ ## N
-#define _cstl_find_0(C,argc)    ({_CSTL_TYPEOF(&C) __0=&C;_cstl_find( __0,argc);})
-#define _cstl_find_1(C,argc,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_find( __0,argc,&__1);}))
-#define _cstl_find_2(C,argc,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_find( __0,argc,&__1,&__2);}))
-#define _cstl_find_3(C,argc,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_find( __0,argc,&__1,&__2,&__3);}))
-#define _cstl_find_4(C,argc,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_find( __0,argc,&__1,&__2,&__3,&__4);}))
-#define _cstl_find_5(C,argc,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
-#define _cstl_find_6(C,argc,_1,_2,_3,_4,_5,_6)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
-#define _cstl_find_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
-#define _cstl_find_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
-#define _cstl_find_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
-#define _cstl_find_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_find( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
-#define cstl_push(C,...) _linux_cstl_push(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
-#define _linux_cstl_push(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push ## _ ## N
-#define _cstl_push_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push( __0);}
-#define _cstl_push_1(C,_1)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_push( __0,&__1);}
-#define _cstl_push_2(C,_1,_2)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_push( __0,&__1,&__2);}
-#define _cstl_push_3(C,_1,_2,_3)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_push( __0,&__1,&__2,&__3);}
-#define _cstl_push_4(C,_1,_2,_3,_4)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_push( __0,&__1,&__2,&__3,&__4);}
-#define _cstl_push_5(C,_1,_2,_3,_4,_5)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5);}
-#define _cstl_push_6(C,_1,_2,_3,_4,_5,_6)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6);}
-#define _cstl_push_7(C,_1,_2,_3,_4,_5,_6,_7)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}
-#define _cstl_push_8(C,_1,_2,_3,_4,_5,_6,_7,_8)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}
-#define _cstl_push_9(C,_1,_2,_3,_4,_5,_6,_7,_8,_9)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}
-#define _cstl_push_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
-
-
-// #define cstl_max_size(C,...) ({void* _() {_linux_cstl_max_size(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)}_;});
-// #define _linux_cstl_max_size(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_max_size ## _ ## N
-// #define _cstl_max_size_0(C) _cstl_max_size(&C)
-// #define _cstl_max_size_1(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_2(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_3(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_4(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_5(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_6(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_7(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_8(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_9(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_10(C,...) _cstl_max_size(&C)
-#define cstl_max_size(container) _cstl_max_size(&container)
-#define cstl_shrink_to_fit(container) _cstl_shrink_to_fit(&(container))
-#define cstl_reverse(container) _cstl_reverse(&(container))
-
-
-#define cstl_count(C,...) _linux_cstl_count(C,__VA_ARGS__, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
-#define _linux_cstl_count(C,_1, _2, _3, _4, _5, N, ...) _cstl_count ## _ ## N
-#define _cstl_count_0(C)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count( __0);}))
-#define _cstl_count_1(C,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_count( __0,&__1);}))
-#define _cstl_count_2(C,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_count( __0,&__1,&__2);}))
-#define _cstl_count_3(C,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_count( __0,&__1,&__2,&__3);}))
-#define _cstl_count_4(C,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_count( __0,&__1,&__2,&__3,&__4);}))
-#define _cstl_count_5(C,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_count( __0,&__1,&__2,&__3,&__4,&__5);}))
-
-#define cstl_count_if(C,...) _linux_cstl_count_if(C,__VA_ARGS__, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
-#define _linux_cstl_count_if(C,_1, _2, _3, _4, _5, N, ...) _cstl_count_if ## _ ## N
-#define _cstl_count_if_0(C)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0);}))
-#define _cstl_count_if_1(C,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1);}))
-#define _cstl_count_if_2(C,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2);}))
-#define _cstl_count_if_3(C,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2,_3);}))
-#define _cstl_count_if_4(C,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2,_3,_4);}))
-#define _cstl_count_if_5(C,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_count_if( __0,_1,_2,_3,_4,_5);}))
-
-#define cstl_lower_bound(C,...) _linux_cstl_lower_bound(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
-#define _linux_cstl_lower_bound(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_lower_bound ## _ ## N
-#define _cstl_lower_bound_0(C,argc)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_lower_bound( __0,argc);}))
-#define _cstl_lower_bound_1(C,argc,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_lower_bound( __0,argc,&__1);}))
-#define _cstl_lower_bound_2(C,argc,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_lower_bound( __0,argc,&__1,&__2);}))
-#define _cstl_lower_bound_3(C,argc,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_lower_bound( __0,argc,&__1,&__2,&__3);}))
-#define _cstl_lower_bound_4(C,argc,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4);}))
-#define _cstl_lower_bound_5(C,argc,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
-#define _cstl_lower_bound_6(C,argc,_1,_2,_3,_4,_5,_6)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
-#define _cstl_lower_bound_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
-#define _cstl_lower_bound_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
-#define _cstl_lower_bound_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
-#define _cstl_lower_bound_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_lower_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
-
-#define cstl_upper_bound(C,...) _linux_cstl_upper_bound(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,ARGN(__VA_ARGS__),__VA_ARGS__)
-#define _linux_cstl_upper_bound(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_upper_bound ## _ ## N
-#define _cstl_upper_bound_0(C,argc)    (({_CSTL_TYPEOF(&C) __0=&C;_cstl_upper_bound( __0,argc);}))
-#define _cstl_upper_bound_1(C,argc,_1)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_cstl_upper_bound( __0,argc,&__1);}))
-#define _cstl_upper_bound_2(C,argc,_1,_2)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_cstl_upper_bound( __0,argc,&__1,&__2);}))
-#define _cstl_upper_bound_3(C,argc,_1,_2,_3)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_cstl_upper_bound( __0,argc,&__1,&__2,&__3);}))
-#define _cstl_upper_bound_4(C,argc,_1,_2,_3,_4)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4);}))
-#define _cstl_upper_bound_5(C,argc,_1,_2,_3,_4,_5)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5);}))
-#define _cstl_upper_bound_6(C,argc,_1,_2,_3,_4,_5,_6)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6);}))
-#define _cstl_upper_bound_7(C,argc,_1,_2,_3,_4,_5,_6,_7)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7);}))
-#define _cstl_upper_bound_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
-#define _cstl_upper_bound_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
-#define _cstl_upper_bound_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
-
-#endif
-
-
-#if defined(_WIN32) || defined(_WIN64)
-#define SELECT_ANY	__declspec(selectany)
-#elif defined(__linux__) || defined(__APPLE__)
-#define SELECT_ANY	__attribute__((weak))
-#endif
-#define OPENCSTL_FUNC	static
-
-// ==============================================================================
-// END    defines.h
-// ==============================================================================
+// [already included: defines.h]
 // [already included: types.h]
 
 // ==============================================================================
@@ -2833,255 +2919,565 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define OPENCSTL_COMPARE_H
 #include <string.h>
 // [already included: types.h]
-#include<float.h>
-typedef const void *CVP;
+#include <float.h>
 
-typedef int (*_OpenCSTLCompareFunc)(CVP a, CVP b);
+// ==============================================================================
+// BEGIN  memcmps.h                      (depth 3)
+// ==============================================================================
 
-typedef int (*_OpenCSTLEqualsFunc)(CVP a, CVP b, size_t _);
-
-#define _SAFE_COMPARE(TYPE,X,Y)  (*(TYPE *) (X) > *(TYPE *) (Y)) - (*(TYPE *) (X) < *(TYPE *) (Y))
-
-int less_int32(CVP a, CVP b) {
-    return _SAFE_COMPARE(int, a, b);
-}
-
-int less_uint32(CVP a, CVP b) {
-    return _SAFE_COMPARE(unsigned int, a, b);
-}
-
-int less_int64(CVP a, CVP b) {
-    return _SAFE_COMPARE(long long, a, b);
-}
-
-int less_uint64(CVP a, CVP b) {
-    return _SAFE_COMPARE(unsigned long long, a, b);
-}
-
-int less_float(CVP a, CVP b) {
-    return (*(float *) a > *(float *) b) - (*(float *) a < *(float *) b);
-}
-
-int less_double(CVP a, CVP b) {
-    return (*(double *) a > *(double *) b) - (*(double *) a < *(double *) b);
-}
-
-int less_string(CVP a, CVP b) {
-    return strcmp(*(char **) a, *(char **) b);
-}
-
-int greater_int32(CVP a, CVP b) {
-    return less_int32(b, a);
-}
-
-int greater_uint32(CVP a, CVP b) {
-    return less_uint32(b, a);
-}
-
-int greater_int64(CVP a, CVP b) {
-    return less_int64(b, a);
-}
-
-int greater_uint64(CVP a, CVP b) {
-    return less_uint64(b, a);
-}
-
-int greater_float(CVP a, CVP b) {
-    return less_float(b, a);
-}
-
-int greater_double(CVP a, CVP b) {
-    return less_double(b, a);
-}
-
-int greater_string(CVP a, CVP b) {
-    return less_string(b, a);
-}
-
-_OpenCSTLCompareFunc CSTL_LESS(const char *type_str) {
-    while (*type_str == ' ') type_str++;
-
-    const char *end = type_str + strlen(type_str);
-    while (end > type_str && *(end - 1) == ' ') end--;
-
-    char buf[256];
-    size_type64 len = end - type_str;
-    if (len >= sizeof(buf)) return NULL;
-
-    memcpy(buf, type_str, len);
-    buf[len] = '\0';
-
-    if (strcmp(buf, "float") == 0) return less_float;
-    if (strcmp(buf, "double") == 0) return less_double;
-    if (strcmp(buf, "int") == 0) return less_int32;
-    if (strcmp(buf, "long long") == 0) return less_int64;
-    if (strcmp(buf, "unsigned long long") == 0) return less_uint64;
-    if (strcmp(buf, "unsigned int") == 0) return less_uint32;
-    if (strcmp(buf, "char*") == 0) return less_string;
-    if (strcmp(buf, "char *") == 0) return less_string;
-
-
-    return NULL;
-}
-
-_OpenCSTLCompareFunc CSTL_GREATER(const char *type_str) {
-    while (*type_str == ' ') type_str++;
-
-    const char *end = type_str + strlen(type_str);
-    while (end > type_str && *(end - 1) == ' ') end--;
-
-    char buf[256];
-    size_type64 len = end - type_str;
-    if (len >= sizeof(buf)) return NULL;
-
-    memcpy(buf, type_str, len);
-    buf[len] = '\0';
-
-    if (strcmp(buf, "float") == 0) return greater_float;
-    if (strcmp(buf, "double") == 0) return greater_double;
-    if (strcmp(buf, "int") == 0) return greater_int32;
-    if (strcmp(buf, "long long") == 0) return greater_int64;
-    if (strcmp(buf, "unsigned long long") == 0) return greater_uint64;
-    if (strcmp(buf, "unsigned int") == 0) return greater_uint32;
-    if (strcmp(buf, "char*") == 0) return greater_string;
-    if (strcmp(buf, "char *") == 0) return greater_string;
-
-    return NULL;
-}
-
-#define LESS(TYPE)    CSTL_LESS(#TYPE)
-#define GREATER(TYPE) CSTL_GREATER(#TYPE)
-
-
-int _memcmp1(const void *a, const void *b) { return memcmp(a, b, 1); }
-int _memcmp2(const void *a, const void *b) { return memcmp(a, b, 2); }
-int _memcmp3(const void *a, const void *b) { return memcmp(a, b, 3); }
-int _memcmp4(const void *a, const void *b) { return memcmp(a, b, 4); }
-int _memcmp5(const void *a, const void *b) { return memcmp(a, b, 5); }
-int _memcmp6(const void *a, const void *b) { return memcmp(a, b, 6); }
-int _memcmp7(const void *a, const void *b) { return memcmp(a, b, 7); }
-int _memcmp8(const void *a, const void *b) { return memcmp(a, b, 8); }
-int _memcmp9(const void *a, const void *b) { return memcmp(a, b, 9); }
-int _memcmp10(const void *a, const void *b) { return memcmp(a, b, 10); }
-int _memcmp11(const void *a, const void *b) { return memcmp(a, b, 11); }
-int _memcmp12(const void *a, const void *b) { return memcmp(a, b, 12); }
-int _memcmp13(const void *a, const void *b) { return memcmp(a, b, 13); }
-int _memcmp14(const void *a, const void *b) { return memcmp(a, b, 14); }
-int _memcmp15(const void *a, const void *b) { return memcmp(a, b, 15); }
-int _memcmp16(const void *a, const void *b) { return memcmp(a, b, 16); }
-int _memcmp17(const void *a, const void *b) { return memcmp(a, b, 17); }
-int _memcmp18(const void *a, const void *b) { return memcmp(a, b, 18); }
-int _memcmp19(const void *a, const void *b) { return memcmp(a, b, 19); }
-int _memcmp20(const void *a, const void *b) { return memcmp(a, b, 20); }
-int _memcmp21(const void *a, const void *b) { return memcmp(a, b, 21); }
-int _memcmp22(const void *a, const void *b) { return memcmp(a, b, 22); }
-int _memcmp23(const void *a, const void *b) { return memcmp(a, b, 23); }
-int _memcmp24(const void *a, const void *b) { return memcmp(a, b, 24); }
-int _memcmp25(const void *a, const void *b) { return memcmp(a, b, 25); }
-int _memcmp26(const void *a, const void *b) { return memcmp(a, b, 26); }
-int _memcmp27(const void *a, const void *b) { return memcmp(a, b, 27); }
-int _memcmp28(const void *a, const void *b) { return memcmp(a, b, 28); }
-int _memcmp29(const void *a, const void *b) { return memcmp(a, b, 29); }
-int _memcmp30(const void *a, const void *b) { return memcmp(a, b, 30); }
-int _memcmp31(const void *a, const void *b) { return memcmp(a, b, 31); }
-int _memcmp32(const void *a, const void *b) { return memcmp(a, b, 32); }
-int _memcmp33(const void *a, const void *b) { return memcmp(a, b, 33); }
-int _memcmp34(const void *a, const void *b) { return memcmp(a, b, 34); }
-int _memcmp35(const void *a, const void *b) { return memcmp(a, b, 35); }
-int _memcmp36(const void *a, const void *b) { return memcmp(a, b, 36); }
-int _memcmp37(const void *a, const void *b) { return memcmp(a, b, 37); }
-int _memcmp38(const void *a, const void *b) { return memcmp(a, b, 38); }
-int _memcmp39(const void *a, const void *b) { return memcmp(a, b, 39); }
-int _memcmp40(const void *a, const void *b) { return memcmp(a, b, 40); }
-int _memcmp41(const void *a, const void *b) { return memcmp(a, b, 41); }
-int _memcmp42(const void *a, const void *b) { return memcmp(a, b, 42); }
-int _memcmp43(const void *a, const void *b) { return memcmp(a, b, 43); }
-int _memcmp44(const void *a, const void *b) { return memcmp(a, b, 44); }
-int _memcmp45(const void *a, const void *b) { return memcmp(a, b, 45); }
-int _memcmp46(const void *a, const void *b) { return memcmp(a, b, 46); }
-int _memcmp47(const void *a, const void *b) { return memcmp(a, b, 47); }
-int _memcmp48(const void *a, const void *b) { return memcmp(a, b, 48); }
-int _memcmp49(const void *a, const void *b) { return memcmp(a, b, 49); }
-int _memcmp50(const void *a, const void *b) { return memcmp(a, b, 50); }
-int _memcmp51(const void *a, const void *b) { return memcmp(a, b, 51); }
-int _memcmp52(const void *a, const void *b) { return memcmp(a, b, 52); }
-int _memcmp53(const void *a, const void *b) { return memcmp(a, b, 53); }
-int _memcmp54(const void *a, const void *b) { return memcmp(a, b, 54); }
-int _memcmp55(const void *a, const void *b) { return memcmp(a, b, 55); }
-int _memcmp56(const void *a, const void *b) { return memcmp(a, b, 56); }
-int _memcmp57(const void *a, const void *b) { return memcmp(a, b, 57); }
-int _memcmp58(const void *a, const void *b) { return memcmp(a, b, 58); }
-int _memcmp59(const void *a, const void *b) { return memcmp(a, b, 59); }
-int _memcmp60(const void *a, const void *b) { return memcmp(a, b, 60); }
-int _memcmp61(const void *a, const void *b) { return memcmp(a, b, 61); }
-int _memcmp62(const void *a, const void *b) { return memcmp(a, b, 62); }
-int _memcmp63(const void *a, const void *b) { return memcmp(a, b, 63); }
-int _memcmp64(const void *a, const void *b) { return memcmp(a, b, 64); }
-int _memcmp65(const void *a, const void *b) { return memcmp(a, b, 65); }
-int _memcmp66(const void *a, const void *b) { return memcmp(a, b, 66); }
-int _memcmp67(const void *a, const void *b) { return memcmp(a, b, 67); }
-int _memcmp68(const void *a, const void *b) { return memcmp(a, b, 68); }
-int _memcmp69(const void *a, const void *b) { return memcmp(a, b, 69); }
-int _memcmp70(const void *a, const void *b) { return memcmp(a, b, 70); }
-int _memcmp71(const void *a, const void *b) { return memcmp(a, b, 71); }
-int _memcmp72(const void *a, const void *b) { return memcmp(a, b, 72); }
-int _memcmp73(const void *a, const void *b) { return memcmp(a, b, 73); }
-int _memcmp74(const void *a, const void *b) { return memcmp(a, b, 74); }
-int _memcmp75(const void *a, const void *b) { return memcmp(a, b, 75); }
-int _memcmp76(const void *a, const void *b) { return memcmp(a, b, 76); }
-int _memcmp77(const void *a, const void *b) { return memcmp(a, b, 77); }
-int _memcmp78(const void *a, const void *b) { return memcmp(a, b, 78); }
-int _memcmp79(const void *a, const void *b) { return memcmp(a, b, 79); }
-int _memcmp80(const void *a, const void *b) { return memcmp(a, b, 80); }
-int _memcmp81(const void *a, const void *b) { return memcmp(a, b, 81); }
-int _memcmp82(const void *a, const void *b) { return memcmp(a, b, 82); }
-int _memcmp83(const void *a, const void *b) { return memcmp(a, b, 83); }
-int _memcmp84(const void *a, const void *b) { return memcmp(a, b, 84); }
-int _memcmp85(const void *a, const void *b) { return memcmp(a, b, 85); }
-int _memcmp86(const void *a, const void *b) { return memcmp(a, b, 86); }
-int _memcmp87(const void *a, const void *b) { return memcmp(a, b, 87); }
-int _memcmp88(const void *a, const void *b) { return memcmp(a, b, 88); }
-int _memcmp89(const void *a, const void *b) { return memcmp(a, b, 89); }
-int _memcmp90(const void *a, const void *b) { return memcmp(a, b, 90); }
-int _memcmp91(const void *a, const void *b) { return memcmp(a, b, 91); }
-int _memcmp92(const void *a, const void *b) { return memcmp(a, b, 92); }
-int _memcmp93(const void *a, const void *b) { return memcmp(a, b, 93); }
-int _memcmp94(const void *a, const void *b) { return memcmp(a, b, 94); }
-int _memcmp95(const void *a, const void *b) { return memcmp(a, b, 95); }
-int _memcmp96(const void *a, const void *b) { return memcmp(a, b, 96); }
-int _memcmp97(const void *a, const void *b) { return memcmp(a, b, 97); }
-int _memcmp98(const void *a, const void *b) { return memcmp(a, b, 98); }
-int _memcmp99(const void *a, const void *b) { return memcmp(a, b, 99); }
-int _memcmp100(const void *a, const void *b) { return memcmp(a, b, 100); }
-int _memcmp101(const void *a, const void *b) { return memcmp(a, b, 101); }
-int _memcmp102(const void *a, const void *b) { return memcmp(a, b, 102); }
-int _memcmp103(const void *a, const void *b) { return memcmp(a, b, 103); }
-int _memcmp104(const void *a, const void *b) { return memcmp(a, b, 104); }
-int _memcmp105(const void *a, const void *b) { return memcmp(a, b, 105); }
-int _memcmp106(const void *a, const void *b) { return memcmp(a, b, 106); }
-int _memcmp107(const void *a, const void *b) { return memcmp(a, b, 107); }
-int _memcmp108(const void *a, const void *b) { return memcmp(a, b, 108); }
-int _memcmp109(const void *a, const void *b) { return memcmp(a, b, 109); }
-int _memcmp110(const void *a, const void *b) { return memcmp(a, b, 110); }
-int _memcmp111(const void *a, const void *b) { return memcmp(a, b, 111); }
-int _memcmp112(const void *a, const void *b) { return memcmp(a, b, 112); }
-int _memcmp113(const void *a, const void *b) { return memcmp(a, b, 113); }
-int _memcmp114(const void *a, const void *b) { return memcmp(a, b, 114); }
-int _memcmp115(const void *a, const void *b) { return memcmp(a, b, 115); }
-int _memcmp116(const void *a, const void *b) { return memcmp(a, b, 116); }
-int _memcmp117(const void *a, const void *b) { return memcmp(a, b, 117); }
-int _memcmp118(const void *a, const void *b) { return memcmp(a, b, 118); }
-int _memcmp119(const void *a, const void *b) { return memcmp(a, b, 119); }
-int _memcmp120(const void *a, const void *b) { return memcmp(a, b, 120); }
-int _memcmp121(const void *a, const void *b) { return memcmp(a, b, 121); }
-int _memcmp122(const void *a, const void *b) { return memcmp(a, b, 122); }
-int _memcmp123(const void *a, const void *b) { return memcmp(a, b, 123); }
-int _memcmp124(const void *a, const void *b) { return memcmp(a, b, 124); }
-int _memcmp125(const void *a, const void *b) { return memcmp(a, b, 125); }
-int _memcmp126(const void *a, const void *b) { return memcmp(a, b, 126); }
-int _memcmp127(const void *a, const void *b) { return memcmp(a, b, 127); }
-int _memcmp128(const void *a, const void *b) { return memcmp(a, b, 128); }
-_OpenCSTLCompareFunc _memcmp_funcs[128 + 1] = {
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#if !defined(OPENCSTL_MEMCMPS_H)
+#define OPENCSTL_MEMCMPS_H
+#include <string.h>
+// [already included: types.h]
+static int _memcmp1(const void *a, const void *b) { return memcmp(a, b, 1); }
+static int _memcmp2(const void *a, const void *b) { return memcmp(a, b, 2); }
+static int _memcmp3(const void *a, const void *b) { return memcmp(a, b, 3); }
+static int _memcmp4(const void *a, const void *b) { return memcmp(a, b, 4); }
+static int _memcmp5(const void *a, const void *b) { return memcmp(a, b, 5); }
+static int _memcmp6(const void *a, const void *b) { return memcmp(a, b, 6); }
+static int _memcmp7(const void *a, const void *b) { return memcmp(a, b, 7); }
+static int _memcmp8(const void *a, const void *b) { return memcmp(a, b, 8); }
+static int _memcmp9(const void *a, const void *b) { return memcmp(a, b, 9); }
+static int _memcmp10(const void *a, const void *b) { return memcmp(a, b, 10); }
+static int _memcmp11(const void *a, const void *b) { return memcmp(a, b, 11); }
+static int _memcmp12(const void *a, const void *b) { return memcmp(a, b, 12); }
+static int _memcmp13(const void *a, const void *b) { return memcmp(a, b, 13); }
+static int _memcmp14(const void *a, const void *b) { return memcmp(a, b, 14); }
+static int _memcmp15(const void *a, const void *b) { return memcmp(a, b, 15); }
+static int _memcmp16(const void *a, const void *b) { return memcmp(a, b, 16); }
+static int _memcmp17(const void *a, const void *b) { return memcmp(a, b, 17); }
+static int _memcmp18(const void *a, const void *b) { return memcmp(a, b, 18); }
+static int _memcmp19(const void *a, const void *b) { return memcmp(a, b, 19); }
+static int _memcmp20(const void *a, const void *b) { return memcmp(a, b, 20); }
+static int _memcmp21(const void *a, const void *b) { return memcmp(a, b, 21); }
+static int _memcmp22(const void *a, const void *b) { return memcmp(a, b, 22); }
+static int _memcmp23(const void *a, const void *b) { return memcmp(a, b, 23); }
+static int _memcmp24(const void *a, const void *b) { return memcmp(a, b, 24); }
+static int _memcmp25(const void *a, const void *b) { return memcmp(a, b, 25); }
+static int _memcmp26(const void *a, const void *b) { return memcmp(a, b, 26); }
+static int _memcmp27(const void *a, const void *b) { return memcmp(a, b, 27); }
+static int _memcmp28(const void *a, const void *b) { return memcmp(a, b, 28); }
+static int _memcmp29(const void *a, const void *b) { return memcmp(a, b, 29); }
+static int _memcmp30(const void *a, const void *b) { return memcmp(a, b, 30); }
+static int _memcmp31(const void *a, const void *b) { return memcmp(a, b, 31); }
+static int _memcmp32(const void *a, const void *b) { return memcmp(a, b, 32); }
+static int _memcmp33(const void *a, const void *b) { return memcmp(a, b, 33); }
+static int _memcmp34(const void *a, const void *b) { return memcmp(a, b, 34); }
+static int _memcmp35(const void *a, const void *b) { return memcmp(a, b, 35); }
+static int _memcmp36(const void *a, const void *b) { return memcmp(a, b, 36); }
+static int _memcmp37(const void *a, const void *b) { return memcmp(a, b, 37); }
+static int _memcmp38(const void *a, const void *b) { return memcmp(a, b, 38); }
+static int _memcmp39(const void *a, const void *b) { return memcmp(a, b, 39); }
+static int _memcmp40(const void *a, const void *b) { return memcmp(a, b, 40); }
+static int _memcmp41(const void *a, const void *b) { return memcmp(a, b, 41); }
+static int _memcmp42(const void *a, const void *b) { return memcmp(a, b, 42); }
+static int _memcmp43(const void *a, const void *b) { return memcmp(a, b, 43); }
+static int _memcmp44(const void *a, const void *b) { return memcmp(a, b, 44); }
+static int _memcmp45(const void *a, const void *b) { return memcmp(a, b, 45); }
+static int _memcmp46(const void *a, const void *b) { return memcmp(a, b, 46); }
+static int _memcmp47(const void *a, const void *b) { return memcmp(a, b, 47); }
+static int _memcmp48(const void *a, const void *b) { return memcmp(a, b, 48); }
+static int _memcmp49(const void *a, const void *b) { return memcmp(a, b, 49); }
+static int _memcmp50(const void *a, const void *b) { return memcmp(a, b, 50); }
+static int _memcmp51(const void *a, const void *b) { return memcmp(a, b, 51); }
+static int _memcmp52(const void *a, const void *b) { return memcmp(a, b, 52); }
+static int _memcmp53(const void *a, const void *b) { return memcmp(a, b, 53); }
+static int _memcmp54(const void *a, const void *b) { return memcmp(a, b, 54); }
+static int _memcmp55(const void *a, const void *b) { return memcmp(a, b, 55); }
+static int _memcmp56(const void *a, const void *b) { return memcmp(a, b, 56); }
+static int _memcmp57(const void *a, const void *b) { return memcmp(a, b, 57); }
+static int _memcmp58(const void *a, const void *b) { return memcmp(a, b, 58); }
+static int _memcmp59(const void *a, const void *b) { return memcmp(a, b, 59); }
+static int _memcmp60(const void *a, const void *b) { return memcmp(a, b, 60); }
+static int _memcmp61(const void *a, const void *b) { return memcmp(a, b, 61); }
+static int _memcmp62(const void *a, const void *b) { return memcmp(a, b, 62); }
+static int _memcmp63(const void *a, const void *b) { return memcmp(a, b, 63); }
+static int _memcmp64(const void *a, const void *b) { return memcmp(a, b, 64); }
+static int _memcmp65(const void *a, const void *b) { return memcmp(a, b, 65); }
+static int _memcmp66(const void *a, const void *b) { return memcmp(a, b, 66); }
+static int _memcmp67(const void *a, const void *b) { return memcmp(a, b, 67); }
+static int _memcmp68(const void *a, const void *b) { return memcmp(a, b, 68); }
+static int _memcmp69(const void *a, const void *b) { return memcmp(a, b, 69); }
+static int _memcmp70(const void *a, const void *b) { return memcmp(a, b, 70); }
+static int _memcmp71(const void *a, const void *b) { return memcmp(a, b, 71); }
+static int _memcmp72(const void *a, const void *b) { return memcmp(a, b, 72); }
+static int _memcmp73(const void *a, const void *b) { return memcmp(a, b, 73); }
+static int _memcmp74(const void *a, const void *b) { return memcmp(a, b, 74); }
+static int _memcmp75(const void *a, const void *b) { return memcmp(a, b, 75); }
+static int _memcmp76(const void *a, const void *b) { return memcmp(a, b, 76); }
+static int _memcmp77(const void *a, const void *b) { return memcmp(a, b, 77); }
+static int _memcmp78(const void *a, const void *b) { return memcmp(a, b, 78); }
+static int _memcmp79(const void *a, const void *b) { return memcmp(a, b, 79); }
+static int _memcmp80(const void *a, const void *b) { return memcmp(a, b, 80); }
+static int _memcmp81(const void *a, const void *b) { return memcmp(a, b, 81); }
+static int _memcmp82(const void *a, const void *b) { return memcmp(a, b, 82); }
+static int _memcmp83(const void *a, const void *b) { return memcmp(a, b, 83); }
+static int _memcmp84(const void *a, const void *b) { return memcmp(a, b, 84); }
+static int _memcmp85(const void *a, const void *b) { return memcmp(a, b, 85); }
+static int _memcmp86(const void *a, const void *b) { return memcmp(a, b, 86); }
+static int _memcmp87(const void *a, const void *b) { return memcmp(a, b, 87); }
+static int _memcmp88(const void *a, const void *b) { return memcmp(a, b, 88); }
+static int _memcmp89(const void *a, const void *b) { return memcmp(a, b, 89); }
+static int _memcmp90(const void *a, const void *b) { return memcmp(a, b, 90); }
+static int _memcmp91(const void *a, const void *b) { return memcmp(a, b, 91); }
+static int _memcmp92(const void *a, const void *b) { return memcmp(a, b, 92); }
+static int _memcmp93(const void *a, const void *b) { return memcmp(a, b, 93); }
+static int _memcmp94(const void *a, const void *b) { return memcmp(a, b, 94); }
+static int _memcmp95(const void *a, const void *b) { return memcmp(a, b, 95); }
+static int _memcmp96(const void *a, const void *b) { return memcmp(a, b, 96); }
+static int _memcmp97(const void *a, const void *b) { return memcmp(a, b, 97); }
+static int _memcmp98(const void *a, const void *b) { return memcmp(a, b, 98); }
+static int _memcmp99(const void *a, const void *b) { return memcmp(a, b, 99); }
+static int _memcmp100(const void *a, const void *b) { return memcmp(a, b, 100); }
+static int _memcmp101(const void *a, const void *b) { return memcmp(a, b, 101); }
+static int _memcmp102(const void *a, const void *b) { return memcmp(a, b, 102); }
+static int _memcmp103(const void *a, const void *b) { return memcmp(a, b, 103); }
+static int _memcmp104(const void *a, const void *b) { return memcmp(a, b, 104); }
+static int _memcmp105(const void *a, const void *b) { return memcmp(a, b, 105); }
+static int _memcmp106(const void *a, const void *b) { return memcmp(a, b, 106); }
+static int _memcmp107(const void *a, const void *b) { return memcmp(a, b, 107); }
+static int _memcmp108(const void *a, const void *b) { return memcmp(a, b, 108); }
+static int _memcmp109(const void *a, const void *b) { return memcmp(a, b, 109); }
+static int _memcmp110(const void *a, const void *b) { return memcmp(a, b, 110); }
+static int _memcmp111(const void *a, const void *b) { return memcmp(a, b, 111); }
+static int _memcmp112(const void *a, const void *b) { return memcmp(a, b, 112); }
+static int _memcmp113(const void *a, const void *b) { return memcmp(a, b, 113); }
+static int _memcmp114(const void *a, const void *b) { return memcmp(a, b, 114); }
+static int _memcmp115(const void *a, const void *b) { return memcmp(a, b, 115); }
+static int _memcmp116(const void *a, const void *b) { return memcmp(a, b, 116); }
+static int _memcmp117(const void *a, const void *b) { return memcmp(a, b, 117); }
+static int _memcmp118(const void *a, const void *b) { return memcmp(a, b, 118); }
+static int _memcmp119(const void *a, const void *b) { return memcmp(a, b, 119); }
+static int _memcmp120(const void *a, const void *b) { return memcmp(a, b, 120); }
+static int _memcmp121(const void *a, const void *b) { return memcmp(a, b, 121); }
+static int _memcmp122(const void *a, const void *b) { return memcmp(a, b, 122); }
+static int _memcmp123(const void *a, const void *b) { return memcmp(a, b, 123); }
+static int _memcmp124(const void *a, const void *b) { return memcmp(a, b, 124); }
+static int _memcmp125(const void *a, const void *b) { return memcmp(a, b, 125); }
+static int _memcmp126(const void *a, const void *b) { return memcmp(a, b, 126); }
+static int _memcmp127(const void *a, const void *b) { return memcmp(a, b, 127); }
+static int _memcmp128(const void *a, const void *b) { return memcmp(a, b, 128); }
+static int _memcmp129(const void *a, const void *b) { return memcmp(a, b, 129); }
+static int _memcmp130(const void *a, const void *b) { return memcmp(a, b, 130); }
+static int _memcmp131(const void *a, const void *b) { return memcmp(a, b, 131); }
+static int _memcmp132(const void *a, const void *b) { return memcmp(a, b, 132); }
+static int _memcmp133(const void *a, const void *b) { return memcmp(a, b, 133); }
+static int _memcmp134(const void *a, const void *b) { return memcmp(a, b, 134); }
+static int _memcmp135(const void *a, const void *b) { return memcmp(a, b, 135); }
+static int _memcmp136(const void *a, const void *b) { return memcmp(a, b, 136); }
+static int _memcmp137(const void *a, const void *b) { return memcmp(a, b, 137); }
+static int _memcmp138(const void *a, const void *b) { return memcmp(a, b, 138); }
+static int _memcmp139(const void *a, const void *b) { return memcmp(a, b, 139); }
+static int _memcmp140(const void *a, const void *b) { return memcmp(a, b, 140); }
+static int _memcmp141(const void *a, const void *b) { return memcmp(a, b, 141); }
+static int _memcmp142(const void *a, const void *b) { return memcmp(a, b, 142); }
+static int _memcmp143(const void *a, const void *b) { return memcmp(a, b, 143); }
+static int _memcmp144(const void *a, const void *b) { return memcmp(a, b, 144); }
+static int _memcmp145(const void *a, const void *b) { return memcmp(a, b, 145); }
+static int _memcmp146(const void *a, const void *b) { return memcmp(a, b, 146); }
+static int _memcmp147(const void *a, const void *b) { return memcmp(a, b, 147); }
+static int _memcmp148(const void *a, const void *b) { return memcmp(a, b, 148); }
+static int _memcmp149(const void *a, const void *b) { return memcmp(a, b, 149); }
+static int _memcmp150(const void *a, const void *b) { return memcmp(a, b, 150); }
+static int _memcmp151(const void *a, const void *b) { return memcmp(a, b, 151); }
+static int _memcmp152(const void *a, const void *b) { return memcmp(a, b, 152); }
+static int _memcmp153(const void *a, const void *b) { return memcmp(a, b, 153); }
+static int _memcmp154(const void *a, const void *b) { return memcmp(a, b, 154); }
+static int _memcmp155(const void *a, const void *b) { return memcmp(a, b, 155); }
+static int _memcmp156(const void *a, const void *b) { return memcmp(a, b, 156); }
+static int _memcmp157(const void *a, const void *b) { return memcmp(a, b, 157); }
+static int _memcmp158(const void *a, const void *b) { return memcmp(a, b, 158); }
+static int _memcmp159(const void *a, const void *b) { return memcmp(a, b, 159); }
+static int _memcmp160(const void *a, const void *b) { return memcmp(a, b, 160); }
+static int _memcmp161(const void *a, const void *b) { return memcmp(a, b, 161); }
+static int _memcmp162(const void *a, const void *b) { return memcmp(a, b, 162); }
+static int _memcmp163(const void *a, const void *b) { return memcmp(a, b, 163); }
+static int _memcmp164(const void *a, const void *b) { return memcmp(a, b, 164); }
+static int _memcmp165(const void *a, const void *b) { return memcmp(a, b, 165); }
+static int _memcmp166(const void *a, const void *b) { return memcmp(a, b, 166); }
+static int _memcmp167(const void *a, const void *b) { return memcmp(a, b, 167); }
+static int _memcmp168(const void *a, const void *b) { return memcmp(a, b, 168); }
+static int _memcmp169(const void *a, const void *b) { return memcmp(a, b, 169); }
+static int _memcmp170(const void *a, const void *b) { return memcmp(a, b, 170); }
+static int _memcmp171(const void *a, const void *b) { return memcmp(a, b, 171); }
+static int _memcmp172(const void *a, const void *b) { return memcmp(a, b, 172); }
+static int _memcmp173(const void *a, const void *b) { return memcmp(a, b, 173); }
+static int _memcmp174(const void *a, const void *b) { return memcmp(a, b, 174); }
+static int _memcmp175(const void *a, const void *b) { return memcmp(a, b, 175); }
+static int _memcmp176(const void *a, const void *b) { return memcmp(a, b, 176); }
+static int _memcmp177(const void *a, const void *b) { return memcmp(a, b, 177); }
+static int _memcmp178(const void *a, const void *b) { return memcmp(a, b, 178); }
+static int _memcmp179(const void *a, const void *b) { return memcmp(a, b, 179); }
+static int _memcmp180(const void *a, const void *b) { return memcmp(a, b, 180); }
+static int _memcmp181(const void *a, const void *b) { return memcmp(a, b, 181); }
+static int _memcmp182(const void *a, const void *b) { return memcmp(a, b, 182); }
+static int _memcmp183(const void *a, const void *b) { return memcmp(a, b, 183); }
+static int _memcmp184(const void *a, const void *b) { return memcmp(a, b, 184); }
+static int _memcmp185(const void *a, const void *b) { return memcmp(a, b, 185); }
+static int _memcmp186(const void *a, const void *b) { return memcmp(a, b, 186); }
+static int _memcmp187(const void *a, const void *b) { return memcmp(a, b, 187); }
+static int _memcmp188(const void *a, const void *b) { return memcmp(a, b, 188); }
+static int _memcmp189(const void *a, const void *b) { return memcmp(a, b, 189); }
+static int _memcmp190(const void *a, const void *b) { return memcmp(a, b, 190); }
+static int _memcmp191(const void *a, const void *b) { return memcmp(a, b, 191); }
+static int _memcmp192(const void *a, const void *b) { return memcmp(a, b, 192); }
+static int _memcmp193(const void *a, const void *b) { return memcmp(a, b, 193); }
+static int _memcmp194(const void *a, const void *b) { return memcmp(a, b, 194); }
+static int _memcmp195(const void *a, const void *b) { return memcmp(a, b, 195); }
+static int _memcmp196(const void *a, const void *b) { return memcmp(a, b, 196); }
+static int _memcmp197(const void *a, const void *b) { return memcmp(a, b, 197); }
+static int _memcmp198(const void *a, const void *b) { return memcmp(a, b, 198); }
+static int _memcmp199(const void *a, const void *b) { return memcmp(a, b, 199); }
+static int _memcmp200(const void *a, const void *b) { return memcmp(a, b, 200); }
+static int _memcmp201(const void *a, const void *b) { return memcmp(a, b, 201); }
+static int _memcmp202(const void *a, const void *b) { return memcmp(a, b, 202); }
+static int _memcmp203(const void *a, const void *b) { return memcmp(a, b, 203); }
+static int _memcmp204(const void *a, const void *b) { return memcmp(a, b, 204); }
+static int _memcmp205(const void *a, const void *b) { return memcmp(a, b, 205); }
+static int _memcmp206(const void *a, const void *b) { return memcmp(a, b, 206); }
+static int _memcmp207(const void *a, const void *b) { return memcmp(a, b, 207); }
+static int _memcmp208(const void *a, const void *b) { return memcmp(a, b, 208); }
+static int _memcmp209(const void *a, const void *b) { return memcmp(a, b, 209); }
+static int _memcmp210(const void *a, const void *b) { return memcmp(a, b, 210); }
+static int _memcmp211(const void *a, const void *b) { return memcmp(a, b, 211); }
+static int _memcmp212(const void *a, const void *b) { return memcmp(a, b, 212); }
+static int _memcmp213(const void *a, const void *b) { return memcmp(a, b, 213); }
+static int _memcmp214(const void *a, const void *b) { return memcmp(a, b, 214); }
+static int _memcmp215(const void *a, const void *b) { return memcmp(a, b, 215); }
+static int _memcmp216(const void *a, const void *b) { return memcmp(a, b, 216); }
+static int _memcmp217(const void *a, const void *b) { return memcmp(a, b, 217); }
+static int _memcmp218(const void *a, const void *b) { return memcmp(a, b, 218); }
+static int _memcmp219(const void *a, const void *b) { return memcmp(a, b, 219); }
+static int _memcmp220(const void *a, const void *b) { return memcmp(a, b, 220); }
+static int _memcmp221(const void *a, const void *b) { return memcmp(a, b, 221); }
+static int _memcmp222(const void *a, const void *b) { return memcmp(a, b, 222); }
+static int _memcmp223(const void *a, const void *b) { return memcmp(a, b, 223); }
+static int _memcmp224(const void *a, const void *b) { return memcmp(a, b, 224); }
+static int _memcmp225(const void *a, const void *b) { return memcmp(a, b, 225); }
+static int _memcmp226(const void *a, const void *b) { return memcmp(a, b, 226); }
+static int _memcmp227(const void *a, const void *b) { return memcmp(a, b, 227); }
+static int _memcmp228(const void *a, const void *b) { return memcmp(a, b, 228); }
+static int _memcmp229(const void *a, const void *b) { return memcmp(a, b, 229); }
+static int _memcmp230(const void *a, const void *b) { return memcmp(a, b, 230); }
+static int _memcmp231(const void *a, const void *b) { return memcmp(a, b, 231); }
+static int _memcmp232(const void *a, const void *b) { return memcmp(a, b, 232); }
+static int _memcmp233(const void *a, const void *b) { return memcmp(a, b, 233); }
+static int _memcmp234(const void *a, const void *b) { return memcmp(a, b, 234); }
+static int _memcmp235(const void *a, const void *b) { return memcmp(a, b, 235); }
+static int _memcmp236(const void *a, const void *b) { return memcmp(a, b, 236); }
+static int _memcmp237(const void *a, const void *b) { return memcmp(a, b, 237); }
+static int _memcmp238(const void *a, const void *b) { return memcmp(a, b, 238); }
+static int _memcmp239(const void *a, const void *b) { return memcmp(a, b, 239); }
+static int _memcmp240(const void *a, const void *b) { return memcmp(a, b, 240); }
+static int _memcmp241(const void *a, const void *b) { return memcmp(a, b, 241); }
+static int _memcmp242(const void *a, const void *b) { return memcmp(a, b, 242); }
+static int _memcmp243(const void *a, const void *b) { return memcmp(a, b, 243); }
+static int _memcmp244(const void *a, const void *b) { return memcmp(a, b, 244); }
+static int _memcmp245(const void *a, const void *b) { return memcmp(a, b, 245); }
+static int _memcmp246(const void *a, const void *b) { return memcmp(a, b, 246); }
+static int _memcmp247(const void *a, const void *b) { return memcmp(a, b, 247); }
+static int _memcmp248(const void *a, const void *b) { return memcmp(a, b, 248); }
+static int _memcmp249(const void *a, const void *b) { return memcmp(a, b, 249); }
+static int _memcmp250(const void *a, const void *b) { return memcmp(a, b, 250); }
+static int _memcmp251(const void *a, const void *b) { return memcmp(a, b, 251); }
+static int _memcmp252(const void *a, const void *b) { return memcmp(a, b, 252); }
+static int _memcmp253(const void *a, const void *b) { return memcmp(a, b, 253); }
+static int _memcmp254(const void *a, const void *b) { return memcmp(a, b, 254); }
+static int _memcmp255(const void *a, const void *b) { return memcmp(a, b, 255); }
+static int _memcmp256(const void *a, const void *b) { return memcmp(a, b, 256); }
+static int _memcmp257(const void *a, const void *b) { return memcmp(a, b, 257); }
+static int _memcmp258(const void *a, const void *b) { return memcmp(a, b, 258); }
+static int _memcmp259(const void *a, const void *b) { return memcmp(a, b, 259); }
+static int _memcmp260(const void *a, const void *b) { return memcmp(a, b, 260); }
+static int _memcmp261(const void *a, const void *b) { return memcmp(a, b, 261); }
+static int _memcmp262(const void *a, const void *b) { return memcmp(a, b, 262); }
+static int _memcmp263(const void *a, const void *b) { return memcmp(a, b, 263); }
+static int _memcmp264(const void *a, const void *b) { return memcmp(a, b, 264); }
+static int _memcmp265(const void *a, const void *b) { return memcmp(a, b, 265); }
+static int _memcmp266(const void *a, const void *b) { return memcmp(a, b, 266); }
+static int _memcmp267(const void *a, const void *b) { return memcmp(a, b, 267); }
+static int _memcmp268(const void *a, const void *b) { return memcmp(a, b, 268); }
+static int _memcmp269(const void *a, const void *b) { return memcmp(a, b, 269); }
+static int _memcmp270(const void *a, const void *b) { return memcmp(a, b, 270); }
+static int _memcmp271(const void *a, const void *b) { return memcmp(a, b, 271); }
+static int _memcmp272(const void *a, const void *b) { return memcmp(a, b, 272); }
+static int _memcmp273(const void *a, const void *b) { return memcmp(a, b, 273); }
+static int _memcmp274(const void *a, const void *b) { return memcmp(a, b, 274); }
+static int _memcmp275(const void *a, const void *b) { return memcmp(a, b, 275); }
+static int _memcmp276(const void *a, const void *b) { return memcmp(a, b, 276); }
+static int _memcmp277(const void *a, const void *b) { return memcmp(a, b, 277); }
+static int _memcmp278(const void *a, const void *b) { return memcmp(a, b, 278); }
+static int _memcmp279(const void *a, const void *b) { return memcmp(a, b, 279); }
+static int _memcmp280(const void *a, const void *b) { return memcmp(a, b, 280); }
+static int _memcmp281(const void *a, const void *b) { return memcmp(a, b, 281); }
+static int _memcmp282(const void *a, const void *b) { return memcmp(a, b, 282); }
+static int _memcmp283(const void *a, const void *b) { return memcmp(a, b, 283); }
+static int _memcmp284(const void *a, const void *b) { return memcmp(a, b, 284); }
+static int _memcmp285(const void *a, const void *b) { return memcmp(a, b, 285); }
+static int _memcmp286(const void *a, const void *b) { return memcmp(a, b, 286); }
+static int _memcmp287(const void *a, const void *b) { return memcmp(a, b, 287); }
+static int _memcmp288(const void *a, const void *b) { return memcmp(a, b, 288); }
+static int _memcmp289(const void *a, const void *b) { return memcmp(a, b, 289); }
+static int _memcmp290(const void *a, const void *b) { return memcmp(a, b, 290); }
+static int _memcmp291(const void *a, const void *b) { return memcmp(a, b, 291); }
+static int _memcmp292(const void *a, const void *b) { return memcmp(a, b, 292); }
+static int _memcmp293(const void *a, const void *b) { return memcmp(a, b, 293); }
+static int _memcmp294(const void *a, const void *b) { return memcmp(a, b, 294); }
+static int _memcmp295(const void *a, const void *b) { return memcmp(a, b, 295); }
+static int _memcmp296(const void *a, const void *b) { return memcmp(a, b, 296); }
+static int _memcmp297(const void *a, const void *b) { return memcmp(a, b, 297); }
+static int _memcmp298(const void *a, const void *b) { return memcmp(a, b, 298); }
+static int _memcmp299(const void *a, const void *b) { return memcmp(a, b, 299); }
+static int _memcmp300(const void *a, const void *b) { return memcmp(a, b, 300); }
+static int _memcmp301(const void *a, const void *b) { return memcmp(a, b, 301); }
+static int _memcmp302(const void *a, const void *b) { return memcmp(a, b, 302); }
+static int _memcmp303(const void *a, const void *b) { return memcmp(a, b, 303); }
+static int _memcmp304(const void *a, const void *b) { return memcmp(a, b, 304); }
+static int _memcmp305(const void *a, const void *b) { return memcmp(a, b, 305); }
+static int _memcmp306(const void *a, const void *b) { return memcmp(a, b, 306); }
+static int _memcmp307(const void *a, const void *b) { return memcmp(a, b, 307); }
+static int _memcmp308(const void *a, const void *b) { return memcmp(a, b, 308); }
+static int _memcmp309(const void *a, const void *b) { return memcmp(a, b, 309); }
+static int _memcmp310(const void *a, const void *b) { return memcmp(a, b, 310); }
+static int _memcmp311(const void *a, const void *b) { return memcmp(a, b, 311); }
+static int _memcmp312(const void *a, const void *b) { return memcmp(a, b, 312); }
+static int _memcmp313(const void *a, const void *b) { return memcmp(a, b, 313); }
+static int _memcmp314(const void *a, const void *b) { return memcmp(a, b, 314); }
+static int _memcmp315(const void *a, const void *b) { return memcmp(a, b, 315); }
+static int _memcmp316(const void *a, const void *b) { return memcmp(a, b, 316); }
+static int _memcmp317(const void *a, const void *b) { return memcmp(a, b, 317); }
+static int _memcmp318(const void *a, const void *b) { return memcmp(a, b, 318); }
+static int _memcmp319(const void *a, const void *b) { return memcmp(a, b, 319); }
+static int _memcmp320(const void *a, const void *b) { return memcmp(a, b, 320); }
+static int _memcmp321(const void *a, const void *b) { return memcmp(a, b, 321); }
+static int _memcmp322(const void *a, const void *b) { return memcmp(a, b, 322); }
+static int _memcmp323(const void *a, const void *b) { return memcmp(a, b, 323); }
+static int _memcmp324(const void *a, const void *b) { return memcmp(a, b, 324); }
+static int _memcmp325(const void *a, const void *b) { return memcmp(a, b, 325); }
+static int _memcmp326(const void *a, const void *b) { return memcmp(a, b, 326); }
+static int _memcmp327(const void *a, const void *b) { return memcmp(a, b, 327); }
+static int _memcmp328(const void *a, const void *b) { return memcmp(a, b, 328); }
+static int _memcmp329(const void *a, const void *b) { return memcmp(a, b, 329); }
+static int _memcmp330(const void *a, const void *b) { return memcmp(a, b, 330); }
+static int _memcmp331(const void *a, const void *b) { return memcmp(a, b, 331); }
+static int _memcmp332(const void *a, const void *b) { return memcmp(a, b, 332); }
+static int _memcmp333(const void *a, const void *b) { return memcmp(a, b, 333); }
+static int _memcmp334(const void *a, const void *b) { return memcmp(a, b, 334); }
+static int _memcmp335(const void *a, const void *b) { return memcmp(a, b, 335); }
+static int _memcmp336(const void *a, const void *b) { return memcmp(a, b, 336); }
+static int _memcmp337(const void *a, const void *b) { return memcmp(a, b, 337); }
+static int _memcmp338(const void *a, const void *b) { return memcmp(a, b, 338); }
+static int _memcmp339(const void *a, const void *b) { return memcmp(a, b, 339); }
+static int _memcmp340(const void *a, const void *b) { return memcmp(a, b, 340); }
+static int _memcmp341(const void *a, const void *b) { return memcmp(a, b, 341); }
+static int _memcmp342(const void *a, const void *b) { return memcmp(a, b, 342); }
+static int _memcmp343(const void *a, const void *b) { return memcmp(a, b, 343); }
+static int _memcmp344(const void *a, const void *b) { return memcmp(a, b, 344); }
+static int _memcmp345(const void *a, const void *b) { return memcmp(a, b, 345); }
+static int _memcmp346(const void *a, const void *b) { return memcmp(a, b, 346); }
+static int _memcmp347(const void *a, const void *b) { return memcmp(a, b, 347); }
+static int _memcmp348(const void *a, const void *b) { return memcmp(a, b, 348); }
+static int _memcmp349(const void *a, const void *b) { return memcmp(a, b, 349); }
+static int _memcmp350(const void *a, const void *b) { return memcmp(a, b, 350); }
+static int _memcmp351(const void *a, const void *b) { return memcmp(a, b, 351); }
+static int _memcmp352(const void *a, const void *b) { return memcmp(a, b, 352); }
+static int _memcmp353(const void *a, const void *b) { return memcmp(a, b, 353); }
+static int _memcmp354(const void *a, const void *b) { return memcmp(a, b, 354); }
+static int _memcmp355(const void *a, const void *b) { return memcmp(a, b, 355); }
+static int _memcmp356(const void *a, const void *b) { return memcmp(a, b, 356); }
+static int _memcmp357(const void *a, const void *b) { return memcmp(a, b, 357); }
+static int _memcmp358(const void *a, const void *b) { return memcmp(a, b, 358); }
+static int _memcmp359(const void *a, const void *b) { return memcmp(a, b, 359); }
+static int _memcmp360(const void *a, const void *b) { return memcmp(a, b, 360); }
+static int _memcmp361(const void *a, const void *b) { return memcmp(a, b, 361); }
+static int _memcmp362(const void *a, const void *b) { return memcmp(a, b, 362); }
+static int _memcmp363(const void *a, const void *b) { return memcmp(a, b, 363); }
+static int _memcmp364(const void *a, const void *b) { return memcmp(a, b, 364); }
+static int _memcmp365(const void *a, const void *b) { return memcmp(a, b, 365); }
+static int _memcmp366(const void *a, const void *b) { return memcmp(a, b, 366); }
+static int _memcmp367(const void *a, const void *b) { return memcmp(a, b, 367); }
+static int _memcmp368(const void *a, const void *b) { return memcmp(a, b, 368); }
+static int _memcmp369(const void *a, const void *b) { return memcmp(a, b, 369); }
+static int _memcmp370(const void *a, const void *b) { return memcmp(a, b, 370); }
+static int _memcmp371(const void *a, const void *b) { return memcmp(a, b, 371); }
+static int _memcmp372(const void *a, const void *b) { return memcmp(a, b, 372); }
+static int _memcmp373(const void *a, const void *b) { return memcmp(a, b, 373); }
+static int _memcmp374(const void *a, const void *b) { return memcmp(a, b, 374); }
+static int _memcmp375(const void *a, const void *b) { return memcmp(a, b, 375); }
+static int _memcmp376(const void *a, const void *b) { return memcmp(a, b, 376); }
+static int _memcmp377(const void *a, const void *b) { return memcmp(a, b, 377); }
+static int _memcmp378(const void *a, const void *b) { return memcmp(a, b, 378); }
+static int _memcmp379(const void *a, const void *b) { return memcmp(a, b, 379); }
+static int _memcmp380(const void *a, const void *b) { return memcmp(a, b, 380); }
+static int _memcmp381(const void *a, const void *b) { return memcmp(a, b, 381); }
+static int _memcmp382(const void *a, const void *b) { return memcmp(a, b, 382); }
+static int _memcmp383(const void *a, const void *b) { return memcmp(a, b, 383); }
+static int _memcmp384(const void *a, const void *b) { return memcmp(a, b, 384); }
+static int _memcmp385(const void *a, const void *b) { return memcmp(a, b, 385); }
+static int _memcmp386(const void *a, const void *b) { return memcmp(a, b, 386); }
+static int _memcmp387(const void *a, const void *b) { return memcmp(a, b, 387); }
+static int _memcmp388(const void *a, const void *b) { return memcmp(a, b, 388); }
+static int _memcmp389(const void *a, const void *b) { return memcmp(a, b, 389); }
+static int _memcmp390(const void *a, const void *b) { return memcmp(a, b, 390); }
+static int _memcmp391(const void *a, const void *b) { return memcmp(a, b, 391); }
+static int _memcmp392(const void *a, const void *b) { return memcmp(a, b, 392); }
+static int _memcmp393(const void *a, const void *b) { return memcmp(a, b, 393); }
+static int _memcmp394(const void *a, const void *b) { return memcmp(a, b, 394); }
+static int _memcmp395(const void *a, const void *b) { return memcmp(a, b, 395); }
+static int _memcmp396(const void *a, const void *b) { return memcmp(a, b, 396); }
+static int _memcmp397(const void *a, const void *b) { return memcmp(a, b, 397); }
+static int _memcmp398(const void *a, const void *b) { return memcmp(a, b, 398); }
+static int _memcmp399(const void *a, const void *b) { return memcmp(a, b, 399); }
+static int _memcmp400(const void *a, const void *b) { return memcmp(a, b, 400); }
+static int _memcmp401(const void *a, const void *b) { return memcmp(a, b, 401); }
+static int _memcmp402(const void *a, const void *b) { return memcmp(a, b, 402); }
+static int _memcmp403(const void *a, const void *b) { return memcmp(a, b, 403); }
+static int _memcmp404(const void *a, const void *b) { return memcmp(a, b, 404); }
+static int _memcmp405(const void *a, const void *b) { return memcmp(a, b, 405); }
+static int _memcmp406(const void *a, const void *b) { return memcmp(a, b, 406); }
+static int _memcmp407(const void *a, const void *b) { return memcmp(a, b, 407); }
+static int _memcmp408(const void *a, const void *b) { return memcmp(a, b, 408); }
+static int _memcmp409(const void *a, const void *b) { return memcmp(a, b, 409); }
+static int _memcmp410(const void *a, const void *b) { return memcmp(a, b, 410); }
+static int _memcmp411(const void *a, const void *b) { return memcmp(a, b, 411); }
+static int _memcmp412(const void *a, const void *b) { return memcmp(a, b, 412); }
+static int _memcmp413(const void *a, const void *b) { return memcmp(a, b, 413); }
+static int _memcmp414(const void *a, const void *b) { return memcmp(a, b, 414); }
+static int _memcmp415(const void *a, const void *b) { return memcmp(a, b, 415); }
+static int _memcmp416(const void *a, const void *b) { return memcmp(a, b, 416); }
+static int _memcmp417(const void *a, const void *b) { return memcmp(a, b, 417); }
+static int _memcmp418(const void *a, const void *b) { return memcmp(a, b, 418); }
+static int _memcmp419(const void *a, const void *b) { return memcmp(a, b, 419); }
+static int _memcmp420(const void *a, const void *b) { return memcmp(a, b, 420); }
+static int _memcmp421(const void *a, const void *b) { return memcmp(a, b, 421); }
+static int _memcmp422(const void *a, const void *b) { return memcmp(a, b, 422); }
+static int _memcmp423(const void *a, const void *b) { return memcmp(a, b, 423); }
+static int _memcmp424(const void *a, const void *b) { return memcmp(a, b, 424); }
+static int _memcmp425(const void *a, const void *b) { return memcmp(a, b, 425); }
+static int _memcmp426(const void *a, const void *b) { return memcmp(a, b, 426); }
+static int _memcmp427(const void *a, const void *b) { return memcmp(a, b, 427); }
+static int _memcmp428(const void *a, const void *b) { return memcmp(a, b, 428); }
+static int _memcmp429(const void *a, const void *b) { return memcmp(a, b, 429); }
+static int _memcmp430(const void *a, const void *b) { return memcmp(a, b, 430); }
+static int _memcmp431(const void *a, const void *b) { return memcmp(a, b, 431); }
+static int _memcmp432(const void *a, const void *b) { return memcmp(a, b, 432); }
+static int _memcmp433(const void *a, const void *b) { return memcmp(a, b, 433); }
+static int _memcmp434(const void *a, const void *b) { return memcmp(a, b, 434); }
+static int _memcmp435(const void *a, const void *b) { return memcmp(a, b, 435); }
+static int _memcmp436(const void *a, const void *b) { return memcmp(a, b, 436); }
+static int _memcmp437(const void *a, const void *b) { return memcmp(a, b, 437); }
+static int _memcmp438(const void *a, const void *b) { return memcmp(a, b, 438); }
+static int _memcmp439(const void *a, const void *b) { return memcmp(a, b, 439); }
+static int _memcmp440(const void *a, const void *b) { return memcmp(a, b, 440); }
+static int _memcmp441(const void *a, const void *b) { return memcmp(a, b, 441); }
+static int _memcmp442(const void *a, const void *b) { return memcmp(a, b, 442); }
+static int _memcmp443(const void *a, const void *b) { return memcmp(a, b, 443); }
+static int _memcmp444(const void *a, const void *b) { return memcmp(a, b, 444); }
+static int _memcmp445(const void *a, const void *b) { return memcmp(a, b, 445); }
+static int _memcmp446(const void *a, const void *b) { return memcmp(a, b, 446); }
+static int _memcmp447(const void *a, const void *b) { return memcmp(a, b, 447); }
+static int _memcmp448(const void *a, const void *b) { return memcmp(a, b, 448); }
+static int _memcmp449(const void *a, const void *b) { return memcmp(a, b, 449); }
+static int _memcmp450(const void *a, const void *b) { return memcmp(a, b, 450); }
+static int _memcmp451(const void *a, const void *b) { return memcmp(a, b, 451); }
+static int _memcmp452(const void *a, const void *b) { return memcmp(a, b, 452); }
+static int _memcmp453(const void *a, const void *b) { return memcmp(a, b, 453); }
+static int _memcmp454(const void *a, const void *b) { return memcmp(a, b, 454); }
+static int _memcmp455(const void *a, const void *b) { return memcmp(a, b, 455); }
+static int _memcmp456(const void *a, const void *b) { return memcmp(a, b, 456); }
+static int _memcmp457(const void *a, const void *b) { return memcmp(a, b, 457); }
+static int _memcmp458(const void *a, const void *b) { return memcmp(a, b, 458); }
+static int _memcmp459(const void *a, const void *b) { return memcmp(a, b, 459); }
+static int _memcmp460(const void *a, const void *b) { return memcmp(a, b, 460); }
+static int _memcmp461(const void *a, const void *b) { return memcmp(a, b, 461); }
+static int _memcmp462(const void *a, const void *b) { return memcmp(a, b, 462); }
+static int _memcmp463(const void *a, const void *b) { return memcmp(a, b, 463); }
+static int _memcmp464(const void *a, const void *b) { return memcmp(a, b, 464); }
+static int _memcmp465(const void *a, const void *b) { return memcmp(a, b, 465); }
+static int _memcmp466(const void *a, const void *b) { return memcmp(a, b, 466); }
+static int _memcmp467(const void *a, const void *b) { return memcmp(a, b, 467); }
+static int _memcmp468(const void *a, const void *b) { return memcmp(a, b, 468); }
+static int _memcmp469(const void *a, const void *b) { return memcmp(a, b, 469); }
+static int _memcmp470(const void *a, const void *b) { return memcmp(a, b, 470); }
+static int _memcmp471(const void *a, const void *b) { return memcmp(a, b, 471); }
+static int _memcmp472(const void *a, const void *b) { return memcmp(a, b, 472); }
+static int _memcmp473(const void *a, const void *b) { return memcmp(a, b, 473); }
+static int _memcmp474(const void *a, const void *b) { return memcmp(a, b, 474); }
+static int _memcmp475(const void *a, const void *b) { return memcmp(a, b, 475); }
+static int _memcmp476(const void *a, const void *b) { return memcmp(a, b, 476); }
+static int _memcmp477(const void *a, const void *b) { return memcmp(a, b, 477); }
+static int _memcmp478(const void *a, const void *b) { return memcmp(a, b, 478); }
+static int _memcmp479(const void *a, const void *b) { return memcmp(a, b, 479); }
+static int _memcmp480(const void *a, const void *b) { return memcmp(a, b, 480); }
+static int _memcmp481(const void *a, const void *b) { return memcmp(a, b, 481); }
+static int _memcmp482(const void *a, const void *b) { return memcmp(a, b, 482); }
+static int _memcmp483(const void *a, const void *b) { return memcmp(a, b, 483); }
+static int _memcmp484(const void *a, const void *b) { return memcmp(a, b, 484); }
+static int _memcmp485(const void *a, const void *b) { return memcmp(a, b, 485); }
+static int _memcmp486(const void *a, const void *b) { return memcmp(a, b, 486); }
+static int _memcmp487(const void *a, const void *b) { return memcmp(a, b, 487); }
+static int _memcmp488(const void *a, const void *b) { return memcmp(a, b, 488); }
+static int _memcmp489(const void *a, const void *b) { return memcmp(a, b, 489); }
+static int _memcmp490(const void *a, const void *b) { return memcmp(a, b, 490); }
+static int _memcmp491(const void *a, const void *b) { return memcmp(a, b, 491); }
+static int _memcmp492(const void *a, const void *b) { return memcmp(a, b, 492); }
+static int _memcmp493(const void *a, const void *b) { return memcmp(a, b, 493); }
+static int _memcmp494(const void *a, const void *b) { return memcmp(a, b, 494); }
+static int _memcmp495(const void *a, const void *b) { return memcmp(a, b, 495); }
+static int _memcmp496(const void *a, const void *b) { return memcmp(a, b, 496); }
+static int _memcmp497(const void *a, const void *b) { return memcmp(a, b, 497); }
+static int _memcmp498(const void *a, const void *b) { return memcmp(a, b, 498); }
+static int _memcmp499(const void *a, const void *b) { return memcmp(a, b, 499); }
+static int _memcmp500(const void *a, const void *b) { return memcmp(a, b, 500); }
+static int _memcmp501(const void *a, const void *b) { return memcmp(a, b, 501); }
+static int _memcmp502(const void *a, const void *b) { return memcmp(a, b, 502); }
+static int _memcmp503(const void *a, const void *b) { return memcmp(a, b, 503); }
+static int _memcmp504(const void *a, const void *b) { return memcmp(a, b, 504); }
+static int _memcmp505(const void *a, const void *b) { return memcmp(a, b, 505); }
+static int _memcmp506(const void *a, const void *b) { return memcmp(a, b, 506); }
+static int _memcmp507(const void *a, const void *b) { return memcmp(a, b, 507); }
+static int _memcmp508(const void *a, const void *b) { return memcmp(a, b, 508); }
+static int _memcmp509(const void *a, const void *b) { return memcmp(a, b, 509); }
+static int _memcmp510(const void *a, const void *b) { return memcmp(a, b, 510); }
+static int _memcmp511(const void *a, const void *b) { return memcmp(a, b, 511); }
+static int _memcmp512(const void *a, const void *b) { return memcmp(a, b, 512); }
+static CSTL_COMPARE _memcmp_funcs[513] = {
     NULL,
     _memcmp1,
     _memcmp2,
@@ -3211,7 +3607,512 @@ _OpenCSTLCompareFunc _memcmp_funcs[128 + 1] = {
     _memcmp126,
     _memcmp127,
     _memcmp128,
+    _memcmp129,
+    _memcmp130,
+    _memcmp131,
+    _memcmp132,
+    _memcmp133,
+    _memcmp134,
+    _memcmp135,
+    _memcmp136,
+    _memcmp137,
+    _memcmp138,
+    _memcmp139,
+    _memcmp140,
+    _memcmp141,
+    _memcmp142,
+    _memcmp143,
+    _memcmp144,
+    _memcmp145,
+    _memcmp146,
+    _memcmp147,
+    _memcmp148,
+    _memcmp149,
+    _memcmp150,
+    _memcmp151,
+    _memcmp152,
+    _memcmp153,
+    _memcmp154,
+    _memcmp155,
+    _memcmp156,
+    _memcmp157,
+    _memcmp158,
+    _memcmp159,
+    _memcmp160,
+    _memcmp161,
+    _memcmp162,
+    _memcmp163,
+    _memcmp164,
+    _memcmp165,
+    _memcmp166,
+    _memcmp167,
+    _memcmp168,
+    _memcmp169,
+    _memcmp170,
+    _memcmp171,
+    _memcmp172,
+    _memcmp173,
+    _memcmp174,
+    _memcmp175,
+    _memcmp176,
+    _memcmp177,
+    _memcmp178,
+    _memcmp179,
+    _memcmp180,
+    _memcmp181,
+    _memcmp182,
+    _memcmp183,
+    _memcmp184,
+    _memcmp185,
+    _memcmp186,
+    _memcmp187,
+    _memcmp188,
+    _memcmp189,
+    _memcmp190,
+    _memcmp191,
+    _memcmp192,
+    _memcmp193,
+    _memcmp194,
+    _memcmp195,
+    _memcmp196,
+    _memcmp197,
+    _memcmp198,
+    _memcmp199,
+    _memcmp200,
+    _memcmp201,
+    _memcmp202,
+    _memcmp203,
+    _memcmp204,
+    _memcmp205,
+    _memcmp206,
+    _memcmp207,
+    _memcmp208,
+    _memcmp209,
+    _memcmp210,
+    _memcmp211,
+    _memcmp212,
+    _memcmp213,
+    _memcmp214,
+    _memcmp215,
+    _memcmp216,
+    _memcmp217,
+    _memcmp218,
+    _memcmp219,
+    _memcmp220,
+    _memcmp221,
+    _memcmp222,
+    _memcmp223,
+    _memcmp224,
+    _memcmp225,
+    _memcmp226,
+    _memcmp227,
+    _memcmp228,
+    _memcmp229,
+    _memcmp230,
+    _memcmp231,
+    _memcmp232,
+    _memcmp233,
+    _memcmp234,
+    _memcmp235,
+    _memcmp236,
+    _memcmp237,
+    _memcmp238,
+    _memcmp239,
+    _memcmp240,
+    _memcmp241,
+    _memcmp242,
+    _memcmp243,
+    _memcmp244,
+    _memcmp245,
+    _memcmp246,
+    _memcmp247,
+    _memcmp248,
+    _memcmp249,
+    _memcmp250,
+    _memcmp251,
+    _memcmp252,
+    _memcmp253,
+    _memcmp254,
+    _memcmp255,
+    _memcmp256,
+    _memcmp257,
+    _memcmp258,
+    _memcmp259,
+    _memcmp260,
+    _memcmp261,
+    _memcmp262,
+    _memcmp263,
+    _memcmp264,
+    _memcmp265,
+    _memcmp266,
+    _memcmp267,
+    _memcmp268,
+    _memcmp269,
+    _memcmp270,
+    _memcmp271,
+    _memcmp272,
+    _memcmp273,
+    _memcmp274,
+    _memcmp275,
+    _memcmp276,
+    _memcmp277,
+    _memcmp278,
+    _memcmp279,
+    _memcmp280,
+    _memcmp281,
+    _memcmp282,
+    _memcmp283,
+    _memcmp284,
+    _memcmp285,
+    _memcmp286,
+    _memcmp287,
+    _memcmp288,
+    _memcmp289,
+    _memcmp290,
+    _memcmp291,
+    _memcmp292,
+    _memcmp293,
+    _memcmp294,
+    _memcmp295,
+    _memcmp296,
+    _memcmp297,
+    _memcmp298,
+    _memcmp299,
+    _memcmp300,
+    _memcmp301,
+    _memcmp302,
+    _memcmp303,
+    _memcmp304,
+    _memcmp305,
+    _memcmp306,
+    _memcmp307,
+    _memcmp308,
+    _memcmp309,
+    _memcmp310,
+    _memcmp311,
+    _memcmp312,
+    _memcmp313,
+    _memcmp314,
+    _memcmp315,
+    _memcmp316,
+    _memcmp317,
+    _memcmp318,
+    _memcmp319,
+    _memcmp320,
+    _memcmp321,
+    _memcmp322,
+    _memcmp323,
+    _memcmp324,
+    _memcmp325,
+    _memcmp326,
+    _memcmp327,
+    _memcmp328,
+    _memcmp329,
+    _memcmp330,
+    _memcmp331,
+    _memcmp332,
+    _memcmp333,
+    _memcmp334,
+    _memcmp335,
+    _memcmp336,
+    _memcmp337,
+    _memcmp338,
+    _memcmp339,
+    _memcmp340,
+    _memcmp341,
+    _memcmp342,
+    _memcmp343,
+    _memcmp344,
+    _memcmp345,
+    _memcmp346,
+    _memcmp347,
+    _memcmp348,
+    _memcmp349,
+    _memcmp350,
+    _memcmp351,
+    _memcmp352,
+    _memcmp353,
+    _memcmp354,
+    _memcmp355,
+    _memcmp356,
+    _memcmp357,
+    _memcmp358,
+    _memcmp359,
+    _memcmp360,
+    _memcmp361,
+    _memcmp362,
+    _memcmp363,
+    _memcmp364,
+    _memcmp365,
+    _memcmp366,
+    _memcmp367,
+    _memcmp368,
+    _memcmp369,
+    _memcmp370,
+    _memcmp371,
+    _memcmp372,
+    _memcmp373,
+    _memcmp374,
+    _memcmp375,
+    _memcmp376,
+    _memcmp377,
+    _memcmp378,
+    _memcmp379,
+    _memcmp380,
+    _memcmp381,
+    _memcmp382,
+    _memcmp383,
+    _memcmp384,
+    _memcmp385,
+    _memcmp386,
+    _memcmp387,
+    _memcmp388,
+    _memcmp389,
+    _memcmp390,
+    _memcmp391,
+    _memcmp392,
+    _memcmp393,
+    _memcmp394,
+    _memcmp395,
+    _memcmp396,
+    _memcmp397,
+    _memcmp398,
+    _memcmp399,
+    _memcmp400,
+    _memcmp401,
+    _memcmp402,
+    _memcmp403,
+    _memcmp404,
+    _memcmp405,
+    _memcmp406,
+    _memcmp407,
+    _memcmp408,
+    _memcmp409,
+    _memcmp410,
+    _memcmp411,
+    _memcmp412,
+    _memcmp413,
+    _memcmp414,
+    _memcmp415,
+    _memcmp416,
+    _memcmp417,
+    _memcmp418,
+    _memcmp419,
+    _memcmp420,
+    _memcmp421,
+    _memcmp422,
+    _memcmp423,
+    _memcmp424,
+    _memcmp425,
+    _memcmp426,
+    _memcmp427,
+    _memcmp428,
+    _memcmp429,
+    _memcmp430,
+    _memcmp431,
+    _memcmp432,
+    _memcmp433,
+    _memcmp434,
+    _memcmp435,
+    _memcmp436,
+    _memcmp437,
+    _memcmp438,
+    _memcmp439,
+    _memcmp440,
+    _memcmp441,
+    _memcmp442,
+    _memcmp443,
+    _memcmp444,
+    _memcmp445,
+    _memcmp446,
+    _memcmp447,
+    _memcmp448,
+    _memcmp449,
+    _memcmp450,
+    _memcmp451,
+    _memcmp452,
+    _memcmp453,
+    _memcmp454,
+    _memcmp455,
+    _memcmp456,
+    _memcmp457,
+    _memcmp458,
+    _memcmp459,
+    _memcmp460,
+    _memcmp461,
+    _memcmp462,
+    _memcmp463,
+    _memcmp464,
+    _memcmp465,
+    _memcmp466,
+    _memcmp467,
+    _memcmp468,
+    _memcmp469,
+    _memcmp470,
+    _memcmp471,
+    _memcmp472,
+    _memcmp473,
+    _memcmp474,
+    _memcmp475,
+    _memcmp476,
+    _memcmp477,
+    _memcmp478,
+    _memcmp479,
+    _memcmp480,
+    _memcmp481,
+    _memcmp482,
+    _memcmp483,
+    _memcmp484,
+    _memcmp485,
+    _memcmp486,
+    _memcmp487,
+    _memcmp488,
+    _memcmp489,
+    _memcmp490,
+    _memcmp491,
+    _memcmp492,
+    _memcmp493,
+    _memcmp494,
+    _memcmp495,
+    _memcmp496,
+    _memcmp497,
+    _memcmp498,
+    _memcmp499,
+    _memcmp500,
+    _memcmp501,
+    _memcmp502,
+    _memcmp503,
+    _memcmp504,
+    _memcmp505,
+    _memcmp506,
+    _memcmp507,
+    _memcmp508,
+    _memcmp509,
+    _memcmp510,
+    _memcmp511,
+    _memcmp512,
 };
+#endif //OPENCSTL_MEMCMPS_H
+
+// ==============================================================================
+// END    memcmps.h
+// ==============================================================================
+typedef const void *CVP;
+
+
+#define _SAFE_COMPARE(TYPE,X,Y)  (*(TYPE *) (X) > *(TYPE *) (Y)) - (*(TYPE *) (X) < *(TYPE *) (Y))
+
+static int less_int32(CVP a, CVP b) {
+    return _SAFE_COMPARE(int, a, b);
+}
+
+static int less_uint32(CVP a, CVP b) {
+    return _SAFE_COMPARE(unsigned int, a, b);
+}
+
+static int less_int64(CVP a, CVP b) {
+    return _SAFE_COMPARE(long long, a, b);
+}
+
+static int less_uint64(CVP a, CVP b) {
+    return _SAFE_COMPARE(unsigned long long, a, b);
+}
+
+static int less_float(CVP a, CVP b) {
+    return (*(float *) a > *(float *) b) - (*(float *) a < *(float *) b);
+}
+
+static int less_double(CVP a, CVP b) {
+    return (*(double *) a > *(double *) b) - (*(double *) a < *(double *) b);
+}
+
+static int less_string(CVP a, CVP b) {
+    return strcmp(*(char **) a, *(char **) b);
+}
+
+static int greater_int32(CVP a, CVP b) {
+    return less_int32(b, a);
+}
+
+static int greater_uint32(CVP a, CVP b) {
+    return less_uint32(b, a);
+}
+
+static int greater_int64(CVP a, CVP b) {
+    return less_int64(b, a);
+}
+
+static int greater_uint64(CVP a, CVP b) {
+    return less_uint64(b, a);
+}
+
+static int greater_float(CVP a, CVP b) {
+    return less_float(b, a);
+}
+
+static int greater_double(CVP a, CVP b) {
+    return less_double(b, a);
+}
+
+static int greater_string(CVP a, CVP b) {
+    return less_string(b, a);
+}
+
+static CSTL_COMPARE CSTL_LESS(const char *type_str) {
+    while (*type_str == ' ') type_str++;
+
+    const char *end = type_str + strlen(type_str);
+    while (end > type_str && *(end - 1) == ' ') end--;
+
+    char buf[256];
+    size_type64 len = end - type_str;
+    if (len >= sizeof(buf)) return NULL;
+
+    memcpy(buf, type_str, len);
+    buf[len] = '\0';
+
+    if (strcmp(buf, "float") == 0) return less_float;
+    if (strcmp(buf, "double") == 0) return less_double;
+    if (strcmp(buf, "int") == 0) return less_int32;
+    if (strcmp(buf, "long long") == 0) return less_int64;
+    if (strcmp(buf, "unsigned long long") == 0) return less_uint64;
+    if (strcmp(buf, "unsigned int") == 0) return less_uint32;
+    if (strcmp(buf, "char*") == 0) return less_string;
+    if (strcmp(buf, "char *") == 0) return less_string;
+
+
+    return NULL;
+}
+
+static CSTL_COMPARE CSTL_GREATER(const char *type_str) {
+    while (*type_str == ' ') type_str++;
+
+    const char *end = type_str + strlen(type_str);
+    while (end > type_str && *(end - 1) == ' ') end--;
+
+    char buf[256];
+    size_type64 len = end - type_str;
+    if (len >= sizeof(buf)) return NULL;
+
+    memcpy(buf, type_str, len);
+    buf[len] = '\0';
+
+    if (strcmp(buf, "float") == 0) return greater_float;
+    if (strcmp(buf, "double") == 0) return greater_double;
+    if (strcmp(buf, "int") == 0) return greater_int32;
+    if (strcmp(buf, "long long") == 0) return greater_int64;
+    if (strcmp(buf, "unsigned long long") == 0) return greater_uint64;
+    if (strcmp(buf, "unsigned int") == 0) return greater_uint32;
+    if (strcmp(buf, "char*") == 0) return greater_string;
+    if (strcmp(buf, "char *") == 0) return greater_string;
+
+    return NULL;
+}
+
+#define LESS(TYPE)    CSTL_LESS(#TYPE)
+#define GREATER(TYPE) CSTL_GREATER(#TYPE)
+
+
 // ███████╗░██████╗░██╗░░░██╗░█████╗░██╗░░░░░░██████╗
 // ██╔════╝██╔═══██╗██║░░░██║██╔══██╗██║░░░░░██╔════╝
 // █████╗░░██║██╗██║██║░░░██║███████║██║░░░░░╚█████╗░
@@ -3221,7 +4122,7 @@ _OpenCSTLCompareFunc _memcmp_funcs[128 + 1] = {
 #define CSTL_FLOAT_EPS   1e-6f
 #define CSTL_DOUBLE_EPS  1e-9
 
-int _cstl_equals_float(CVP a, CVP b, size_t dummy) {
+static int _cstl_equals_float(CVP a, CVP b, size_t dummy) {
     float a1 = *(float *) a;
     float b1 = *(float *) b;
 
@@ -3230,7 +4131,7 @@ int _cstl_equals_float(CVP a, CVP b, size_t dummy) {
     return diff < CSTL_FLOAT_EPS;
 }
 
-int _cstl_equals_double(CVP a, CVP b, size_t dummy) {
+static int _cstl_equals_double(CVP a, CVP b, size_t dummy) {
     double a1 = *(double *) a;
     double b1 = *(double *) b;
     double diff = a1 - b1;
@@ -3238,11 +4139,11 @@ int _cstl_equals_double(CVP a, CVP b, size_t dummy) {
     return diff < CSTL_DOUBLE_EPS;
 }
 
-int _cstl_equals_str(CVP a, CVP b, size_t dummy) {
+static int _cstl_equals_str(CVP a, CVP b, size_t dummy) {
     return strcmp(*(char **) a, *(char **) b) == 0;
 }
 
-_OpenCSTLEqualsFunc CSTL_EQUALS(const char *type_str) {
+static CSTL_COMPARE_BYTES CSTL_EQUALS(const char *type_str) {
     while (*type_str == ' ') type_str++;
 
     const char *end = type_str + strlen(type_str);
@@ -3700,7 +4601,7 @@ OPENCSTL_FUNC size_type64 __cstl_deque_count(void **container, void *value) {
         value = &valuef;
     }
 #endif
-    _OpenCSTLEqualsFunc is_equal = CSTL_EQUALS(type);
+    CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
     size_type64 cnt = 0;
     for (size_type64 i = 0; i < length; i++) {
         void *ptr = (char *) *container + (type_size * i);
@@ -3998,7 +4899,7 @@ OPENCSTL_FUNC void *__cstl_vector(size_type64 type_size, char *type) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *block = calloc(header_sz + type_size, 1);
     if (block == NULL) {
-        yikes("Failed to allocate memory for vector");
+        fault("Failed to allocate memory for vector");
     }
     void *ptr = ((char *) block) + header_sz;
     void **container = &ptr;
@@ -4044,7 +4945,7 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_type64 n, void *v
         iveb_erase(iveb, *container);
         void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
-            yikes("Reallocation failed at vector assign");
+            fault("Reallocation failed at vector assign");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
@@ -4080,7 +4981,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
         size_type64 new_capaciy = get_new_capacity(capacity);
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
-            yikes("Reallocation failed at vector push_back");
+            fault("Reallocation failed at vector push_back");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = new_capaciy;
@@ -4092,7 +4993,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
 
 OPENCSTL_FUNC void __cstl_vector_pop_back(void **container) {
     if (OPENCSTL_NIDX(container, -1) <= 0) {
-        yikes("No elements in cstl_vector");
+        fault("No elements in cstl_vector");
     }
     OPENCSTL_NIDX(container, -1)--;
 }
@@ -4126,7 +5027,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type6
         size_type64 new_capaciy = get_new_capacity(capacity + N);
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
-            yikes("Reallocation failed at vector insert");
+            fault("Reallocation failed at vector insert");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = new_capaciy;
@@ -4191,7 +5092,7 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_type64 n, void *v
         iveb_erase(iveb, *container);
         void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
-            yikes("Reallocation failed at vector resize");
+            fault("Reallocation failed at vector resize");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
@@ -4254,7 +5155,7 @@ OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_type64 n) {
         iveb_erase(iveb, *container);
         void *b = realloc((char *) *container - header_sz, header_sz + n * type_size);
         if (b == NULL) {
-            yikes("Reallocation failed at vector reserve");
+            fault("Reallocation failed at vector reserve");
         }
         *container = ((char *) b + header_sz);
         OPENCSTL_NIDX(container, -2) = n;
@@ -4290,7 +5191,7 @@ OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
     iveb_erase(iveb, *container);
     void *b = realloc((char *) *container - header_sz, header_sz + new_capacity * type_size);
     if (b == NULL) {
-        yikes("Reallocation failed at vector shrink_to_fit");
+        fault("Reallocation failed at vector shrink_to_fit");
     }
     *container = ((char *) b + header_sz);
     OPENCSTL_NIDX(container, -2) = new_capacity;
@@ -4337,7 +5238,7 @@ OPENCSTL_FUNC size_type64 __cstl_vector_count(void **container, void *value) {
         value = &valuef;
     }
 #endif
-    _OpenCSTLEqualsFunc is_equal = CSTL_EQUALS(type);
+    CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
     size_type64 cnt = 0;
     for (int i = 0; i < length; i++) {
         void *ptr = ((char *) *container) + (type_size * i);
@@ -6839,7 +7740,7 @@ OPENCSTL_FUNC void *_cstl_next(void *it) {
         }
         break;
         default: {
-            yikes("Invalid operation");
+            fault("Invalid operation");
         }
         break;
     }
@@ -6878,7 +7779,7 @@ OPENCSTL_FUNC void *_cstl_prev(void *it) {
         break;
 
         default: {
-            yikes("Invalid operation");
+            fault("Invalid operation");
         }
     }
     return NULL;
@@ -6919,7 +7820,7 @@ OPENCSTL_FUNC void *_cstl_begin(void *container) {
             return __cstl_hashtable_begin((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     return NULL;
@@ -6960,7 +7861,7 @@ OPENCSTL_FUNC void *_cstl_rbegin(void *container) {
             return __cstl_hashtable_rbegin((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     return NULL;
@@ -7001,7 +7902,7 @@ OPENCSTL_FUNC void *_cstl_end(void *container) {
             return __cstl_hashtable_end((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     return NULL;
@@ -7042,7 +7943,7 @@ OPENCSTL_FUNC void *_cstl_rend(void *container) {
             return __cstl_hashtable_rend((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     return NULL;
@@ -7105,12 +8006,20 @@ OPENCSTL_FUNC size_type64 _cstl_count(void *container, ...) {
         }
         break;
         default: {
-            yikes("Unsupported container type");
+            fault("Unsupported container type");
         }
         break;
     }
     __cstl_va_end(vl);
     return cnt;
+}
+
+static size_type64 count(void *C, ...) {
+    va_list args;
+    va_start(args, C);
+    size_type64 result = _cstl_count(&C, args);
+    va_end(args);
+    return result;
 }
 
 OPENCSTL_FUNC size_type64 _cstl_count_if(void *container, ...) {
@@ -7145,7 +8054,7 @@ OPENCSTL_FUNC size_type64 _cstl_count_if(void *container, ...) {
         }
         break;
         default: {
-            yikes("Unsupported container type");
+            fault("Unsupported container type");
         }
         break;
     }
@@ -7177,7 +8086,7 @@ OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             if (argc >= 3) {
-                yikes("Not implemented");
+                fault("Not implemented");
             } else {
                 if (argc == 1) {
                     size_type64 type_size = OPENCSTL_NIDX((void**)container, NIDX_TSIZE);
@@ -7189,7 +8098,7 @@ OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
         break;
         case OPENCSTL_DEQUE: {
             if (argc >= 3) {
-                yikes("Not implemented");
+                fault("Not implemented");
             } else {
                 if (argc == 1) {
                     ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -7201,7 +8110,7 @@ OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
         }
         break;
 
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -7232,7 +8141,7 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             if (argc >= 3) {
-                yikes("Not implemented");
+                fault("Not implemented");
             } else {
                 if (argc == 1) {
                     size_type64 type_size = OPENCSTL_NIDX((void**)container, NIDX_TSIZE);
@@ -7244,7 +8153,7 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
         break;
         case OPENCSTL_DEQUE: {
             if (argc >= 3) {
-                yikes("Not implemented");
+                fault("Not implemented");
             } else {
                 if (argc == 1) {
                     ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -7256,7 +8165,7 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
         }
         break;
 
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -7307,7 +8216,7 @@ OPENCSTL_FUNC size_type64 __cstl_minmax_container_type(void *container) {
         case OPENCSTL_UNORDERED_MAP:
             break;
         default:
-            yikes("max_element/min_element: unsupported container type");
+            fault("max_element/min_element: unsupported container type");
     }
     return container_type;
 }
@@ -7319,9 +8228,9 @@ OPENCSTL_FUNC void *_cstl_max_element(void *container, ...) {
     void *va_ptr = NULL;
     __cstl_va_start(vl, container, va_ptr);
 #if CSTL_USE_VAARG
-    _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) __cstl_va_arg_next(vl);
+    CSTL_COMPARE cmp = (CSTL_COMPARE) __cstl_va_arg_next(vl);
 #else
-    _OpenCSTLCompareFunc cmp = *(_OpenCSTLCompareFunc *) __cstl_va_arg(va_ptr);
+    CSTL_COMPARE cmp = *(CSTL_COMPARE *) __cstl_va_arg(va_ptr);
 #endif
     __cstl_va_end(vl);
 
@@ -7359,9 +8268,9 @@ OPENCSTL_FUNC void *_cstl_min_element(void *container, ...) {
     void *va_ptr = NULL;
     __cstl_va_start(vl, container, va_ptr);
 #if CSTL_USE_VAARG
-    _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) __cstl_va_arg_next(vl);
+    CSTL_COMPARE cmp = (CSTL_COMPARE) __cstl_va_arg_next(vl);
 #else
-    _OpenCSTLCompareFunc cmp = *(_OpenCSTLCompareFunc *) __cstl_va_arg(va_ptr);
+    CSTL_COMPARE cmp = *(CSTL_COMPARE *) __cstl_va_arg(va_ptr);
 #endif
     __cstl_va_end(vl);
 
@@ -7948,7 +8857,7 @@ void __mt19937_shuffle(void *container) {
             __cstl_list_shuffle((void **) &container);
         }
         break;
-        default: yikes("Invalid operator");
+        default: fault("Invalid operator");
             break;
     }
 }
@@ -8127,7 +9036,7 @@ static double ttime(void) {
 // ==============================================================================
 
 // ==============================================================================
-// BEGIN  fstream.h                      (depth 1)
+// BEGIN  file.h                         (depth 1)
 // ==============================================================================
 
 //
@@ -8328,7 +9237,7 @@ FSTREAM file = {
 #endif //_OPENCSTL_CSTL_FILE_H
 
 // ==============================================================================
-// END    fstream.h
+// END    file.h
 // ==============================================================================
 
 // ==============================================================================
@@ -10278,7 +11187,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
             char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
             size_type64 length = (size_type64) OPENCSTL_NIDX(&container, -1);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -10286,7 +11195,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
             }
 
             cstl_unstable_sort(container, length, type_size, cmp);
@@ -10295,7 +11204,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
         case OPENCSTL_LIST: {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
             char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -10303,7 +11212,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
             }
             __cstl_list_qsort(&container, cmp);
         }
@@ -10312,7 +11221,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
             size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
             size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
             char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -10320,13 +11229,13 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
             }
             cstl_unstable_sort(container, length, type_size, cmp);
         }
         break;
         default: {
-            yikes("Invalid Operation");
+            fault("Invalid Operation");
         }
         break;
     }
@@ -10351,7 +11260,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
             char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
             size_type64 length = (size_type64) OPENCSTL_NIDX(&container, -1);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -10359,7 +11268,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
             }
             cstl_best_stable_sort(container, length, type_size, cmp);
         }
@@ -10367,7 +11276,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
         case OPENCSTL_LIST: {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
             char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -10375,7 +11284,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
             }
             __cstl_list_msort(&container, cmp);
         }
@@ -10384,7 +11293,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
             size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
             size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
             char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -10392,13 +11301,13 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
             }
             cstl_best_stable_sort(container, length, type_size, cmp);
         }
         break;
         default: {
-            yikes("Invalid Operation");
+            fault("Invalid Operation");
         }
         break;
     }
@@ -10475,7 +11384,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
             char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
             size_type64 length = (size_type64) OPENCSTL_NIDX(&container, -1);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -10483,7 +11392,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
                 return 0;
             }
             for (size_type64 i = 1; i < length; i++) {
@@ -10499,7 +11408,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
         case OPENCSTL_LIST: {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
             char *type_name = (char *) OPENCSTL_NIDX(&container, -4);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -10507,7 +11416,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
                 return 0;
             }
             void *it = cstl_begin(container);
@@ -10531,7 +11440,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
             size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
             size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
             char *type_name = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
-            _OpenCSTLCompareFunc cmp = (_OpenCSTLCompareFunc) _cmp;
+            CSTL_COMPARE cmp = (CSTL_COMPARE) _cmp;
             if (cmp == NULL) {
                 cmp = CSTL_LESS(type_name);
             }
@@ -10539,7 +11448,9 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 cmp = _memcmp_funcs[type_size];
             }
             if (cmp == NULL) {
-                yikes("Compare function is NULL");
+                fault("Compare function is NULL");
+                return 0;
+                return 0;
                 return 0;
             }
             for (size_type64 i = 1; i < length; i++) {
@@ -10552,7 +11463,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
         }
         break;
         default: {
-            yikes("Invalid Operation");
+            fault("Invalid Operation");
             return 0;
         }
         break;
@@ -10927,7 +11838,7 @@ typedef struct {
     bitset_fn1 set;
     bitset_fn1 reset;
     bitset_fn2 set_at;
-    bitset_fn3 count_bits;
+    bitset_fn3 count;
     bitset_fn4 all;
     bitset_fn4 any;
     bitset_fn4 none;
@@ -12251,7 +13162,7 @@ JSON_CLASS json = {__parse, __get, _dumps};
 #include<string.h>
 // [already included: van_emde_boas_tree.h]
 // [already included: verify.h]
-// [already included: fstream.h]
+// [already included: file.h]
 
 typedef struct {
     char ***table;
@@ -12330,6 +13241,8 @@ static CSV __parse_csv(char *csv_path, bool is_header) {
     long fsz = ftell(f);
     rewind(f);
     verify(fsz > 0);
+
+
 
 
     char *buf = (char *) malloc((size_t) fsz);
@@ -12572,6 +13485,557 @@ int cpu_count(void) {
 // END    threading_cc.h
 // ==============================================================================
 
+
+// ==============================================================================
+// BEGIN  cio.h                          (depth 1)
+// ==============================================================================
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#ifndef OPENCSTL_CSTLIO_H
+#define OPENCSTL_CSTLIO_H
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+// [already included: crossplatform.h]
+// [already included: defines.h]
+
+// ── Windows UTF-8 / 유니코드 초기화 ──────────────────────────────────────
+#ifdef OCSTL_OS_WINDOWS
+#include <windows.h>
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+#endif
+#ifndef CP_UTF8
+// TCC 의 minimal <windows.h> 에는 CP_UTF8 이 없음.
+#define CP_UTF8 65001
+#endif
+
+static int s_cio_unicode_init = -1;
+
+static void ocstl_ensure_unicode(void) {
+    HANDLE h;
+    DWORD mode = 0;
+    if (s_cio_unicode_init != -1) return;
+    SetConsoleOutputCP(CP_UTF8);
+    h = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (GetConsoleMode(h, &mode))
+        SetConsoleMode(h, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+    s_cio_unicode_init = 1;
+}
+
+#else
+#define ocstl_ensure_unicode() ((void)0)
+#endif
+
+// ── 타입 태그 ─────────────────────────────────────────────────────────────
+typedef enum {
+    OCSTL_COUT_INT,
+    OCSTL_COUT_UINT,
+    OCSTL_COUT_LONG,
+    OCSTL_COUT_ULONG,
+    OCSTL_COUT_LLONG,
+    OCSTL_COUT_ULLONG,
+    OCSTL_COUT_FLOAT,
+    OCSTL_COUT_DOUBLE,
+    OCSTL_COUT_CHAR,
+    OCSTL_COUT_STR,
+} ocstl_cout_type_t;
+
+typedef struct {
+    ocstl_cout_type_t type;
+    union {
+        int                 i;
+        unsigned int        u;
+        long                l;
+        unsigned long       ul;
+        long long           ll;
+        unsigned long long  ull;
+        float               f;
+        double              d;
+        char                c;
+        const char         *s;
+    };
+} ocstl_val_t;
+
+static ocstl_val_t _ocstl_mk_int   (int x)                { ocstl_val_t v; v.type=OCSTL_COUT_INT;    v.i  =x; return v; }
+static ocstl_val_t _ocstl_mk_uint  (unsigned int x)        { ocstl_val_t v; v.type=OCSTL_COUT_UINT;   v.u  =x; return v; }
+static ocstl_val_t _ocstl_mk_long  (long x)                { ocstl_val_t v; v.type=OCSTL_COUT_LONG;   v.l  =x; return v; }
+static ocstl_val_t _ocstl_mk_ulong (unsigned long x)       { ocstl_val_t v; v.type=OCSTL_COUT_ULONG;  v.ul =x; return v; }
+static ocstl_val_t _ocstl_mk_llong (long long x)           { ocstl_val_t v; v.type=OCSTL_COUT_LLONG;  v.ll =x; return v; }
+static ocstl_val_t _ocstl_mk_ullong(unsigned long long x)  { ocstl_val_t v; v.type=OCSTL_COUT_ULLONG; v.ull=x; return v; }
+static ocstl_val_t _ocstl_mk_float (float x)               { ocstl_val_t v; v.type=OCSTL_COUT_FLOAT;  v.f  =x; return v; }
+static ocstl_val_t _ocstl_mk_double(double x)              { ocstl_val_t v; v.type=OCSTL_COUT_DOUBLE; v.d  =x; return v; }
+static ocstl_val_t _ocstl_mk_char  (char x)                { ocstl_val_t v; v.type=OCSTL_COUT_CHAR;   v.c  =x; return v; }
+static ocstl_val_t _ocstl_mk_str   (const char *x)         { ocstl_val_t v; v.type=OCSTL_COUT_STR;    v.s  =x; return v; }
+
+#define OCSTL_VAL(x) _Generic((x),                  \
+    int:                _ocstl_mk_int,              \
+    unsigned int:       _ocstl_mk_uint,             \
+    long:               _ocstl_mk_long,             \
+    unsigned long:      _ocstl_mk_ulong,            \
+    long long:          _ocstl_mk_llong,            \
+    unsigned long long: _ocstl_mk_ullong,           \
+    float:              _ocstl_mk_float,            \
+    double:             _ocstl_mk_double,           \
+    char:               _ocstl_mk_char,             \
+    char *:             _ocstl_mk_str,              \
+    const char *:       _ocstl_mk_str               \
+)(x)
+
+// ── FOR_EACH: 각 인자에 OCSTL_VAL 적용 (최대 32개) ──────────────────────
+#define OCSTL_MAP1(f,a)      f(a)
+#define OCSTL_MAP2(f,a,...)  f(a), OCSTL_MAP1(f, __VA_ARGS__)
+#define OCSTL_MAP3(f,a,...)  f(a), OCSTL_MAP2(f, __VA_ARGS__)
+#define OCSTL_MAP4(f,a,...)  f(a), OCSTL_MAP3(f, __VA_ARGS__)
+#define OCSTL_MAP5(f,a,...)  f(a), OCSTL_MAP4(f, __VA_ARGS__)
+#define OCSTL_MAP6(f,a,...)  f(a), OCSTL_MAP5(f, __VA_ARGS__)
+#define OCSTL_MAP7(f,a,...)  f(a), OCSTL_MAP6(f, __VA_ARGS__)
+#define OCSTL_MAP8(f,a,...)  f(a), OCSTL_MAP7(f, __VA_ARGS__)
+#define OCSTL_MAP9(f,a,...)  f(a), OCSTL_MAP8(f, __VA_ARGS__)
+#define OCSTL_MAP10(f,a,...) f(a), OCSTL_MAP9(f, __VA_ARGS__)
+#define OCSTL_MAP11(f,a,...) f(a), OCSTL_MAP10(f, __VA_ARGS__)
+#define OCSTL_MAP12(f,a,...) f(a), OCSTL_MAP11(f, __VA_ARGS__)
+#define OCSTL_MAP13(f,a,...) f(a), OCSTL_MAP12(f, __VA_ARGS__)
+#define OCSTL_MAP14(f,a,...) f(a), OCSTL_MAP13(f, __VA_ARGS__)
+#define OCSTL_MAP15(f,a,...) f(a), OCSTL_MAP14(f, __VA_ARGS__)
+#define OCSTL_MAP16(f,a,...) f(a), OCSTL_MAP15(f, __VA_ARGS__)
+#define OCSTL_MAP17(f,a,...) f(a), OCSTL_MAP16(f, __VA_ARGS__)
+#define OCSTL_MAP18(f,a,...) f(a), OCSTL_MAP17(f, __VA_ARGS__)
+#define OCSTL_MAP19(f,a,...) f(a), OCSTL_MAP18(f, __VA_ARGS__)
+#define OCSTL_MAP20(f,a,...) f(a), OCSTL_MAP19(f, __VA_ARGS__)
+#define OCSTL_MAP21(f,a,...) f(a), OCSTL_MAP20(f, __VA_ARGS__)
+#define OCSTL_MAP22(f,a,...) f(a), OCSTL_MAP21(f, __VA_ARGS__)
+#define OCSTL_MAP23(f,a,...) f(a), OCSTL_MAP22(f, __VA_ARGS__)
+#define OCSTL_MAP24(f,a,...) f(a), OCSTL_MAP23(f, __VA_ARGS__)
+#define OCSTL_MAP25(f,a,...) f(a), OCSTL_MAP24(f, __VA_ARGS__)
+#define OCSTL_MAP26(f,a,...) f(a), OCSTL_MAP25(f, __VA_ARGS__)
+#define OCSTL_MAP27(f,a,...) f(a), OCSTL_MAP26(f, __VA_ARGS__)
+#define OCSTL_MAP28(f,a,...) f(a), OCSTL_MAP27(f, __VA_ARGS__)
+#define OCSTL_MAP29(f,a,...) f(a), OCSTL_MAP28(f, __VA_ARGS__)
+#define OCSTL_MAP30(f,a,...) f(a), OCSTL_MAP29(f, __VA_ARGS__)
+#define OCSTL_MAP31(f,a,...) f(a), OCSTL_MAP30(f, __VA_ARGS__)
+#define OCSTL_MAP32(f,a,...) f(a), OCSTL_MAP31(f, __VA_ARGS__)
+
+#define OCSTL_MAP_SEL( \
+    _1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16, \
+    _17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,_31,_32, N,...) \
+    OCSTL_MAP##N
+
+#define OCSTL_MAP(f,...) \
+    OCSTL_MAP_SEL(__VA_ARGS__, \
+        32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17, \
+        16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1)(f, __VA_ARGS__)
+
+// ── Rust 스타일 포맷 스펙 ────────────────────────────────────────────────
+// {[fill]align? sign? #? 0? width? .precision? type?}
+typedef struct {
+    char  fill;        // default ' '
+    char  align;       // '<' '>' '^' 0
+    char  sign;        // '+' or 0
+    bool  alt;         // '#'
+    bool  zero_pad;    // '0' flag
+    int   width;       // -1 if unspecified
+    int   precision;   // -1 if unspecified
+    char  type;        // 'x' 'X' 'b' 'o' 'e' 'E' 'f' 'g' or 0
+} ocstl_fmt_spec_t;
+
+static void ocstl_spec_init(ocstl_fmt_spec_t *s) {
+    s->fill = ' ';
+    s->align = 0;
+    s->sign = 0;
+    s->alt = false;
+    s->zero_pad = false;
+    s->width = -1;
+    s->precision = -1;
+    s->type = 0;
+}
+
+static bool ocstl_is_align(char c) { return c == '<' || c == '>' || c == '^'; }
+
+// p 가 ':' 직후를 가리킨다고 가정. '}' 까지 파싱 후 그 위치 반환.
+static const char *ocstl_parse_spec(const char *p, ocstl_fmt_spec_t *spec) {
+    // [fill]align — fill 은 align 앞 한 글자
+    if (p[0] && p[1] && ocstl_is_align(p[1])) {
+        spec->fill = p[0];
+        spec->align = p[1];
+        p += 2;
+    } else if (ocstl_is_align(p[0])) {
+        spec->align = p[0];
+        p += 1;
+    }
+    // sign
+    if (*p == '+') { spec->sign = '+'; p++; }
+    // alt
+    if (*p == '#') { spec->alt = true; p++; }
+    // zero pad
+    if (*p == '0') { spec->zero_pad = true; p++; }
+    // width
+    if (*p >= '0' && *p <= '9') {
+        int w = 0;
+        while (*p >= '0' && *p <= '9') { w = w * 10 + (*p - '0'); p++; }
+        spec->width = w;
+    }
+    // precision
+    if (*p == '.') {
+        p++;
+        int pr = 0;
+        while (*p >= '0' && *p <= '9') { pr = pr * 10 + (*p - '0'); p++; }
+        spec->precision = pr;
+    }
+    // type
+    if (*p && *p != '}') {
+        spec->type = *p;
+        p++;
+    }
+    return p;
+}
+
+// ── 정렬 / 패딩 적용 ──────────────────────────────────────────────────────
+static void ocstl_emit_pad(char ch, int n) {
+    for (int i = 0; i < n; i++) putchar(ch);
+}
+
+// core 문자열을 width / align / fill 에 맞춰 출력.
+// number_pad: true 면 0-pad 시 sign/prefix 뒤에 0 패딩(기존 STL 관례).
+static void ocstl_emit_padded(const char *core, int core_len,
+                              const ocstl_fmt_spec_t *spec,
+                              int sign_prefix_len) {
+    int width = spec->width;
+    if (width < 0 || width <= core_len) {
+        fwrite(core, 1, core_len, stdout);
+        return;
+    }
+    int pad = width - core_len;
+    char align = spec->align;
+    char fill = spec->fill;
+
+    // 숫자 + zero_pad + 명시적 align 없음 → '0' 으로 right-align (sign/prefix 뒤)
+    if (align == 0 && spec->zero_pad && sign_prefix_len >= 0) {
+        // sign/prefix 먼저 출력
+        fwrite(core, 1, sign_prefix_len, stdout);
+        ocstl_emit_pad('0', pad);
+        fwrite(core + sign_prefix_len, 1, core_len - sign_prefix_len, stdout);
+        return;
+    }
+
+    if (align == 0) align = (sign_prefix_len >= 0) ? '>' : '<'; // 숫자 기본 right, 문자열 기본 left
+
+    if (align == '<') {
+        fwrite(core, 1, core_len, stdout);
+        ocstl_emit_pad(fill, pad);
+    } else if (align == '>') {
+        ocstl_emit_pad(fill, pad);
+        fwrite(core, 1, core_len, stdout);
+    } else { // '^'
+        int left = pad / 2;
+        int right = pad - left;
+        ocstl_emit_pad(fill, left);
+        fwrite(core, 1, core_len, stdout);
+        ocstl_emit_pad(fill, right);
+    }
+}
+
+// ── 정수 → 문자열 (진법, sign, alt prefix 처리) ───────────────────────────
+// 결과는 buf 에 기록, 반환은 len. sign_prefix_len 에는 sign + prefix 길이 기록.
+static int ocstl_format_int(char *buf, int bufsz,
+                            unsigned long long uval, bool negative,
+                            const ocstl_fmt_spec_t *spec,
+                            int *sign_prefix_len) {
+    int base = 10;
+    bool upper = false;
+    const char *prefix = "";
+    switch (spec->type) {
+        case 'x': base = 16; break;
+        case 'X': base = 16; upper = true; break;
+        case 'o': base = 8; break;
+        case 'b': base = 2; break;
+        default: break;
+    }
+    if (spec->alt) {
+        if      (spec->type == 'x') prefix = "0x";
+        else if (spec->type == 'X') prefix = "0X";
+        else if (spec->type == 'b') prefix = "0b";
+        else if (spec->type == 'o') prefix = "0o";
+    }
+
+    // 숫자 부분을 역순으로 변환
+    char tmp[80];
+    int tlen = 0;
+    if (uval == 0) tmp[tlen++] = '0';
+    while (uval > 0) {
+        unsigned digit = (unsigned)(uval % (unsigned long long)base);
+        char c = (digit < 10) ? (char)('0' + digit)
+                              : (char)((upper ? 'A' : 'a') + (digit - 10));
+        tmp[tlen++] = c;
+        uval /= base;
+    }
+
+    int pos = 0;
+    // sign
+    if (negative) buf[pos++] = '-';
+    else if (spec->sign == '+' && base == 10) buf[pos++] = '+';
+    // prefix
+    int plen = (int) strlen(prefix);
+    for (int i = 0; i < plen; i++) buf[pos++] = prefix[i];
+    *sign_prefix_len = pos;
+    // 숫자
+    for (int i = tlen - 1; i >= 0 && pos < bufsz - 1; i--) buf[pos++] = tmp[i];
+    buf[pos] = '\0';
+    return pos;
+}
+
+// ── float → 문자열 ───────────────────────────────────────────────────────
+static int ocstl_format_float(char *buf, int bufsz, double dval,
+                              const ocstl_fmt_spec_t *spec,
+                              int *sign_prefix_len) {
+    bool negative = dval < 0.0;
+    if (negative) dval = -dval;
+    int prec = spec->precision >= 0 ? spec->precision : 6;
+    char fmt[16];
+    char type = spec->type ? spec->type : 'f';
+    if (type != 'f' && type != 'e' && type != 'E' && type != 'g' && type != 'G') type = 'f';
+    snprintf(fmt, sizeof fmt, "%%.%d%c", prec, type);
+
+    int pos = 0;
+    if (negative) buf[pos++] = '-';
+    else if (spec->sign == '+') buf[pos++] = '+';
+    *sign_prefix_len = pos;
+    int n = snprintf(buf + pos, bufsz - pos, fmt, dval);
+    if (n < 0) n = 0;
+    return pos + n;
+}
+
+// ── 단일 값 출력 (스펙 적용) ──────────────────────────────────────────────
+static void ocstl_print_val(const ocstl_val_t *v, const ocstl_fmt_spec_t *spec) {
+    char buf[128];
+    int len = 0;
+    int sign_prefix_len = -1; // -1 = 비-숫자
+
+    switch (v->type) {
+        case OCSTL_COUT_INT: {
+            long long sv = v->i;
+            len = ocstl_format_int(buf, sizeof buf,
+                                   (unsigned long long)(sv < 0 ? -sv : sv),
+                                   sv < 0, spec, &sign_prefix_len);
+            break;
+        }
+        case OCSTL_COUT_LONG: {
+            long long sv = v->l;
+            len = ocstl_format_int(buf, sizeof buf,
+                                   (unsigned long long)(sv < 0 ? -sv : sv),
+                                   sv < 0, spec, &sign_prefix_len);
+            break;
+        }
+        case OCSTL_COUT_LLONG: {
+            long long sv = v->ll;
+            len = ocstl_format_int(buf, sizeof buf,
+                                   (unsigned long long)(sv < 0 ? -sv : sv),
+                                   sv < 0, spec, &sign_prefix_len);
+            break;
+        }
+        case OCSTL_COUT_UINT:
+            len = ocstl_format_int(buf, sizeof buf, (unsigned long long)v->u, false, spec, &sign_prefix_len);
+            break;
+        case OCSTL_COUT_ULONG:
+            len = ocstl_format_int(buf, sizeof buf, (unsigned long long)v->ul, false, spec, &sign_prefix_len);
+            break;
+        case OCSTL_COUT_ULLONG:
+            len = ocstl_format_int(buf, sizeof buf, v->ull, false, spec, &sign_prefix_len);
+            break;
+        case OCSTL_COUT_FLOAT:
+            len = ocstl_format_float(buf, sizeof buf, (double)v->f, spec, &sign_prefix_len);
+            break;
+        case OCSTL_COUT_DOUBLE:
+            len = ocstl_format_float(buf, sizeof buf, v->d, spec, &sign_prefix_len);
+            break;
+        case OCSTL_COUT_CHAR: {
+            buf[0] = v->c;
+            buf[1] = '\0';
+            len = 1;
+            break;
+        }
+        case OCSTL_COUT_STR: {
+            const char *s = v->s ? v->s : "(null)";
+            ocstl_emit_padded(s, (int)strlen(s), spec, -1);
+            return;
+        }
+    }
+    ocstl_emit_padded(buf, len, spec, sign_prefix_len);
+}
+
+// ── {} 포맷 파서 ──────────────────────────────────────────────────────────
+// {{ → '{',  }} → '}',  {[:spec]} → 다음 인자 적용
+static void ocstl_print_impl(const char *fmt, const ocstl_val_t *args, int n) {
+    int idx = 0;
+    const char *p = fmt;
+
+    ocstl_ensure_unicode();
+
+    while (*p) {
+        if (p[0] == '{' && p[1] == '{') {
+            putchar('{');
+            p += 2;
+        } else if (p[0] == '}' && p[1] == '}') {
+            putchar('}');
+            p += 2;
+        } else if (p[0] == '{') {
+            // 플레이스홀더
+            const char *q = p + 1;
+            ocstl_fmt_spec_t spec;
+            ocstl_spec_init(&spec);
+            if (*q == ':') {
+                q = ocstl_parse_spec(q + 1, &spec);
+            }
+            if (*q == '}') {
+                if (idx < n) ocstl_print_val(&args[idx++], &spec);
+                p = q + 1;
+            } else {
+                // '}' 없음: 그대로 출력
+                putchar((unsigned char)*p++);
+            }
+        } else {
+            putchar((unsigned char)*p++);
+        }
+    }
+}
+
+// ── 인자 수 기반 분기 (ARGN + 토큰 페이스트) ─────────────────────────────
+// fmt 만 있는 N=1 케이스를 단독 처리. N>=2 는 개별 할당으로 ocstl_val_t 배열 구성.
+// 주의: TCC 0.9.27 은 array initializer 안에서 _Generic 을 여러 번 평가하면
+// "index too large" 로 실패하므로 일괄 init 대신 분리된 statement 로 채운다.
+#define _OCSTL_PRINT_N1(fmt) \
+    do { ocstl_ensure_unicode(); ocstl_print_impl((fmt), NULL, 0); } while (0)
+
+#define _OCSTL_PRINT_1(fmt) _OCSTL_PRINT_N1(fmt)
+
+#define _OCSTL_PRINT_2(fmt, _a) do {                                                       \
+    ocstl_val_t _args[1];                                                                  \
+    _args[0] = OCSTL_VAL(_a);                                                              \
+    ocstl_print_impl((fmt), _args, 1);                                                     \
+} while (0)
+#define _OCSTL_PRINT_3(fmt, _a, _b) do {                                                   \
+    ocstl_val_t _args[2];                                                                  \
+    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b);                                    \
+    ocstl_print_impl((fmt), _args, 2);                                                     \
+} while (0)
+#define _OCSTL_PRINT_4(fmt, _a, _b, _c) do {                                               \
+    ocstl_val_t _args[3];                                                                  \
+    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
+    ocstl_print_impl((fmt), _args, 3);                                                     \
+} while (0)
+#define _OCSTL_PRINT_5(fmt, _a, _b, _c, _d) do {                                           \
+    ocstl_val_t _args[4];                                                                  \
+    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b);                                    \
+    _args[2] = OCSTL_VAL(_c); _args[3] = OCSTL_VAL(_d);                                    \
+    ocstl_print_impl((fmt), _args, 4);                                                     \
+} while (0)
+#define _OCSTL_PRINT_6(fmt, _a, _b, _c, _d, _e) do {                                       \
+    ocstl_val_t _args[5];                                                                  \
+    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b);                                    \
+    _args[2] = OCSTL_VAL(_c); _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e);          \
+    ocstl_print_impl((fmt), _args, 5);                                                     \
+} while (0)
+#define _OCSTL_PRINT_7(fmt, _a, _b, _c, _d, _e, _f) do {                                   \
+    ocstl_val_t _args[6];                                                                  \
+    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
+    _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e); _args[5] = OCSTL_VAL(_f);          \
+    ocstl_print_impl((fmt), _args, 6);                                                     \
+} while (0)
+#define _OCSTL_PRINT_8(fmt, _a, _b, _c, _d, _e, _f, _g) do {                               \
+    ocstl_val_t _args[7];                                                                  \
+    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
+    _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e); _args[5] = OCSTL_VAL(_f);          \
+    _args[6] = OCSTL_VAL(_g);                                                              \
+    ocstl_print_impl((fmt), _args, 7);                                                     \
+} while (0)
+#define _OCSTL_PRINT_9(fmt, _a, _b, _c, _d, _e, _f, _g, _h) do {                           \
+    ocstl_val_t _args[8];                                                                  \
+    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
+    _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e); _args[5] = OCSTL_VAL(_f);          \
+    _args[6] = OCSTL_VAL(_g); _args[7] = OCSTL_VAL(_h);                                    \
+    ocstl_print_impl((fmt), _args, 8);                                                     \
+} while (0)
+#define _OCSTL_PRINT_10(fmt, _a, _b, _c, _d, _e, _f, _g, _h, _i) do {                      \
+    ocstl_val_t _args[9];                                                                  \
+    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
+    _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e); _args[5] = OCSTL_VAL(_f);          \
+    _args[6] = OCSTL_VAL(_g); _args[7] = OCSTL_VAL(_h); _args[8] = OCSTL_VAL(_i);          \
+    ocstl_print_impl((fmt), _args, 9);                                                     \
+} while (0)
+#define _OCSTL_PRINT_11(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_12(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_13(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_14(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_15(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_16(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_17(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_18(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_19(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_20(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_21(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_22(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_23(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_24(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_25(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_26(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_27(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_28(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_29(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_30(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_31(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+#define _OCSTL_PRINT_32(...) _OCSTL_PRINT_NX(__VA_ARGS__)
+
+#define _OCSTL_PASTE2(a, b) a##b
+#define _OCSTL_PASTE(a, b)  _OCSTL_PASTE2(a, b)
+
+// 외부 디스패치 매크로: print(fmt, ...) → _OCSTL_PRINT_<N>(fmt, ...)
+// N = ARGN(__VA_ARGS__) — fmt 포함한 총 인자 개수.
+#define print(...)   _OCSTL_PASTE(_OCSTL_PRINT_, ARGN(__VA_ARGS__))(__VA_ARGS__)
+#define println(...) do { print(__VA_ARGS__); putchar('\n'); } while (0)
+
+#endif // OPENCSTL_CSTLIO_H
+
+// ==============================================================================
+// END    cio.h
+// ==============================================================================
+
 #define ARRAY(TYPE)             TYPE*
 #define VECTOR(TYPE)            TYPE*
 #define LIST(TYPE)              TYPE**
@@ -12612,7 +14076,7 @@ int cpu_count(void) {
 #define max_size        cstl_max_size
 #define shrink_to_fit   cstl_shrink_to_fit
 #define capacity        cstl_capacity
-#define reverse         cstl_reverse
+//#define reverse         cstl_reverse
 
 #endif
 #define next            cstl_next
@@ -12622,7 +14086,7 @@ int cpu_count(void) {
 #define rbegin          cstl_rbegin
 #define rend            cstl_rend
 
-#define count           cstl_count
+//#define count           cstl_count
 #define count_if        cstl_count_if
 #define lower_bound     cstl_lower_bound
 #define upper_bound     cstl_upper_bound
@@ -12669,7 +14133,7 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             if (argc >= 3) {
-                yikes("Not implemented");
+                fault("Not implemented");
             } else {
                 if (argc == 1) {
                     param2 = NULL;
@@ -12686,7 +14150,7 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
             __cstl_deque_assign((void **) container, *(int *) param1, param2);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -12718,7 +14182,7 @@ OPENCSTL_FUNC void _cstl_push(void *container, ...) {
             __cstl_priority_queue_push((void **) container, value);
         }
         break;
-        default: yikes("Invalid operator");
+        default: fault("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
@@ -12757,7 +14221,7 @@ OPENCSTL_FUNC void _cstl_push_back(void *container, ...) {
             __cstl_deque_push_back((void **) container, param1);
         }
         break;
-        default: yikes("Invalid operator");
+        default: fault("Invalid operator");
             break;
     }
 
@@ -12789,7 +14253,7 @@ OPENCSTL_FUNC void _cstl_push_front(void *container, ...) {
             __cstl_deque_push_front((void **) container, param1);
         }
         break;
-        default: yikes("Invalid operator");
+        default: fault("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
@@ -12816,7 +14280,7 @@ OPENCSTL_FUNC void _cstl_pop(void *container) {
             __cstl_priority_queue_pop((void **) container);
         }
         break;
-        default: yikes("Invalid operator");
+        default: fault("Invalid operator");
             break;
     }
 }
@@ -12877,7 +14341,7 @@ OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
         }
         break;
         default: {
-            yikes("Invalid operator");
+            fault("Invalid operator");
         }
     }
     return sz;
@@ -12941,7 +14405,7 @@ OPENCSTL_FUNC size_type _cstl_size(void *container) {
             sz = __cstl_hashtable_size((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     return sz;
@@ -12977,7 +14441,7 @@ OPENCSTL_FUNC size_type _cstl_capacity(void *container) {
             sz = __cstl_hashtable_capacity((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     return sz;
@@ -13024,29 +14488,29 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
         case OPENCSTL_MAP: {
             if (argc == 2) __cstl_tree_insert((void **) container, param1, param2);
             else
-                yikes("Invalid operation");
+                fault("Invalid operation");
         }
         break;
         case OPENCSTL_SET: {
             if (argc == 1) __cstl_tree_insert((void **) container, param1,NULL);
             else
-                yikes("Invalid operation");
+                fault("Invalid operation");
         }
         break;
         case OPENCSTL_UNORDERED_MAP: {
             if (argc == 2)__cstl_hashtable_insert((void **) container, param1, param2);
             else
-                yikes("Invalid operation");
+                fault("Invalid operation");
         }
         break;
         case OPENCSTL_UNORDERED_SET: {
             if (argc == 1) {
                 __cstl_hashtable_insert((void **) container, param1,NULL);
             } else
-                yikes("Invalid operation");
+                fault("Invalid operation");
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
 
@@ -13106,7 +14570,7 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
             __cstl_hashtable_erase((void **) container, *(void **) param1);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -13147,7 +14611,7 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
             __cstl_deque_resize((void **) container, *(int *) param1, &param2);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
     __cstl_va_end(vl);
@@ -13188,7 +14652,7 @@ OPENCSTL_FUNC void _cstl_clear(void *container) {
         }
         break;
         default: {
-            yikes("Invalid operation");
+            fault("Invalid operation");
         }
         break;
     }
@@ -13234,7 +14698,7 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
         }
         break;
         default: {
-            yikes("Invalid operation");
+            fault("Invalid operation");
         };
     }
     return sz ? false : true;
@@ -13307,7 +14771,7 @@ OPENCSTL_FUNC void _cstl_free(void *container) {
             __cstl_hashtable_free((void **) container);
         }
         break;
-        default: yikes("Invalid operation");
+        default: fault("Invalid operation");
             break;
     }
 _BYE_:
@@ -13367,7 +14831,7 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
             return __cstl_hashtable_find((void **) container, param1);
         }
         break;
-        default: yikes("Invalid operator");
+        default: fault("Invalid operator");
             break;
     }
     __cstl_va_end(vl);
@@ -13394,7 +14858,7 @@ OPENCSTL_FUNC void _cstl_shrink_to_fit(void *container) {
         break;
 
         default: {
-            yikes("Invalid operation");
+            fault("Invalid operation");
         }
         break;
     }
@@ -13426,12 +14890,15 @@ OPENCSTL_FUNC void _cstl_reverse(void *container) {
         }
         break;
         default: {
-            yikes("Invalid operation");
+            fault("Invalid operation");
         }
         break;
     }
 }
 
+static void reverse(void *container) {
+    _cstl_reverse((void **) &container);
+}
 
 #if defined(__linux__) || defined(__APPLE__)
 // #if !defined(__8cc__ )
