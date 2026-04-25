@@ -42,6 +42,7 @@ extern "C" {
 #endif
 #pragma once
 #include "crossplatform.h"
+#include "threading_cc.h"
 #if defined(OCSTL_CC_MSVC)
 #pragma warning(disable:4819)
 #endif
