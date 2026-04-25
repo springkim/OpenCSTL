@@ -42,8 +42,9 @@
 #include <locale.h>
 #include <string.h>
 #include <stdarg.h>
+#if defined(OCSTL_OS_WINDOWS)
 #include <windows.h>
-
+#endif
 static void MsgBoxCLI(const char *format, ...) {
 #if defined(OCSTL_CC_MSVC)
     SetConsoleOutputCP(CP_UTF8);
