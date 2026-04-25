@@ -148,8 +148,13 @@ void cstl_list_test01(void) {
     ///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
     for (int *it = begin(list); it != end(list); it = next(it)) {
         printf("[%d] ", *it);
+        //print("[{}]->", *it);
     }
-    puts("");
+    puts("[NULL]");
+
+    int *max_it = max_element(list, LESS(int));
+    printf("max element: %d\n", *max_it);
+
     printf("list size: %d\n", size(list));
     printf("front : %d\n", front(list));
     printf("back : %d\n", back(list));
@@ -452,7 +457,7 @@ void test_string(void) {
     for (int i = 0; i < count; i++) {
         printf("%d\n", pos[i]);
     }
-    char* r = string.reverse(s);
+    char *r = string.reverse(s);
     printf("%s\n", r);
     free(pos);
     free(r);
@@ -483,7 +488,6 @@ void test01(void) {
     cstl_unordered_set_test02();
     test_bitset();
     test_string();
-
 }
 
 
@@ -514,20 +518,23 @@ void test04(void) {
     free(data);
 }
 
-int main1(void) {
+int main(void) {
     logging.info(opencstl_env());
     logging.info(opencstl_version());
-    int   n   = 6;
-    float f   = 3.14f;
-    char *s   = "hello";
+    int n = 6;
+    float f = 3.14f;
+    char *s = "hello";
 
-    print("no args\n");                       // fputs 경로
-    print("Total: {}, diff: {}\n", n, f);     // int + float
-    println("str={}, char={}", s, 'A');        // \n 자동
-    print("escaped {{ and }}\n");              // { } 리터럴
-    println("값: {:30}", (long)1234567890L);      // long
+    print("no args\n"); // fputs 경로
+    print("Total: {}, diff: {}\n", n, f); // int + float
+    println("str={}, char={}", s, 'A'); // \n 자동
+    print("escaped {{ and }}\n"); // { } 리터럴
+    println("값: {:30}", (long)1234567890L); // long
+
+    return 0;
 }
-int main(void) {
+
+int main1(void) {
     logging.info(opencstl_env());
     logging.info(opencstl_version());
 

@@ -727,7 +727,7 @@ void giveb_erase(GIntervalVEB *iv, void *a) {
 }
 
 GInterval *giveb_find(GIntervalVEB *iv, void *x) {
-    if (iv==NULL) return NULL;
+    if (iv == NULL) return NULL;
     u64 key = (u64) (uintptr_t) x;
     u64 start = veb_floor(iv->veb, key);
     if (start == VEB_EMPTY) return NULL;

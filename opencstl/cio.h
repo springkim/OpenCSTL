@@ -1,14 +1,32 @@
 #pragma once
 #ifndef OPENCSTL_CSTLIO_H
 #define OPENCSTL_CSTLIO_H
+
+#include "crossplatform.h"
+
+// cstlio availability gate.
+// C11+        : native _Generic
+// C99 GCC/Clang: __builtin_choose_expr + __builtin_types_compatible_p
+// otherwise   : not available (no portable C99 dispatch on MSVC etc.)
+#if defined(OCSTL_C_VERSION_11) || defined(OCSTL_C_VERSION_17) || defined(OCSTL_C_VERSION_23)
+#  define OCSTL_CSTLIO_DISPATCH_GENERIC 1
+#elif defined(OCSTL_C_VERSION_99) && (defined(__GNUC__) || defined(__clang__))
+#  define OCSTL_CSTLIO_DISPATCH_BUILTIN 1
+#endif
+
+#if defined(OCSTL_CSTLIO_DISPATCH_GENERIC) || defined(OCSTL_CSTLIO_DISPATCH_BUILTIN)
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-#include "crossplatform.h"
 #include "defines.h"
 #ifdef OCSTL_OS_WINDOWS
-#include <windows.h>
+#if defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_GCC)
+#include <codecapi.h>
+#include <processenv.h>
+#else
+#include <WinBase.h>
+#endif
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
@@ -31,6 +49,11 @@ static void ocstl_ensure_unicode(void) {
 #define ocstl_ensure_unicode() ((void)0)
 #endif
 typedef enum {
+    OCSTL_COUT_BOOL,
+    OCSTL_COUT_SCHAR,
+    OCSTL_COUT_UCHAR,
+    OCSTL_COUT_SHORT,
+    OCSTL_COUT_USHORT,
     OCSTL_COUT_INT,
     OCSTL_COUT_UINT,
     OCSTL_COUT_LONG,
@@ -43,10 +66,17 @@ typedef enum {
     OCSTL_COUT_STR,
 } ocstl_cout_type_t;
 
+// Anonymous union is C11; widely supported as extension in C99 by
+// GCC/Clang/MSVC/TCC/Pelles. Kept as-is for source compatibility.
 typedef struct {
     ocstl_cout_type_t type;
 
     union {
+        _Bool b;
+        signed char sc;
+        unsigned char uc;
+        short h;
+        unsigned short uh;
         int i;
         unsigned int u;
         long l;
@@ -60,89 +90,179 @@ typedef struct {
     };
 } ocstl_val_t;
 
-static ocstl_val_t _ocstl_mk_int(int x) {
+static ocstl_val_t ocstl_mk_bool(_Bool x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_BOOL;
+    v.b = x;
+    return v;
+}
+
+static ocstl_val_t ocstl_mk_schar(signed char x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_SCHAR;
+    v.sc = x;
+    return v;
+}
+
+static ocstl_val_t ocstl_mk_uchar(unsigned char x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_UCHAR;
+    v.uc = x;
+    return v;
+}
+
+static ocstl_val_t ocstl_mk_short(short x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_SHORT;
+    v.h = x;
+    return v;
+}
+
+static ocstl_val_t ocstl_mk_ushort(unsigned short x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_USHORT;
+    v.uh = x;
+    return v;
+}
+
+static ocstl_val_t ocstl_mk_int(int x) {
     ocstl_val_t v;
     v.type = OCSTL_COUT_INT;
     v.i = x;
     return v;
 }
 
-static ocstl_val_t _ocstl_mk_uint(unsigned int x) {
+static ocstl_val_t ocstl_mk_uint(unsigned int x) {
     ocstl_val_t v;
     v.type = OCSTL_COUT_UINT;
     v.u = x;
     return v;
 }
 
-static ocstl_val_t _ocstl_mk_long(long x) {
+static ocstl_val_t ocstl_mk_long(long x) {
     ocstl_val_t v;
     v.type = OCSTL_COUT_LONG;
     v.l = x;
     return v;
 }
 
-static ocstl_val_t _ocstl_mk_ulong(unsigned long x) {
+static ocstl_val_t ocstl_mk_ulong(unsigned long x) {
     ocstl_val_t v;
     v.type = OCSTL_COUT_ULONG;
     v.ul = x;
     return v;
 }
 
-static ocstl_val_t _ocstl_mk_llong(long long x) {
+static ocstl_val_t ocstl_mk_llong(long long x) {
     ocstl_val_t v;
     v.type = OCSTL_COUT_LLONG;
     v.ll = x;
     return v;
 }
 
-static ocstl_val_t _ocstl_mk_ullong(unsigned long long x) {
+static ocstl_val_t ocstl_mk_ullong(unsigned long long x) {
     ocstl_val_t v;
     v.type = OCSTL_COUT_ULLONG;
     v.ull = x;
     return v;
 }
 
-static ocstl_val_t _ocstl_mk_float(float x) {
+static ocstl_val_t ocstl_mk_float(float x) {
     ocstl_val_t v;
     v.type = OCSTL_COUT_FLOAT;
     v.f = x;
     return v;
 }
 
-static ocstl_val_t _ocstl_mk_double(double x) {
+static ocstl_val_t ocstl_mk_double(double x) {
     ocstl_val_t v;
     v.type = OCSTL_COUT_DOUBLE;
     v.d = x;
     return v;
 }
 
-static ocstl_val_t _ocstl_mk_char(char x) {
+static ocstl_val_t ocstl_mk_char(char x) {
     ocstl_val_t v;
     v.type = OCSTL_COUT_CHAR;
     v.c = x;
     return v;
 }
 
-static ocstl_val_t _ocstl_mk_str(const char *x) {
+static ocstl_val_t ocstl_mk_str(const char *x) {
     ocstl_val_t v;
     v.type = OCSTL_COUT_STR;
     v.s = x;
     return v;
 }
 
+#if defined(OCSTL_CSTLIO_DISPATCH_GENERIC)
+
+// C11+ path: native _Generic dispatch.
+// Note: char, signed char, unsigned char are three distinct types in C.
+// Same for _Bool. Each must have its own arm or compilation fails.
 #define OCSTL_VAL(x) _Generic((x),                  \
-    int:                _ocstl_mk_int,              \
-    unsigned int:       _ocstl_mk_uint,             \
-    long:               _ocstl_mk_long,             \
-    unsigned long:      _ocstl_mk_ulong,            \
-    long long:          _ocstl_mk_llong,            \
-    unsigned long long: _ocstl_mk_ullong,           \
-    float:              _ocstl_mk_float,            \
-    double:             _ocstl_mk_double,           \
-    char:               _ocstl_mk_char,             \
-    char *:             _ocstl_mk_str,              \
-    const char *:       _ocstl_mk_str               \
+    _Bool:              ocstl_mk_bool,              \
+    signed char:        ocstl_mk_schar,             \
+    unsigned char:      ocstl_mk_uchar,             \
+    short:              ocstl_mk_short,             \
+    unsigned short:     ocstl_mk_ushort,            \
+    int:                ocstl_mk_int,               \
+    unsigned int:       ocstl_mk_uint,              \
+    long:               ocstl_mk_long,              \
+    unsigned long:      ocstl_mk_ulong,             \
+    long long:          ocstl_mk_llong,             \
+    unsigned long long: ocstl_mk_ullong,            \
+    float:              ocstl_mk_float,             \
+    double:             ocstl_mk_double,            \
+    char:               ocstl_mk_char,              \
+    char *:             ocstl_mk_str,               \
+    const char *:       ocstl_mk_str                \
 )(x)
+
+#elif defined(OCSTL_CSTLIO_DISPATCH_BUILTIN)
+
+// C99 path: GCC/Clang extensions emulate _Generic.
+//
+// Limitation: in C99, _Generic's automatic array-to-pointer decay is not
+// available via __builtin_types_compatible_p. We could try `1 ? (x) : (x)`
+// to force decay, but that also triggers integer/float promotion on small
+// integer arms, breaking _Bool/char/short matching. Wrapping the cast in
+// __builtin_choose_expr does not help either: GCC type-checks the
+// unselected branch and rejects e.g. `(const char *)(float_expr)`.
+//
+// Conclusion: C99 path matches char* and const char* by exact type only.
+//   const char *p = "hello"; print("{}", p);            // OK
+//   print("{}", (const char *)"hello");                 // OK
+//   print("{}", "hello");                               // ERROR in C99 path
+//                                                       // (works in C11+)
+// For best compatibility, build with -std=c11 or later.
+#define OCSTL_TYPEEQ(x, T) __builtin_types_compatible_p(__typeof__(x), T)
+#define OCSTL_AS(x, T)                                          \
+    (*(T*)__builtin_choose_expr(OCSTL_TYPEEQ(x, T),             \
+        (void*)&(__typeof__(x)){(x)},                           \
+        (void*)0))
+
+#define OCSTL_VAL(x)                                                                                                \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, _Bool),              ocstl_mk_bool  (OCSTL_AS(x, _Bool)),                 \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, signed char),        ocstl_mk_schar (OCSTL_AS(x, signed char)),           \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned char),      ocstl_mk_uchar (OCSTL_AS(x, unsigned char)),         \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, short),              ocstl_mk_short (OCSTL_AS(x, short)),                 \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned short),     ocstl_mk_ushort(OCSTL_AS(x, unsigned short)),        \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, int),                ocstl_mk_int   (OCSTL_AS(x, int)),                   \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned int),       ocstl_mk_uint  (OCSTL_AS(x, unsigned int)),          \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, long),               ocstl_mk_long  (OCSTL_AS(x, long)),                  \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned long),      ocstl_mk_ulong (OCSTL_AS(x, unsigned long)),         \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, long long),          ocstl_mk_llong (OCSTL_AS(x, long long)),             \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned long long), ocstl_mk_ullong(OCSTL_AS(x, unsigned long long)),    \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, float),              ocstl_mk_float (OCSTL_AS(x, float)),                 \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, double),             ocstl_mk_double(OCSTL_AS(x, double)),                \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, char),               ocstl_mk_char  (OCSTL_AS(x, char)),                  \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, char *),             ocstl_mk_str   (OCSTL_AS(x, char *)),                \
+    __builtin_choose_expr(OCSTL_TYPEEQ(x, const char *),       ocstl_mk_str   (OCSTL_AS(x, const char *)),          \
+        ocstl_mk_int(0)))))))))))))))))
+
+#endif
+
 #define OCSTL_MAP1(f,a)      f(a)
 #define OCSTL_MAP2(f,a,...)  f(a), OCSTL_MAP1(f, __VA_ARGS__)
 #define OCSTL_MAP3(f,a,...)  f(a), OCSTL_MAP2(f, __VA_ARGS__)
@@ -361,6 +481,35 @@ static void ocstl_print_val(const ocstl_val_t *v, const ocstl_fmt_spec_t *spec) 
     int len = 0;
     int sign_prefix_len = -1;
     switch (v->type) {
+        case OCSTL_COUT_BOOL:
+            len = ocstl_format_int(buf, sizeof buf,
+                                   (unsigned long long) v->b, false,
+                                   spec, &sign_prefix_len);
+            break;
+        case OCSTL_COUT_SCHAR: {
+            long long sv = v->sc;
+            len = ocstl_format_int(buf, sizeof buf,
+                                   (unsigned long long) (sv < 0 ? -sv : sv),
+                                   sv < 0, spec, &sign_prefix_len);
+            break;
+        }
+        case OCSTL_COUT_UCHAR:
+            len = ocstl_format_int(buf, sizeof buf,
+                                   (unsigned long long) v->uc, false,
+                                   spec, &sign_prefix_len);
+            break;
+        case OCSTL_COUT_SHORT: {
+            long long sv = v->h;
+            len = ocstl_format_int(buf, sizeof buf,
+                                   (unsigned long long) (sv < 0 ? -sv : sv),
+                                   sv < 0, spec, &sign_prefix_len);
+            break;
+        }
+        case OCSTL_COUT_USHORT:
+            len = ocstl_format_int(buf, sizeof buf,
+                                   (unsigned long long) v->uh, false,
+                                   spec, &sign_prefix_len);
+            break;
         case OCSTL_COUT_INT: {
             long long sv = v->i;
             len = ocstl_format_int(buf, sizeof buf,
@@ -442,87 +591,98 @@ static void ocstl_print_impl(const char *fmt, const ocstl_val_t *args, int n) {
     }
 }
 
-#define _OCSTL_PRINT_N1(fmt) \
+#define OCSTL_PRINT_N1(fmt) \
     do { ocstl_ensure_unicode(); ocstl_print_impl((fmt), NULL, 0); } while (0)
-#define _OCSTL_PRINT_1(fmt) _OCSTL_PRINT_N1(fmt)
-#define _OCSTL_PRINT_2(fmt, _a) do {                                                       \
+#define OCSTL_PRINT_1(fmt) OCSTL_PRINT_N1(fmt)
+#define OCSTL_PRINT_2(fmt, _a) do {                                                       \
     ocstl_val_t _args[1];                                                                  \
     _args[0] = OCSTL_VAL(_a);                                                              \
     ocstl_print_impl((fmt), _args, 1);                                                     \
 } while (0)
-#define _OCSTL_PRINT_3(fmt, _a, _b) do {                                                   \
+#define OCSTL_PRINT_3(fmt, _a, _b) do {                                                   \
     ocstl_val_t _args[2];                                                                  \
     _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b);                                    \
     ocstl_print_impl((fmt), _args, 2);                                                     \
 } while (0)
-#define _OCSTL_PRINT_4(fmt, _a, _b, _c) do {                                               \
+#define OCSTL_PRINT_4(fmt, _a, _b, _c) do {                                               \
     ocstl_val_t _args[3];                                                                  \
     _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
     ocstl_print_impl((fmt), _args, 3);                                                     \
 } while (0)
-#define _OCSTL_PRINT_5(fmt, _a, _b, _c, _d) do {                                           \
+#define OCSTL_PRINT_5(fmt, _a, _b, _c, _d) do {                                           \
     ocstl_val_t _args[4];                                                                  \
     _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b);                                    \
     _args[2] = OCSTL_VAL(_c); _args[3] = OCSTL_VAL(_d);                                    \
     ocstl_print_impl((fmt), _args, 4);                                                     \
 } while (0)
-#define _OCSTL_PRINT_6(fmt, _a, _b, _c, _d, _e) do {                                       \
+#define OCSTL_PRINT_6(fmt, _a, _b, _c, _d, _e) do {                                       \
     ocstl_val_t _args[5];                                                                  \
     _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b);                                    \
     _args[2] = OCSTL_VAL(_c); _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e);          \
     ocstl_print_impl((fmt), _args, 5);                                                     \
 } while (0)
-#define _OCSTL_PRINT_7(fmt, _a, _b, _c, _d, _e, _f) do {                                   \
+#define OCSTL_PRINT_7(fmt, _a, _b, _c, _d, _e, _f) do {                                   \
     ocstl_val_t _args[6];                                                                  \
     _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
     _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e); _args[5] = OCSTL_VAL(_f);          \
     ocstl_print_impl((fmt), _args, 6);                                                     \
 } while (0)
-#define _OCSTL_PRINT_8(fmt, _a, _b, _c, _d, _e, _f, _g) do {                               \
+#define OCSTL_PRINT_8(fmt, _a, _b, _c, _d, _e, _f, _g) do {                               \
     ocstl_val_t _args[7];                                                                  \
     _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
     _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e); _args[5] = OCSTL_VAL(_f);          \
     _args[6] = OCSTL_VAL(_g);                                                              \
     ocstl_print_impl((fmt), _args, 7);                                                     \
 } while (0)
-#define _OCSTL_PRINT_9(fmt, _a, _b, _c, _d, _e, _f, _g, _h) do {                           \
+#define OCSTL_PRINT_9(fmt, _a, _b, _c, _d, _e, _f, _g, _h) do {                           \
     ocstl_val_t _args[8];                                                                  \
     _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
     _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e); _args[5] = OCSTL_VAL(_f);          \
     _args[6] = OCSTL_VAL(_g); _args[7] = OCSTL_VAL(_h);                                    \
     ocstl_print_impl((fmt), _args, 8);                                                     \
 } while (0)
-#define _OCSTL_PRINT_10(fmt, _a, _b, _c, _d, _e, _f, _g, _h, _i) do {                      \
+#define OCSTL_PRINT_10(fmt, _a, _b, _c, _d, _e, _f, _g, _h, _i) do {                      \
     ocstl_val_t _args[9];                                                                  \
     _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
     _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e); _args[5] = OCSTL_VAL(_f);          \
     _args[6] = OCSTL_VAL(_g); _args[7] = OCSTL_VAL(_h); _args[8] = OCSTL_VAL(_i);          \
     ocstl_print_impl((fmt), _args, 9);                                                     \
 } while (0)
-#define _OCSTL_PRINT_11(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_12(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_13(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_14(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_15(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_16(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_17(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_18(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_19(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_20(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_21(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_22(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_23(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_24(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_25(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_26(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_27(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_28(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_29(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_30(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_31(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PRINT_32(...) _OCSTL_PRINT_NX(__VA_ARGS__)
-#define _OCSTL_PASTE2(a, b) a##b
-#define _OCSTL_PASTE(a, b)  _OCSTL_PASTE2(a, b)
-#define print(...)   _OCSTL_PASTE(_OCSTL_PRINT_, ARGN(__VA_ARGS__))(__VA_ARGS__)
+#define OCSTL_PRINT_11(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_12(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_13(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_14(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_15(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_16(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_17(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_18(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_19(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_20(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_21(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_22(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_23(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_24(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_25(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_26(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_27(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_28(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_29(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_30(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_31(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PRINT_32(...) OCSTL_PRINT_NX(__VA_ARGS__)
+#define OCSTL_PASTE2(a, b) a##b
+#define OCSTL_PASTE(a, b)  OCSTL_PASTE2(a, b)
+#define print(...)   OCSTL_PASTE(OCSTL_PRINT_, ARGN(__VA_ARGS__))(__VA_ARGS__)
 #define println(...) do { print(__VA_ARGS__); putchar('\n'); } while (0)
+#endif
+
+
+#ifndef print
+#define print(...)   __noop
+#pragma message("warning: print/println is not defined in MSVC C99; use /std:c11 or newer")
+#endif
+#ifndef println
+#define println(...) __noop
+#endif
+
 #endif

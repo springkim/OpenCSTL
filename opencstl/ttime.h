@@ -38,14 +38,18 @@
 #if !defined(_OPENCSTL_CSTL_TICKTOCK_H)
 #define _OPENCSTL_CSTL_TICKTOCK_H
 
-
+#include "crossplatform.h"
 #include <stdio.h>
 
 
-#if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
+#if defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_TCC) ||defined(OCSTL_CC_CLANG))
 
+#if defined(OCSTL_CC_TCC)
 #include <windows.h>
-
+#else
+#include <winnt.h>
+#include <profileapi.h>
+#endif
 static double ttime(void) {
     LARGE_INTEGER freq, counter;
     QueryPerformanceFrequency(&freq);

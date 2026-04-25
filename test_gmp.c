@@ -23,6 +23,7 @@ void test_uint64() {
     }
     for (uint64_t *it = begin(arr); it != end(arr); it = next(it)) {
         println("{}", *it);
+        printf("%lu\n", *it);
     }
     destroy(arr);
 }
@@ -64,6 +65,8 @@ void test_mpz() {
 }
 
 int main() {
+    logging.info(opencstl_env());
+    logging.info(opencstl_version());
     test_uint64();
     test_mpz();
     return 0;

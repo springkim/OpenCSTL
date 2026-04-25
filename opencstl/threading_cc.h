@@ -55,8 +55,6 @@ static int cpu_count(void) {
 #elif defined(OCSTL_OS_MACOS)
     int count = 0;
     size_t size = sizeof(count);
-    // hw.logicalcpu: 하이퍼스레딩 포함 논리 코어
-    // hw.physicalcpu: 물리 코어만
     sysctlbyname("hw.logicalcpu", &count, &size, NULL, 0);
     return count;
 
@@ -125,15 +123,11 @@ static void cpu_pin(void) {
     SetThreadAffinityMask(GetCurrentThread(), (DWORD_PTR) 1 << 0);
 
 #elif defined(OCSTL_OS_LINUX)
-    /* cpu_set_t cpuset; CPU_ZERO(&cpuset); CPU_SET(0, &cpuset);
-     * sched_setaffinity(0, sizeof(cpu_set_t), &cpuset);
-     * 위 매크로/함수는 _GNU_SOURCE에 의존하므로 비트마스크와 syscall로 직접 풀어 작성 */
-    unsigned long cpuset = 0UL;   /* CPU_ZERO(&cpuset) */
-    cpuset |= 1UL << 0;           /* CPU_SET(0, &cpuset) */
+    unsigned long cpuset = 0UL;
+    cpuset |= 1UL << 0;
     syscall(SYS_sched_setaffinity, 0, sizeof(cpuset), &cpuset);
 
 #elif defined(OCSTL_OS_MACOS)
-    // 코어 친화성 힌트
     thread_affinity_policy_data_t affinity = {1};
     thread_policy_set(
         mach_thread_self(),
@@ -148,10 +142,10 @@ static void cpu_pin(void) {
 #define NS_TO_MACH(ns) ((uint64_t)(ns) * tb.denom / tb.numer)
 
     thread_time_constraint_policy_data_t rt;
-    rt.period = 0; // 비주기적 — 벤치마크는 한 번 길게 돌림
-    rt.computation = NS_TO_MACH(500000000); // 50ms — 정렬 한 회 실행 예산
-    rt.constraint = NS_TO_MACH(500000000); // computation과 동일하게
-    rt.preemptible = 0; // 비선점 — 중간에 끊기지 않도록
+    rt.period = 0;
+    rt.computation = NS_TO_MACH(500000000);
+    rt.constraint = NS_TO_MACH(500000000);
+    rt.preemptible = 0;
 
     thread_policy_set(
         mach_thread_self(),

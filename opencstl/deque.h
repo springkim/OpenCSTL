@@ -105,9 +105,10 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_type64 n, void *va
     //size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
     size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
-#if !defined(__linux__)
+#if !defined(__linux__) && !defined(__APPLE__)
+    size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
-    if (strcmp(type, "float") == 0) {
+    if (is_float) {
         valuef = (float) *(double *) value;
         value = &valuef;
     }

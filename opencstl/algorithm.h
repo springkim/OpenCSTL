@@ -35,8 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#if !defined(_OPENCSTL_C_ALGORITHM_H)
-#define _OPENCSTL_C_ALGORITHM_H
+#if !defined(HG_F5E8FFEF752BAB76E14F9A1769EAC95C8E92BFF223E1FAA4CABA295E38724C7A_H)
+#define HG_F5E8FFEF752BAB76E14F9A1769EAC95C8E92BFF223E1FAA4CABA295E38724C7A_H
 
 
 #include "defines.h"
@@ -283,11 +283,12 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #endif
 
+#ifndef OPENCSTL_USE_PREFIX
+#define max_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 1LL, NULL)
+#define min_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 0LL, NULL)
+#endif
 
-#define max_element(C, ...) _cstl_max_element(&(C), ##__VA_ARGS__, NULL)
-#define min_element(C, ...) _cstl_min_element(&(C), ##__VA_ARGS__, NULL)
-
-OPENCSTL_FUNC size_type64 __cstl_minmax_container_type(void *container) {
+OPENCSTL_FUNC void ocstl_minmax_container_type_check(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
@@ -299,6 +300,7 @@ OPENCSTL_FUNC size_type64 __cstl_minmax_container_type(void *container) {
         case OPENCSTL_ARRAY:
         case OPENCSTL_VECTOR:
         case OPENCSTL_DEQUE:
+        case OPENCSTL_LIST:
         case OPENCSTL_SET:
         case OPENCSTL_MAP:
         case OPENCSTL_UNORDERED_SET:
@@ -307,21 +309,33 @@ OPENCSTL_FUNC size_type64 __cstl_minmax_container_type(void *container) {
         default:
             fault("max_element/min_element: unsupported container type");
     }
-    return container_type;
 }
 
-OPENCSTL_FUNC void *_cstl_max_element(void *container, ...) {
-    __cstl_minmax_container_type(container);
+static int ocstl_max_cmp(const CSTL_COMPARE cmp, const void *a, const void *b) {
+    return cmp(a, b);
+}
+
+static int ocstl_min_cmp(const CSTL_COMPARE cmp, const void *a, const void *b) {
+    return cmp(b, a);
+}
+
+typedef int (*OCSTL_MM_CMP)(const CSTL_COMPARE, const void *, const void *);
+
+OPENCSTL_FUNC void *ocstl_min_max_element(void *container, ...) {
+    ocstl_minmax_container_type_check(container);
 
     va_list vl;
     void *va_ptr = NULL;
     __cstl_va_start(vl, container, va_ptr);
 #if CSTL_USE_VAARG
     CSTL_COMPARE cmp = (CSTL_COMPARE) __cstl_va_arg_next(vl);
+    size_type64 is_max = (size_type64) __cstl_va_arg_next(vl);
 #else
     CSTL_COMPARE cmp = *(CSTL_COMPARE *) __cstl_va_arg(va_ptr);
+    size_type64 is_max = *(size_type64 *) __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
 #endif
     __cstl_va_end(vl);
+    OCSTL_MM_CMP wrp_cmp = is_max ? ocstl_max_cmp : ocstl_min_cmp;
 
     void *_begin = _cstl_begin(container);
     void *_end = _cstl_end(container);
@@ -342,7 +356,7 @@ OPENCSTL_FUNC void *_cstl_max_element(void *container, ...) {
     void *max_it = _begin;
     void *it = cstl_next(_begin);
     while (it != _end) {
-        if (cmp(it, max_it) > 0) {
+        if (wrp_cmp(cmp, it, max_it) > 0) {
             max_it = it;
         }
         it = cstl_next(it);
@@ -350,44 +364,4 @@ OPENCSTL_FUNC void *_cstl_max_element(void *container, ...) {
     return max_it;
 }
 
-OPENCSTL_FUNC void *_cstl_min_element(void *container, ...) {
-    __cstl_minmax_container_type(container);
-
-    va_list vl;
-    void *va_ptr = NULL;
-    __cstl_va_start(vl, container, va_ptr);
-#if CSTL_USE_VAARG
-    CSTL_COMPARE cmp = (CSTL_COMPARE) __cstl_va_arg_next(vl);
-#else
-    CSTL_COMPARE cmp = *(CSTL_COMPARE *) __cstl_va_arg(va_ptr);
 #endif
-    __cstl_va_end(vl);
-
-    void *_begin = _cstl_begin(container);
-    void *_end = _cstl_end(container);
-
-    if (_begin == _end) {
-        return _end;
-    }
-
-    if (cmp == NULL) {
-        Interval *tm = iveb_find(iveb, _begin);
-        cmp = LESS(tm->type_name);
-        if (cmp == NULL) {
-            cmp = _memcmp_funcs[tm->type_size];
-        }
-        verify(cmp != NULL);
-    }
-
-    void *min_it = _begin;
-    void *it = cstl_next(_begin);
-    while (it != _end) {
-        if (cmp(it, min_it) < 0) {
-            min_it = it;
-        }
-        it = cstl_next(it);
-    }
-    return min_it;
-}
-
-#endif //_OPENCSTL_C_ALGORITHM_H
