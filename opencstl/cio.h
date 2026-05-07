@@ -678,11 +678,11 @@ static void ocstl_print_impl(const char *fmt, const ocstl_val_t *args, int n) {
 
 
 #ifndef print
-#define print(...)   __noop
+#define print(...)   ((void*)0)
 #pragma message("warning: print/println is not defined in MSVC C99; use /std:c11 or newer")
 #endif
 #ifndef println
-#define println(...) __noop
+#define println(...) ((void*)0)
 #endif
 
 #endif

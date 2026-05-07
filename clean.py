@@ -12,6 +12,7 @@ for file in files:
 remove_file("a.out")
 remove_file("a.exe")
 remove_file("main.exe")
+remove_file("a.pdb")
 remove_file("test/a.out")
 remove_file("perftest/a.out")
 remove_file("assets/opencstl.h")

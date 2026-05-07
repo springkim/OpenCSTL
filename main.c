@@ -518,7 +518,7 @@ void test04(void) {
     free(data);
 }
 
-int main(void) {
+int main2(void) {
     logging.info(opencstl_env());
     logging.info(opencstl_version());
     int n = 6;
@@ -534,7 +534,7 @@ int main(void) {
     return 0;
 }
 
-int main1(void) {
+int main(void) {
     logging.info(opencstl_env());
     logging.info(opencstl_version());
 

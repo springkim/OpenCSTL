@@ -12799,9 +12799,10 @@ static void MsgBoxCLI(const char *format, ...) {
 
 #if defined(OCSTL_OS_WINDOWS)
 
-#if defined(OCSTL_CC_GCC_)
+#if defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_MSVC)
 #pragma comment(lib, "user32.lib")
 #endif
+
 
 static char *_MsgTitle(void) {
     static char buf[1024] = {0};
@@ -14440,11 +14441,11 @@ static void ocstl_print_impl(const char *fmt, const ocstl_val_t *args, int n) {
 
 
 #ifndef print
-#define print(...)   __noop
+#define print(...)   ((void*)0)
 #pragma message("warning: print/println is not defined in MSVC C99; use /std:c11 or newer")
 #endif
 #ifndef println
-#define println(...) __noop
+#define println(...) ((void*)0)
 #endif
 
 

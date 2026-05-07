@@ -111,9 +111,10 @@ static void MsgBoxCLI(const char *format, ...) {
 
 #if defined(OCSTL_OS_WINDOWS)
 
-#if defined(OCSTL_CC_GCC_)
+#if defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_MSVC)
 #pragma comment(lib, "user32.lib")
 #endif
+
 
 static char *_MsgTitle(void) {
     static char buf[1024] = {0};
