@@ -35,9 +35,9 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#ifndef OPENCSTL_ARRAY_H
-#define OPENCSTL_ARRAY_H
-#include"zalloc.h"
+#ifndef HG_2CAB9E5821BD539EFB3B8B5D43EA27B7C4C89551ABC2EE5EE2A7409B555132E8_H
+#define HG_2CAB9E5821BD539EFB3B8B5D43EA27B7C4C89551ABC2EE5EE2A7409B555132E8_H
+#include "zalloc.h"
 #include "van_emde_boas_tree.h"
 #include "swap.h"
 #include "utility.h"
@@ -288,4 +288,4 @@ OPENCSTL_FUNC void *__cstl_array_upper_bound(void **container, void *value, CSTL
     if (L >= length) return NULL;
     return ((char *) *container) + (type_size * L);
 }
-#endif //OPENCSTL_ARRAY_H
+#endif

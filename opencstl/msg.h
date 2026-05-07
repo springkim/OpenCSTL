@@ -111,7 +111,7 @@ static void MsgBoxCLI(const char *format, ...) {
 
 #if defined(OCSTL_OS_WINDOWS)
 
-#if defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_MSVC)
+#if defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_MSVC)
 #pragma comment(lib, "user32.lib")
 #endif
 
