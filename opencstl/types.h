@@ -72,4 +72,5 @@ typedef unsigned long long uint64_x;
 typedef unsigned char ubyte_x;
 typedef wchar_t wchar;
 
+#define OCSTL_MAX_PATH 260
 #endif

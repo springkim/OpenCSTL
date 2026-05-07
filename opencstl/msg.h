@@ -157,7 +157,7 @@ static void MsgBoxGUI(const char *format, ...) {
 #endif
 
     // 3) 컴파일러 무관하게 동일한 템플릿으로 본문 빌드
-    char path[MAX_PATH];
+    char path[OCSTL_MAX_PATH];
     GetModuleFileNameA(NULL, path, sizeof(path));
 
     char buf[2048]; // path(260) + userMsg(1024) + 템플릿 여유

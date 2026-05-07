@@ -113,12 +113,12 @@ OPENCSTL_FUNC void __cstl_list_pop_back_front(void **container, int ntail, int n
     void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
     verify(*head != NULL && *tail != NULL);
     if (*head == *tail) {
-        free(&OPENCSTL_NIDX(tail, -3)); //fix
+        free((void*)&OPENCSTL_NIDX(tail, -3)); //fix
         *head = *tail = 0;
     } else {
         *tail = (void *) OPENCSTL_NIDX(tail, -(nhead + 2));
         void *fb = (void *) OPENCSTL_NIDX(tail, -(ntail + 2));
-        free(&OPENCSTL_NIDX(&fb, -3));
+        free((void*)&OPENCSTL_NIDX(&fb, -3));
         OPENCSTL_NIDX(tail, -(ntail + 2)) = 0;
     }
 
