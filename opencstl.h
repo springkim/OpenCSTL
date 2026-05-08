@@ -64,7 +64,6 @@ extern "C" {
 // BEGIN  crossplatform.h                (depth 1)
 // ==============================================================================
 
-
 //
 //  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
@@ -101,8 +100,8 @@ extern "C" {
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#ifndef _OPENCSTL_CROSSPLATFORM_H
-#define _OPENCSTL_CROSSPLATFORM_H
+#ifndef HG_B3857317B6F909AAF025A5EE1CA7602C70A9E539A3A0FBCF3FB0BD10FDD835B7_H
+#define HG_B3857317B6F909AAF025A5EE1CA7602C70A9E539A3A0FBCF3FB0BD10FDD835B7_H
 
 
 // ░█████╗░░██████╗
@@ -196,7 +195,7 @@ extern "C" {
 #endif
 
 
-#endif //_OPENCSTL_CROSSPLATFORM_H
+#endif
 
 // ==============================================================================
 // END    crossplatform.h
@@ -456,9 +455,10 @@ static void cpu_pin(void) {
 // loss of use, data, or profits; or business interruption) however caused
 // and on any theory of liability, whether in contract, strict liability,
 // or
-#if !defined(_OPENCSTL_ZALLOC_H)
-#define _OPENCSTL_ZALLOC_H
+#if!defined(HG_61156A4C704519E4CE57DAB09ABAD57E1108C67C598C40FE87080E76A0E99BE1_H)
+#define HG_61156A4C704519E4CE57DAB09ABAD57E1108C67C598C40FE87080E76A0E99BE1_H
 #include <stdlib.h>
+
 
 // ==============================================================================
 // BEGIN  tracer.h                       (depth 2)
@@ -1089,78 +1089,74 @@ __declspec(allocate(".CRT$XCU")) static int (*__p)(void) = opencstl_init;
 
 
 #ifdef OPENCSTL_TRACER
-typedef void (*free_fn)(void *ptr);
+typedef void( * free_fn)(void * ptr);
 
-typedef void *(*malloc_fn)(size_t sz);
+typedef void * ( * malloc_fn)(size_t sz);
 
-typedef void *(*realloc_fn)(void *ptr, size_t new_size);
+typedef void * ( * realloc_fn)(void * ptr, size_t new_size);
 
-typedef void * (*calloc_fn)(size_t cnt, size_t sz);
+typedef void * ( * calloc_fn)(size_t cnt, size_t sz);
 
 static free_fn ofree = free;
 static malloc_fn omalloc = malloc;
 static realloc_fn orealloc = realloc;
 static calloc_fn ocalloc = calloc;
 
-static void zfree(void *ptr) {
+static void zfree(void * ptr) {
+  zremove(ptr);
+  ofree(ptr);
+}
+
+static void * _zcalloc(size_type64 cnt, size_type64 sz, char * file,
+  const char * func, int line) {
+  void * ptr = ocalloc(cnt, sz);
+  if (ptr) {
+    zinsert(ptr, file, func, line);
+  }
+  return ptr;
+}
+
+static void * _zmalloc(size_type64 sz, char * file,
+  const char * func, int line) {
+  void * ptr = omalloc(sz);
+  if (ptr) {
+    zinsert(ptr, file, func, line);
+  }
+  return ptr;
+}
+
+static void * _zrealloc(void * ptr, size_type64 new_size, char * file,
+  const char * func, int line) {
+  if (ptr == NULL) {
+    return _zmalloc(new_size, file, func, line);
+  }
+
+  if (new_size == 0) {
+    zfree(ptr);
+    return NULL;
+  }
+
+  void * new_ptr = orealloc(ptr, new_size);
+  if (new_ptr == NULL) {
+    return NULL;
+  }
+
+  if (new_ptr != ptr) {
     zremove(ptr);
-    ofree(ptr);
+    zinsert(new_ptr, file, func, line);
+  }
+
+  return new_ptr;
 }
-
-
-static void *_zcalloc(size_type64 cnt, size_type64 sz, char *file, const char *func, int line) {
-    void *ptr = ocalloc(cnt, sz);
-    if (ptr) {
-        zinsert(ptr, file, func, line);
-    }
-    return ptr;
-}
-
-
-static void *_zmalloc(size_type64 sz, char *file, const char *func, int line) {
-    void *ptr = omalloc(sz);
-    if (ptr) {
-        zinsert(ptr, file, func, line);
-    }
-    return ptr;
-}
-
-
-static void *_zrealloc(void *ptr, size_type64 new_size, char *file, const char *func, int line) {
-    if (ptr == NULL) {
-        return _zmalloc(new_size, file, func, line);
-    }
-
-    if (new_size == 0) {
-        zfree(ptr);
-        return NULL;
-    }
-
-    void *new_ptr = orealloc(ptr, new_size);
-    if (new_ptr == NULL) {
-        return NULL;
-    }
-
-    if (new_ptr != ptr) {
-        zremove(ptr);
-        zinsert(new_ptr, file, func, line);
-    }
-
-    return new_ptr;
-}
-
 
 #define free(ptr) zfree(ptr)
-#define calloc(cnt, sz) _zcalloc(cnt, sz,__FILE__,__func__,__LINE__)
-#define malloc(sz) _zmalloc(sz,__FILE__,__func__,__LINE__)
-#define realloc(ptr, new_size) _zrealloc(ptr, new_size,__FILE__,__func__,__LINE__)
-
+#define calloc(cnt, sz) _zcalloc(cnt, sz, __FILE__, __func__, __LINE__)
+#define malloc(sz) _zmalloc(sz, __FILE__, __func__, __LINE__)
+#define realloc(ptr, new_size) _zrealloc(ptr, new_size, __FILE__, __func__, __LINE__)
 
 #endif
 
-
-#endif //_OPENCSTL_ZALLOC_H
-
+#endif
 // ==============================================================================
 // END    zalloc.h
 // ==============================================================================
@@ -1208,9 +1204,9 @@ static void *_zrealloc(void *ptr, size_type64 new_size, char *file, const char *
 // the use of this software, even if advised of the possibility of such damage.
 //
 
-#if !defined(_OPENCSTL_DEFINES_H)
-#define _OPENCSTL_DEFINES_H
-// [already included: opencstl.h]
+#if !defined(HG_E68C84B2551466CAD9CC203A4EAD4DF4B495442F0528FF84F6471E6C53DF3A88_H)
+#define HG_E68C84B2551466CAD9CC203A4EAD4DF4B495442F0528FF84F6471E6C53DF3A88_H
+
 
 #if defined(_WIN32) || defined(_WIN64)
 #define OPENCSTL_OS_WINDOWS
@@ -1228,6 +1224,13 @@ static void *_zrealloc(void *ptr, size_type64 new_size, char *file, const char *
 #define OPENCSTL_CC_GCC
 
 #endif
+
+#if defined(_WIN32) || defined(_WIN64)
+#define SELECT_ANY	__declspec(selectany)
+#elif defined(__linux__) || defined(__APPLE__)
+#define SELECT_ANY	__attribute__((weak))
+#endif
+#define OPENCSTL_FUNC	static
 
 //#define OPENCSTL_ARRAYBASE	0x80	//b10000000
 //#define OPENCSTL_NODEBASE	0x40	//b01000000
@@ -1398,6 +1401,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 
 #if defined(_WIN32) || defined(_WIN64)
 
+
 #define cstl_push(container,...)	_cstl_push(&(container),__VA_ARGS__)
 #define cstl_push_back(container,...)	_cstl_push_back(&(container),__VA_ARGS__)
 #define cstl_push_front(container,...)	_cstl_push_front(&(container),__VA_ARGS__)
@@ -1551,19 +1555,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define _cstl_push_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(_1) __1=_1;_CSTL_TYPEOF(_2) __2=_2;_CSTL_TYPEOF(_3) __3=_3;_CSTL_TYPEOF(_4) __4=_4;_CSTL_TYPEOF(_5) __5=_5;_CSTL_TYPEOF(_6) __6=_6;_CSTL_TYPEOF(_7) __7=_7;_CSTL_TYPEOF(_8) __8=_8;_CSTL_TYPEOF(_9) __9=_9;_CSTL_TYPEOF(_10) __10=_10;_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 
 
-// #define cstl_max_size(C,...) ({void* _() {_linux_cstl_max_size(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)}_;});
-// #define _linux_cstl_max_size(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_max_size ## _ ## N
-// #define _cstl_max_size_0(C) _cstl_max_size(&C)
-// #define _cstl_max_size_1(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_2(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_3(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_4(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_5(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_6(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_7(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_8(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_9(C,...) _cstl_max_size(&C)
-// #define _cstl_max_size_10(C,...) _cstl_max_size(&C)
+
 #define cstl_max_size(container) _cstl_max_size(&container)
 #define cstl_shrink_to_fit(container) _cstl_shrink_to_fit(&(container))
 #define cstl_reverse(container) _cstl_reverse(&(container))
@@ -1618,17 +1610,31 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #endif
 
 
-#if defined(_WIN32) || defined(_WIN64)
-#define SELECT_ANY	__declspec(selectany)
-#elif defined(__linux__) || defined(__APPLE__)
-#define SELECT_ANY	__attribute__((weak))
-#endif
-#define OPENCSTL_FUNC	static
+
 
 // ==============================================================================
 // END    defines.h
 // ==============================================================================
 
+// ==============================================================================
+// BEGIN  compiler.h                     (depth 1)
+// ==============================================================================
+
+//
+// Created by spring on 5/8/2026.
+//
+
+#ifndef OPENCSTL_COMPILER_H
+#define OPENCSTL_COMPILER_H
+// [already included: crossplatform.h]
+#if defined(OCSTL_CC_TCC)
+void *__dso_handle = (void *) 0;
+#endif
+#endif //OPENCSTL_COMPILER_H
+
+// ==============================================================================
+// END    compiler.h
+// ==============================================================================
 
 #define USE_CSTL_FUNC
 
@@ -1726,15 +1732,14 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-
-#ifndef OPENCSTL_VERIFY_H
-#define OPENCSTL_VERIFY_H
+#ifndef HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
+#define HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
 #include <assert.h>
 // [already included: logging.h]
 
-#define verify(EXPR) do { if(!(EXPR)) __verify(#EXPR,__FILE__,__LINE__); } while(0)
+#define verify(EXPR) do { if(!(EXPR)) ocstl_verify(#EXPR,__FILE__,__LINE__); } while(0)
 
-static int __verify(char *expression, char *file, int line) {
+static int ocstl_verify(char *expression, char *file, int line) {
     logging.error("Verification failed: %s, file %s, line %d",
                   expression, file, line);
     fflush(stdout);
@@ -1742,15 +1747,15 @@ static int __verify(char *expression, char *file, int line) {
     abort();
 }
 
-#define fault(STR) do{_fault((STR),__FILE__,__LINE__);}while(0)
+#define fault(STR) do{ocstl_fault((STR),__FILE__,__LINE__);}while(0)
 
-static void _fault(char *str, char *file, int line) {
+static void ocstl_fault(char *str, char *file, int line) {
     logging.error("Fault: %s, file %s, line %d", str, file, line);
     fflush(stdout);
     fflush(stderr);
     exit(-1);
 }
-#endif //OPENCSTL_VERIFY_H
+#endif
 
 // ==============================================================================
 // END    verify.h
@@ -1813,9 +1818,9 @@ static char **__cstl_string_split(const char *src, const char *sep, int *n) {
 
 
 static char *__cstl_string_replace(char *src, char *from, char *to) {
-    int len = strlen(src);
-    int from_len = strlen(from);
-    int to_len = strlen(to);
+    int len = (int)strlen(src);
+    int from_len = (int)strlen(from);
+    int to_len = (int)strlen(to);
 
     int count = 0;
     char *p = src;
@@ -2974,7 +2979,7 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
     if (veb_empty(iv->veb)) {
         if (sz <= ___OCSTL_512MB) {
             giveb_insert(iv, block_start,
-                         (void *) ((unsigned char *) block_start + sz - 1), type_size);
+                         (void *) ((unsigned char *) block_start + sz - 1), (int)type_size);
             return block_start;
         }
         return NULL;
@@ -2987,9 +2992,9 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
     if (first) {
         u64 gap_start = (u64) (uintptr_t) block_start;
         u64 gap_end = (u64) (uintptr_t) first->p1;
-        if (gap_end > gap_start && gap_end - gap_start >= sz) {
+        if (gap_end > gap_start && gap_end - gap_start >= (int)sz) {
             void *p = (void *) (uintptr_t) gap_start;
-            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), type_size);
+            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), (int)type_size);
             return p;
         }
     }
@@ -3012,9 +3017,9 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
         if (gap_end > (u64) (uintptr_t) block_end)
             gap_end = (u64) (uintptr_t) block_end;
 
-        if (gap_end > gap_start && gap_end - gap_start >= sz) {
+        if (gap_end > gap_start && gap_end - gap_start >= (int)sz) {
             void *p = (void *) (uintptr_t) gap_start;
-            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), type_size);
+            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), (int)type_size);
             return p;
         }
 
@@ -3062,7 +3067,7 @@ static void *_galloc(size_type64 sz, size_type64 type_size) {
     if (p == NULL) {
         return NULL;
     }
-    giveb_insert(giveb, p, (char *) p + (sz), type_size);
+    giveb_insert(giveb, p, (char *) p + (sz), (int)type_size);
     if (giveb_init) {
         atexit(__opencstl_giveb_destroy);
     }
@@ -3127,8 +3132,8 @@ static void _gfree(void *p) {
 // the use of this software, even if advised of the possibility of such damage.
 //
 
-#ifndef OPENCSTL_COMPARE_H
-#define OPENCSTL_COMPARE_H
+#ifndef HG_A4BAA5A4E64E2CAAC1ECF8C87DAEC71CAEC629FB9B0E230E7A32C264E853B034_H
+#define HG_A4BAA5A4E64E2CAAC1ECF8C87DAEC71CAEC629FB9B0E230E7A32C264E853B034_H
 #include <string.h>
 // [already included: types.h]
 #include <float.h>
@@ -4376,7 +4381,7 @@ static CSTL_COMPARE_BYTES CSTL_EQUALS(const char *type_str) {
 
     return memcmp;
 }
-#endif //OPENCSTL_COMPARE_H
+#endif
 
 // ==============================================================================
 // END    compare.h
@@ -5040,13 +5045,45 @@ static void swap(void *a, void *b, size_type64 sz) {
 // ==============================================================================
 
 //
-// Created by spring on 4/22/2026.
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
-
-#ifndef OPENCSTL_UTILITY_H
-#define OPENCSTL_UTILITY_H
-// floor(sqrt(x)) — 정수 전용, FP/division 없음
-// 비트 단위로 2비트씩 처리 → 32bit 입력 기준 최대 16회 루프
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#ifndef HG_6851F11BA5132E124F4F2633B594CC2AE6340950A32E371CA41C0A3D9A476F60_H
+#define HG_6851F11BA5132E124F4F2633B594CC2AE6340950A32E371CA41C0A3D9A476F60_H
+// floor(sqrt(x)) — Integer-only, no floating-point or division operations
+// Processes 2 bits at a time → Up to 16 loops for a 32-bit input
 static unsigned int fast_sqrt(unsigned int x) {
     unsigned int res = 0;
     unsigned int bit = 1u << 30; // 32bit 내 최대 4의 거듭제곱
@@ -5063,10 +5100,10 @@ static unsigned int fast_sqrt(unsigned int x) {
     return res;
 }
 
-// ratio = √2 + (√9 - √2) · K / (K + √capacity)
+//   ratio = √2 + (√9 - √2) · K / (K + √capacity)
 //   capacity →   0 : ratio → √9 = 3.0
 //   capacity → ∞   : ratio → √2 ≈ 1.414
-//   K = 전환 속도. K=16 이면 √capacity = K 지점(=capacity 256)이 딱 중간.
+//   K = conversion rate. If K = 16, then √capacity = K points (i.e., capacity 256) is exactly halfway.
 static int get_new_capacity(int _capacity) {
     if (_capacity < 2) return 2;
 
@@ -5096,7 +5133,7 @@ static int get_new_capacity(int _capacity) {
 //     if (diff <= FLT_EPSILON * fmaxf(1.0f, scale)) return 0;
 //     return (x < y) ? -1 : 1;
 // }
-#endif //OPENCSTL_UTILITY_H
+#endif
 
 // ==============================================================================
 // END    utility.h
@@ -5193,7 +5230,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
 #endif
     if (length == capacity) {
         iveb_erase(iveb, *container);
-        size_type64 new_capaciy = get_new_capacity(capacity);
+        size_type64 new_capaciy = get_new_capacity((int)capacity);
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             fault("Reallocation failed at vector push_back");
@@ -5239,7 +5276,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type6
 #endif
     if (length + N >= capacity) {
         iveb_erase(iveb, *container);
-        size_type64 new_capaciy = get_new_capacity(capacity + N);
+        size_type64 new_capaciy = get_new_capacity((int)(capacity + N));
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             fault("Reallocation failed at vector insert");
@@ -5421,7 +5458,7 @@ OPENCSTL_FUNC void __cstl_vector_reverse(void **container) {
     char *type = (char *) OPENCSTL_NIDX(container, -4);
 
     int idx = 0;
-    int idx_r = length - 1;
+    int idx_r = (int)length - 1;
 
     while (idx < idx_r) {
         swap((char *) *container + type_size * (idx), (char *) *container + type_size * (idx_r), type_size);
@@ -7707,8 +7744,8 @@ void *__cstl_unordered_map(size_type64 key_size, size_type64 value_size,
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#ifndef OPENCSTL_ARRAY_H
-#define OPENCSTL_ARRAY_H
+#ifndef HG_2CAB9E5821BD539EFB3B8B5D43EA27B7C4C89551ABC2EE5EE2A7409B555132E8_H
+#define HG_2CAB9E5821BD539EFB3B8B5D43EA27B7C4C89551ABC2EE5EE2A7409B555132E8_H
 // [already included: zalloc.h]
 // [already included: van_emde_boas_tree.h]
 // [already included: swap.h]
@@ -7960,7 +7997,7 @@ OPENCSTL_FUNC void *__cstl_array_upper_bound(void **container, void *value, CSTL
     if (L >= length) return NULL;
     return ((char *) *container) + (type_size * L);
 }
-#endif //OPENCSTL_ARRAY_H
+#endif
 
 // ==============================================================================
 // END    array.h
@@ -11313,47 +11350,59 @@ static void pmsort(void *base, const size_type64 number, const size_type64 width
 // the use of this software, even if advised of the possibility of such damage.
 //
 
-#ifndef OPENCSTL_BESTSORT_H
-#define OPENCSTL_BESTSORT_H
-#if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_CLANG)
-#define cstl_best_stable_sort msort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_GCC)
-#define cstl_best_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
-#define cstl_best_stable_sort tsort
-#define cstl_unstable_sort qsort
-
-#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_CLANG)
-#define cstl_best_stable_sort msort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_GCC)
-#define cstl_best_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_LINUX) && defined(OCSTL_CC_TCC)
-#define cstl_best_stable_sort tsort
-#define cstl_unstable_sort qsort
-
-
-#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_CLANG)
-#define cstl_best_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_GCC)
-#define cstl_best_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_TCC)
-#define cstl_best_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_MSVC)
-#define cstl_best_stable_sort tsort
-#define cstl_unstable_sort pdqsort
-#elif defined(OCSTL_CC_NVCC)
-#define cstl_best_stable_sort tsort
-#define cstl_unstable_sort pdqsort
+#ifndef HG_D7646DD772B09DF3EE2DCC0297DBFB1B7FD25970A91191BCE38ED4816C2801D7_H
+#define HG_D7646DD772B09DF3EE2DCC0297DBFB1B7FD25970A91191BCE38ED4816C2801D7_H
+#if defined(OCSTL_OS_MACOS)
+    #if     defined(OCSTL_CC_CLANG)
+        #define     cstl_best_stable_sort msort
+        #define     cstl_unstable_sort pdqsort
+    #elif   defined(OCSTL_CC_GCC)
+        #define     cstl_best_stable_sort tsort
+        #define     cstl_unstable_sort pdqsort
+    #elif   defined(OCSTL_CC_TCC)
+        #define     cstl_best_stable_sort tsort
+        #define     cstl_unstable_sort qsort
+    #else
+        #error "Unknown Compiler"
+    #endif
 #endif
 
-#endif //OPENCSTL_BESTSORT_H
+#if defined(OCSTL_OS_LINUX)
+    #if  defined(OCSTL_CC_CLANG)
+        #define cstl_best_stable_sort msort
+        #define cstl_unstable_sort pdqsort
+    #elif  defined(OCSTL_CC_GCC)
+        #define cstl_best_stable_sort tsort
+        #define cstl_unstable_sort pdqsort
+    #elif  defined(OCSTL_CC_TCC)
+        #define cstl_best_stable_sort tsort
+        #define cstl_unstable_sort qsort
+    #else
+        #error "Unknown Compiler"
+    #endif
+#endif
+
+#if defined(OCSTL_OS_WINDOWS)
+    #if defined(OCSTL_CC_CLANG)
+        #define cstl_best_stable_sort tsort
+        #define cstl_unstable_sort pdqsort
+    #elif defined(OCSTL_CC_GCC)
+        #define cstl_best_stable_sort tsort
+        #define cstl_unstable_sort pdqsort
+    #elif defined(OCSTL_CC_TCC)
+        #define cstl_best_stable_sort tsort
+        #define cstl_unstable_sort pdqsort
+    #elif defined(OCSTL_CC_MSVC)
+        #define cstl_best_stable_sort tsort
+        #define cstl_unstable_sort pdqsort
+    #elif defined(OCSTL_CC_NVCC)
+        #define cstl_best_stable_sort tsort
+        #define cstl_unstable_sort pdqsort
+    #else
+        #error "Unknown Compiler"S
+    #endif
+#endif
+#endif
 // ==============================================================================
 // END    bestsort.h
 // ==============================================================================
@@ -11875,27 +11924,25 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#if !defined(_OPENCSTL_VERSION_H)
-#define _OPENCSTL_VERSION_H
+#if !defined(HG_3282159A01880257F6A4E53AEC354ACB6F7CF5BC34243136D0AE684B74FB1426_H)
+#define HG_3282159A01880257F6A4E53AEC354ACB6F7CF5BC34243136D0AE684B74FB1426_H
 // [already included: crossplatform.h]
-static char *OPENCSTL_VERSION = "v1.3.3";
+
 
 static char *opencstl_version(void) {
+    static char *OPENCSTL_VERSION = "v1.3.3";
     return OPENCSTL_VERSION;
 }
 
 
 static char *opencstl_env(void) {
     static char __opencstl_env_str[512] = {0};
-#if defined(OCSTL_CC_MSVC)
-    sprintf_s(__opencstl_env_str, sizeof(__opencstl_env_str),
-              "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
-#else
-    sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
-#endif
+    snprintf(__opencstl_env_str, sizeof(__opencstl_env_str),
+             "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
     return __opencstl_env_str;
 }
-#endif //_OPENCSTL_VERSION_H
+
+#endif
 
 // ==============================================================================
 // END    version.h
@@ -11941,8 +11988,8 @@ static char *opencstl_env(void) {
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#if !defined(OPENCSTL_BITSET_H)
-#define OPENCSTL_BITSET_H
+#if !defined(HG_9DA4009D62E5E7D106F7626FEFBC314CAB0144090E5B2F58B01682E31C54BC1A_H)
+#define HG_9DA4009D62E5E7D106F7626FEFBC314CAB0144090E5B2F58B01682E31C54BC1A_H
 // [already included: types.h]
 // [already included: zalloc.h]
 // [already included: crossplatform.h]
@@ -12219,7 +12266,7 @@ static __BITSET bitset = {
     __cstl_bitset_to_string,
 };
 
-#endif //OPENCSTL_BITSET_H
+#endif
 
 // ==============================================================================
 // END    bitset.h
@@ -12799,7 +12846,7 @@ static void MsgBoxCLI(const char *format, ...) {
 
 #if defined(OCSTL_OS_WINDOWS)
 
-#if defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_MSVC)
+#if defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_MSVC)
 #pragma comment(lib, "user32.lib")
 #endif
 
@@ -13761,28 +13808,28 @@ CSV_CLASS csv = {
 
 
 // ==============================================================================
-// BEGIN  cio.h                          (depth 1)
+// BEGIN  print.h                        (depth 1)
 // ==============================================================================
 
-
 // [already included: crossplatform.h]
-
-// cstlio availability gate.
-// C11+        : native _Generic
-// C99 GCC/Clang: __builtin_choose_expr + __builtin_types_compatible_p
-// otherwise   : not available (no portable C99 dispatch on MSVC etc.)
-#if defined(OCSTL_C_VERSION_11) || defined(OCSTL_C_VERSION_17) || defined(OCSTL_C_VERSION_23)
+#if defined(OCSTL_C_VERSION_11) || defined(OCSTL_C_VERSION_17) || defined(OCSTL_C_VERSION_23) || defined(OCSTL_CC_TCC)
 #  define OCSTL_CSTLIO_DISPATCH_GENERIC 1
-#elif defined(OCSTL_C_VERSION_99) && (defined(__GNUC__) || defined(__clang__))
+#elif defined(OCSTL_C_VERSION_99) && (defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG))
 #  define OCSTL_CSTLIO_DISPATCH_BUILTIN 1
+#elif defined(OCSTL_CC_MSVC) && !defined(OCSTL_C_VERSION_PRE_ANSI)
+#  define OCSTL_CSTLIO_DISPATCH_SIZEOF 1
+#else
+#  define OCSTL_CSTLIO_DISPATCH_VARARGS 1
 #endif
-
-#if defined(OCSTL_CSTLIO_DISPATCH_GENERIC) || defined(OCSTL_CSTLIO_DISPATCH_BUILTIN)
+#if defined(OCSTL_CSTLIO_DISPATCH_GENERIC) || defined(OCSTL_CSTLIO_DISPATCH_BUILTIN) || defined(OCSTL_CSTLIO_DISPATCH_VARARGS) || defined(OCSTL_CSTLIO_DISPATCH_SIZEOF)
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 // [already included: defines.h]
+#define OCSTL_STR_INNER(x) #x
+#define OCSTL_STR(x)       OCSTL_STR_INNER(x)
 #ifdef OCSTL_OS_WINDOWS
 #if defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_GCC)
 #include <codecapi.h>
@@ -13811,6 +13858,7 @@ static void ocstl_ensure_unicode(void) {
 #else
 #define ocstl_ensure_unicode() ((void)0)
 #endif
+#if defined(OCSTL_CSTLIO_DISPATCH_GENERIC) || defined(OCSTL_CSTLIO_DISPATCH_BUILTIN) || defined(OCSTL_CSTLIO_DISPATCH_SIZEOF)
 typedef enum {
     OCSTL_COUT_BOOL,
     OCSTL_COUT_SCHAR,
@@ -13829,8 +13877,6 @@ typedef enum {
     OCSTL_COUT_STR,
 } ocstl_cout_type_t;
 
-// Anonymous union is C11; widely supported as extension in C99 by
-// GCC/Clang/MSVC/TCC/Pelles. Kept as-is for source compatibility.
 typedef struct {
     ocstl_cout_type_t type;
 
@@ -13957,116 +14003,105 @@ static ocstl_val_t ocstl_mk_str(const char *x) {
     v.s = x;
     return v;
 }
-
 #if defined(OCSTL_CSTLIO_DISPATCH_GENERIC)
-
-// C11+ path: native _Generic dispatch.
-// Note: char, signed char, unsigned char are three distinct types in C.
-// Same for _Bool. Each must have its own arm or compilation fails.
-#define OCSTL_VAL(x) _Generic((x),                  \
-    _Bool:              ocstl_mk_bool,              \
-    signed char:        ocstl_mk_schar,             \
-    unsigned char:      ocstl_mk_uchar,             \
-    short:              ocstl_mk_short,             \
-    unsigned short:     ocstl_mk_ushort,            \
-    int:                ocstl_mk_int,               \
-    unsigned int:       ocstl_mk_uint,              \
-    long:               ocstl_mk_long,              \
-    unsigned long:      ocstl_mk_ulong,             \
-    long long:          ocstl_mk_llong,             \
-    unsigned long long: ocstl_mk_ullong,            \
-    float:              ocstl_mk_float,             \
-    double:             ocstl_mk_double,            \
-    char:               ocstl_mk_char,              \
-    char *:             ocstl_mk_str,               \
-    const char *:       ocstl_mk_str                \
-)(x)
-
+#define OCSTL_VAL(x) ((OCSTL_STR(x)[0] == '\'')                      \
+    ? ocstl_mk_char((char)((intptr_t)(x)))                           \
+    : _Generic((x),                                                  \
+        _Bool:              ocstl_mk_bool,                           \
+        signed char:        ocstl_mk_schar,                          \
+        unsigned char:      ocstl_mk_uchar,                          \
+        short:              ocstl_mk_short,                          \
+        unsigned short:     ocstl_mk_ushort,                         \
+        int:                ocstl_mk_int,                            \
+        unsigned int:       ocstl_mk_uint,                           \
+        long:               ocstl_mk_long,                           \
+        unsigned long:      ocstl_mk_ulong,                          \
+        long long:          ocstl_mk_llong,                          \
+        unsigned long long: ocstl_mk_ullong,                         \
+        float:              ocstl_mk_float,                          \
+        double:             ocstl_mk_double,                         \
+        char:               ocstl_mk_char,                           \
+        char *:             ocstl_mk_str,                            \
+        const char *:       ocstl_mk_str                             \
+      )(x))
 #elif defined(OCSTL_CSTLIO_DISPATCH_BUILTIN)
-
-// C99 path: GCC/Clang extensions emulate _Generic.
-//
-// Limitation: in C99, _Generic's automatic array-to-pointer decay is not
-// available via __builtin_types_compatible_p. We could try `1 ? (x) : (x)`
-// to force decay, but that also triggers integer/float promotion on small
-// integer arms, breaking _Bool/char/short matching. Wrapping the cast in
-// __builtin_choose_expr does not help either: GCC type-checks the
-// unselected branch and rejects e.g. `(const char *)(float_expr)`.
-//
-// Conclusion: C99 path matches char* and const char* by exact type only.
-//   const char *p = "hello"; print("{}", p);            // OK
-//   print("{}", (const char *)"hello");                 // OK
-//   print("{}", "hello");                               // ERROR in C99 path
-//                                                       // (works in C11+)
-// For best compatibility, build with -std=c11 or later.
 #define OCSTL_TYPEEQ(x, T) __builtin_types_compatible_p(__typeof__(x), T)
 #define OCSTL_AS(x, T)                                          \
     (*(T*)__builtin_choose_expr(OCSTL_TYPEEQ(x, T),             \
         (void*)&(__typeof__(x)){(x)},                           \
         (void*)0))
-
-#define OCSTL_VAL(x)                                                                                                \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, _Bool),              ocstl_mk_bool  (OCSTL_AS(x, _Bool)),                 \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, signed char),        ocstl_mk_schar (OCSTL_AS(x, signed char)),           \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned char),      ocstl_mk_uchar (OCSTL_AS(x, unsigned char)),         \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, short),              ocstl_mk_short (OCSTL_AS(x, short)),                 \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned short),     ocstl_mk_ushort(OCSTL_AS(x, unsigned short)),        \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, int),                ocstl_mk_int   (OCSTL_AS(x, int)),                   \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned int),       ocstl_mk_uint  (OCSTL_AS(x, unsigned int)),          \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, long),               ocstl_mk_long  (OCSTL_AS(x, long)),                  \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned long),      ocstl_mk_ulong (OCSTL_AS(x, unsigned long)),         \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, long long),          ocstl_mk_llong (OCSTL_AS(x, long long)),             \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned long long), ocstl_mk_ullong(OCSTL_AS(x, unsigned long long)),    \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, float),              ocstl_mk_float (OCSTL_AS(x, float)),                 \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, double),             ocstl_mk_double(OCSTL_AS(x, double)),                \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, char),               ocstl_mk_char  (OCSTL_AS(x, char)),                  \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, char *),             ocstl_mk_str   (OCSTL_AS(x, char *)),                \
-    __builtin_choose_expr(OCSTL_TYPEEQ(x, const char *),       ocstl_mk_str   (OCSTL_AS(x, const char *)),          \
-        ocstl_mk_int(0)))))))))))))))))
-
+#define OCSTL_VAL(x) ((OCSTL_STR(x)[0] == '\'')                                                                     \
+    ? ocstl_mk_char((char)((intptr_t)(x)))                                                                          \
+    : (__builtin_choose_expr(OCSTL_TYPEEQ(x, _Bool),              ocstl_mk_bool  (OCSTL_AS(x, _Bool)),               \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, signed char),        ocstl_mk_schar (OCSTL_AS(x, signed char)),         \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned char),      ocstl_mk_uchar (OCSTL_AS(x, unsigned char)),       \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, short),              ocstl_mk_short (OCSTL_AS(x, short)),               \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned short),     ocstl_mk_ushort(OCSTL_AS(x, unsigned short)),      \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, int),                ocstl_mk_int   (OCSTL_AS(x, int)),                 \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned int),       ocstl_mk_uint  (OCSTL_AS(x, unsigned int)),        \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, long),               ocstl_mk_long  (OCSTL_AS(x, long)),                \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned long),      ocstl_mk_ulong (OCSTL_AS(x, unsigned long)),       \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, long long),          ocstl_mk_llong (OCSTL_AS(x, long long)),           \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned long long), ocstl_mk_ullong(OCSTL_AS(x, unsigned long long)),  \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, float),              ocstl_mk_float (OCSTL_AS(x, float)),               \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, double),             ocstl_mk_double(OCSTL_AS(x, double)),              \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, char),               ocstl_mk_char  (OCSTL_AS(x, char)),                \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, char *),             ocstl_mk_str   (OCSTL_AS(x, char *)),              \
+       __builtin_choose_expr(OCSTL_TYPEEQ(x, const char *),       ocstl_mk_str   (OCSTL_AS(x, const char *)),        \
+           ocstl_mk_int(0)))))))))))))))))))
+#elif defined(OCSTL_CSTLIO_DISPATCH_SIZEOF)
+#if defined(OCSTL_CC_TCC) || defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG)
+#  define OCSTL_ADDR(x) (&((__typeof__(x)){(x)}))
+#  define OCSTL_VAL(x) (                                                       \
+    (OCSTL_STR(x)[0] == '"')                                                   \
+        ? ocstl_mk_str((const char *) (uintptr_t) (x)) :                       \
+    (OCSTL_STR(x)[0] == '\'')                                                  \
+        ? ocstl_mk_char((char) (intptr_t) (x)) :                               \
+    ((const void *) OCSTL_ADDR(x) == (const void *) (uintptr_t) (x))           \
+        ? ocstl_mk_str((const char *) (uintptr_t) (x)) :                       \
+    (sizeof(x) == 1)                                                           \
+        ? ocstl_mk_char(*(const char *) (const void *) OCSTL_ADDR(x)) :        \
+    (sizeof(x) == 2)                                                           \
+        ? ocstl_mk_short(*(const short *) (const void *) OCSTL_ADDR(x)) :      \
+    (sizeof(x) == 4) ? (                                                       \
+        ((*(const int *) (const void *) OCSTL_ADDR(x)) == (int) (intptr_t) (x))\
+            ? ocstl_mk_int(*(const int *) (const void *) OCSTL_ADDR(x))        \
+            : ocstl_mk_float(*(const float *) (const void *) OCSTL_ADDR(x))    \
+    ) :                                                                        \
+    (sizeof(x) == 8) ? (                                                       \
+        ((*(const long long *) (const void *) OCSTL_ADDR(x))                   \
+            == (long long) (intptr_t) (x))                                     \
+            ? ocstl_mk_str(*(const char * const *) (const void *) OCSTL_ADDR(x))\
+            : ocstl_mk_double(*(const double *) (const void *) OCSTL_ADDR(x)) \
+    ) :                                                                        \
+    ocstl_mk_int(0)                                                            \
+)
+#else
+#  define OCSTL_VAL(x) (                                                       \
+    (OCSTL_STR(x)[0] == '"')                                                   \
+        ? ocstl_mk_str((const char *) (uintptr_t) (x)) :                       \
+    (OCSTL_STR(x)[0] == '\'')                                                  \
+        ? ocstl_mk_char((char) (intptr_t) (x)) :                               \
+    (sizeof(x) == 1)                                                           \
+        ? ocstl_mk_char((char) (intptr_t) (x)) :                               \
+    (sizeof(x) == 2)                                                           \
+        ? ocstl_mk_short((short) (intptr_t) (x)) :                             \
+    (sizeof(x) == 4) ? (                                                       \
+        ((int) (intptr_t) (x) == (x))                                          \
+            ? ocstl_mk_int((int) (intptr_t) (x))                               \
+            : ocstl_mk_float((float) (x))                                      \
+    ) :                                                                        \
+    (sizeof(x) == 8) ? (                                                       \
+        ((long long) (intptr_t) (x) == (x))                                    \
+            ? ocstl_mk_str((const char *) (uintptr_t) (x))                     \
+            : ocstl_mk_double((double) (intptr_t) (x))                         \
+    ) :                                                                        \
+            \
+    ocstl_mk_str((const char *) (uintptr_t) (x))                               \
+)
 #endif
-
-#define OCSTL_MAP1(f,a)      f(a)
-#define OCSTL_MAP2(f,a,...)  f(a), OCSTL_MAP1(f, __VA_ARGS__)
-#define OCSTL_MAP3(f,a,...)  f(a), OCSTL_MAP2(f, __VA_ARGS__)
-#define OCSTL_MAP4(f,a,...)  f(a), OCSTL_MAP3(f, __VA_ARGS__)
-#define OCSTL_MAP5(f,a,...)  f(a), OCSTL_MAP4(f, __VA_ARGS__)
-#define OCSTL_MAP6(f,a,...)  f(a), OCSTL_MAP5(f, __VA_ARGS__)
-#define OCSTL_MAP7(f,a,...)  f(a), OCSTL_MAP6(f, __VA_ARGS__)
-#define OCSTL_MAP8(f,a,...)  f(a), OCSTL_MAP7(f, __VA_ARGS__)
-#define OCSTL_MAP9(f,a,...)  f(a), OCSTL_MAP8(f, __VA_ARGS__)
-#define OCSTL_MAP10(f,a,...) f(a), OCSTL_MAP9(f, __VA_ARGS__)
-#define OCSTL_MAP11(f,a,...) f(a), OCSTL_MAP10(f, __VA_ARGS__)
-#define OCSTL_MAP12(f,a,...) f(a), OCSTL_MAP11(f, __VA_ARGS__)
-#define OCSTL_MAP13(f,a,...) f(a), OCSTL_MAP12(f, __VA_ARGS__)
-#define OCSTL_MAP14(f,a,...) f(a), OCSTL_MAP13(f, __VA_ARGS__)
-#define OCSTL_MAP15(f,a,...) f(a), OCSTL_MAP14(f, __VA_ARGS__)
-#define OCSTL_MAP16(f,a,...) f(a), OCSTL_MAP15(f, __VA_ARGS__)
-#define OCSTL_MAP17(f,a,...) f(a), OCSTL_MAP16(f, __VA_ARGS__)
-#define OCSTL_MAP18(f,a,...) f(a), OCSTL_MAP17(f, __VA_ARGS__)
-#define OCSTL_MAP19(f,a,...) f(a), OCSTL_MAP18(f, __VA_ARGS__)
-#define OCSTL_MAP20(f,a,...) f(a), OCSTL_MAP19(f, __VA_ARGS__)
-#define OCSTL_MAP21(f,a,...) f(a), OCSTL_MAP20(f, __VA_ARGS__)
-#define OCSTL_MAP22(f,a,...) f(a), OCSTL_MAP21(f, __VA_ARGS__)
-#define OCSTL_MAP23(f,a,...) f(a), OCSTL_MAP22(f, __VA_ARGS__)
-#define OCSTL_MAP24(f,a,...) f(a), OCSTL_MAP23(f, __VA_ARGS__)
-#define OCSTL_MAP25(f,a,...) f(a), OCSTL_MAP24(f, __VA_ARGS__)
-#define OCSTL_MAP26(f,a,...) f(a), OCSTL_MAP25(f, __VA_ARGS__)
-#define OCSTL_MAP27(f,a,...) f(a), OCSTL_MAP26(f, __VA_ARGS__)
-#define OCSTL_MAP28(f,a,...) f(a), OCSTL_MAP27(f, __VA_ARGS__)
-#define OCSTL_MAP29(f,a,...) f(a), OCSTL_MAP28(f, __VA_ARGS__)
-#define OCSTL_MAP30(f,a,...) f(a), OCSTL_MAP29(f, __VA_ARGS__)
-#define OCSTL_MAP31(f,a,...) f(a), OCSTL_MAP30(f, __VA_ARGS__)
-#define OCSTL_MAP32(f,a,...) f(a), OCSTL_MAP31(f, __VA_ARGS__)
-#define OCSTL_MAP_SEL( \
-    _1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16, \
-    _17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,_31,_32, N,...) \
-    OCSTL_MAP##N
-#define OCSTL_MAP(f,...) \
-    OCSTL_MAP_SEL(__VA_ARGS__, \
-        32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17, \
-        16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1)(f, __VA_ARGS__)
-
+#endif
+#endif
 typedef struct {
     char fill;
     char align;
@@ -14075,6 +14110,7 @@ typedef struct {
     bool zero_pad;
     int width;
     int precision;
+    int length;
     char type;
 } ocstl_fmt_spec_t;
 
@@ -14086,6 +14122,7 @@ static void ocstl_spec_init(ocstl_fmt_spec_t *s) {
     s->zero_pad = false;
     s->width = -1;
     s->precision = -1;
+    s->length = 0;
     s->type = 0;
 }
 
@@ -14128,6 +14165,15 @@ static const char *ocstl_parse_spec(const char *p, ocstl_fmt_spec_t *spec) {
             p++;
         }
         spec->precision = pr;
+    }
+    if (*p == 'l') {
+        p++;
+        if (*p == 'l') {
+            p++;
+            spec->length = 2;
+        } else {
+            spec->length = 1;
+        }
     }
     if (*p && *p != '}') {
         spec->type = *p;
@@ -14238,11 +14284,48 @@ static int ocstl_format_float(char *buf, int bufsz, double dval,
     if (n < 0) n = 0;
     return pos + n;
 }
-
+#if defined(OCSTL_CSTLIO_DISPATCH_GENERIC) || defined(OCSTL_CSTLIO_DISPATCH_BUILTIN) || defined(OCSTL_CSTLIO_DISPATCH_SIZEOF)
 static void ocstl_print_val(const ocstl_val_t *v, const ocstl_fmt_spec_t *spec) {
     char buf[128];
     int len = 0;
     int sign_prefix_len = -1;
+    if (spec->type == 'c') {
+        long long ch = 0;
+        int handled = 1;
+        switch (v->type) {
+            case OCSTL_COUT_BOOL: ch = v->b;
+                break;
+            case OCSTL_COUT_SCHAR: ch = v->sc;
+                break;
+            case OCSTL_COUT_UCHAR: ch = v->uc;
+                break;
+            case OCSTL_COUT_SHORT: ch = v->h;
+                break;
+            case OCSTL_COUT_USHORT: ch = v->uh;
+                break;
+            case OCSTL_COUT_INT: ch = v->i;
+                break;
+            case OCSTL_COUT_UINT: ch = v->u;
+                break;
+            case OCSTL_COUT_LONG: ch = v->l;
+                break;
+            case OCSTL_COUT_ULONG: ch = v->ul;
+                break;
+            case OCSTL_COUT_LLONG: ch = v->ll;
+                break;
+            case OCSTL_COUT_ULLONG: ch = (long long) v->ull;
+                break;
+            case OCSTL_COUT_CHAR: ch = v->c;
+                break;
+            default: handled = 0;
+                break;
+        }
+        if (handled) {
+            buf[0] = (char) ch;
+            ocstl_emit_padded(buf, 1, spec, -1);
+            return;
+        }
+    }
     switch (v->type) {
         case OCSTL_COUT_BOOL:
             len = ocstl_format_int(buf, sizeof buf,
@@ -14316,9 +14399,38 @@ static void ocstl_print_val(const ocstl_val_t *v, const ocstl_fmt_spec_t *spec) 
             break;
         }
         case OCSTL_COUT_STR: {
-            const char *s = v->s ? v->s : "(null)";
-            ocstl_emit_padded(s, (int) strlen(s), spec, -1);
-            return;
+            switch (spec->type) {
+                case 'd':
+                case 'i': {
+                    long long sv = v->ll;
+                    len = ocstl_format_int(buf, sizeof buf,
+                                           (unsigned long long) (sv < 0 ? -sv : sv),
+                                           sv < 0, spec, &sign_prefix_len);
+                    break;
+                }
+                case 'u':
+                case 'x':
+                case 'X':
+                case 'o':
+                case 'b':
+                    len = ocstl_format_int(buf, sizeof buf, v->ull, false,
+                                           spec, &sign_prefix_len);
+                    break;
+                case 'f':
+                case 'e':
+                case 'E':
+                case 'g':
+                case 'G':
+                    len = ocstl_format_float(buf, sizeof buf, v->d,
+                                             spec, &sign_prefix_len);
+                    break;
+                default: {
+                    const char *s = v->s ? v->s : "(null)";
+                    ocstl_emit_padded(s, (int) strlen(s), spec, -1);
+                    return;
+                }
+            }
+            break;
         }
     }
     ocstl_emit_padded(buf, len, spec, sign_prefix_len);
@@ -14411,46 +14523,417 @@ static void ocstl_print_impl(const char *fmt, const ocstl_val_t *args, int n) {
     _args[6] = OCSTL_VAL(_g); _args[7] = OCSTL_VAL(_h); _args[8] = OCSTL_VAL(_i);          \
     ocstl_print_impl((fmt), _args, 9);                                                     \
 } while (0)
-#define OCSTL_PRINT_11(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_12(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_13(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_14(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_15(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_16(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_17(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_18(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_19(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_20(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_21(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_22(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_23(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_24(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_25(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_26(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_27(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_28(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_29(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_30(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_31(...) OCSTL_PRINT_NX(__VA_ARGS__)
-#define OCSTL_PRINT_32(...) OCSTL_PRINT_NX(__VA_ARGS__)
 #define OCSTL_PASTE2(a, b) a##b
 #define OCSTL_PASTE(a, b)  OCSTL_PASTE2(a, b)
-#define print(...)   OCSTL_PASTE(OCSTL_PRINT_, ARGN(__VA_ARGS__))(__VA_ARGS__)
+#define OCSTL_EXPAND(x) x
+#define print(...)   OCSTL_EXPAND(OCSTL_PASTE(OCSTL_PRINT_, ARGN(__VA_ARGS__))(__VA_ARGS__))
+#define println(...) do { print(__VA_ARGS__); putchar('\n'); } while (0)
+#elif defined(OCSTL_CSTLIO_DISPATCH_VARARGS)
+#include <stdarg.h>
+#include <ctype.h>
+#if defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_MSVC)
+#ifndef OPENCSTL_MSVC_C99_OPTIMIZE
+#pragma warning(disable:4081)
+#pragma comment(compiler, "/Zi")
+#pragma comment(linker, "/DEBUG")
+#pragma comment(linker, "/DEBUGTYPE:cv")
+#pragma optimize("", off)
+#endif
+#  define OCSTL_VA_USE_DBGHELP 1
+#  include <intrin.h>
+#  define _NO_CVCONST_H
+#  include <dbghelp.h>
+#  pragma comment(lib, "dbghelp.lib")
+enum {
+    OCSTL_DH_btVoid = 1, OCSTL_DH_btChar = 2, OCSTL_DH_btWChar = 3,
+    OCSTL_DH_btInt = 6, OCSTL_DH_btUInt = 7, OCSTL_DH_btFloat = 8,
+    OCSTL_DH_btBool = 10, OCSTL_DH_btLong = 13, OCSTL_DH_btULong = 14
+};
+#endif
+typedef enum {
+    OCSTL_VAK_UNKNOWN = 0,
+    OCSTL_VAK_BOOL,
+    OCSTL_VAK_CHAR, OCSTL_VAK_UCHAR,
+    OCSTL_VAK_SHORT, OCSTL_VAK_USHORT,
+    OCSTL_VAK_INT, OCSTL_VAK_UINT,
+    OCSTL_VAK_LONG, OCSTL_VAK_ULONG,
+    OCSTL_VAK_LLONG, OCSTL_VAK_ULLONG,
+    OCSTL_VAK_FLOAT, OCSTL_VAK_DOUBLE,
+    OCSTL_VAK_STR
+} ocstl_vak_t;
+#ifdef OCSTL_VA_USE_DBGHELP
+static HANDLE g_ocstl_dh_proc = NULL;
+static int g_ocstl_dh_ready = 0;
+
+static void ocstl_dh_init(void) {
+    if (g_ocstl_dh_ready) return;
+    g_ocstl_dh_proc = GetCurrentProcess();
+    SymInitialize(g_ocstl_dh_proc, NULL, TRUE);
+    SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
+    g_ocstl_dh_ready = 1;
+}
+
+static ocstl_vak_t ocstl_dh_classify_base(DWORD base, ULONG64 size) {
+    switch (base) {
+        case OCSTL_DH_btBool: return OCSTL_VAK_BOOL;
+        case OCSTL_DH_btChar: return OCSTL_VAK_CHAR;
+        case OCSTL_DH_btInt:
+            if (size == 1) return OCSTL_VAK_CHAR;
+            if (size == 2) return OCSTL_VAK_SHORT;
+            if (size == 8) return OCSTL_VAK_LLONG;
+            return OCSTL_VAK_INT;
+        case OCSTL_DH_btUInt:
+            if (size == 1) return OCSTL_VAK_UCHAR;
+            if (size == 2) return OCSTL_VAK_USHORT;
+            if (size == 8) return OCSTL_VAK_ULLONG;
+            return OCSTL_VAK_UINT;
+        case OCSTL_DH_btFloat: return (size == 8) ? OCSTL_VAK_DOUBLE : OCSTL_VAK_FLOAT;
+        case OCSTL_DH_btLong: return OCSTL_VAK_LONG;
+        case OCSTL_DH_btULong: return OCSTL_VAK_ULONG;
+        default: return OCSTL_VAK_UNKNOWN;
+    }
+}
+
+static ocstl_vak_t ocstl_dh_resolve_typeidx(ULONG64 mod_base, DWORD type_idx, int depth) {
+    DWORD tag = 0;
+    ULONG64 size = 0;
+    if (depth > 4) return OCSTL_VAK_UNKNOWN;
+    SymGetTypeInfo(g_ocstl_dh_proc, mod_base, type_idx, TI_GET_SYMTAG, &tag);
+    SymGetTypeInfo(g_ocstl_dh_proc, mod_base, type_idx, TI_GET_LENGTH, &size);
+    if (tag == SymTagBaseType) {
+        DWORD base = 0;
+        SymGetTypeInfo(g_ocstl_dh_proc, mod_base, type_idx, TI_GET_BASETYPE, &base);
+        return ocstl_dh_classify_base(base, size);
+    }
+    if (tag == SymTagPointerType) {
+        DWORD child = 0, ctag = 0, cbase = 0;
+        SymGetTypeInfo(g_ocstl_dh_proc, mod_base, type_idx, TI_GET_TYPE, &child);
+        SymGetTypeInfo(g_ocstl_dh_proc, mod_base, child, TI_GET_SYMTAG, &ctag);
+        if (ctag == SymTagBaseType) {
+            SymGetTypeInfo(g_ocstl_dh_proc, mod_base, child, TI_GET_BASETYPE, &cbase);
+            if (cbase == OCSTL_DH_btChar) return OCSTL_VAK_STR;
+        }
+        return OCSTL_VAK_ULLONG;
+    }
+    if (tag == SymTagArrayType) {
+        DWORD child = 0, cbase = 0;
+        SymGetTypeInfo(g_ocstl_dh_proc, mod_base, type_idx, TI_GET_TYPE, &child);
+        SymGetTypeInfo(g_ocstl_dh_proc, mod_base, child, TI_GET_BASETYPE, &cbase);
+        if (cbase == OCSTL_DH_btChar) return OCSTL_VAK_STR;
+        return OCSTL_VAK_ULLONG;
+    }
+    if (tag == SymTagTypedef) {
+        DWORD child = 0;
+        SymGetTypeInfo(g_ocstl_dh_proc, mod_base, type_idx, TI_GET_TYPE, &child);
+        return ocstl_dh_resolve_typeidx(mod_base, child, depth + 1);
+    }
+    return OCSTL_VAK_UNKNOWN;
+}
+
+typedef struct {
+    const char *target;
+    ocstl_vak_t result;
+    int found;
+} ocstl_dh_lookup_t;
+
+static BOOL CALLBACK ocstl_dh_enum_cb(SYMBOL_INFO *sym, ULONG sz, PVOID user) {
+    ocstl_dh_lookup_t *ctx = (ocstl_dh_lookup_t *) user;
+    (void) sz;
+    if (strcmp(sym->Name, ctx->target) != 0) return TRUE;
+    ctx->result = ocstl_dh_resolve_typeidx(sym->ModBase, sym->TypeIndex, 0);
+    ctx->found = 1;
+    return FALSE;
+}
+#endif
+static ocstl_vak_t ocstl_va_classify_literal(const char *t) {
+    const char *p;
+    int has_dot = 0, is_hex = 0, u = 0, l = 0;
+    size_t n;
+    char last, prev, prev2;
+    if (!t || !t[0]) return OCSTL_VAK_UNKNOWN;
+    if (t[0] == '"') return OCSTL_VAK_STR;
+    if (t[0] == '\'') return OCSTL_VAK_CHAR;
+    p = t;
+    if (*p == '+' || *p == '-') p++;
+    if (!((*p >= '0' && *p <= '9') || *p == '.')) return OCSTL_VAK_UNKNOWN;
+    if (p[0] == '0' && (p[1] == 'x' || p[1] == 'X')) is_hex = 1;
+    while (*p) {
+        char c = *p++;
+        if (!is_hex && (c == '.' || c == 'e' || c == 'E')) has_dot = 1;
+        if (is_hex && (c == 'p' || c == 'P')) has_dot = 1;
+    }
+    n = strlen(t);
+    last = (char) ((unsigned char) t[n - 1] | 0x20);
+    prev = (n >= 2) ? (char) ((unsigned char) t[n - 2] | 0x20) : 0;
+    prev2 = (n >= 3) ? (char) ((unsigned char) t[n - 3] | 0x20) : 0;
+    if (last == 'f' && !is_hex) return OCSTL_VAK_FLOAT;
+    if (has_dot) return OCSTL_VAK_DOUBLE;
+    if (last == 'u') {
+        u = 1;
+        if (prev == 'l') l = (prev2 == 'l') ? 2 : 1;
+    } else if (last == 'l') {
+        l = (prev == 'l') ? 2 : 1;
+        if ((l == 2 ? prev2 : prev) == 'u') u = 1;
+    }
+    if (l == 2) return u ? OCSTL_VAK_ULLONG : OCSTL_VAK_LLONG;
+    if (l == 1) return u ? OCSTL_VAK_ULONG : OCSTL_VAK_LONG;
+    if (u) return OCSTL_VAK_UINT;
+    return OCSTL_VAK_INT;
+}
+
+static ocstl_vak_t ocstl_va_lookup_token(const char *token, void *caller_pc) {
+    (void) caller_pc;
+    if (!token || !token[0]) return OCSTL_VAK_UNKNOWN;
+    if (token[0] == '"') return OCSTL_VAK_STR;
+    if (token[0] == '\'') return OCSTL_VAK_CHAR;
+    if ((token[0] >= '0' && token[0] <= '9') ||
+        token[0] == '-' || token[0] == '+' || token[0] == '.') {
+        return ocstl_va_classify_literal(token);
+    }
+#ifdef OCSTL_VA_USE_DBGHELP
+    {
+        IMAGEHLP_STACK_FRAME isf;
+        ocstl_dh_lookup_t ctx;
+        memset(&isf, 0, sizeof isf);
+        ocstl_dh_init();
+        isf.InstructionOffset = (DWORD64) (uintptr_t) caller_pc;
+        SymSetContext(g_ocstl_dh_proc, &isf, NULL);
+        ctx.target = token;
+        ctx.result = OCSTL_VAK_UNKNOWN;
+        ctx.found = 0;
+        SymEnumSymbols(g_ocstl_dh_proc, 0, token, ocstl_dh_enum_cb, &ctx);
+        return ctx.result;
+    }
+#else
+    return OCSTL_VAK_UNKNOWN;
+#endif
+}
+
+typedef struct {
+    ocstl_vak_t kind;
+    long long ll;
+    unsigned long long ull;
+    double d;
+    const char *s;
+} ocstl_va_arg_t;
+#ifdef OCSTL_VA_USE_DBGHELP
+__declspec(noinline)
+#endif
+static void ocstl_print_impl_va(const char *fmt, int n_args, ...) {
+    ocstl_va_arg_t args[16];
+    va_list ap;
+    const char *p;
+    void *caller_pc = NULL;
+    int i, idx;
+#ifdef OCSTL_VA_USE_DBGHELP
+    caller_pc = _ReturnAddress();
+#endif
+    va_start(ap, n_args);
+    ocstl_ensure_unicode();
+    if (n_args > 16) n_args = 16;
+    for (i = 0; i < n_args; i++) {
+        const char *token = va_arg(ap, const char *);
+        ocstl_vak_t k = ocstl_va_lookup_token(token, caller_pc);
+        args[i].kind = k;
+        args[i].ll = 0;
+        args[i].ull = 0;
+        args[i].d = 0.0;
+        args[i].s = NULL;
+        switch (k) {
+            case OCSTL_VAK_BOOL: args[i].ll = (int) va_arg(ap, int);
+                break;
+            case OCSTL_VAK_CHAR: args[i].ll = (signed char) va_arg(ap, int);
+                break;
+            case OCSTL_VAK_UCHAR: args[i].ull = (unsigned char) va_arg(ap, int);
+                break;
+            case OCSTL_VAK_SHORT: args[i].ll = (short) va_arg(ap, int);
+                break;
+            case OCSTL_VAK_USHORT: args[i].ull = (unsigned short) va_arg(ap, int);
+                break;
+            case OCSTL_VAK_INT: args[i].ll = va_arg(ap, int);
+                break;
+            case OCSTL_VAK_UINT: args[i].ull = va_arg(ap, unsigned int);
+                break;
+            case OCSTL_VAK_LONG: args[i].ll = va_arg(ap, long);
+                break;
+            case OCSTL_VAK_ULONG: args[i].ull = va_arg(ap, unsigned long);
+                break;
+            case OCSTL_VAK_LLONG: args[i].ll = va_arg(ap, long long);
+                break;
+            case OCSTL_VAK_ULLONG: args[i].ull = va_arg(ap, unsigned long long);
+                break;
+            case OCSTL_VAK_FLOAT: args[i].d = va_arg(ap, double);
+                break;
+            case OCSTL_VAK_DOUBLE: args[i].d = va_arg(ap, double);
+                break;
+            case OCSTL_VAK_STR: args[i].s = va_arg(ap, const char *);
+                break;
+            default:
+                args[i].kind = OCSTL_VAK_INT;
+                args[i].ll = va_arg(ap, int);
+                break;
+        }
+    }
+    va_end(ap);
+    p = fmt;
+    idx = 0;
+    while (*p) {
+        char buf[128];
+        int len = 0, sign_prefix_len = -1;
+        const char *q;
+        ocstl_fmt_spec_t spec;
+        ocstl_vak_t k;
+        char t;
+        if (p[0] == '{' && p[1] == '{') {
+            putchar('{');
+            p += 2;
+            continue;
+        }
+        if (p[0] == '}' && p[1] == '}') {
+            putchar('}');
+            p += 2;
+            continue;
+        }
+        if (p[0] != '{') {
+            putchar((unsigned char) *p++);
+            continue;
+        }
+        q = p + 1;
+        ocstl_spec_init(&spec);
+        if (*q == ':') q = ocstl_parse_spec(q + 1, &spec);
+        if (*q != '}') {
+            putchar((unsigned char) *p++);
+            continue;
+        }
+        if (idx >= n_args) {
+            p = q + 1;
+            continue;
+        }
+        k = args[idx].kind;
+        t = spec.type;
+        if (t == 's') k = OCSTL_VAK_STR;
+        else if (t == 'c') k = OCSTL_VAK_CHAR;
+        else if (t == 'f' || t == 'e' || t == 'E' || t == 'g' || t == 'G') k = OCSTL_VAK_DOUBLE;
+        else if (t == 'd' || t == 'i') {
+            if (k == OCSTL_VAK_FLOAT || k == OCSTL_VAK_DOUBLE) {
+                args[idx].ll = (long long) args[idx].d;
+                k = OCSTL_VAK_LLONG;
+            } else if (k == OCSTL_VAK_UCHAR || k == OCSTL_VAK_USHORT ||
+                       k == OCSTL_VAK_UINT || k == OCSTL_VAK_ULONG ||
+                       k == OCSTL_VAK_ULLONG) {
+                args[idx].ll = (long long) args[idx].ull;
+                k = OCSTL_VAK_LLONG;
+            }
+        } else if (t == 'u' || t == 'x' || t == 'X' || t == 'o' || t == 'b') {
+            if (k == OCSTL_VAK_FLOAT || k == OCSTL_VAK_DOUBLE) {
+                args[idx].ull = (unsigned long long) args[idx].d;
+                k = OCSTL_VAK_ULLONG;
+            } else if (k == OCSTL_VAK_CHAR || k == OCSTL_VAK_SHORT ||
+                       k == OCSTL_VAK_INT || k == OCSTL_VAK_LONG ||
+                       k == OCSTL_VAK_LLONG) {
+                args[idx].ull = (unsigned long long) args[idx].ll;
+                k = OCSTL_VAK_ULLONG;
+            }
+        }
+        switch (k) {
+            case OCSTL_VAK_STR: {
+                const char *s = args[idx].s ? args[idx].s : "(null)";
+                ocstl_emit_padded(s, (int) strlen(s), &spec, -1);
+                idx++;
+                p = q + 1;
+                continue;
+            }
+            case OCSTL_VAK_CHAR:
+            case OCSTL_VAK_UCHAR: {
+                if (t == 0 || t == 'c') {
+                    buf[0] = (k == OCSTL_VAK_UCHAR)
+                                 ? (char) args[idx].ull
+                                 : (char) args[idx].ll;
+                    ocstl_emit_padded(buf, 1, &spec, -1);
+                    idx++;
+                    p = q + 1;
+                    continue;
+                }
+                {
+                    long long sv = (k == OCSTL_VAK_CHAR)
+                                       ? args[idx].ll
+                                       : (long long) args[idx].ull;
+                    len = ocstl_format_int(buf, sizeof buf,
+                                           (unsigned long long) (sv < 0 ? -sv : sv),
+                                           sv < 0, &spec, &sign_prefix_len);
+                }
+                break;
+            }
+            case OCSTL_VAK_FLOAT:
+            case OCSTL_VAK_DOUBLE:
+                len = ocstl_format_float(buf, sizeof buf, args[idx].d,
+                                         &spec, &sign_prefix_len);
+                break;
+            case OCSTL_VAK_BOOL:
+            case OCSTL_VAK_SHORT:
+            case OCSTL_VAK_INT:
+            case OCSTL_VAK_LONG:
+            case OCSTL_VAK_LLONG: {
+                long long sv = args[idx].ll;
+                len = ocstl_format_int(buf, sizeof buf,
+                                       (unsigned long long) (sv < 0 ? -sv : sv),
+                                       sv < 0, &spec, &sign_prefix_len);
+                break;
+            }
+            case OCSTL_VAK_USHORT:
+            case OCSTL_VAK_UINT:
+            case OCSTL_VAK_ULONG:
+            case OCSTL_VAK_ULLONG:
+                len = ocstl_format_int(buf, sizeof buf, args[idx].ull, 0,
+                                       &spec, &sign_prefix_len);
+                break;
+            default:
+                len = ocstl_format_int(buf, sizeof buf, 0, 0,
+                                       &spec, &sign_prefix_len);
+                break;
+        }
+        ocstl_emit_padded(buf, len, &spec, sign_prefix_len);
+        idx++;
+        p = q + 1;
+    }
+}
+
+#define OCSTL_PASTE2(a, b) a##b
+#define OCSTL_PASTE(a, b)  OCSTL_PASTE2(a, b)
+#define OCSTL_EXPAND(x)    x
+#define OCSTL_VA_PRINT_1(fmt) \
+    ocstl_print_impl_va((fmt), 0)
+#define OCSTL_VA_PRINT_2(fmt, _a) \
+    ocstl_print_impl_va((fmt), 1, #_a, (_a))
+#define OCSTL_VA_PRINT_3(fmt, _a, _b) \
+    ocstl_print_impl_va((fmt), 2, #_a, (_a), #_b, (_b))
+#define OCSTL_VA_PRINT_4(fmt, _a, _b, _c) \
+    ocstl_print_impl_va((fmt), 3, #_a, (_a), #_b, (_b), #_c, (_c))
+#define OCSTL_VA_PRINT_5(fmt, _a, _b, _c, _d) \
+    ocstl_print_impl_va((fmt), 4, #_a, (_a), #_b, (_b), #_c, (_c), #_d, (_d))
+#define OCSTL_VA_PRINT_6(fmt, _a, _b, _c, _d, _e) \
+    ocstl_print_impl_va((fmt), 5, #_a, (_a), #_b, (_b), #_c, (_c), #_d, (_d), \
+                                  #_e, (_e))
+#define OCSTL_VA_PRINT_7(fmt, _a, _b, _c, _d, _e, _f) \
+    ocstl_print_impl_va((fmt), 6, #_a, (_a), #_b, (_b), #_c, (_c), #_d, (_d), \
+                                  #_e, (_e), #_f, (_f))
+#define OCSTL_VA_PRINT_8(fmt, _a, _b, _c, _d, _e, _f, _g) \
+    ocstl_print_impl_va((fmt), 7, #_a, (_a), #_b, (_b), #_c, (_c), #_d, (_d), \
+                                  #_e, (_e), #_f, (_f), #_g, (_g))
+#define OCSTL_VA_PRINT_9(fmt, _a, _b, _c, _d, _e, _f, _g, _h) \
+    ocstl_print_impl_va((fmt), 8, #_a, (_a), #_b, (_b), #_c, (_c), #_d, (_d), \
+                                  #_e, (_e), #_f, (_f), #_g, (_g), #_h, (_h))
+#define OCSTL_VA_PRINT_10(fmt, _a, _b, _c, _d, _e, _f, _g, _h, _i) \
+    ocstl_print_impl_va((fmt), 9, #_a, (_a), #_b, (_b), #_c, (_c), #_d, (_d), \
+                                  #_e, (_e), #_f, (_f), #_g, (_g), #_h, (_h), \
+                                  #_i, (_i))
+#define print(...)   OCSTL_EXPAND(OCSTL_PASTE(OCSTL_VA_PRINT_, ARGN(__VA_ARGS__))(__VA_ARGS__))
 #define println(...) do { print(__VA_ARGS__); putchar('\n'); } while (0)
 #endif
-
-
-#ifndef print
-#define print(...)   ((void*)0)
-#pragma message("warning: print/println is not defined in MSVC C99; use /std:c11 or newer")
 #endif
-#ifndef println
-#define println(...) ((void*)0)
-#endif
-
 
 // ==============================================================================
-// END    cio.h
+// END    print.h
 // ==============================================================================
 
 #define ARRAY(TYPE)             TYPE*

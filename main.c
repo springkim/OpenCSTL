@@ -518,23 +518,27 @@ void test04(void) {
     free(data);
 }
 
-int main2(void) {
+int main(void) {
     logging.info(opencstl_env());
     logging.info(opencstl_version());
     int n = 6;
-    float f = 3.14f;
+    volatile float f = 3.14f;
     char *s = "hello";
+    char c = 'S';
+    char c2 = 90;
+
+    printf("size: %d\n", sizeof(c2));
 
     print("no args\n"); // fputs 경로
     print("Total: {}, diff: {}\n", n, f); // int + float
-    println("str={}, char={}", s, 'A'); // \n 자동
+    println("str={}, char={}", s, c2); // \n 자동
     print("escaped {{ and }}\n"); // { } 리터럴
     println("값: {:30}", (long)1234567890L); // long
 
     return 0;
 }
 
-int main(void) {
+int main2(void) {
     logging.info(opencstl_env());
     logging.info(opencstl_version());
 

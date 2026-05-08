@@ -770,7 +770,7 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
     if (veb_empty(iv->veb)) {
         if (sz <= ___OCSTL_512MB) {
             giveb_insert(iv, block_start,
-                         (void *) ((unsigned char *) block_start + sz - 1), type_size);
+                         (void *) ((unsigned char *) block_start + sz - 1), (int)type_size);
             return block_start;
         }
         return NULL;
@@ -783,9 +783,9 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
     if (first) {
         u64 gap_start = (u64) (uintptr_t) block_start;
         u64 gap_end = (u64) (uintptr_t) first->p1;
-        if (gap_end > gap_start && gap_end - gap_start >= sz) {
+        if (gap_end > gap_start && gap_end - gap_start >= (int)sz) {
             void *p = (void *) (uintptr_t) gap_start;
-            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), type_size);
+            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), (int)type_size);
             return p;
         }
     }
@@ -808,9 +808,9 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
         if (gap_end > (u64) (uintptr_t) block_end)
             gap_end = (u64) (uintptr_t) block_end;
 
-        if (gap_end > gap_start && gap_end - gap_start >= sz) {
+        if (gap_end > gap_start && gap_end - gap_start >= (int)sz) {
             void *p = (void *) (uintptr_t) gap_start;
-            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), type_size);
+            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), (int)type_size);
             return p;
         }
 
@@ -858,7 +858,7 @@ static void *_galloc(size_type64 sz, size_type64 type_size) {
     if (p == NULL) {
         return NULL;
     }
-    giveb_insert(giveb, p, (char *) p + (sz), type_size);
+    giveb_insert(giveb, p, (char *) p + (sz), (int)type_size);
     if (giveb_init) {
         atexit(__opencstl_giveb_destroy);
     }

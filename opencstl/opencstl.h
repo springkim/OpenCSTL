@@ -94,7 +94,7 @@ extern "C" {
 
 #include "tracer.h"
 #include "defines.h"
-
+#include "compiler.h"
 
 #define USE_CSTL_FUNC
 
@@ -139,7 +139,7 @@ extern "C" {
 #include "galloc.h"
 #include "threading_cc.h"
 
-#include "cio.h"
+#include "print.h"
 
 #define ARRAY(TYPE)             TYPE*
 #define VECTOR(TYPE)            TYPE*

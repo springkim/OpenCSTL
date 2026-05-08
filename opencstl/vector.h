@@ -133,7 +133,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
 #endif
     if (length == capacity) {
         iveb_erase(iveb, *container);
-        size_type64 new_capaciy = get_new_capacity(capacity);
+        size_type64 new_capaciy = get_new_capacity((int)capacity);
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             fault("Reallocation failed at vector push_back");
@@ -179,7 +179,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type6
 #endif
     if (length + N >= capacity) {
         iveb_erase(iveb, *container);
-        size_type64 new_capaciy = get_new_capacity(capacity + N);
+        size_type64 new_capaciy = get_new_capacity((int)(capacity + N));
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             fault("Reallocation failed at vector insert");
@@ -361,7 +361,7 @@ OPENCSTL_FUNC void __cstl_vector_reverse(void **container) {
     char *type = (char *) OPENCSTL_NIDX(container, -4);
 
     int idx = 0;
-    int idx_r = length - 1;
+    int idx_r = (int)length - 1;
 
     while (idx < idx_r) {
         swap((char *) *container + type_size * (idx), (char *) *container + type_size * (idx_r), type_size);

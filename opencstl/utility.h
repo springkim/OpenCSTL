@@ -1,11 +1,44 @@
 //
-// Created by spring on 4/22/2026.
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
-
-#ifndef OPENCSTL_UTILITY_H
-#define OPENCSTL_UTILITY_H
-// floor(sqrt(x)) — 정수 전용, FP/division 없음
-// 비트 단위로 2비트씩 처리 → 32bit 입력 기준 최대 16회 루프
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#pragma once
+#ifndef HG_6851F11BA5132E124F4F2633B594CC2AE6340950A32E371CA41C0A3D9A476F60_H
+#define HG_6851F11BA5132E124F4F2633B594CC2AE6340950A32E371CA41C0A3D9A476F60_H
+// floor(sqrt(x)) — Integer-only, no floating-point or division operations
+// Processes 2 bits at a time → Up to 16 loops for a 32-bit input
 static unsigned int fast_sqrt(unsigned int x) {
     unsigned int res = 0;
     unsigned int bit = 1u << 30; // 32bit 내 최대 4의 거듭제곱
@@ -22,10 +55,10 @@ static unsigned int fast_sqrt(unsigned int x) {
     return res;
 }
 
-// ratio = √2 + (√9 - √2) · K / (K + √capacity)
+//   ratio = √2 + (√9 - √2) · K / (K + √capacity)
 //   capacity →   0 : ratio → √9 = 3.0
 //   capacity → ∞   : ratio → √2 ≈ 1.414
-//   K = 전환 속도. K=16 이면 √capacity = K 지점(=capacity 256)이 딱 중간.
+//   K = conversion rate. If K = 16, then √capacity = K points (i.e., capacity 256) is exactly halfway.
 static int get_new_capacity(int _capacity) {
     if (_capacity < 2) return 2;
 
@@ -55,4 +88,4 @@ static int get_new_capacity(int _capacity) {
 //     if (diff <= FLT_EPSILON * fmaxf(1.0f, scale)) return 0;
 //     return (x < y) ? -1 : 1;
 // }
-#endif //OPENCSTL_UTILITY_H
+#endif

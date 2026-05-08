@@ -34,15 +34,15 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-
-#ifndef OPENCSTL_VERIFY_H
-#define OPENCSTL_VERIFY_H
+#pragma once
+#ifndef HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
+#define HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
 #include <assert.h>
 #include "logging.h"
 
-#define verify(EXPR) do { if(!(EXPR)) __verify(#EXPR,__FILE__,__LINE__); } while(0)
+#define verify(EXPR) do { if(!(EXPR)) ocstl_verify(#EXPR,__FILE__,__LINE__); } while(0)
 
-static int __verify(char *expression, char *file, int line) {
+static int ocstl_verify(char *expression, char *file, int line) {
     logging.error("Verification failed: %s, file %s, line %d",
                   expression, file, line);
     fflush(stdout);
@@ -50,12 +50,12 @@ static int __verify(char *expression, char *file, int line) {
     abort();
 }
 
-#define fault(STR) do{_fault((STR),__FILE__,__LINE__);}while(0)
+#define fault(STR) do{ocstl_fault((STR),__FILE__,__LINE__);}while(0)
 
-static void _fault(char *str, char *file, int line) {
+static void ocstl_fault(char *str, char *file, int line) {
     logging.error("Fault: %s, file %s, line %d", str, file, line);
     fflush(stdout);
     fflush(stderr);
     exit(-1);
 }
-#endif //OPENCSTL_VERIFY_H
+#endif

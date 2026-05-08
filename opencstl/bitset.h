@@ -34,8 +34,8 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#if !defined(OPENCSTL_BITSET_H)
-#define OPENCSTL_BITSET_H
+#if !defined(HG_9DA4009D62E5E7D106F7626FEFBC314CAB0144090E5B2F58B01682E31C54BC1A_H)
+#define HG_9DA4009D62E5E7D106F7626FEFBC314CAB0144090E5B2F58B01682E31C54BC1A_H
 #include "types.h"
 #include "zalloc.h"
 #include "crossplatform.h"
@@ -312,4 +312,4 @@ static __BITSET bitset = {
     __cstl_bitset_to_string,
 };
 
-#endif //OPENCSTL_BITSET_H
+#endif

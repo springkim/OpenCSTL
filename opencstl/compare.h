@@ -35,8 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 
-#ifndef OPENCSTL_COMPARE_H
-#define OPENCSTL_COMPARE_H
+#ifndef HG_A4BAA5A4E64E2CAAC1ECF8C87DAEC71CAEC629FB9B0E230E7A32C264E853B034_H
+#define HG_A4BAA5A4E64E2CAAC1ECF8C87DAEC71CAEC629FB9B0E230E7A32C264E853B034_H
 #include <string.h>
 #include "types.h"
 #include <float.h>
@@ -208,4 +208,4 @@ static CSTL_COMPARE_BYTES CSTL_EQUALS(const char *type_str) {
 
     return memcmp;
 }
-#endif //OPENCSTL_COMPARE_H
+#endif

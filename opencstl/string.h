@@ -98,9 +98,9 @@ static char **__cstl_string_split(const char *src, const char *sep, int *n) {
 
 
 static char *__cstl_string_replace(char *src, char *from, char *to) {
-    int len = strlen(src);
-    int from_len = strlen(from);
-    int to_len = strlen(to);
+    int len = (int)strlen(src);
+    int from_len = (int)strlen(from);
+    int to_len = (int)strlen(to);
 
     int count = 0;
     char *p = src;

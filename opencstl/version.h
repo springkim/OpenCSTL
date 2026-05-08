@@ -34,24 +34,22 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#if !defined(_OPENCSTL_VERSION_H)
-#define _OPENCSTL_VERSION_H
+#if !defined(HG_3282159A01880257F6A4E53AEC354ACB6F7CF5BC34243136D0AE684B74FB1426_H)
+#define HG_3282159A01880257F6A4E53AEC354ACB6F7CF5BC34243136D0AE684B74FB1426_H
 #include "crossplatform.h"
-static char *OPENCSTL_VERSION = "v1.3.3";
+
 
 static char *opencstl_version(void) {
+    static char *OPENCSTL_VERSION = "v1.3.3";
     return OPENCSTL_VERSION;
 }
 
 
 static char *opencstl_env(void) {
     static char __opencstl_env_str[512] = {0};
-#if defined(OCSTL_CC_MSVC)
-    sprintf_s(__opencstl_env_str, sizeof(__opencstl_env_str),
-              "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
-#else
-    sprintf(__opencstl_env_str, "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
-#endif
+    snprintf(__opencstl_env_str, sizeof(__opencstl_env_str),
+             "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
     return __opencstl_env_str;
 }
-#endif //_OPENCSTL_VERSION_H
+
+#endif
