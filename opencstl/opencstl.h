@@ -98,14 +98,9 @@ extern "C" {
 
 #define USE_CSTL_FUNC
 
-// #if defined(__linux__) || defined(__APPLE__)
-// #if !defined(__8cc__ )
-// #pragma GCC push_options
-// #pragma GCC optimize("O0")
-// #endif
-// #endif
+
 #include "zalloc.h"
-#include "string.h"
+#include <string.h>
 
 // Contaner
 #include "deque.h"

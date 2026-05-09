@@ -12,6 +12,9 @@
 #ifndef _OPENCSTL_AMALGAMATED_H
 #define _OPENCSTL_AMALGAMATED_H
 
+// ── System includes — unconditional, deduplicated ─────────────────────
+#include <string.h>
+
 
 // ==============================================================================
 // BEGIN  opencstl.h                     (depth 0)
@@ -503,6 +506,7 @@ static void cpu_pin(void) {
 
 #ifndef OPENCSTL_TRACER_H
 #define OPENCSTL_TRACER_H
+
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1008,7 +1012,7 @@ size_type64 zalloc_count = 0;
 static void zinsert(void *ptr, char *file, const char *func, int line) {
     zmem[zalloc_size].ptr = ptr;
     zmem[zalloc_size].file = file;
-    zmem[zalloc_size].func = (char*)func;
+    zmem[zalloc_size].func = (char *) func;
     zmem[zalloc_size].line = line;
     zalloc_size++;
     zalloc_count++;
@@ -1028,21 +1032,7 @@ static void zremove(void *ptr) {
     }
 }
 
-// static void zappend(void *ptr) {
-//     zalloc_vector[zalloc_size++] = ptr;
-//     zalloc_count++;
-// }
-//
-// static void zerase(void *ptr) {
-//     for (size_type64 i = 0; i < zalloc_size; i++) {
-//         if (zalloc_vector[i] == ptr) {
-//             memcpy(zalloc_vector + i, zalloc_vector + i + 1, (zalloc_size - i - 1) * sizeof(void *));
-//             zalloc_size--;
-//             zalloc_vector[zalloc_size] = NULL;
-//             return;
-//         }
-//     }
-// }
+
 #endif
 #ifdef OPENCSTL_TRACER
 static void opencstl_exit(void) {
@@ -1621,36 +1611,6 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 // ==============================================================================
 
 //
-// Created by spring on 5/8/2026.
-//
-
-#ifndef OPENCSTL_COMPILER_H
-#define OPENCSTL_COMPILER_H
-// [already included: crossplatform.h]
-#if defined(OCSTL_CC_TCC)
-void *__dso_handle = (void *) 0;
-#endif
-#endif //OPENCSTL_COMPILER_H
-
-// ==============================================================================
-// END    compiler.h
-// ==============================================================================
-
-#define USE_CSTL_FUNC
-
-// #if defined(__linux__) || defined(__APPLE__)
-// #if !defined(__8cc__ )
-// #pragma GCC push_options
-// #pragma GCC optimize("O0")
-// #endif
-// #endif
-// [already included: zalloc.h]
-
-// ==============================================================================
-// BEGIN  string.h                       (depth 1)
-// ==============================================================================
-
-//
 //  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
 //  By downloading, copying, installing or using the software you agree to this license.
@@ -1687,476 +1647,22 @@ void *__dso_handle = (void *) 0;
 // the use of this software, even if advised of the possibility of such damage.
 //
 
-#ifndef OPENCSTL_STRING_H
-#define OPENCSTL_STRING_H
-
-// [already included: zalloc.h]
-
-// ==============================================================================
-// BEGIN  verify.h                       (depth 2)
-// ==============================================================================
-
-//
-//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
-//
-//  By downloading, copying, installing or using the software you agree to this license.
-//  If you do not agree to this license, do not download, install,
-//  copy or use the software.
-//
-//
-//                               License Agreement
-//                Open Source C Container Library like STL in C++
-//
-//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
-//
-// Third party copyrights are property of their respective owners.
-//
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistribution's of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//
-//   * Redistribution's in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//
-//   * The name of the copyright holders may not be used to endorse or promote products
-//     derived from this software without specific prior written permission.
-//
-// This software is provided by the copyright holders and contributors "as is" and
-// any express or implied warranties, including, but not limited to, the implied
-// warranties of merchantability and fitness for a particular purpose are disclaimed.
-// loss of use, data, or profits; or business interruption) however caused
-// and on any theory of liability, whether in contract, strict liability,
-// or tort (including negligence or otherwise) arising in any way out of
-// the use of this software, even if advised of the possibility of such damage.
-//
-#ifndef HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
-#define HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
-#include <assert.h>
-// [already included: logging.h]
-
-#define verify(EXPR) do { if(!(EXPR)) ocstl_verify(#EXPR,__FILE__,__LINE__); } while(0)
-
-static int ocstl_verify(char *expression, char *file, int line) {
-    logging.error("Verification failed: %s, file %s, line %d",
-                  expression, file, line);
-    fflush(stdout);
-    fflush(stderr);
-    abort();
-}
-
-#define fault(STR) do{ocstl_fault((STR),__FILE__,__LINE__);}while(0)
-
-static void ocstl_fault(char *str, char *file, int line) {
-    logging.error("Fault: %s, file %s, line %d", str, file, line);
-    fflush(stdout);
-    fflush(stderr);
-    exit(-1);
-}
+#ifndef HG_A94B3E44530BB2645037A72BDDC08C58C0745DF063F67BDE67204EE65ED05A0C_H
+#define HG_A94B3E44530BB2645037A72BDDC08C58C0745DF063F67BDE67204EE65ED05A0C_H
+// [already included: crossplatform.h]
+#if defined(OCSTL_CC_TCC)
+void *__dso_handle = (void *) 0;
+#endif
 #endif
 
 // ==============================================================================
-// END    verify.h
+// END    compiler.h
 // ==============================================================================
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdbool.h>
-// ░██████╗████████╗██████╗░██╗███╗░░██╗░██████╗░
-// ██╔════╝╚══██╔══╝██╔══██╗██║████╗░██║██╔════╝░
-// ╚█████╗░░░░██║░░░██████╔╝██║██╔██╗██║██║░░██╗░
-// ░╚═══██╗░░░██║░░░██╔══██╗██║██║╚████║██║░░╚██╗
-// ██████╔╝░░░██║░░░██║░░██║██║██║░╚███║╚██████╔╝
-// ╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░
-static char *__cstl_string_substr(char *src, int pos, int len) {
-    verify(strlen(src) >= pos + len);
-    char *ret = (char *) calloc(len + 1, sizeof(char));
-    memcpy(ret, src + pos, len);
-    return ret;
-}
 
-static char **__cstl_string_split(const char *src, const char *sep, int *n) {
-    int len = (int) strlen(src);
-    int sep_len = (int) strlen(sep);
-
-    if (sep_len == 0) {
-        char **ret = (char **) malloc(sizeof(char *) + (len + 1));
-        char *buf = (char *) ret + sizeof(char *);
-        memcpy(buf, src, len + 1);
-        ret[0] = buf;
-        *n = 1;
-        return ret;
-    }
-
-    // separator 개수 세기
-    int count = 1;
-    const char *p = src;
-    while ((p = strstr(p, sep)) != NULL) {
-        count++;
-        p += sep_len;
-    }
-
-    char **ret = (char **) malloc(count * sizeof(char *) + (len + 1));
-    char *buf = (char *) ret + count * sizeof(char *);
-    memcpy(buf, src, len + 1);
+#define USE_CSTL_FUNC
 
 
-    int idx = 0;
-    ret[idx++] = buf;
-    char *s = buf;
-    while ((s = strstr(s, sep)) != NULL) {
-        *s = '\0';
-        s += sep_len;
-        ret[idx++] = s;
-    }
-
-    *n = count;
-    return ret;
-}
-
-
-static char *__cstl_string_replace(char *src, char *from, char *to) {
-    int len = (int)strlen(src);
-    int from_len = (int)strlen(from);
-    int to_len = (int)strlen(to);
-
-    int count = 0;
-    char *p = src;
-    while ((p = strstr(p, from)) != NULL) {
-        count++;
-        p += from_len;
-    }
-
-    char *ret = (char *) calloc(len + count * (to_len - from_len) + 1, 1);
-    char *dst = ret;
-    p = src;
-    while (*p) {
-        if (strncmp(p, from, from_len) == 0) {
-            memcpy(dst, to, to_len);
-            dst += to_len;
-            p += from_len;
-        } else {
-            *dst++ = *p++;
-        }
-    }
-    *dst = '\0';
-
-    return ret;
-}
-
-static char *__cstl_string_ltrim(const char *src) {
-    const char *p = src;
-    while (*p && isspace((unsigned char) *p)) p++;
-    size_type64 len = strlen(p);
-    char *ret = (char *) malloc(len + 1);
-    memcpy(ret, p, len + 1);
-    return ret;
-}
-
-static char *__cstl_string_rtrim(const char *src) {
-    size_type64 len = strlen(src);
-    while (len > 0 && isspace((unsigned char) src[len - 1])) len--;
-    char *ret = (char *) malloc(len + 1);
-    memcpy(ret, src, len);
-    ret[len] = '\0';
-    return ret;
-}
-
-static char *__cstl_string_trim(const char *src) {
-    const char *begin = src;
-    while (*begin && isspace((unsigned char) *begin)) begin++;
-    const char *end = src + strlen(src);
-    while (end > begin && isspace((unsigned char) *(end - 1))) end--;
-    size_type64 len = end - begin;
-    char *ret = (char *) malloc(len + 1);
-    memcpy(ret, begin, len);
-    ret[len] = '\0';
-    return ret;
-}
-
-static char *__cstl_string_to_upper(const char *src) {
-    size_type64 len = strlen(src);
-    char *ret = (char *) malloc(len + 1);
-    for (size_type64 i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
-    ret[len] = '\0';
-    return ret;
-}
-
-static char *__cstl_string_to_lower(const char *src) {
-    size_type64 len = strlen(src);
-    char *ret = (char *) malloc(len + 1);
-    for (size_type64 i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
-    ret[len] = '\0';
-    return ret;
-}
-
-static bool __cstl_string_starts_with(const char *src, const char *prefix) {
-    size_type64 plen = strlen(prefix);
-    return strncmp(src, prefix, plen) == 0;
-}
-
-static bool __cstl_string_ends_with(const char *src, const char *suffix) {
-    size_type64 slen = strlen(src);
-    size_type64 flen = strlen(suffix);
-    if (flen > slen) return false;
-    return memcmp(src + slen - flen, suffix, flen) == 0;
-}
-
-static int __cstl_string_count(const char *src, const char *sub) {
-    int count = 0;
-    size_type64 sub_len = strlen(sub);
-    if (sub_len == 0) return 0;
-    const char *p = src;
-    while ((p = strstr(p, sub)) != NULL) {
-        count++;
-        p += sub_len;
-    }
-    return count;
-}
-
-static char *__cstl_string_join(char **parts, int n, const char *delim) {
-    if (n <= 0) {
-        char *empty = (char *) malloc(1);
-        *empty = '\0';
-        return empty;
-    }
-    size_type64 dlen = strlen(delim);
-    size_type64 total = 0;
-    for (int i = 0; i < n; i++) total += strlen(parts[i]);
-    total += dlen * (n - 1) + 1;
-
-    char *ret = (char *) malloc(total);
-    char *dst = ret;
-    for (int i = 0; i < n; i++) {
-        if (i > 0) {
-            memcpy(dst, delim, dlen);
-            dst += dlen;
-        }
-        size_type64 len = strlen(parts[i]);
-        memcpy(dst, parts[i], len);
-        dst += len;
-    }
-    *dst = '\0';
-    return ret;
-}
-
-static char *__cstl_string_concat(const char *a, const char *b) {
-    size_type64 alen = strlen(a);
-    size_type64 blen = strlen(b);
-    char *ret = (char *) malloc(alen + blen + 1);
-    memcpy(ret, a, alen);
-    memcpy(ret + alen, b, blen + 1);
-    return ret;
-}
-
-static char *__cstl_string_reverse(const char *src) {
-    size_type64 len = strlen(src);
-    char *ret = (char *) malloc(len + 1);
-    for (size_type64 i = 0; i < len; i++) ret[i] = src[len - 1 - i];
-    ret[len] = '\0';
-    return ret;
-}
-
-static bool __cstl_string_is_digit(const char *src) {
-    if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isdigit((unsigned char) *p)) return false;
-    return true;
-}
-
-static bool __cstl_string_is_alpha(const char *src) {
-    if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isalpha((unsigned char) *p)) return false;
-    return true;
-}
-
-static bool __cstl_string_is_alnum(const char *src) {
-    if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isalnum((unsigned char) *p)) return false;
-    return true;
-}
-
-static bool __cstl_string_is_space(const char *src) {
-    if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isspace((unsigned char) *p)) return false;
-    return true;
-}
-
-static int *__cstl_string_kmp(char *src, char *pattern, int *count) {
-    if (count != NULL) *count = 0;
-
-    if (src == NULL || pattern == NULL || count == NULL) {
-        return NULL;
-    }
-
-    size_type64 n = strlen(src);
-    size_type64 m = strlen(pattern);
-
-    // 빈 패턴 또는 패턴이 원본보다 긴 경우
-    if (m == 0 || n < m) {
-        return NULL;
-    }
-
-    // LPS 테이블 생성
-    int *lps = (int *) malloc(sizeof(int) * m);
-    if (lps == NULL) return NULL;
-
-    lps[0] = 0;
-    size_type64 len = 0;
-    size_type64 i = 1;
-
-    while (i < m) {
-        if (pattern[i] == pattern[len]) {
-            len++;
-            lps[i] = (int) len;
-            i++;
-        } else {
-            if (len != 0) {
-                len = lps[len - 1];
-            } else {
-                lps[i] = 0;
-                i++;
-            }
-        }
-    }
-
-    // 매칭 위치 버퍼 (인덱스 0부터 저장)
-    size_type64 capacity = 16;
-    int *matches = (int *) malloc(sizeof(int) * capacity);
-    if (matches == NULL) {
-        free(lps);
-        return NULL;
-    }
-
-    size_type64 match_count = 0;
-    size_type64 j = 0;
-    i = 0;
-
-    while (i < n) {
-        if (pattern[j] == src[i]) {
-            i++;
-            j++;
-
-            if (j == m) {
-                // 용량 부족 시 확장
-                if (match_count >= capacity) {
-                    capacity *= 2;
-                    int *temp = (int *) realloc(matches, sizeof(int) * capacity);
-                    if (temp == NULL) {
-                        free(matches);
-                        free(lps);
-                        return NULL;
-                    }
-                    matches = temp;
-                }
-                matches[match_count] = (int) (i - j);
-                match_count++;
-                j = lps[j - 1];
-            }
-        } else {
-            if (j != 0) {
-                j = lps[j - 1];
-            } else {
-                i++;
-            }
-        }
-    }
-
-    free(lps);
-
-    *count = (int) match_count;
-
-    // 매칭 0개면 NULL 반환 (caller가 free 안 하도록)
-    if (match_count == 0) {
-        free(matches);
-        return NULL;
-    }
-
-    // 실제 크기로 축소 (실패해도 matches는 유효)
-    int *result = (int *) realloc(matches, sizeof(int) * match_count);
-    return (result != NULL) ? result : matches;
-}
-
-// ============================================================
-// function pointer types
-// ============================================================
-typedef char *(*string_substr_fn)(char *, int, int);
-
-typedef char **(*string_split_fn)(const char *, const char *, int *);
-
-typedef char *(*string_replace_fn)(char *, char *, char *);
-
-typedef char *(*string_unary_fn)(const char *);
-
-typedef bool (*string_match_fn)(const char *, const char *);
-
-typedef int (*string_count_fn)(const char *, const char *);
-
-typedef char *(*string_join_fn)(char **, int, const char *);
-
-typedef char *(*string_concat_fn)(const char *, const char *);
-
-typedef bool (*string_pred_fn)(const char *);
-
-typedef int * (*string_kmp_fn)(char *src, char *pattern, int *count);
-
-// ============================================================
-// string namespace struct
-// ============================================================
-typedef struct {
-    string_substr_fn substr;
-    string_split_fn split;
-    string_replace_fn replace;
-    string_unary_fn ltrim;
-    string_unary_fn rtrim;
-    string_unary_fn trim;
-    string_unary_fn to_upper;
-    string_unary_fn to_lower;
-    string_match_fn starts_with;
-    string_match_fn ends_with;
-    string_count_fn count_str;
-    string_join_fn join;
-    string_concat_fn concat;
-    string_unary_fn reverse;
-    string_pred_fn is_digit;
-    string_pred_fn is_alpha;
-    string_pred_fn is_alnum;
-    string_pred_fn is_space;
-    string_kmp_fn kmp;
-} __STRING;
-
-static __STRING string = {
-    __cstl_string_substr,
-    __cstl_string_split,
-    __cstl_string_replace,
-    __cstl_string_ltrim,
-    __cstl_string_rtrim,
-    __cstl_string_trim,
-    __cstl_string_to_upper,
-    __cstl_string_to_lower,
-    __cstl_string_starts_with,
-    __cstl_string_ends_with,
-    __cstl_string_count,
-    __cstl_string_join,
-    __cstl_string_concat,
-    __cstl_string_reverse,
-    __cstl_string_is_digit,
-    __cstl_string_is_alpha,
-    __cstl_string_is_alnum,
-    __cstl_string_is_space,
-    __cstl_string_kmp
-};
-
-#endif //OPENCSTL_STRING_H
-
-// ==============================================================================
-// END    string.h
-// ==============================================================================
+// [already included: zalloc.h]
 
 // Contaner
 
@@ -3082,6 +2588,75 @@ static void _gfree(void *p) {
 
 // ==============================================================================
 // END    van_emde_boas_tree.h
+// ==============================================================================
+
+// ==============================================================================
+// BEGIN  verify.h                       (depth 2)
+// ==============================================================================
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2018-2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+#ifndef HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
+#define HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
+#include <assert.h>
+// [already included: logging.h]
+
+#define verify(EXPR) do { if(!(EXPR)) ocstl_verify(#EXPR,__FILE__,__LINE__); } while(0)
+
+static int ocstl_verify(char *expression, char *file, int line) {
+    logging.error("Verification failed: %s, file %s, line %d",
+                  expression, file, line);
+    fflush(stdout);
+    fflush(stderr);
+    abort();
+}
+
+#define fault(STR) do{ocstl_fault((STR),__FILE__,__LINE__);}while(0)
+
+static void ocstl_fault(char *str, char *file, int line) {
+    logging.error("Fault: %s, file %s, line %d", str, file, line);
+    fflush(stdout);
+    fflush(stderr);
+    exit(-1);
+}
+#endif
+
+// ==============================================================================
+// END    verify.h
 // ==============================================================================
 #ifdef _MSC_VER
 #pragma warning(disable:4146)
@@ -9874,7 +9449,7 @@ static char *__cstl_abspath(char *path) {
     GetFullPathNameA(path, len, ret, NULL);
     return ret;
 #else
-    char resolved[PATH_MAX];
+    char resolved[OCSTL_MAX_PATH];
     if (realpath(path, resolved)) {
         size_type64 l = strlen(resolved);
         char *ret = (char *) malloc(l + 1);
@@ -9887,7 +9462,7 @@ static char *__cstl_abspath(char *path) {
         memcpy(ret, path, l + 1);
         return ret;
     }
-    char cwd[PATH_MAX];
+    char cwd[OCSTL_MAX_PATH];
     if (!getcwd(cwd, sizeof cwd)) {
         size_type64 l = strlen(path);
         char *ret = (char *) malloc(l + 1);
@@ -12272,7 +11847,450 @@ static __BITSET bitset = {
 // END    bitset.h
 // ==============================================================================
 
-// [already included: string.h]
+
+// ==============================================================================
+// BEGIN  string.h                       (depth 1)
+// ==============================================================================
+
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                               License Agreement
+//                Open Source C Container Library like STL in C++
+//
+//               Copyright (C) 2026, Kim Bomm, all rights reserved.
+//
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+
+#ifndef OPENCSTL_STRING_H
+#define OPENCSTL_STRING_H
+
+// [already included: zalloc.h]
+// [already included: verify.h]
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <stdbool.h>
+// ░██████╗████████╗██████╗░██╗███╗░░██╗░██████╗░
+// ██╔════╝╚══██╔══╝██╔══██╗██║████╗░██║██╔════╝░
+// ╚█████╗░░░░██║░░░██████╔╝██║██╔██╗██║██║░░██╗░
+// ░╚═══██╗░░░██║░░░██╔══██╗██║██║╚████║██║░░╚██╗
+// ██████╔╝░░░██║░░░██║░░██║██║██║░╚███║╚██████╔╝
+// ╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░
+static char *__cstl_string_substr(char *src, int pos, int len) {
+    verify(strlen(src) >= pos + len);
+    char *ret = (char *) calloc(len + 1, sizeof(char));
+    memcpy(ret, src + pos, len);
+    return ret;
+}
+
+static char **__cstl_string_split(const char *src, const char *sep, int *n) {
+    int len = (int) strlen(src);
+    int sep_len = (int) strlen(sep);
+
+    if (sep_len == 0) {
+        char **ret = (char **) malloc(sizeof(char *) + (len + 1));
+        char *buf = (char *) ret + sizeof(char *);
+        memcpy(buf, src, len + 1);
+        ret[0] = buf;
+        *n = 1;
+        return ret;
+    }
+
+    // separator 개수 세기
+    int count = 1;
+    const char *p = src;
+    while ((p = strstr(p, sep)) != NULL) {
+        count++;
+        p += sep_len;
+    }
+
+    char **ret = (char **) malloc(count * sizeof(char *) + (len + 1));
+    char *buf = (char *) ret + count * sizeof(char *);
+    memcpy(buf, src, len + 1);
+
+
+    int idx = 0;
+    ret[idx++] = buf;
+    char *s = buf;
+    while ((s = strstr(s, sep)) != NULL) {
+        *s = '\0';
+        s += sep_len;
+        ret[idx++] = s;
+    }
+
+    *n = count;
+    return ret;
+}
+
+
+static char *__cstl_string_replace(char *src, char *from, char *to) {
+    int len = (int)strlen(src);
+    int from_len = (int)strlen(from);
+    int to_len = (int)strlen(to);
+
+    int count = 0;
+    char *p = src;
+    while ((p = strstr(p, from)) != NULL) {
+        count++;
+        p += from_len;
+    }
+
+    char *ret = (char *) calloc(len + count * (to_len - from_len) + 1, 1);
+    char *dst = ret;
+    p = src;
+    while (*p) {
+        if (strncmp(p, from, from_len) == 0) {
+            memcpy(dst, to, to_len);
+            dst += to_len;
+            p += from_len;
+        } else {
+            *dst++ = *p++;
+        }
+    }
+    *dst = '\0';
+
+    return ret;
+}
+
+static char *__cstl_string_ltrim(const char *src) {
+    const char *p = src;
+    while (*p && isspace((unsigned char) *p)) p++;
+    size_type64 len = strlen(p);
+    char *ret = (char *) malloc(len + 1);
+    memcpy(ret, p, len + 1);
+    return ret;
+}
+
+static char *__cstl_string_rtrim(const char *src) {
+    size_type64 len = strlen(src);
+    while (len > 0 && isspace((unsigned char) src[len - 1])) len--;
+    char *ret = (char *) malloc(len + 1);
+    memcpy(ret, src, len);
+    ret[len] = '\0';
+    return ret;
+}
+
+static char *__cstl_string_trim(const char *src) {
+    const char *begin = src;
+    while (*begin && isspace((unsigned char) *begin)) begin++;
+    const char *end = src + strlen(src);
+    while (end > begin && isspace((unsigned char) *(end - 1))) end--;
+    size_type64 len = end - begin;
+    char *ret = (char *) malloc(len + 1);
+    memcpy(ret, begin, len);
+    ret[len] = '\0';
+    return ret;
+}
+
+static char *__cstl_string_to_upper(const char *src) {
+    size_type64 len = strlen(src);
+    char *ret = (char *) malloc(len + 1);
+    for (size_type64 i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
+    ret[len] = '\0';
+    return ret;
+}
+
+static char *__cstl_string_to_lower(const char *src) {
+    size_type64 len = strlen(src);
+    char *ret = (char *) malloc(len + 1);
+    for (size_type64 i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
+    ret[len] = '\0';
+    return ret;
+}
+
+static bool __cstl_string_starts_with(const char *src, const char *prefix) {
+    size_type64 plen = strlen(prefix);
+    return strncmp(src, prefix, plen) == 0;
+}
+
+static bool __cstl_string_ends_with(const char *src, const char *suffix) {
+    size_type64 slen = strlen(src);
+    size_type64 flen = strlen(suffix);
+    if (flen > slen) return false;
+    return memcmp(src + slen - flen, suffix, flen) == 0;
+}
+
+static int __cstl_string_count(const char *src, const char *sub) {
+    int count = 0;
+    size_type64 sub_len = strlen(sub);
+    if (sub_len == 0) return 0;
+    const char *p = src;
+    while ((p = strstr(p, sub)) != NULL) {
+        count++;
+        p += sub_len;
+    }
+    return count;
+}
+
+static char *__cstl_string_join(char **parts, int n, const char *delim) {
+    if (n <= 0) {
+        char *empty = (char *) malloc(1);
+        *empty = '\0';
+        return empty;
+    }
+    size_type64 dlen = strlen(delim);
+    size_type64 total = 0;
+    for (int i = 0; i < n; i++) total += strlen(parts[i]);
+    total += dlen * (n - 1) + 1;
+
+    char *ret = (char *) malloc(total);
+    char *dst = ret;
+    for (int i = 0; i < n; i++) {
+        if (i > 0) {
+            memcpy(dst, delim, dlen);
+            dst += dlen;
+        }
+        size_type64 len = strlen(parts[i]);
+        memcpy(dst, parts[i], len);
+        dst += len;
+    }
+    *dst = '\0';
+    return ret;
+}
+
+static char *__cstl_string_concat(const char *a, const char *b) {
+    size_type64 alen = strlen(a);
+    size_type64 blen = strlen(b);
+    char *ret = (char *) malloc(alen + blen + 1);
+    memcpy(ret, a, alen);
+    memcpy(ret + alen, b, blen + 1);
+    return ret;
+}
+
+static char *__cstl_string_reverse(const char *src) {
+    size_type64 len = strlen(src);
+    char *ret = (char *) malloc(len + 1);
+    for (size_type64 i = 0; i < len; i++) ret[i] = src[len - 1 - i];
+    ret[len] = '\0';
+    return ret;
+}
+
+static bool __cstl_string_is_digit(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isdigit((unsigned char) *p)) return false;
+    return true;
+}
+
+static bool __cstl_string_is_alpha(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isalpha((unsigned char) *p)) return false;
+    return true;
+}
+
+static bool __cstl_string_is_alnum(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isalnum((unsigned char) *p)) return false;
+    return true;
+}
+
+static bool __cstl_string_is_space(const char *src) {
+    if (!*src) return false;
+    for (const char *p = src; *p; p++)
+        if (!isspace((unsigned char) *p)) return false;
+    return true;
+}
+
+static int *__cstl_string_kmp(char *src, char *pattern, int *count) {
+    if (count != NULL) *count = 0;
+
+    if (src == NULL || pattern == NULL || count == NULL) {
+        return NULL;
+    }
+
+    size_type64 n = strlen(src);
+    size_type64 m = strlen(pattern);
+
+    // 빈 패턴 또는 패턴이 원본보다 긴 경우
+    if (m == 0 || n < m) {
+        return NULL;
+    }
+
+    // LPS 테이블 생성
+    int *lps = (int *) malloc(sizeof(int) * m);
+    if (lps == NULL) return NULL;
+
+    lps[0] = 0;
+    size_type64 len = 0;
+    size_type64 i = 1;
+
+    while (i < m) {
+        if (pattern[i] == pattern[len]) {
+            len++;
+            lps[i] = (int) len;
+            i++;
+        } else {
+            if (len != 0) {
+                len = lps[len - 1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+
+    // 매칭 위치 버퍼 (인덱스 0부터 저장)
+    size_type64 capacity = 16;
+    int *matches = (int *) malloc(sizeof(int) * capacity);
+    if (matches == NULL) {
+        free(lps);
+        return NULL;
+    }
+
+    size_type64 match_count = 0;
+    size_type64 j = 0;
+    i = 0;
+
+    while (i < n) {
+        if (pattern[j] == src[i]) {
+            i++;
+            j++;
+
+            if (j == m) {
+                // 용량 부족 시 확장
+                if (match_count >= capacity) {
+                    capacity *= 2;
+                    int *temp = (int *) realloc(matches, sizeof(int) * capacity);
+                    if (temp == NULL) {
+                        free(matches);
+                        free(lps);
+                        return NULL;
+                    }
+                    matches = temp;
+                }
+                matches[match_count] = (int) (i - j);
+                match_count++;
+                j = lps[j - 1];
+            }
+        } else {
+            if (j != 0) {
+                j = lps[j - 1];
+            } else {
+                i++;
+            }
+        }
+    }
+
+    free(lps);
+
+    *count = (int) match_count;
+
+    // 매칭 0개면 NULL 반환 (caller가 free 안 하도록)
+    if (match_count == 0) {
+        free(matches);
+        return NULL;
+    }
+
+    // 실제 크기로 축소 (실패해도 matches는 유효)
+    int *result = (int *) realloc(matches, sizeof(int) * match_count);
+    return (result != NULL) ? result : matches;
+}
+
+// ============================================================
+// function pointer types
+// ============================================================
+typedef char *(*string_substr_fn)(char *, int, int);
+
+typedef char **(*string_split_fn)(const char *, const char *, int *);
+
+typedef char *(*string_replace_fn)(char *, char *, char *);
+
+typedef char *(*string_unary_fn)(const char *);
+
+typedef bool (*string_match_fn)(const char *, const char *);
+
+typedef int (*string_count_fn)(const char *, const char *);
+
+typedef char *(*string_join_fn)(char **, int, const char *);
+
+typedef char *(*string_concat_fn)(const char *, const char *);
+
+typedef bool (*string_pred_fn)(const char *);
+
+typedef int * (*string_kmp_fn)(char *src, char *pattern, int *count);
+
+// ============================================================
+// string namespace struct
+// ============================================================
+typedef struct {
+    string_substr_fn substr;
+    string_split_fn split;
+    string_replace_fn replace;
+    string_unary_fn ltrim;
+    string_unary_fn rtrim;
+    string_unary_fn trim;
+    string_unary_fn to_upper;
+    string_unary_fn to_lower;
+    string_match_fn starts_with;
+    string_match_fn ends_with;
+    string_count_fn count_str;
+    string_join_fn join;
+    string_concat_fn concat;
+    string_unary_fn reverse;
+    string_pred_fn is_digit;
+    string_pred_fn is_alpha;
+    string_pred_fn is_alnum;
+    string_pred_fn is_space;
+    string_kmp_fn kmp;
+} __STRING;
+
+static __STRING string = {
+    __cstl_string_substr,
+    __cstl_string_split,
+    __cstl_string_replace,
+    __cstl_string_ltrim,
+    __cstl_string_rtrim,
+    __cstl_string_trim,
+    __cstl_string_to_upper,
+    __cstl_string_to_lower,
+    __cstl_string_starts_with,
+    __cstl_string_ends_with,
+    __cstl_string_count,
+    __cstl_string_join,
+    __cstl_string_concat,
+    __cstl_string_reverse,
+    __cstl_string_is_digit,
+    __cstl_string_is_alpha,
+    __cstl_string_is_alnum,
+    __cstl_string_is_space,
+    __cstl_string_kmp
+};
+
+#endif //OPENCSTL_STRING_H
+
+// ==============================================================================
+// END    string.h
+// ==============================================================================
 
 // ==============================================================================
 // BEGIN  glob.h                         (depth 1)
@@ -13074,7 +13092,7 @@ static void MsgBoxGUI(const char *format, ...) {
     vsnprintf(userMsg, sizeof(userMsg), format, args);
     va_end(args);
 
-    char path[PATH_MAX];
+    char path[OCSTL_MAX_PATH];
     get_exe_path(path, sizeof(path));
 
     char buf[8192] = {0};

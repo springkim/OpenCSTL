@@ -65,6 +65,7 @@ typedef enum {
     OCSTL_COUT_DOUBLE,
     OCSTL_COUT_CHAR,
     OCSTL_COUT_STR,
+    OCSTL_COUT_INTPTR,
 } ocstl_cout_type_t;
 
 typedef struct {
@@ -86,6 +87,7 @@ typedef struct {
         double d;
         char c;
         const char *s;
+        void *p;
     };
 } ocstl_val_t;
 
@@ -128,6 +130,13 @@ static ocstl_val_t ocstl_mk_int(int x) {
     ocstl_val_t v;
     v.type = OCSTL_COUT_INT;
     v.i = x;
+    return v;
+}
+
+static ocstl_val_t ocstl_mk_intptr(int *x) {
+    ocstl_val_t v;
+    v.type = OCSTL_COUT_INTPTR;
+    v.p = x;
     return v;
 }
 
@@ -212,7 +221,8 @@ static ocstl_val_t ocstl_mk_str(const char *x) {
         double:             ocstl_mk_double,                         \
         char:               ocstl_mk_char,                           \
         char *:             ocstl_mk_str,                            \
-        const char *:       ocstl_mk_str                             \
+        const char *:       ocstl_mk_str,                             \
+        int*:                ocstl_mk_intptr                             \
       )(x))
 #elif defined(OCSTL_CSTLIO_DISPATCH_BUILTIN)
 #define OCSTL_TYPEEQ(x, T) __builtin_types_compatible_p(__typeof__(x), T)
@@ -507,6 +517,8 @@ static void ocstl_print_val(const ocstl_val_t *v, const ocstl_fmt_spec_t *spec) 
                 break;
             case OCSTL_COUT_CHAR: ch = v->c;
                 break;
+            case OCSTL_COUT_INTPTR: ch = (long long) v->p;
+                break;
             default: handled = 0;
                 break;
         }
@@ -548,6 +560,13 @@ static void ocstl_print_val(const ocstl_val_t *v, const ocstl_fmt_spec_t *spec) 
             break;
         case OCSTL_COUT_INT: {
             long long sv = v->i;
+            len = ocstl_format_int(buf, sizeof buf,
+                                   (unsigned long long) (sv < 0 ? -sv : sv),
+                                   sv < 0, spec, &sign_prefix_len);
+            break;
+        }
+        case OCSTL_COUT_INTPTR: {
+            long long sv = (long long)v->p;
             len = ocstl_format_int(buf, sizeof buf,
                                    (unsigned long long) (sv < 0 ? -sv : sv),
                                    sv < 0, spec, &sign_prefix_len);
@@ -881,7 +900,7 @@ static ocstl_vak_t ocstl_va_lookup_token(const char *token, void *caller_pc) {
         return ocstl_va_classify_literal(token);
     }
 #ifdef OCSTL_VA_USE_DBGHELP
-    {
+{
         IMAGEHLP_STACK_FRAME isf;
         ocstl_dh_lookup_t ctx;
         memset(&isf, 0, sizeof isf);
@@ -895,7 +914,7 @@ static ocstl_vak_t ocstl_va_lookup_token(const char *token, void *caller_pc) {
         return ctx.result;
     }
 #else
-    return OCSTL_VAK_UNKNOWN;
+return OCSTL_VAK_UNKNOWN;
 #endif
 }
 
@@ -916,12 +935,12 @@ static void ocstl_print_impl_va(const char *fmt, int n_args, ...) {
     void *caller_pc = NULL;
     int i, idx;
 #ifdef OCSTL_VA_USE_DBGHELP
-    caller_pc = _ReturnAddress();
+caller_pc = _ReturnAddress();
 #endif
-    va_start(ap, n_args);
-    ocstl_ensure_unicode();
-    if (n_args > 16) n_args = 16;
-    for (i = 0; i < n_args; i++) {
+va_start(ap, n_args);
+ocstl_ensure_unicode();
+    if (n_args> 16) n_args = 16;
+    for (i =0; i<n_args; i++) {
         const char *token = va_arg(ap, const char *);
         ocstl_vak_t k = ocstl_va_lookup_token(token, caller_pc);
         args[i].kind = k;
@@ -964,128 +983,128 @@ static void ocstl_print_impl_va(const char *fmt, int n_args, ...) {
                 break;
         }
     }
-    va_end(ap);
-    p = fmt;
-    idx = 0;
+va_end(ap);
+p = fmt;
+idx = 0;
     while (*p) {
-        char buf[128];
-        int len = 0, sign_prefix_len = -1;
-        const char *q;
-        ocstl_fmt_spec_t spec;
-        ocstl_vak_t k;
-        char t;
-        if (p[0] == '{' && p[1] == '{') {
-            putchar('{');
-            p += 2;
-            continue;
+    char buf[128];
+    int len = 0, sign_prefix_len = -1;
+    const char *q;
+    ocstl_fmt_spec_t spec;
+    ocstl_vak_t k;
+    char t;
+    if (p[0] == '{' && p[1] == '{') {
+        putchar('{');
+        p += 2;
+        continue;
+    }
+    if (p[0] == '}' && p[1] == '}') {
+        putchar('}');
+        p += 2;
+        continue;
+    }
+    if (p[0] != '{') {
+        putchar((unsigned char) *p++);
+        continue;
+    }
+    q = p + 1;
+    ocstl_spec_init(&spec);
+    if (*q == ':') q = ocstl_parse_spec(q + 1, &spec);
+    if (*q != '}') {
+        putchar((unsigned char) *p++);
+        continue;
+    }
+    if (idx >= n_args) {
+        p = q + 1;
+        continue;
+    }
+    k = args[idx].kind;
+    t = spec.type;
+    if (t == 's') k = OCSTL_VAK_STR;
+    else if (t == 'c') k = OCSTL_VAK_CHAR;
+    else if (t == 'f' || t == 'e' || t == 'E' || t == 'g' || t == 'G') k = OCSTL_VAK_DOUBLE;
+    else if (t == 'd' || t == 'i') {
+        if (k == OCSTL_VAK_FLOAT || k == OCSTL_VAK_DOUBLE) {
+            args[idx].ll = (long long) args[idx].d;
+            k = OCSTL_VAK_LLONG;
+        } else if (k == OCSTL_VAK_UCHAR || k == OCSTL_VAK_USHORT ||
+                   k == OCSTL_VAK_UINT || k == OCSTL_VAK_ULONG ||
+                   k == OCSTL_VAK_ULLONG) {
+            args[idx].ll = (long long) args[idx].ull;
+            k = OCSTL_VAK_LLONG;
         }
-        if (p[0] == '}' && p[1] == '}') {
-            putchar('}');
-            p += 2;
-            continue;
+    } else if (t == 'u' || t == 'x' || t == 'X' || t == 'o' || t == 'b') {
+        if (k == OCSTL_VAK_FLOAT || k == OCSTL_VAK_DOUBLE) {
+            args[idx].ull = (unsigned long long) args[idx].d;
+            k = OCSTL_VAK_ULLONG;
+        } else if (k == OCSTL_VAK_CHAR || k == OCSTL_VAK_SHORT ||
+                   k == OCSTL_VAK_INT || k == OCSTL_VAK_LONG ||
+                   k == OCSTL_VAK_LLONG) {
+            args[idx].ull = (unsigned long long) args[idx].ll;
+            k = OCSTL_VAK_ULLONG;
         }
-        if (p[0] != '{') {
-            putchar((unsigned char) *p++);
-            continue;
-        }
-        q = p + 1;
-        ocstl_spec_init(&spec);
-        if (*q == ':') q = ocstl_parse_spec(q + 1, &spec);
-        if (*q != '}') {
-            putchar((unsigned char) *p++);
-            continue;
-        }
-        if (idx >= n_args) {
+    }
+    switch (k) {
+        case OCSTL_VAK_STR: {
+            const char *s = args[idx].s ? args[idx].s : "(null)";
+            ocstl_emit_padded(s, (int) strlen(s), &spec, -1);
+            idx++;
             p = q + 1;
             continue;
         }
-        k = args[idx].kind;
-        t = spec.type;
-        if (t == 's') k = OCSTL_VAK_STR;
-        else if (t == 'c') k = OCSTL_VAK_CHAR;
-        else if (t == 'f' || t == 'e' || t == 'E' || t == 'g' || t == 'G') k = OCSTL_VAK_DOUBLE;
-        else if (t == 'd' || t == 'i') {
-            if (k == OCSTL_VAK_FLOAT || k == OCSTL_VAK_DOUBLE) {
-                args[idx].ll = (long long) args[idx].d;
-                k = OCSTL_VAK_LLONG;
-            } else if (k == OCSTL_VAK_UCHAR || k == OCSTL_VAK_USHORT ||
-                       k == OCSTL_VAK_UINT || k == OCSTL_VAK_ULONG ||
-                       k == OCSTL_VAK_ULLONG) {
-                args[idx].ll = (long long) args[idx].ull;
-                k = OCSTL_VAK_LLONG;
-            }
-        } else if (t == 'u' || t == 'x' || t == 'X' || t == 'o' || t == 'b') {
-            if (k == OCSTL_VAK_FLOAT || k == OCSTL_VAK_DOUBLE) {
-                args[idx].ull = (unsigned long long) args[idx].d;
-                k = OCSTL_VAK_ULLONG;
-            } else if (k == OCSTL_VAK_CHAR || k == OCSTL_VAK_SHORT ||
-                       k == OCSTL_VAK_INT || k == OCSTL_VAK_LONG ||
-                       k == OCSTL_VAK_LLONG) {
-                args[idx].ull = (unsigned long long) args[idx].ll;
-                k = OCSTL_VAK_ULLONG;
-            }
-        }
-        switch (k) {
-            case OCSTL_VAK_STR: {
-                const char *s = args[idx].s ? args[idx].s : "(null)";
-                ocstl_emit_padded(s, (int) strlen(s), &spec, -1);
+        case OCSTL_VAK_CHAR:
+        case OCSTL_VAK_UCHAR: {
+            if (t == 0 || t == 'c') {
+                buf[0] = (k == OCSTL_VAK_UCHAR)
+                             ? (char) args[idx].ull
+                             : (char) args[idx].ll;
+                ocstl_emit_padded(buf, 1, &spec, -1);
                 idx++;
                 p = q + 1;
                 continue;
             }
-            case OCSTL_VAK_CHAR:
-            case OCSTL_VAK_UCHAR: {
-                if (t == 0 || t == 'c') {
-                    buf[0] = (k == OCSTL_VAK_UCHAR)
-                                 ? (char) args[idx].ull
-                                 : (char) args[idx].ll;
-                    ocstl_emit_padded(buf, 1, &spec, -1);
-                    idx++;
-                    p = q + 1;
-                    continue;
-                }
-                {
-                    long long sv = (k == OCSTL_VAK_CHAR)
-                                       ? args[idx].ll
-                                       : (long long) args[idx].ull;
-                    len = ocstl_format_int(buf, sizeof buf,
-                                           (unsigned long long) (sv < 0 ? -sv : sv),
-                                           sv < 0, &spec, &sign_prefix_len);
-                }
-                break;
-            }
-            case OCSTL_VAK_FLOAT:
-            case OCSTL_VAK_DOUBLE:
-                len = ocstl_format_float(buf, sizeof buf, args[idx].d,
-                                         &spec, &sign_prefix_len);
-                break;
-            case OCSTL_VAK_BOOL:
-            case OCSTL_VAK_SHORT:
-            case OCSTL_VAK_INT:
-            case OCSTL_VAK_LONG:
-            case OCSTL_VAK_LLONG: {
-                long long sv = args[idx].ll;
+            {
+                long long sv = (k == OCSTL_VAK_CHAR)
+                                   ? args[idx].ll
+                                   : (long long) args[idx].ull;
                 len = ocstl_format_int(buf, sizeof buf,
                                        (unsigned long long) (sv < 0 ? -sv : sv),
                                        sv < 0, &spec, &sign_prefix_len);
-                break;
             }
-            case OCSTL_VAK_USHORT:
-            case OCSTL_VAK_UINT:
-            case OCSTL_VAK_ULONG:
-            case OCSTL_VAK_ULLONG:
-                len = ocstl_format_int(buf, sizeof buf, args[idx].ull, 0,
-                                       &spec, &sign_prefix_len);
-                break;
-            default:
-                len = ocstl_format_int(buf, sizeof buf, 0, 0,
-                                       &spec, &sign_prefix_len);
-                break;
+            break;
         }
-        ocstl_emit_padded(buf, len, &spec, sign_prefix_len);
-        idx++;
-        p = q + 1;
+        case OCSTL_VAK_FLOAT:
+        case OCSTL_VAK_DOUBLE:
+            len = ocstl_format_float(buf, sizeof buf, args[idx].d,
+                                     &spec, &sign_prefix_len);
+            break;
+        case OCSTL_VAK_BOOL:
+        case OCSTL_VAK_SHORT:
+        case OCSTL_VAK_INT:
+        case OCSTL_VAK_LONG:
+        case OCSTL_VAK_LLONG: {
+            long long sv = args[idx].ll;
+            len = ocstl_format_int(buf, sizeof buf,
+                                   (unsigned long long) (sv < 0 ? -sv : sv),
+                                   sv < 0, &spec, &sign_prefix_len);
+            break;
+        }
+        case OCSTL_VAK_USHORT:
+        case OCSTL_VAK_UINT:
+        case OCSTL_VAK_ULONG:
+        case OCSTL_VAK_ULLONG:
+            len = ocstl_format_int(buf, sizeof buf, args[idx].ull, 0,
+                                   &spec, &sign_prefix_len);
+            break;
+        default:
+            len = ocstl_format_int(buf, sizeof buf, 0, 0,
+                                   &spec, &sign_prefix_len);
+            break;
     }
+    ocstl_emit_padded(buf, len, &spec, sign_prefix_len);
+    idx++;
+    p = q + 1;
+}
 }
 
 #define OCSTL_PASTE2(a, b) a##b

@@ -37,6 +37,7 @@
 
 #ifndef OPENCSTL_TRACER_H
 #define OPENCSTL_TRACER_H
+
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,7 +66,7 @@ size_type64 zalloc_count = 0;
 static void zinsert(void *ptr, char *file, const char *func, int line) {
     zmem[zalloc_size].ptr = ptr;
     zmem[zalloc_size].file = file;
-    zmem[zalloc_size].func = (char*)func;
+    zmem[zalloc_size].func = (char *) func;
     zmem[zalloc_size].line = line;
     zalloc_size++;
     zalloc_count++;
@@ -85,21 +86,7 @@ static void zremove(void *ptr) {
     }
 }
 
-// static void zappend(void *ptr) {
-//     zalloc_vector[zalloc_size++] = ptr;
-//     zalloc_count++;
-// }
-//
-// static void zerase(void *ptr) {
-//     for (size_type64 i = 0; i < zalloc_size; i++) {
-//         if (zalloc_vector[i] == ptr) {
-//             memcpy(zalloc_vector + i, zalloc_vector + i + 1, (zalloc_size - i - 1) * sizeof(void *));
-//             zalloc_size--;
-//             zalloc_vector[zalloc_size] = NULL;
-//             return;
-//         }
-//     }
-// }
+
 #endif
 #ifdef OPENCSTL_TRACER
 static void opencstl_exit(void) {
@@ -134,7 +121,7 @@ static int opencstl_init(void) {
 
 #if defined(_MSC_VER)
 # pragma section(".CRT$XCU",read)
-__declspec(allocate(".CRT$XCU")) static int (*__p)(void) = opencstl_init;
+__declspec(allocate(".CRT$XCU")) static int (*__p)(void)= opencstl_init;
 # pragma data_seg()
 #endif
 #endif

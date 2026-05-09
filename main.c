@@ -526,6 +526,7 @@ int main(void) {
     char *s = "hello";
     char c = 'S';
     char c2 = 90;
+    int *ptr = malloc(100);
 
     printf("size: %d\n", sizeof(c2));
 
@@ -534,7 +535,7 @@ int main(void) {
     println("str={}, char={}", s, c2); // \n 자동
     print("escaped {{ and }}\n"); // { } 리터럴
     println("값: {:30}", (long)1234567890L); // long
-
+    println("ptr: {}", ptr);
     return 0;
 }
 

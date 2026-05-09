@@ -39,6 +39,7 @@
 
 #include "zalloc.h"
 #include "van_emde_boas_tree.h"
+#include "verify.h"
 #ifdef _MSC_VER
 #pragma warning(disable:4146)
 #pragma warning(disable:4308)

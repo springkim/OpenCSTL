@@ -339,7 +339,7 @@ static void MsgBoxGUI(const char *format, ...) {
     vsnprintf(userMsg, sizeof(userMsg), format, args);
     va_end(args);
 
-    char path[PATH_MAX];
+    char path[OCSTL_MAX_PATH];
     get_exe_path(path, sizeof(path));
 
     char buf[8192] = {0};

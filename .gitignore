@@ -354,3 +354,5 @@ bench/
 helper/
 src/
 tmp/
+.claude/
+helper/

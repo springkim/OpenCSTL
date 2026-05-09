@@ -238,7 +238,7 @@ static char *__cstl_abspath(char *path) {
     GetFullPathNameA(path, len, ret, NULL);
     return ret;
 #else
-    char resolved[PATH_MAX];
+    char resolved[OCSTL_MAX_PATH];
     if (realpath(path, resolved)) {
         size_type64 l = strlen(resolved);
         char *ret = (char *) malloc(l + 1);
@@ -251,7 +251,7 @@ static char *__cstl_abspath(char *path) {
         memcpy(ret, path, l + 1);
         return ret;
     }
-    char cwd[PATH_MAX];
+    char cwd[OCSTL_MAX_PATH];
     if (!getcwd(cwd, sizeof cwd)) {
         size_type64 l = strlen(path);
         char *ret = (char *) malloc(l + 1);
