@@ -41,7 +41,7 @@
 #include <alloca.h>
 #define salloc(size) (void*)alloca(size)
 #elif defined(_WIN32) || defined(_WIN64)
-#include <malloc.h>
+#include <stdlib.h>
 #define salloc(size) _alloca(size)
 #else
 #error "No Alloca Function"

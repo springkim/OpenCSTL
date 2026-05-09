@@ -153,8 +153,8 @@ static CSTL_COMPARE CSTL_GREATER(const char *type_str) {
     return NULL;
 }
 
-#define LESS(TYPE)    CSTL_LESS(#TYPE)
-#define GREATER(TYPE) CSTL_GREATER(#TYPE)
+#define LESS(TYPE)    ((void*)CSTL_LESS(#TYPE))
+#define GREATER(TYPE) ((void*)CSTL_GREATER(#TYPE))
 
 
 // ███████╗░██████╗░██╗░░░██╗░█████╗░██╗░░░░░░██████╗

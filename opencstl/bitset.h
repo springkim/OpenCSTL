@@ -59,7 +59,7 @@ static inline int __popcnt64_sw(long long v) {
     return (int) v;
 }
 #if defined(OCSTL_OS_LINUX)
-#if defined (OCSTL_CC_TCC)
+#if defined (OCSTL_CC_TCC) || defined(OCSTL_CC_COMPCERT)
 #define __popcnt __popcnt_sw
 #define __popcnt64 __popcnt64_sw
 #else
@@ -67,12 +67,12 @@ static inline int __popcnt64_sw(long long v) {
 #define __popcnt64(v) __builtin_popcountll((unsigned long long)(v))
 #endif
 #elif defined(OCSTL_OS_WINDOWS)
-#if !defined(OCSTL_CC_TCC)
-
-#include<intrin.h>
-#else
+#if defined(OCSTL_CC_TCC) || defined(OCSTL_CC_POCC)
 #define __popcnt __popcnt_sw
 #define __popcnt64 __popcnt64_sw
+
+#else
+#include<intrin.h>
 #endif
 
 #elif defined(OCSTL_OS_MACOS)

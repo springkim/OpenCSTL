@@ -454,7 +454,7 @@ static void mpz_set_q (mpz_t, const mpq_t);
 /* ===== Implementation (mini-gmp.c) ===== */
 /* mini-gmp, a minimalistic implementation of a GNU GMP subset.
 
-   Contributed to the GNU project by Niels Möller
+   Contributed to the GNU project by Niels Moller
    Additional functionalities and improvements by Marco Bodrato.
 
 Copyright 1991-1997, 1999-2022 Free Software Foundation, Inc.

@@ -3,8 +3,11 @@
 #include <string.h>
 #include <time.h>
 #define OPENCSTL_TRACER
+#if defined(__POCC__) || defined(__BORLANDC__) || defined(__cplusplus)
+#include "opencstl.h"
+#else
 #include "opencstl/opencstl.h"
-
+#endif
 
 void cstl_vector_test01(void) {
     MsgBoxCLI("OpenCSTL / VECTOR TEST01");
@@ -518,15 +521,15 @@ void test04(void) {
     free(data);
 }
 
-int main(void) {
+int test_print(void) {
     logging.info(opencstl_env());
     logging.info(opencstl_version());
     int n = 6;
-    volatile float f = 3.14f;
+    float f = 3.14f;
     char *s = "hello";
     char c = 'S';
     char c2 = 90;
-    int *ptr = malloc(100);
+    int *ptr = (int *) malloc(100);
 
     printf("size: %d\n", sizeof(c2));
 
@@ -536,14 +539,12 @@ int main(void) {
     print("escaped {{ and }}\n"); // { } 리터럴
     println("값: {:30}", (long)1234567890L); // long
     println("ptr: {}", ptr);
+
+    free(ptr);
     return 0;
 }
 
-int main2(void) {
-    logging.info(opencstl_env());
-    logging.info(opencstl_version());
-
-
+int main(void) {
     // return 0;
     // VECTOR(int) vec = new_vector(int);
     // for (int i = 0; i <10;  i++) {
@@ -582,5 +583,8 @@ int main2(void) {
 
     int cnt = cpu_count();
     printf("cnt: %d\n", cnt);
+
+    logging.warning(opencstl_env());
+    logging.warning(opencstl_version());
     return 0;
 }

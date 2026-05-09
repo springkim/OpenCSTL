@@ -3,7 +3,7 @@
 #include "gmp.h"
 
 #define OPENCSTL_TRACER
-#include "opencstl/opencstl.h"
+#include "opencstl.h"
 
 
 void test_uint64() {
@@ -48,7 +48,7 @@ void test_mpz() {
 
 
     for (mpz_t **it = begin(arr); it != end(arr); it = next(it)) {
-        unsigned long x = mpz_get_ui(**it); // ì§€ìˆ˜ë¡œ ì“¸ ê°’ ë¨¼ì € ì¶”ì¶œ
+        unsigned long x = mpz_get_ui(**it); // Áö¼ö·Î ¾µ °ª ¸ÕÀú ÃßÃâ
         mpz_pow_ui(**it, **it, x); // base = *it, exp = x
     }
 

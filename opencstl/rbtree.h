@@ -455,7 +455,7 @@ OPENCSTL_FUNC void __cstl_tree_erase(void **container, void **iter) {
     //free(&OPENCSTL_NIDX(&iter, -5));
     {
         void **freelist = (void **) &OPENCSTL_NIDX(container, -6);
-        __cstl_arena_dealloc(freelist, &OPENCSTL_NIDX(&iter, -5));
+        __cstl_arena_dealloc(freelist, (void*)&OPENCSTL_NIDX(&iter, -5));
         OPENCSTL_NIDX(container, -1) = (OPENCSTL_NIDX(container, -1)) - 1;
     }
 }

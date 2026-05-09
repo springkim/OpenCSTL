@@ -37,6 +37,9 @@
 #ifndef OPENCSTL_THREADING_CC_H
 #define OPENCSTL_THREADING_CC_H
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "crossplatform.h"
 #if defined(OCSTL_OS_WINDOWS)
 #include <windows.h>

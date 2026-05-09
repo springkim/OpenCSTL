@@ -38,15 +38,13 @@
 #ifndef OPENCSTL_TRACER_H
 #define OPENCSTL_TRACER_H
 
-#include <locale.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
 #include "logging.h"
-#include "salloc.h"
-#include "galloc.h"
-//#include "van_emde_boas_tree.h"
+
 #define _1MB (1024*1024)
 #define _512KB (1024*512)
 
@@ -59,7 +57,6 @@ typedef struct ZMem {
 } ZMEM;
 
 ZMEM zmem[8192] = {0};
-//void *zalloc_vector[_512KB] = {0};
 size_type64 zalloc_size = 0;
 size_type64 zalloc_count = 0;
 
@@ -89,6 +86,8 @@ static void zremove(void *ptr) {
 
 #endif
 #ifdef OPENCSTL_TRACER
+
+
 static void opencstl_exit(void) {
     if (zalloc_size > 0) {
         logging.warning("%d memory blocks were not released", zalloc_size);
@@ -103,26 +102,32 @@ static void opencstl_exit(void) {
 #endif
 #ifdef OPENCSTL_TRACER
 
-#if defined(__GNUC__) || defined(__clang__)
+#ifndef OCSTL_CC_POCC
+#if defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG)
 __attribute__((constructor))
 #endif
+
+#endif
+
 static int opencstl_init(void) {
-    //size_type64 SZ = _512KB;
-    //zalloc_vector = salloc(SZ);
-    //memset(zalloc_vector, 0, SZ);
-
     logging.debug("OpenCSTL tracer start");
-    //htm = htm_new();
-
-    //mt19937.seed(time(NULL));
     atexit(opencstl_exit);
     return 0;
 }
-
-#if defined(_MSC_VER)
-# pragma section(".CRT$XCU",read)
-__declspec(allocate(".CRT$XCU")) static int (*__p)(void)= opencstl_init;
+#if defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_EMBARCADERO)
+# pragma section(".CRT$XCU", read)
+__declspec(allocate(".CRT$XCU")) static int (* volatile __p)(void) = opencstl_init;
 # pragma data_seg()
 #endif
+
+#if defined(OCSTL_CC_POCC) || defined(OCSTL_CC_TCC)
+int main() {
+    opencstl_init();
+    return main_shift();
+}
+#define main main_shift
+
+#endif
+
 #endif
 #endif

@@ -40,7 +40,7 @@
 
 
 static char *opencstl_version(void) {
-    static char *OPENCSTL_VERSION = "v1.3.3";
+    static char *OPENCSTL_VERSION = "v1.3.4";
     return OPENCSTL_VERSION;
 }
 

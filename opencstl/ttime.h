@@ -42,9 +42,9 @@
 #include <stdio.h>
 
 
-#if defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_TCC) ||defined(OCSTL_CC_CLANG))
+#if defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_TCC) ||defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_POCC) || defined(OCSTL_CC_NVCC))
 
-#if defined(OCSTL_CC_TCC)
+#if defined(OCSTL_CC_TCC) || defined(OCSTL_CC_POCC) || defined(OCSTL_CC_NVCC) || defined(OCSTL_CC_CLANG)
 #include <windows.h>
 #else
 #include <winnt.h>
@@ -69,7 +69,15 @@ static double ttime(void) {
 }
 
 #else
-#error Unsupported compiler/platform
+//#error Unsupported compiler/platform
+#include <sys/time.h>
+#include <time.h>
+
+static double ttime(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (double) tv.tv_sec * 1000.0 + (double) tv.tv_usec / 1000.0;
+}
 #endif
 
 

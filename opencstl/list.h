@@ -216,7 +216,7 @@ OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void *
     void *it = *iter_begin;
     while (it != *iter_end) {
         void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        free(&OPENCSTL_NIDX(&it, -3));
+        free((void*)&OPENCSTL_NIDX(&it, -3));
         OPENCSTL_NIDX(container, -1)--;
         it = tmp;
     }
@@ -245,7 +245,7 @@ OPENCSTL_FUNC void __cstl_list_clear(void **container) {
     void *it = *head;
     while (it != NULL) {
         void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        free(&OPENCSTL_NIDX(&it, -3));
+        free((void*)&OPENCSTL_NIDX(&it, -3));
         it = tmp;
     }
     *head = *tail = NULL;

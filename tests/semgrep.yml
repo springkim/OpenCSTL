@@ -1,0 +1,191 @@
+rules:
+
+  # =========================
+  # Narrow char string copy
+  # =========================
+
+  - id: c-unsafe-strcpy
+    languages: [c, cpp]
+    message: |
+      strcpy() may cause buffer overflow.
+      Recommended alternatives:
+        - strncpy()
+        - strlcpy() (BSD/Linux)
+        - snprintf() when formatting
+    severity: WARNING
+    pattern: strcpy($DEST, $SRC)
+
+  - id: c-unsafe-strcat
+    languages: [c, cpp]
+    message: |
+      strcat() may overflow destination buffer.
+      Recommended alternatives:
+        - strncat()
+        - strlcat() (BSD/Linux)
+    severity: WARNING
+    pattern: strcat($DEST, $SRC)
+
+  - id: c-unsafe-sprintf
+    languages: [c, cpp]
+    message: |
+      sprintf() can overflow buffers.
+      Recommended alternative:
+        - snprintf(buffer, sizeof(buffer), ...)
+    severity: ERROR
+    pattern: sprintf($BUF, $FMT, ...)
+
+  - id: c-unsafe-vsprintf
+    languages: [c, cpp]
+    message: |
+      vsprintf() can overflow buffers.
+      Recommended alternative:
+        - vsnprintf()
+    severity: ERROR
+    pattern: vsprintf($BUF, $FMT, ...)
+
+  # =========================
+  # Wide char (wchar_t)
+  # =========================
+
+  - id: c-unsafe-wcscpy
+    languages: [c, cpp]
+    message: |
+      wcscpy() may cause buffer overflow.
+      Recommended alternatives:
+        - wcsncpy()
+        - wcslcpy() (if available)
+    severity: WARNING
+    pattern: wcscpy($DEST, $SRC)
+
+  - id: c-unsafe-wcscat
+    languages: [c, cpp]
+    message: |
+      wcscat() may cause buffer overflow.
+      Recommended alternatives:
+        - wcsncat()
+    severity: WARNING
+    pattern: wcscat($DEST, $SRC)
+
+  - id: c-unsafe-swprintf
+    languages: [c, cpp]
+    message: |
+      swprintf() without size limit can overflow buffer.
+      Recommended alternative:
+        - swprintf(buffer, buffer_size, ...)
+    severity: WARNING
+    pattern: swprintf($BUF, $FMT, ...)
+
+  - id: c-unsafe-vswprintf
+    languages: [c, cpp]
+    message: |
+      vswprintf() may overflow buffers.
+      Ensure buffer size is properly validated.
+    severity: WARNING
+    pattern: vswprintf($BUF, $FMT, ...)
+
+  # =========================
+  # Deprecated / removed
+  # =========================
+
+  - id: c-unsafe-gets
+    languages: [c, cpp]
+    message: |
+      gets() is removed from C11 due to buffer overflow risks.
+      Recommended alternative:
+        - fgets()
+    severity: ERROR
+    pattern: gets($BUF)
+
+  # =========================
+  # Format string vulnerability
+  # =========================
+
+  - id: c-format-string-printf
+    languages: [c, cpp]
+    message: |
+      Possible format string vulnerability.
+      Do not pass user-controlled data as format string.
+      Use:
+        printf("%s", user_input);
+    severity: ERROR
+    pattern: printf($USERINPUT)
+
+  - id: c-format-string-fprintf
+    languages: [c, cpp]
+    message: |
+      Possible format string vulnerability.
+      Use:
+        fprintf(file, "%s", user_input);
+    severity: ERROR
+    pattern: fprintf($F, $USERINPUT)
+
+  # =========================
+  # Memory copy
+  # =========================
+
+  - id: c-unsafe-memcpy
+    languages: [c, cpp]
+    message: |
+      memcpy() can overflow destination buffer if size is incorrect.
+      Recommended alternatives:
+        - memcpy_s()
+        - memmove()
+        - Validate size before copying
+    severity: WARNING
+    pattern: memcpy($DST, $SRC, $LEN)
+
+  - id: c-unsafe-memmove
+    languages: [c, cpp]
+    message: |
+      memmove() still requires manual boundary checks.
+      Ensure:
+        copy_size <= sizeof(destination)
+    severity: INFO
+    pattern: memmove($DST, $SRC, $LEN)
+
+  # =========================
+  # Command execution
+  # =========================
+
+  - id: c-command-system
+    languages: [c, cpp]
+    message: |
+      system() may lead to command injection if input is user-controlled.
+      Recommended alternatives:
+        - execve()
+        - posix_spawn()
+        - Validate command arguments
+    severity: ERROR
+    pattern: system($CMD)
+
+  - id: c-command-popen
+    languages: [c, cpp]
+    message: |
+      popen() may allow command injection.
+      Recommended alternatives:
+        - fork() + execve()
+        - posix_spawn()
+    severity: ERROR
+    pattern: popen($CMD, ...)
+
+  # =========================
+  # Temporary file vulnerability
+  # =========================
+
+  - id: c-unsafe-tmpnam
+    languages: [c, cpp]
+    message: |
+      tmpnam() is insecure (race condition).
+      Recommended alternative:
+        - mkstemp()
+    severity: ERROR
+    pattern: tmpnam(...)
+
+  - id: c-unsafe-tempnam
+    languages: [c, cpp]
+    message: |
+      tempnam() is insecure.
+      Recommended alternative:
+        - mkstemp()
+    severity: ERROR
+    pattern: tempnam(...)

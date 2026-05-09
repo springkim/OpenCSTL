@@ -357,7 +357,7 @@ static void MsgBoxGUI(const char *format, ...) {
         case IDABORT: fprintf(stderr, "abort\n");
             _exit(3);
         case IDRETRY: fprintf(stderr, "retry\n");
-#if defined(OCSTL_CC_TCC)
+#if defined(OCSTL_CC_TCC) || defined(OCSTL_CC_COMPCERT)
 raise(SIGTRAP); // = DebugBreak (TCC: no __builtin_trap)
 #else
 __builtin_trap(); // = DebugBreak

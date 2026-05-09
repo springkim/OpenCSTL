@@ -158,7 +158,7 @@
 #endif
 
 
-#define CHECK_C_ENV1
+#define CHECK_C_ENV
 #ifdef CHECK_C_ENV
 #ifdef __cplusplus
 #define LANGUAGE "C++"

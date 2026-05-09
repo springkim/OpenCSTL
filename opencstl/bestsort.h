@@ -48,7 +48,8 @@
         #define     cstl_best_stable_sort tsort
         #define     cstl_unstable_sort qsort
     #else
-        #error "Unknown Compiler"
+        #define cstl_best_stable_sort msort
+         #define cstl_unstable_sort qsort
     #endif
 #endif
 
@@ -62,8 +63,13 @@
     #elif  defined(OCSTL_CC_TCC)
         #define cstl_best_stable_sort tsort
         #define cstl_unstable_sort qsort
+
+    #elif defined(OCSTL_CC_NVCC)
+        #define cstl_best_stable_sort tsort
+        #define cstl_unstable_sort pdqsort
     #else
-        #error "Unknown Compiler"
+        #define cstl_best_stable_sort msort
+        #define cstl_unstable_sort qsort
     #endif
 #endif
 
@@ -83,8 +89,12 @@
     #elif defined(OCSTL_CC_NVCC)
         #define cstl_best_stable_sort tsort
         #define cstl_unstable_sort pdqsort
+    #elif defined(OCSTL_CC_POCC)
+        #define cstl_best_stable_sort msort
+        #define cstl_unstable_sort qsort
     #else
-        #error "Unknown Compiler"S
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort qsort
     #endif
 #endif
 #endif

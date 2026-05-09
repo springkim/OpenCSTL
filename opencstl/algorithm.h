@@ -179,9 +179,9 @@ OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
             } else {
                 if (argc == 1) {
                     size_type64 type_size = OPENCSTL_NIDX((void**)container, NIDX_TSIZE);
-                    param2 = _memcmp_funcs[type_size];
+                    param2 = (void*)_memcmp_funcs[type_size];
                 }
-                ret = __cstl_vector_lower_bound((void **) container, param1, param2);
+                ret = __cstl_vector_lower_bound((void **) container, param1, (CSTL_COMPARE)param2);
             }
         }
         break;
@@ -192,9 +192,9 @@ OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
                 if (argc == 1) {
                     ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
                     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-                    param2 = _memcmp_funcs[type_size];
+                    param2 = (void*)_memcmp_funcs[type_size];
                 }
-                ret = __cstl_deque_lower_bound((void **) container, param1, param2);
+                ret = __cstl_deque_lower_bound((void **) container, param1, (CSTL_COMPARE)param2);
             }
         }
         break;
@@ -234,9 +234,9 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
             } else {
                 if (argc == 1) {
                     size_type64 type_size = OPENCSTL_NIDX((void**)container, NIDX_TSIZE);
-                    param2 = _memcmp_funcs[type_size];
+                    param2 = (void*)_memcmp_funcs[type_size];
                 }
-                ret = __cstl_vector_upper_bound((void **) container, param1, param2);
+                ret = __cstl_vector_upper_bound((void **) container, param1,(CSTL_COMPARE) param2);
             }
         }
         break;
@@ -247,9 +247,9 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
                 if (argc == 1) {
                     ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
                     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-                    param2 = _memcmp_funcs[type_size];
+                    param2 = (void*)_memcmp_funcs[type_size];
                 }
-                ret = __cstl_deque_upper_bound((void **) container, param1, param2);
+                ret = __cstl_deque_upper_bound((void **) container, param1, (CSTL_COMPARE)param2);
             }
         }
         break;
@@ -346,7 +346,7 @@ OPENCSTL_FUNC void *ocstl_min_max_element(void *container, ...) {
 
     if (cmp == NULL) {
         Interval *tm = iveb_find(iveb, _begin);
-        cmp = LESS(tm->type_name);
+        cmp = (CSTL_COMPARE)LESS(tm->type_name);
         if (cmp == NULL) {
             cmp = _memcmp_funcs[tm->type_size];
         }

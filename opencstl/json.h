@@ -43,7 +43,7 @@
 #include<ctype.h>
 #include<stdbool.h>
 #include "van_emde_boas_tree.h"
-#if defined(OCSTL_CC_TCC) || defined(OCSTL_OS_LINUX)
+#if defined(OCSTL_CC_TCC) || defined(OCSTL_OS_LINUX) || defined(OCSTL_CC_POCC)
 // TCC는 strtok_s / strtok_r 둘 다 없으니 직접 구현
 char *strtok_s(char *str, char *delimiters, char **last) {
     if (!delimiters || !last) return NULL;
@@ -335,7 +335,7 @@ JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
     if (!root || !keys) return NULL;
 
     char buf[1024];
-#ifdef _MSC_VER
+#ifdef OCSTL_CC_MSVC
     strncpy_s(buf, sizeof(buf), keys, _TRUNCATE);
 #else
     strncpy(buf, keys, sizeof(buf) - 1);
@@ -345,7 +345,6 @@ JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
     JSON_TOKEN *cur = root;
     char *ctx = NULL;
     char *tok = strtok_s(buf, ".", &ctx); // 매크로 덕에 한 줄
-
     while (tok && cur) {
         JSON_TOKEN *found = NULL;
 

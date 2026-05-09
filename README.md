@@ -345,6 +345,9 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
     <source media="(prefers-color-scheme: dark)" srcset="assets/zigcc_dark.png">
     <img alt="GNU" src="assets/zigcc_light.png" height="96">
   </picture>
+  <img width="96" height="96" src="assets/pellesc.png" >
+  <img width="96" height="96" src="assets/nvcc.png" >
+  <img width="96" height="96" src="assets/bcc64x.png" >
 </p>
 
 
@@ -356,6 +359,9 @@ curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master
 | Intel (icx-cc) | ✅ | ❌ | ✅ |
 | Tiny C Compiler  (tcc) | ✅ | ✅ | ✅ |
 | zig cc | ✅ | ✅ | ✅ |
+| PellesC (pocc) | ✅ | ❌ | ❌ |
+| NVCC (nvcc) | ✅| ✅ | ❌ |
+| C++Builder (bcc64x) |  ✅ | ❌ | ❌ |
 
 ## Document
 

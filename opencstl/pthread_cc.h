@@ -36,6 +36,7 @@
 //
 #ifndef OPENCSTL_PTHREAD_H
 #define OPENCSTL_PTHREAD_H
+#include<string.h>
 #ifdef __cplusplus
 extern "C" {
 
@@ -48,6 +49,7 @@ extern "C" {
 #include<windows.h>
 #include<errno.h>
 #include<assert.h>
+
 
 typedef struct pthread_tag {
     HANDLE handle;

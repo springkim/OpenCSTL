@@ -118,14 +118,6 @@ static int __vcprintln(const char *color, const char *format, va_list args) {
     return ret;
 }
 
-// static char *__vcsprintf(const char *format, ...) {
-//     static char buf[1024] = {0};
-//     va_list args;
-//     va_start(args, format);
-//     vsprintf(buf, format, args);
-//     va_end(args);
-//     return buf;
-// }
 
 #if defined(OCSTL_OS_MACOS)
 

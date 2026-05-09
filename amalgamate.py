@@ -269,7 +269,7 @@ BANNER_COMPACT = """\
 GUARD = '_OPENCSTL_AMALGAMATED_H'
 
 
-def write_output(out_path, amalg, body_lines, compact=False):
+def write_output(out_path, amalg, body_lines, compact=False, encoding_ansi=False):
     # Assemble body into a single string, then optionally compact.
     body_src = ''.join(body_lines)
     if compact:
@@ -299,6 +299,17 @@ def write_output(out_path, amalg, body_lines, compact=False):
         if not compact:
             f.write('\n')
         f.write(f'#endif // {GUARD}\n')
+    if encoding_ansi:
+        import locale
+        ansi_enc = locale.getpreferredencoding(False)  # 한국 Windows -> 'cp949'
+
+        # newline=''로 줄바꿈 변환 방지하면서 utf-8로 읽고
+        with out_path.open('r', encoding='utf-8', newline='') as f:
+            text = f.read()
+        # ANSI로 덮어쓰기
+        with out_path.open('w', encoding='ascii', newline='\n',
+                           errors='replace') as f:
+            f.write(text)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -316,6 +327,8 @@ def main():
                         help='Entry-point header (default: opencstl.h)')
     parser.add_argument('-c', '--compact', action='store_true',
                         help='Strip all comments and blank lines for minimum size')
+    parser.add_argument('-a', '--ansi', action='store_true',
+                        help='Use ANSI encoding')  # cp949
     args = parser.parse_args()
 
     src_dir = Path(args.src_dir).resolve()
@@ -336,7 +349,7 @@ def main():
 
     amalg = Amalgamator(src_dir)
     body = amalg.process_file(args.entry)
-    write_output(out_path, amalg, body, compact=compact)
+    write_output(out_path, amalg, body, compact=compact, encoding_ansi=args.ansi)
 
     # Mirror copies — skip silently if the target directory doesn't exist.
     for target in ('examples/opencstl.h',

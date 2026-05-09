@@ -1,5 +1,5 @@
-#include "opencstl/opencstl.h"
-#include  "opencstl/ipnsort.h"
+#include "opencstl.h"
+
 typedef long long DTYPE;
 
 //typedef double DTYPE;
@@ -13,7 +13,7 @@ typedef int (*CMPFUNC)(const void *, const void *);
 int sort_test() {
     CMPFUNC compare = cmp;
 
-    DTYPE N = 5000000;
+    DTYPE N = 1000000;
 
     size_type64 ALGORITHMS = 7;
     size_type64 REPEAT = 10;
