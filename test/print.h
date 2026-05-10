@@ -1,7 +1,7 @@
 #pragma once
 #ifndef HG_B241F16A3823AF916C83CBA69E7B6C6E7D27AFA0F5B136ECFDB943F532C49237_H
 #define HG_B241F16A3823AF916C83CBA69E7B6C6E7D27AFA0F5B136ECFDB943F532C49237_H
-#include "crossplatform.h"
+#include "../opencstl/crossplatform.h"
 #if defined(OCSTL_C_VERSION_11) || defined(OCSTL_C_VERSION_17) || defined(OCSTL_C_VERSION_23) || defined(OCSTL_CC_TCC)
 #  define OCSTL_CSTLIO_DISPATCH_GENERIC 1
 #elif defined(OCSTL_C_VERSION_99) && (defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG))
@@ -17,7 +17,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include "defines.h"
+#include "../opencstl/defines.h"
 #define OCSTL_STR_INNER(x) #x
 #define OCSTL_STR(x)       OCSTL_STR_INNER(x)
 #ifdef OCSTL_OS_WINDOWS

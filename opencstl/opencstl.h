@@ -134,7 +134,7 @@ extern "C" {
 #include "galloc.h"
 #include "threading_cc.h"
 
-#include "print.h"
+#include "../test/print.h"
 
 #define ARRAY(TYPE)             TYPE*
 #define VECTOR(TYPE)            TYPE*

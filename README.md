@@ -16,15 +16,17 @@ Header-only, no templates, no per-type macro dance.
 ```c
 #include "opencstl.h"
 
-VECTOR(int) v = new_vector(int);
-push_back(v, 1);
-push_back(v, 2);
-push_back(v, 3);
+int main(){
+    VECTOR(int) v = new_vector(int);
+    push_back(v, 1);
+    push_back(v, 2);
+    push_back(v, 3);
 
-for (int* it = begin(v); it != end(v); it = next(it))
-    printf("%d ", *it);
+    for (int* it = begin(v); it != end(v); it = next(it))
+        printf("%d ", *it);
 
-destroy(v);
+    destroy(v);
+}
 ```
 
 ## Why OpenCSTL?
@@ -33,7 +35,7 @@ destroy(v);
 - **One include, every container.** `#include "opencstl.h"` — no code-gen, no `#define TYPE int` ritual.
 - **One function name, every container.** `push_back` works on `vector`, `list`, `deque` — variadic macros handle dispatch, just like C++ overloads.
 - **Cross-platform.** MSVC, MinGW64, GCC, Clang. Windows, Linux, macOS.
-- **The full set.** `vector`, `list`, `set`, `map`, `deque`, `stack`, `queue`, `priority_queue`, 'unordered_set','unordered_map'.
+- **The full set.** `vector`, `list`, `set`, `map`, `deque`, `stack`, `queue`, `priority_queue`, `unordered_set`, `unordered_map`.
 
 
 > [!IMPORTANT]  
@@ -41,6 +43,48 @@ destroy(v);
 > If you know C++ `std::vector` and Python `random.choice`, you already know OpenCSTL.
 ---
 
+## Installation
+
+```bash
+curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master/opencstl.h"
+```
+
+
+
+## Supported Platforms
+
+<p align="center">
+    <img width="96" height="96" src="assets/windows11.png" >
+    <img width="96" height="96" src="assets/macos.png" >
+    <img width="96" height="96" src="assets/ubuntu_logo.png" >
+</p>
+<p align="center">
+    <img width="96" height="96" src="assets/MSVC2026.png" >
+    <img width="96" height="96" src="assets/MinGW64.png" >
+    <img width="96" height="96" src="assets/LLVM.png" >
+    <img width="96" height="96" src="assets/GNU_light.png" >
+    <img width="96" height="96" src="assets/tcc.png" >
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/zigcc_dark.png">
+    <img alt="GNU" src="assets/zigcc_light.png" height="96">
+  </picture>
+  <img width="96" height="96" src="assets/pellesc.png" >
+  <img width="96" height="96" src="assets/nvcc.png" >
+  <img width="96" height="96" src="assets/bcc64x.png" >
+</p>
+
+
+| Compiler | Windows | macOS | Linux |
+|----------|:-------:|:-----:|:-----:|
+| MSVC (cl) | ✅ | ❌ | ❌ |
+| GNU / MinGW64 (gcc) | ✅ | ✅ | ✅ |
+| LLVM (clang) | ✅ | ✅ | ✅ |
+| Intel (icx-cc) | ✅ | ❌ | ✅ |
+| Tiny C Compiler  (tcc) | ✅ | ✅ | ✅ |
+| zig cc | ✅ | ✅ | ✅ |
+| PellesC (pocc) | ✅ | ❌ | ❌ |
+| NVCC (nvcc) | ✅| ✅ | ❌ |
+| C++Builder (bcc64x) |  ✅ | ❌ | ❌ |
 
 1. [Overview](#overview)
 2. [Preview](#preview)
@@ -320,48 +364,7 @@ destroy(v);
 
 
 
-## Installation
 
-```bash
-curl -LO "https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master/opencstl.h"
-```
-
-
-
-## Supported Platforms
-
-<p align="center">
-    <img width="96" height="96" src="assets/windows11.png" >
-    <img width="96" height="96" src="assets/macos.png" >
-    <img width="96" height="96" src="assets/ubuntu_logo.png" >
-</p>
-<p align="center">
-    <img width="96" height="96" src="assets/MSVC2026.png" >
-    <img width="96" height="96" src="assets/MinGW64.png" >
-    <img width="96" height="96" src="assets/LLVM.png" >
-    <img width="96" height="96" src="assets/GNU_light.png" >
-    <img width="96" height="96" src="assets/tcc.png" >
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/zigcc_dark.png">
-    <img alt="GNU" src="assets/zigcc_light.png" height="96">
-  </picture>
-  <img width="96" height="96" src="assets/pellesc.png" >
-  <img width="96" height="96" src="assets/nvcc.png" >
-  <img width="96" height="96" src="assets/bcc64x.png" >
-</p>
-
-
-| Compiler | Windows | macOS | Linux |
-|----------|:-------:|:-----:|:-----:|
-| MSVC (cl) | ✅ | ❌ | ❌ |
-| GNU / MinGW64 (gcc) | ✅ | ✅ | ✅ |
-| LLVM (clang) | ✅ | ✅ | ✅ |
-| Intel (icx-cc) | ✅ | ❌ | ✅ |
-| Tiny C Compiler  (tcc) | ✅ | ✅ | ✅ |
-| zig cc | ✅ | ✅ | ✅ |
-| PellesC (pocc) | ✅ | ❌ | ❌ |
-| NVCC (nvcc) | ✅| ✅ | ❌ |
-| C++Builder (bcc64x) |  ✅ | ❌ | ❌ |
 
 ## Document
 

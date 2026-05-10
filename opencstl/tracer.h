@@ -122,6 +122,7 @@ __declspec(allocate(".CRT$XCU")) static int (* volatile __p)(void) = opencstl_in
 #endif
 
 #if defined(OCSTL_CC_POCC) || defined(OCSTL_CC_TCC)
+
 int main() {
     opencstl_init();
     return main_shift();
