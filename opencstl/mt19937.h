@@ -375,17 +375,17 @@ __mt19937_64_t __uuid64 = {0};
 
 static void __mt19937_64_uuid_seed(uint64_t seed) {
     __uuid64.mt[0] = seed;
-    for (int i = 1; i < MT64_N; i++) {
+    { int i; for (i = 1; i < MT64_N; i++) {
         __uuid64.mt[i] = 6364136223846793005ULL * (__uuid64.mt[i - 1] ^ (__uuid64.mt[i - 1] >> 62)) + (uint64_t) i;
-    }
+    } }
     __uuid64.index = MT64_N;
 }
 
 static void __mt19937_64_seed(uint64_t seed) {
     __rng64.mt[0] = seed;
-    for (int i = 1; i < MT64_N; i++) {
+    { int i; for (i = 1; i < MT64_N; i++) {
         __rng64.mt[i] = 6364136223846793005ULL * (__rng64.mt[i - 1] ^ (__rng64.mt[i - 1] >> 62)) + (uint64_t) i;
-    }
+    } }
     __rng64.index = MT64_N;
 }
 
@@ -477,10 +477,10 @@ OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
 
-    for (size_type64 i = length - 1; i > 0; i--) {
+    { size_type64 i; for (i = length - 1; i > 0; i--) {
         size_type64 rng_idx = __mt19937_64_next() % (i + 1);
         swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
-    }
+    } }
 }
 
 OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
@@ -488,10 +488,10 @@ OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
 
-    for (size_type64 i = length - 1; i > 0; i--) {
+    { size_type64 i; for (i = length - 1; i > 0; i--) {
         size_type64 rng_idx = __mt19937_64_next() % (i + 1);
         swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
-    }
+    } }
 }
 
 OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
@@ -503,21 +503,21 @@ OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
     // Copy list data to flat array
     void *ptr = malloc(type_size * length);
     void *it = *head;
-    for (size_type i = 0; i < length; i++) {
+    { size_type i; for (i = 0; i < length; i++) {
         memcpy((char *) ptr + (i * type_size), it, type_size);
         it = __cstl_list_next_prev(it, -1);
-    }
+    } }
     // Fisher-Yates shuffle on flat array
-    for (size_type i = length - 1; i > 0; i--) {
+    { size_type i; for (i = length - 1; i > 0; i--) {
         size_type rng_idx = __mt19937_64_next() % (i + 1);
         swap((char *) ptr + i * type_size, (char *) ptr + rng_idx * type_size, type_size);
-    }
+    } }
     // Copy shuffled data back to list nodes
     it = *head;
-    for (size_type i = 0; i < length; i++) {
+    { size_type i; for (i = 0; i < length; i++) {
         memcpy(it, (char *) ptr + (i * type_size), type_size);
         it = __cstl_list_next_prev(it, -1);
-    }
+    } }
     free(ptr);
 }
 

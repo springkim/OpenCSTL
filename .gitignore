@@ -356,3 +356,4 @@ src/
 tmp/
 .claude/
 helper/
+cmake-build/

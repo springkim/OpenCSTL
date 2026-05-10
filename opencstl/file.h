@@ -63,12 +63,12 @@ void fpm_append(FILE *fp, char *filepath) {
 
 void fpm_erase(FILE *fp) {
     int idx = -1;
-    for (int i = 0; i < fpm_size; i++) {
+    { int i; for (i = 0; i < fpm_size; i++) {
         if (fpm[i].fp == fp) {
             idx = i;
             break;
         }
-    }
+    } }
     verify(idx != -1);
     memcpy(fpm + idx, fpm + idx + 1, fpm_size - idx - 1);
     fpm_size--;
@@ -76,12 +76,12 @@ void fpm_erase(FILE *fp) {
 
 char *fpm_get(FILE *fp) {
     int idx = -1;
-    for (int i = 0; i < fpm_size; i++) {
+    { int i; for (i = 0; i < fpm_size; i++) {
         if (fpm[i].fp == fp) {
             idx = i;
             break;
         }
-    }
+    } }
     verify(idx != -1);
     return fpm[idx].filepath;
 }
@@ -132,14 +132,14 @@ char *__cstl_get_line(FILE *fp) {
     char *buf = (char *) calloc(len + 1, sizeof(char));
     if (!buf) return NULL;
 
-    for (size_type64 i = 0; i < len; i++) {
+    { size_type64 i; for (i = 0; i < len; i++) {
         int ch = fgetc(fp);
         if (ch == EOF) {
             free(buf);
             return NULL;
         }
         buf[i] = (char) ch;
-    }
+    } }
     (void) fgetc(fp);
     return buf;
 }

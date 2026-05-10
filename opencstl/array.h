@@ -127,11 +127,11 @@ OPENCSTL_FUNC void *__cstl_array_find(void **container, void *iter_begin, void *
         value = &valuef;
     }
 #endif
-    for (size_type64 i = pos; i < length; i++) {
+    { size_type64 i; for (i = pos; i < length; i++) {
         if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
             return (char *) *container + type_size * (i);
         }
-    }
+    } }
     return NULL;
 }
 
@@ -193,12 +193,12 @@ OPENCSTL_FUNC size_type64 __cstl_array_count(void **container, void *value) {
 #endif
     CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
     size_type64 cnt = 0;
-    for (int i = 0; i < length; i++) {
+    { int i; for (i = 0; i < length; i++) {
         void *ptr = ((char *) *container) + (type_size * i);
         if (is_equal(ptr, value, type_size) == 0) {
             cnt++;
         }
-    }
+    } }
     return cnt;
 }
 
@@ -211,12 +211,12 @@ OPENCSTL_FUNC size_type64 __cstl_array_count_if(void **container, CSTL_COND cond
 
 
     size_type64 cnt = 0;
-    for (int i = 0; i < length; i++) {
+    { int i; for (i = 0; i < length; i++) {
         void *ptr = ((char *) *container) + (type_size * i);
         if (cond(ptr)) {
             cnt++;
         }
-    }
+    } }
     return cnt;
 }
 

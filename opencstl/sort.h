@@ -282,13 +282,13 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 fault("Compare function is NULL");
                 return 0;
             }
-            for (size_type64 i = 1; i < length; i++) {
+            { size_type64 i; for (i = 1; i < length; i++) {
                 // cmp(a, b) > 0 means a > b, so prev > curr means not sorted
                 if (cmp((char *) container + (i - 1) * type_size,
                         (char *) container + i * type_size) > 0) {
                     return 0;
                 }
-            }
+            } }
             return 1;
         }
         break;
@@ -340,12 +340,12 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 return 0;
                 return 0;
             }
-            for (size_type64 i = 1; i < length; i++) {
+            { size_type64 i; for (i = 1; i < length; i++) {
                 if (cmp((char *) container + (i - 1) * type_size,
                         (char *) container + i * type_size) > 0) {
                     return 0;
                 }
-            }
+            } }
             return 1;
         }
         break;

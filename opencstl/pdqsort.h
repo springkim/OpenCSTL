@@ -69,11 +69,11 @@ static  void pdq__swap(unsigned char *a, unsigned char *b, size_type64 n) {
         memcpy(b, &t, 4);
     } else {
         unsigned char t;
-        for (size_type64 i = 0; i < n; ++i) {
+        { size_type64 i; for (i = 0; i < n; ++i) {
             t = a[i];
             a[i] = b[i];
             b[i] = t;
-        }
+        } }
     }
 }
 
@@ -91,11 +91,11 @@ static inline size_type64 pdq_log2(size_type64 n) {
 static void pdq_isort(unsigned char *base, size_type64 n, size_type64 sz,
                       int (*cmp)(const void *, const void *), unsigned char *tmp) {
     if (n < 2) return;
-    for (size_type64 i = 1; i < n; ++i)
+    { size_type64 i; for (i = 1; i < n; ++i)
         if (cmp(PDQ_ELEM(base, i), base) < 0) {
-            pdq__swap(PDQ_ELEM(base, i), base, sz);
+            pdq__swap(PDQ_ELEM(base, i), base, sz); }
         }
-    for (size_type64 i = 2; i < n; ++i) {
+    { size_type64 i; for (i = 2; i < n; ++i) {
         unsigned char *c = PDQ_ELEM(base, i);
         if (cmp(c - sz, c) <= 0) continue;
         memcpy(tmp, c, sz);
@@ -105,12 +105,12 @@ static void pdq_isort(unsigned char *base, size_type64 n, size_type64 sz,
             j -= sz;
         } while (cmp(j - sz, tmp) > 0);
         memcpy(j, tmp, sz);
-    }
+    } }
 }
 
 static void pdq_isort_unguard(unsigned char *base, size_type64 n, size_type64 sz,
                               int (*cmp)(const void *, const void *), unsigned char *tmp) {
-    for (size_type64 i = 1; i < n; ++i) {
+    { size_type64 i; for (i = 1; i < n; ++i) {
         unsigned char *c = PDQ_ELEM(base, i);
         if (cmp(c - sz, c) <= 0) continue;
         memcpy(tmp, c, sz);
@@ -120,14 +120,14 @@ static void pdq_isort_unguard(unsigned char *base, size_type64 n, size_type64 sz
             j -= sz;
         } while (j > base && cmp(j - sz, tmp) > 0);
         memcpy(j, tmp, sz);
-    }
+    } }
 }
 
 static int pdq_partial_isort(unsigned char *base, size_type64 n, size_type64 sz,
                              int (*cmp)(const void *, const void *), unsigned char *tmp) {
     if (n < 2) return 1;
     size_type64 cnt = 0;
-    for (size_type64 i = 1; i < n; ++i) {
+    { size_type64 i; for (i = 1; i < n; ++i) {
         unsigned char *c = PDQ_ELEM(base, i);
         if (cmp(c - sz, c) <= 0) continue;
         memcpy(tmp, c, sz);
@@ -138,7 +138,7 @@ static int pdq_partial_isort(unsigned char *base, size_type64 n, size_type64 sz,
             if (++cnt > PDQ_PARTIAL_LIMIT) return 0;
         } while (j > base && cmp(j - sz, tmp) > 0);
         memcpy(j, tmp, sz);
-    }
+    } }
     return 1;
 }
 
@@ -193,11 +193,11 @@ static void pdq_sift(unsigned char *base, size_type64 root, size_type64 n,
 
 static void pdq_heap(unsigned char *base, size_type64 n, size_type64 sz, int (*cmp)(const void *, const void *)) {
     if (n < 2) return;
-    for (size_type64 i = n / 2; i-- > 0;) pdq_sift(base, i, n, sz, cmp);
-    for (size_type64 e = n; e-- > 1;) {
+    { size_type64 i; for (i = n / 2; i-- > 0; ) pdq_sift(base, i, n, sz, cmp); }
+    { size_type64 e; for (e = n; e-- > 1; ) {
         pdq__swap(base, PDQ_ELEM(base, e), sz);
         pdq_sift(base, 0, e, sz, cmp);
-    }
+    } }
 }
 
 static inline uint64_t pdq_rng(uint64_t *s) {

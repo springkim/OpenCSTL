@@ -130,9 +130,9 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_type64 n, void *va
     if (value == NULL) {
         memset((char *) *container, 0, n * type_size);
     } else {
-        for (size_type64 i = 0; i < n; i++) {
+        { size_type64 i; for (i = 0; i < n; i++) {
             memcpy((char *) *container + type_size * (i), value, type_size);
-        }
+        } }
     }
 }
 
@@ -259,9 +259,9 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n
     }
     memcpy((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
            (length - pos) * type_size);
-    for (size_type64 i = 0; i < n; i++) {
+    { size_type64 i; for (i = 0; i < n; i++) {
         memcpy((char *) *container + (pos + i) * type_size, value, type_size);
-    }
+    } }
     *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance) += n;
 }
 
@@ -321,9 +321,9 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_type64 n, void *va
         if (*(void **) value == NULL) {
             memset((char *) *container + length * type_size, 0, (n - length) * type_size);
         } else {
-            for (size_type64 i = length; i < n; i++) {
+            { size_type64 i; for (i = length; i < n; i++) {
                 memcpy((char *) *container + i * type_size, value, type_size);
-            }
+            } }
         }
     }
 }
@@ -386,11 +386,11 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
     }
 #endif
     size_type64 pos = (*(char **) iter_begin - *(char **) container) / type_size;
-    for (size_type64 i = pos; i < length; i++) {
+    { size_type64 i; for (i = pos; i < length; i++) {
         if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
             return (char *) *container + type_size * (i);
         }
-    }
+    } }
     return NULL;
 }
 
@@ -449,11 +449,11 @@ OPENCSTL_FUNC void __cstl_deque_reverse(void **container) {
     verify(tmp != NULL);
 
     char *base = (char *) *container;
-    for (size_type64 i = 0, j = length - 1; i < j; i++, j--) {
+    { size_type64 i, j; for (i = 0, j = length - 1; i < j; i++, j--) {
         memcpy(tmp, base + i * type_size, type_size);
         memcpy(base + i * type_size, base + j * type_size, type_size);
         memcpy(base + j * type_size, tmp, type_size);
-    }
+    } }
 
     if (tmp != stackbuf) {
         free(tmp);
@@ -483,12 +483,12 @@ OPENCSTL_FUNC size_type64 __cstl_deque_count(void **container, void *value) {
 #endif
     CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
     size_type64 cnt = 0;
-    for (size_type64 i = 0; i < length; i++) {
+    { size_type64 i; for (i = 0; i < length; i++) {
         void *ptr = (char *) *container + (type_size * i);
         if (is_equal(ptr, value, type_size) == 0) {
             cnt++;
         }
-    }
+    } }
     return cnt;
 }
 
@@ -498,12 +498,12 @@ OPENCSTL_FUNC size_type64 __cstl_deque_count_if(void **container, CSTL_COND cond
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
 
     size_type64 cnt = 0;
-    for (size_type64 i = 0; i < length; i++) {
+    { size_type64 i; for (i = 0; i < length; i++) {
         void *ptr = (char *) *container + (type_size * i);
         if (cond(ptr)) {
             cnt++;
         }
-    }
+    } }
     return cnt;
 }
 

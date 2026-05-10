@@ -597,8 +597,8 @@ static VEB *giveb_veb_new(int bits) {
 static void giveb_veb_free(VEB *v);
 
 static void giveb_cls_free_all(HashMap *hm) {
-    for (size_type64 i = 0; i < hm->cap; i++)
-        if (hm->e[i].used) giveb_veb_free((VEB *) hm->e[i].val);
+    { size_type64 i; for (i = 0; i < hm->cap; i++)
+        if (hm->e[i].used) giveb_veb_free((VEB *) hm->e[i].val); }
     giveb_hm_free(hm);
 }
 
@@ -696,9 +696,9 @@ GIntervalVEB *giveb_new(void) {
 
 
 void giveb_free(GIntervalVEB *iv) {
-    for (size_type64 i = 0; i < iv->data->cap; i++)
+    { size_type64 i; for (i = 0; i < iv->data->cap; i++)
         if (iv->data->e[i].used)
-            _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval));
+            _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval)); }
     giveb_hm_free(iv->data);
     giveb_veb_free(iv->veb);
     _ocstl_dblock_free(iv, sizeof(GIntervalVEB));

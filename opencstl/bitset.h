@@ -202,9 +202,9 @@ static bool __cstl_bitset_all(BITSET b) {
     if (b.nbits == 0) return true;
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
-    for (size_type i = 0; i < full_bytes; i++) {
+    { size_type i; for (i = 0; i < full_bytes; i++) {
         if (b.bits[i] != 0xFF) return false;
-    }
+    } }
     if (rem != 0) {
         ubyte_x mask = (ubyte_x) ((1 << rem) - 1);
         if ((b.bits[full_bytes] & mask) != mask) return false;
@@ -217,9 +217,9 @@ static bool __cstl_bitset_any(BITSET b) {
     if (b.nbits == 0) return false;
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
-    for (size_type i = 0; i < full_bytes; i++) {
+    { size_type i; for (i = 0; i < full_bytes; i++) {
         if (b.bits[i] != 0) return true;
-    }
+    } }
     if (rem != 0) {
         ubyte_x mask = (ubyte_x) ((1 << rem) - 1);
         if ((b.bits[full_bytes] & mask) != 0) return true;
@@ -236,9 +236,9 @@ static void __cstl_bitset_flip(BITSET b) {
     // 모든 비트를 반전
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
-    for (size_type i = 0; i < full_bytes; i++) {
+    { size_type i; for (i = 0; i < full_bytes; i++) {
         b.bits[i] = ~b.bits[i];
-    }
+    } }
     if (rem != 0) {
         ubyte_x mask = (ubyte_x) ((1 << rem) - 1);
         b.bits[full_bytes] ^= mask;
@@ -268,10 +268,10 @@ static bool __cstl_bitset_test(BITSET b, size_type idx) {
 
 static char *__cstl_bitset_to_string(BITSET b) {
     // 비트셋을 문자열로 변환 (MSB가 앞, C++ bitset::to_string과 동일)
-    for (size_type i = 0; i < b.nbits; i++) {
+    { size_type i; for (i = 0; i < b.nbits; i++) {
         size_type bit_pos = b.nbits - 1 - i;
         b.str[i] = __cstl_bitset_test(b, bit_pos) ? '1' : '0';
-    }
+    } }
     b.str[b.nbits] = '\0';
     return b.str;
 }

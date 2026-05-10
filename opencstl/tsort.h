@@ -62,7 +62,7 @@ static void ts_binsort(char *arr, size_type64 lo, size_type64 hi, size_type64 st
                        size_type64 sz, CSTL_COMPARE cmp) {
     char sbuf[1024];
     char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
-    for (size_type64 i = start; i < hi; i++) {
+    { size_type64 i; for (i = start; i < hi; i++) {
         memcpy(tmp, arr + i * sz, sz);
         size_type64 left = lo, right = i;
         while (left < right) {
@@ -74,7 +74,7 @@ static void ts_binsort(char *arr, size_type64 lo, size_type64 hi, size_type64 st
             memmove(arr + (left + 1) * sz, arr + left * sz, (i - left) * sz);
             memcpy(arr + left * sz, tmp, sz);
         }
-    }
+    } }
     if (tmp != sbuf)
         free(tmp);
 }
@@ -248,8 +248,8 @@ static void ts_merge_collapse(char *arr, struct ts_run *stk, size_type64 *sp,
         ts_do_merge(arr, stk[n].base, stk[n].len, stk[n + 1].len,
                     sz, cmp, buf);
         stk[n].len += stk[n + 1].len;
-        for (size_type64 i = n + 1; i + 1 < *sp; i++)
-            stk[i] = stk[i + 1];
+        { size_type64 i; for (i = n + 1; i + 1 < *sp; i++)
+            stk[i] = stk[i + 1]; }
         (*sp)--;
     }
 }
@@ -262,8 +262,8 @@ static void ts_merge_force(char *arr, struct ts_run *stk, size_type64 *sp,
         ts_do_merge(arr, stk[n].base, stk[n].len, stk[n + 1].len,
                     sz, cmp, buf);
         stk[n].len += stk[n + 1].len;
-        for (size_type64 i = n + 1; i + 1 < *sp; i++)
-            stk[i] = stk[i + 1];
+        { size_type64 i; for (i = n + 1; i + 1 < *sp; i++)
+            stk[i] = stk[i + 1]; }
         (*sp)--;
     }
 }

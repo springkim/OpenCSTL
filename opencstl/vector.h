@@ -108,9 +108,9 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_type64 n, void *v
     if (value == NULL) {
         memset(*container, 0, type_size * n);
     } else {
-        for (size_type64 i = 0; i < n; i++) {
+        { size_type64 i; for (i = 0; i < n; i++) {
             memcpy((char *) *container + type_size * (i), value, type_size);
-        }
+        } }
     }
     OPENCSTL_NIDX(container, -1) = n;
 }
@@ -189,9 +189,9 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type6
     }
     memmove((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
             (length - pos) * type_size);
-    for (size_type64 i = 0; i < N; i++) {
+    { size_type64 i; for (i = 0; i < N; i++) {
         memcpy((char *) *container + type_size * (pos + i), value, type_size);
-    }
+    } }
     OPENCSTL_NIDX(container, -1) += N;
 }
 
@@ -256,9 +256,9 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_type64 n, void *v
         if (value == NULL) {
             memset((char *) *container + type_size * length, 0, type_size * (n - length));
         } else {
-            for (size_type64 i = length; i < n; i++) {
+            { size_type64 i; for (i = length; i < n; i++) {
                 memcpy((char *) *container + type_size * (i), value, type_size);
-            }
+            } }
         }
     }
     OPENCSTL_NIDX(container, -1) = n;
@@ -280,11 +280,11 @@ OPENCSTL_FUNC void *__cstl_vector_find(void **container, void *iter_begin, void 
         value = &valuef;
     }
 #endif
-    for (size_type64 i = pos; i < length; i++) {
+    { size_type64 i; for (i = pos; i < length; i++) {
         if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
             return (char *) *container + type_size * (i);
         }
-    }
+    } }
     return NULL;
 }
 
@@ -393,12 +393,12 @@ OPENCSTL_FUNC size_type64 __cstl_vector_count(void **container, void *value) {
 #endif
     CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
     size_type64 cnt = 0;
-    for (int i = 0; i < length; i++) {
+    { int i; for (i = 0; i < length; i++) {
         void *ptr = ((char *) *container) + (type_size * i);
         if (is_equal(ptr, value, type_size) == 0) {
             cnt++;
         }
-    }
+    } }
     return cnt;
 }
 
@@ -411,12 +411,12 @@ OPENCSTL_FUNC size_type64 __cstl_vector_count_if(void **container, CSTL_COND con
 
 
     size_type64 cnt = 0;
-    for (int i = 0; i < length; i++) {
+    { int i; for (i = 0; i < length; i++) {
         void *ptr = ((char *) *container) + (type_size * i);
         if (cond(ptr)) {
             cnt++;
         }
-    }
+    } }
     return cnt;
 }
 

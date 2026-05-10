@@ -134,9 +134,9 @@ static CSV __parse_csv(char *csv_path, bool is_header) {
 done_pass1:;
 
     // 짧은 행 패딩용 빈 문자열 공간
-    for (int i = 0; i < total_rows; i++)
+    { int i; for (i = 0; i < total_rows; i++)
         if (row_cols[i] < max_cols)
-            str_bytes += (size_t) (max_cols - row_cols[i]);
+            str_bytes += (size_t) (max_cols - row_cols[i]); }
 
     // ── 단일 블록 레이아웃 ────────────────────────────────────────────────
     // [ char**  row_ptrs  : data_rows * sizeof(char**)         ]  ← table[i]
@@ -160,8 +160,8 @@ done_pass1:;
     char *sdata = mem + off1 + off2 + off3;
 
     // row_ptrs 세팅
-    for (int i = 0; i < data_rows; i++)
-        table[i] = cells + i * max_cols;
+    { int i; for (i = 0; i < data_rows; i++)
+        table[i] = cells + i * max_cols; }
 
     // ── Pass 2: 문자열 기록 + 포인터 세팅 ───────────────────────────────
     p = buf;
@@ -185,7 +185,7 @@ done_pass1:;
 
     // 데이터 행 처리
     int start = is_header ? 1 : 0;
-    for (int i = start; i < total_rows; i++) {
+    { int i; for (i = start; i < total_rows; i++) {
         int di = i - start, j = 0, eol = 0;
         while (!eol && j < row_cols[i]) {
             size_t flen;
@@ -198,7 +198,7 @@ done_pass1:;
             table[di][j] = sp;
             *sp++ = '\0';
         } // 패딩
-    }
+    } }
 
     free(row_cols);
     free(buf);

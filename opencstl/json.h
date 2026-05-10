@@ -139,7 +139,7 @@ char *__as_string() {
     if (!out) return NULL;
 
     char *dst = out;
-    for (char *s = start; s < end; s++) {
+    { char * s; for (s = start; s < end; s++) {
         if (*s != '\\' || s + 1 >= end) {
             *dst++ = *s;
             continue;
@@ -166,7 +166,7 @@ char *__as_string() {
                 *dst++ = *s;
                 break; // \uXXXX 등 미처리는 원본 유지
         }
-    }
+    } }
     *dst = '\0';
 
     p->str_buf = out;
@@ -351,15 +351,15 @@ JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
         if (cur->p && *(cur->p) == '[') {
             int idx = atoi(tok);
             JSON_TOKEN *c = cur->children;
-            for (int i = 0; c && i < idx; i++) c = c->next;
+            { int i; for (i = 0; c && i < idx; i++) c = c->next; }
             found = c;
         } else {
-            for (JSON_TOKEN *c = cur->children; c; c = c->next) {
+            { JSON_TOKEN * c; for (c = cur->children; c; c = c->next) {
                 if (strcmp(c->key, tok) == 0) {
                     found = c;
                     break;
                 }
-            }
+            } }
         }
 
         if (!found) return NULL;
@@ -407,11 +407,11 @@ void __free_json(JSON *root) {
 
 static void __dumps(JSON_TOKEN *node, int depth) {
     if (!node || !node->p || !node->q) return;
-    for (int i = 0; i < depth; i++) printf("  ");
+    { int i; for (i = 0; i < depth; i++) printf("  "); }
     int len = (int) (node->q - node->p + 1);
     if (node->key[0]) printf("\"%s\": [%.*s]\n", node->key, len, node->p);
     else printf("[%.*s]\n", len, node->p);
-    for (JSON_TOKEN *c = node->children; c; c = c->next) __dumps(c, depth + 1);
+    { JSON_TOKEN * c; for (c = node->children; c; c = c->next) __dumps(c, depth + 1); }
 }
 
 static void _dumps(JSON *root) {

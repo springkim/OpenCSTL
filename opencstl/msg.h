@@ -76,7 +76,7 @@ static void MsgBoxCLI(const char *format, ...) {
 
     // 상단
     fputs(tl, stdout);
-    for (int i = 0; i < inner; i++) fputs(vline, stdout);
+    { int i; for (i = 0; i < inner; i++) fputs(vline, stdout); }
     fputs(tr, stdout);
     putchar('\n');
 
@@ -92,9 +92,9 @@ static void MsgBoxCLI(const char *format, ...) {
             if (rpadding < 0) rpadding = 0;
 
             fputs(hline, stdout);
-            for (int i = 0; i < lpadding; i++) putchar(' ');
+            { int i; for (i = 0; i < lpadding; i++) putchar(' '); }
             fwrite(line_start, 1, (size_type64) len, stdout);
-            for (int i = 0; i < rpadding; i++) putchar(' ');
+            { int i; for (i = 0; i < rpadding; i++) putchar(' '); }
             fputs(hline, stdout);
             putchar('\n');
 
@@ -106,7 +106,7 @@ static void MsgBoxCLI(const char *format, ...) {
 
     // 하단
     fputs(bl, stdout);
-    for (int i = 0; i < inner; i++) fputs(vline, stdout);
+    { int i; for (i = 0; i < inner; i++) fputs(vline, stdout); }
     fputs(br, stdout);
     putchar('\n');
 }
@@ -239,13 +239,13 @@ static const struct lang_labels *detect_lang(void) {
     if (!lang || !*lang) lang = "en";
 
     // "ko_KR.UTF-8" -> "ko" 비교
-    for (int i = 0; kLangs[i].prefix; i++) {
+    { int i; for (i = 0; kLangs[i].prefix; i++) {
         size_type64 n = strlen(kLangs[i].prefix);
         if (strncmp(lang, kLangs[i].prefix, n) == 0 &&
             (lang[n] == '\0' || lang[n] == '_' || lang[n] == '.')) {
             return &kLangs[i];
         }
-    }
+    } }
     // 마지막 엔트리(en) fallback
     int last = 0;
     while (kLangs[last + 1].prefix) last++;

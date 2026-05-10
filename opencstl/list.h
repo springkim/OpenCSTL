@@ -168,13 +168,13 @@ OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_type64
     void *nhead = __cstl_list_node(type_size);
     memcpy(nhead, value, type_size);
     void *ntail = nhead;
-    for (size_type64 i = 1; i < N; i++) {
+    { size_type64 i; for (i = 1; i < N; i++) {
         void *n = __cstl_list_node(type_size);
         memcpy(n, value, type_size);
         OPENCSTL_NIDX(&n, -2) = (size_type64) ntail; //n->prev=tail
         OPENCSTL_NIDX(&ntail, -1) = (size_type64) n; //tail->next=n;
         ntail = n;
-    }
+    } }
     OPENCSTL_NIDX(&ntail, -1) = (size_type64) *iter; //n->next=iter
     if (*head == NULL && *tail == NULL) {
         *head = nhead;
@@ -307,7 +307,7 @@ OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, 
         return;
     }
 
-    for (size_type64 width = 1; width < length; width <<= 1) {
+    { size_type64 width; for (width = 1; width < length; width <<= 1) {
         void *curr = *head;
         void *new_head = NULL;
         void *new_tail = NULL;
@@ -373,7 +373,7 @@ OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, 
 
         *head = new_head;
         *tail = new_tail;
-    }
+    } }
 }
 
 // ██╗░░░░░██╗░██████╗████████╗░░░░░░░░██████╗░██╗░░░██╗██╗░█████╗░██╗░░██╗░░░░░░░░██████╗░█████╗░██████╗░████████╗

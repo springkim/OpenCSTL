@@ -383,7 +383,7 @@ static const char *ocstl_parse_spec(const char *p, ocstl_fmt_spec_t *spec) {
 }
 
 static void ocstl_emit_pad(char ch, int n) {
-    for (int i = 0; i < n; i++) putchar(ch);
+    { int i; for (i = 0; i < n; i++) putchar(ch); }
 }
 
 static void ocstl_emit_padded(const char *core, int core_len,
@@ -459,9 +459,9 @@ static int ocstl_format_int(char *buf, int bufsz,
     if (negative) buf[pos++] = '-';
     else if (spec->sign == '+' && base == 10) buf[pos++] = '+';
     int plen = (int) strlen(prefix);
-    for (int i = 0; i < plen; i++) buf[pos++] = prefix[i];
+    { int i; for (i = 0; i < plen; i++) buf[pos++] = prefix[i]; }
     *sign_prefix_len = pos;
-    for (int i = tlen - 1; i >= 0 && pos < bufsz - 1; i--) buf[pos++] = tmp[i];
+    { int i; for (i = tlen - 1; i >= 0 && pos < bufsz - 1; i--) buf[pos++] = tmp[i]; }
     buf[pos] = '\0';
     return pos;
 }

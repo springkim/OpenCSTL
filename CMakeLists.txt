@@ -13,7 +13,11 @@ add_executable(${EXE_NAME} main.c)
 if (MSVC)
     target_compile_options(${EXE_NAME} PRIVATE /W3 /utf-8)
 else ()
-    target_compile_options(${EXE_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+    # CMAKE_C_STANDARD 90 + GCC extensions (gnu90) so `//` line comments,
+    # `long long`, variadic macros, and other widely-supported extensions stay
+    # available. -Wpedantic would error on these under strict ISO C90.
+    set_target_properties(${EXE_NAME} PROPERTIES C_EXTENSIONS ON)
+    target_compile_options(${EXE_NAME} PRIVATE -Wall -Wextra)
 endif ()
 
 

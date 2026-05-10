@@ -162,22 +162,22 @@ static void ipn_reverse(unsigned char *base, size_type64 n, size_type64 width) {
 static void ipn_isort_shift_swap(unsigned char *base, size_type64 n, size_type64 offset,
                                  size_type64 width, CSTL_COMPARE cmp, int guarded) {
     if (guarded) {
-        for (size_type64 i = offset; i < n; ++i) {
+        { size_type64 i; for (i = offset; i < n; ++i) {
             unsigned char *j = base + i * width;
             while (j > base && cmp(j - width, j) > 0) {
                 ipn__swap(j - width, j, width);
                 j -= width;
             }
-        }
+        } }
     } else {
-        for (size_type64 i = offset; i < n; ++i) {
+        { size_type64 i; for (i = offset; i < n; ++i) {
             unsigned char *j = base + i * width;
             while (cmp(j - width, j) > 0) {
                 ipn__swap(j - width, j, width);
                 j -= width;
                 if (j == base) break;
             }
-        }
+        } }
     }
 }
 
@@ -190,7 +190,7 @@ static void ipn_isort_shift_left(unsigned char *base, size_type64 n, size_type64
         return;
     }
     unsigned char tmp[IPN_ISORT_TMP_BYTES];
-    for (size_type64 i = offset; i < n; ++i) {
+    { size_type64 i; for (i = offset; i < n; ++i) {
         unsigned char *c = base + i * width;
         if (cmp(c - width, c) <= 0) continue;
         memcpy(tmp, c, width);
@@ -200,7 +200,7 @@ static void ipn_isort_shift_left(unsigned char *base, size_type64 n, size_type64
             j -= width;
         } while (j > base && cmp(j - width, tmp) > 0);
         memcpy(j, tmp, width);
-    }
+    } }
 }
 
 /* Unguarded variant: requires base[-1] to exist and be <= any element (sentinel). */
@@ -211,7 +211,7 @@ static void ipn_isort_shift_left_unguard(unsigned char *base, size_type64 n, siz
         return;
     }
     unsigned char tmp[IPN_ISORT_TMP_BYTES];
-    for (size_type64 i = offset; i < n; ++i) {
+    { size_type64 i; for (i = offset; i < n; ++i) {
         unsigned char *c = base + i * width;
         if (cmp(c - width, c) <= 0) continue;
         memcpy(tmp, c, width);
@@ -221,7 +221,7 @@ static void ipn_isort_shift_left_unguard(unsigned char *base, size_type64 n, siz
             j -= width;
         } while (cmp(j - width, tmp) > 0);
         memcpy(j, tmp, width);
-    }
+    } }
 }
 
 /* 3-element sorting network. */
@@ -299,11 +299,11 @@ static void ipn_sift(unsigned char *base, size_type64 root, size_type64 n, size_
 
 static void ipn_heapsort(unsigned char *base, size_type64 n, size_type64 width, CSTL_COMPARE cmp) {
     if (n < 2) return;
-    for (size_type64 i = n / 2; i-- > 0;) ipn_sift(base, i, n, width, cmp);
-    for (size_type64 e = n; e-- > 1;) {
+    { size_type64 i; for (i = n / 2; i-- > 0; ) ipn_sift(base, i, n, width, cmp); }
+    { size_type64 e; for (e = n; e-- > 1; ) {
         ipn__swap(base, base + e * width, width);
         ipn_sift(base, 0, e, width, cmp);
-    }
+    } }
 }
 
 static IPN_ALWAYS_INLINE unsigned char *ipn_median3(unsigned char *a, unsigned char *b,
@@ -410,19 +410,19 @@ static int ipn_partial_isort(unsigned char *base, size_type64 n, size_type64 wid
     if (IPN_UNLIKELY(width > IPN_ISORT_TMP_BYTES)) {
         /* Swap-based variant with shift budget. */
         size_type64 cnt = 0;
-        for (size_type64 i = 1; i < n; ++i) {
+        { size_type64 i; for (i = 1; i < n; ++i) {
             unsigned char *j = base + i * width;
             while (j > base && cmp(j - width, j) > 0) {
                 ipn__swap(j - width, j, width);
                 j -= width;
                 if (++cnt > IPN_PARTIAL_LIMIT) return 0;
             }
-        }
+        } }
         return 1;
     }
     unsigned char tmp[IPN_ISORT_TMP_BYTES];
     size_type64 cnt = 0;
-    for (size_type64 i = 1; i < n; ++i) {
+    { size_type64 i; for (i = 1; i < n; ++i) {
         unsigned char *c = base + i * width;
         if (cmp(c - width, c) <= 0) continue;
         memcpy(tmp, c, width);
@@ -434,7 +434,7 @@ static int ipn_partial_isort(unsigned char *base, size_type64 n, size_type64 wid
         } while (j > base && cmp(j - width, tmp) > 0);
         memcpy(j, tmp, width);
         if (cnt > IPN_PARTIAL_LIMIT) return 0;
-    }
+    } }
     return 1;
 }
 

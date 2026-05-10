@@ -113,9 +113,9 @@ static char *__cstl_join(char *path1, char *path2) {
 static char *__cstl_basename(char *path) {
     size_type64 len = strlen(path);
     size_type64 start = 0;
-    for (size_type64 i = 0; i < len; i++) {
+    { size_type64 i; for (i = 0; i < len; i++) {
         if (__cstl_is_sep(path[i])) start = i + 1;
-    }
+    } }
     size_type64 base_len = len - start;
     char *ret = (char *) malloc(base_len + 1);
     memcpy(ret, path + start, base_len);
@@ -126,15 +126,15 @@ static char *__cstl_basename(char *path) {
 static char **__cstl_splitext(char *path) {
     size_type64 len = strlen(path);
     size_type64 base_start = 0;
-    for (size_type64 i = 0; i < len; i++) {
+    { size_type64 i; for (i = 0; i < len; i++) {
         if (__cstl_is_sep(path[i])) base_start = i + 1;
-    }
+    } }
     size_type64 nonleading = base_start;
     while (nonleading < len && path[nonleading] == '.') nonleading++;
     size_type64 dot_pos = (size_type64) -1;
-    for (size_type64 i = nonleading; i < len; i++) {
+    { size_type64 i; for (i = nonleading; i < len; i++) {
         if (path[i] == '.') dot_pos = i;
-    }
+    } }
     size_type64 root_len = (dot_pos == (size_type64) -1) ? len : dot_pos;
     size_type64 ext_len = (dot_pos == (size_type64) -1) ? 0 : (len - dot_pos);
     size_type64 total = 2 * sizeof(char *) + root_len + 1 + ext_len + 1;
@@ -169,7 +169,7 @@ static void __cstl_makedirs(char *path) {
     if (len == 0) return;
     char *tmp = (char *) malloc(len + 1);
     memcpy(tmp, path, len + 1);
-    for (size_type64 i = 1; i < len; i++) {
+    { size_type64 i; for (i = 1; i < len; i++) {
         if (__cstl_is_sep(tmp[i])) {
             char save = tmp[i];
             tmp[i] = '\0';
@@ -180,7 +180,7 @@ static void __cstl_makedirs(char *path) {
 #endif
             tmp[i] = save;
         }
-    }
+    } }
 #if defined(OCSTL_OS_WINDOWS)
     CreateDirectoryA(tmp, NULL);
 #else
@@ -204,9 +204,9 @@ static void __cstl_rename(char *oldpath, char *newpath) {
 static char *__cstl_dirname(char *path) {
     size_type64 len = strlen(path);
     size_type64 last_sep = (size_type64) -1;
-    for (size_type64 i = 0; i < len; i++) {
+    { size_type64 i; for (i = 0; i < len; i++) {
         if (__cstl_is_sep(path[i])) last_sep = i;
-    }
+    } }
     if (last_sep == (size_type64) -1) {
         char *ret = (char *) malloc(1);
         ret[0] = '\0';

@@ -47,6 +47,18 @@
 #include<stdbool.h>
 #include<assert.h>
 
+// C90 has no `inline` keyword. Map to compiler-specific extensions so the
+// library's `static inline` helpers compile under -std=c90.
+#if !defined(__cplusplus) && (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L)
+#  if defined(__GNUC__) || defined(__clang__)
+#    define inline __inline__
+#  elif defined(_MSC_VER)
+#    define inline __inline
+#  else
+#    define inline
+#  endif
+#endif
+
 
 typedef int (*CSTL_COMPARE)(const void *, const void *);
 

@@ -293,7 +293,7 @@ static void __ht_do_rehash(
     void *nb = (char *) new_raw + header_sz;
     size_type64 new_mask = new_cap - 1;
 
-    for (size_type64 i = 0; i < old_cap; i++) {
+    { size_type64 i; for (i = 0; i < old_cap; i++) {
         if (old_ctrl[i] != HT_CTRL_EMPTY) {
             const void *ok = (const char *) *container + i * type_size;
             const void *ov = value_size > 0 ? (const char *) ok + key_size : NULL;
@@ -301,7 +301,7 @@ static void __ht_do_rehash(
             __ht_reinsert(nb, new_ctrl, new_mask, ok, ov,
                           key_size, value_size, type_size, h);
         }
-    }
+    } }
 
     void *old_ptr = *container;
     free((char *) *container - header_sz);
@@ -467,9 +467,9 @@ void *__cstl_hashtable_begin(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-    for (size_type64 i = 0; i <= cap_mask; i++)
+    { size_type64 i; for (i = 0; i <= cap_mask; i++)
         if (ctrl[i] != HT_CTRL_EMPTY)
-            return (char *) *container + i * type_size;
+            return (char *) *container + i * type_size; }
     return NULL;
 }
 
@@ -482,9 +482,9 @@ void *__cstl_hashtable_rbegin(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-    for (int i = (int) cap_mask; i >= 0; i--)
+    { int i; for (i = (int) cap_mask; i >= 0; i--)
         if (ctrl[i] != HT_CTRL_EMPTY)
-            return (char *) *container + i * type_size;
+            return (char *) *container + i * type_size; }
     return NULL;
 }
 
@@ -529,11 +529,11 @@ void *__cstl_hashtable_next_prev(void *it, int n) {
         size_type64 pos = ((char *) it - (char *) chtm->p1) / ts;
         if (pos == 0) return (char *) chtm->p1 - ts;
 
-        for (size_type64 i = pos - 1; ; i--) {
+        { size_type64 i; for (i = pos - 1; ; i--) {
             if (ctrl[i] != HT_CTRL_EMPTY)
                 return (char *) chtm->p1 + i * ts;
             if (i == 0) break;
-        }
+        } }
         return (char *) chtm->p1 - ts;
     }
     return NULL;
@@ -576,7 +576,7 @@ void __cstl_hashtable_reserve(void **container, size_type64 n) {
     void *nb = (char *) new_raw + header_sz;
     size_type64 new_mask = new_cap - 1;
 
-    for (size_type64 i = 0; i <= cap_mask_old; i++) {
+    { size_type64 i; for (i = 0; i <= cap_mask_old; i++) {
         if (old_ctrl[i] != HT_CTRL_EMPTY) {
             const void *ok = (const char *) *container + i * type_size;
             const void *ov = value_size > 0 ? (const char *) ok + key_size : NULL;
@@ -584,7 +584,7 @@ void __cstl_hashtable_reserve(void **container, size_type64 n) {
             __ht_reinsert(nb, new_ctrl, new_mask, ok, ov,
                           key_size, value_size, type_size, h);
         }
-    }
+    } }
 
     void *old_ptr = *container;
     free((char *) *container - header_sz);

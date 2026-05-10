@@ -85,21 +85,21 @@ static void msort(void *base, size_type64 number, size_type64 width, CSTL_COMPAR
     if (number < 2) return;
     char *arr = (char *) base;
     size_type64 sz = width;
-    for (size_type64 i = 0; i < number; i += MSORT_ISORT_THRESH) {
+    { size_type64 i; for (i = 0; i < number; i += MSORT_ISORT_THRESH) {
         size_type64 blk = number - i;
         if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
         isort(arr + i * sz, blk, sz, compare);
-    }
+    } }
     char *buf = (char *) calloc(((number + 1) / 2), sz);
     if (!buf) return;
-    for (size_type64 mb = MSORT_ISORT_THRESH; mb < number; mb *= 2) {
-        for (size_type64 i = 0; i + mb < number; i += 2 * mb) {
+    { size_type64 mb; for (mb = MSORT_ISORT_THRESH; mb < number; mb *= 2) {
+        { size_type64 i; for (i = 0; i + mb < number; i += 2 * mb) {
             size_type64 len1 = mb;
             size_type64 len2 = number - i - mb;
             if (len2 > mb) len2 = mb;
             msort_merge(arr + i * sz, len1, len2, sz, compare, buf);
-        }
-    }
+        } }
+    } }
     free(buf);
 }
 

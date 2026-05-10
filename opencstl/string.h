@@ -159,7 +159,7 @@ static char *__cstl_string_trim(const char *src) {
 static char *__cstl_string_to_upper(const char *src) {
     size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
-    for (size_type64 i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
+    { size_type64 i; for (i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]); }
     ret[len] = '\0';
     return ret;
 }
@@ -167,7 +167,7 @@ static char *__cstl_string_to_upper(const char *src) {
 static char *__cstl_string_to_lower(const char *src) {
     size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
-    for (size_type64 i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
+    { size_type64 i; for (i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]); }
     ret[len] = '\0';
     return ret;
 }
@@ -204,12 +204,12 @@ static char *__cstl_string_join(char **parts, int n, const char *delim) {
     }
     size_type64 dlen = strlen(delim);
     size_type64 total = 0;
-    for (int i = 0; i < n; i++) total += strlen(parts[i]);
+    { int i; for (i = 0; i < n; i++) total += strlen(parts[i]); }
     total += dlen * (n - 1) + 1;
 
     char *ret = (char *) malloc(total);
     char *dst = ret;
-    for (int i = 0; i < n; i++) {
+    { int i; for (i = 0; i < n; i++) {
         if (i > 0) {
             memcpy(dst, delim, dlen);
             dst += dlen;
@@ -217,7 +217,7 @@ static char *__cstl_string_join(char **parts, int n, const char *delim) {
         size_type64 len = strlen(parts[i]);
         memcpy(dst, parts[i], len);
         dst += len;
-    }
+    } }
     *dst = '\0';
     return ret;
 }
@@ -234,36 +234,36 @@ static char *__cstl_string_concat(const char *a, const char *b) {
 static char *__cstl_string_reverse(const char *src) {
     size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
-    for (size_type64 i = 0; i < len; i++) ret[i] = src[len - 1 - i];
+    { size_type64 i; for (i = 0; i < len; i++) ret[i] = src[len - 1 - i]; }
     ret[len] = '\0';
     return ret;
 }
 
 static bool __cstl_string_is_digit(const char *src) {
     if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isdigit((unsigned char) *p)) return false;
+    { const char * p; for (p = src; *p; p++)
+        if (!isdigit((unsigned char) *p)) return false; }
     return true;
 }
 
 static bool __cstl_string_is_alpha(const char *src) {
     if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isalpha((unsigned char) *p)) return false;
+    { const char * p; for (p = src; *p; p++)
+        if (!isalpha((unsigned char) *p)) return false; }
     return true;
 }
 
 static bool __cstl_string_is_alnum(const char *src) {
     if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isalnum((unsigned char) *p)) return false;
+    { const char * p; for (p = src; *p; p++)
+        if (!isalnum((unsigned char) *p)) return false; }
     return true;
 }
 
 static bool __cstl_string_is_space(const char *src) {
     if (!*src) return false;
-    for (const char *p = src; *p; p++)
-        if (!isspace((unsigned char) *p)) return false;
+    { const char * p; for (p = src; *p; p++)
+        if (!isspace((unsigned char) *p)) return false; }
     return true;
 }
 

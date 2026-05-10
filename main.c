@@ -15,8 +15,11 @@ void cstl_vector_test01(void) {
     VECTOR(int) arr = new_vector(int);
 
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
-    for (int i = 0; i < 10; i++) {
-        push_back(arr, i);
+    {
+        int i;
+        for (i = 0; i < 10; i++) {
+            push_back(arr, i);
+        }
     }
 
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8]
@@ -35,8 +38,11 @@ void cstl_vector_test01(void) {
     ///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8] [-1] [-1]
     resize(arr, 15, -1);
 
-    for (int *it = begin(arr); it != end(arr); it = next(it)) {
-        printf("[%d] ", *it);
+    {
+        int *it;
+        for (it = begin(arr); it != end(arr); it = next(it)) {
+            printf("[%d] ", *it);
+        }
     }
     puts("");
 
@@ -46,14 +52,20 @@ void cstl_vector_test01(void) {
     }
     assign(arr, 5);
     ///[0] [0] [0] [0] [0]
-    for (int i = 0; i < size(arr); i++) {
-        printf("[%d] ", arr[i]);
+    {
+        int i;
+        for (i = 0; i < size(arr); i++) {
+            printf("[%d] ", arr[i]);
+        }
     }
     puts("");
     assign(arr, 5, 7);
     ///[7] [7] [7] [7] [7]
-    for (int i = 0; i < size(arr); i++) {
-        printf("[%d] ", arr[i]);
+    {
+        int i;
+        for (i = 0; i < size(arr); i++) {
+            printf("[%d] ", arr[i]);
+        }
     }
     puts("");
     destroy(arr);
@@ -64,25 +76,43 @@ void cstl_vector_test2(void) {
     VECTOR(int*) matrix = new_vector(int*);
     const size_type64 sz = 7;
     assign(matrix, sz);
-    for (int i = 0; i < size(matrix); i++) {
-        matrix[i] = new_vector(int);
-        assign(matrix[i], sz);
-    }
-
-    for (int i = 0; i < size(matrix); i++) {
-        for (int j = 0; j < size(matrix[i]); j++) {
-            matrix[i][j] = i * j;
+    {
+        int i;
+        for (i = 0; i < size(matrix); i++) {
+            matrix[i] = new_vector(int);
+            assign(matrix[i], sz);
         }
     }
-    for (int i = 0; i < size(matrix); i++) {
-        for (int j = 0; j < size(matrix[i]); j++) {
-            printf("[%3d]", matrix[i][j]);
+
+    {
+        int i;
+        for (i = 0; i < size(matrix); i++) {
+            {
+                int j;
+                for (j = 0; j < size(matrix[i]); j++) {
+                    matrix[i][j] = i * j;
+                }
+            }
         }
-        puts("");
+    }
+    {
+        int i;
+        for (i = 0; i < size(matrix); i++) {
+            {
+                int j;
+                for (j = 0; j < size(matrix[i]); j++) {
+                    printf("[%3d]", matrix[i][j]);
+                }
+            }
+            puts("");
+        }
     }
 
-    for (int i = 0; i < size(matrix); i++) {
-        destroy(matrix[i]);
+    {
+        int i;
+        for (i = 0; i < size(matrix); i++) {
+            destroy(matrix[i]);
+        }
     }
     destroy(matrix);
 }
@@ -92,17 +122,23 @@ void cstl_vector_test3(void) {
     VECTOR(int) vec = new_vector(int);
     const size_type N = 50;
     assign(vec, N);
-    for (int i = 0; i < N; i++) {
-        push_back(vec, mt19937.randint(-10, 10));
+    {
+        int i;
+        for (i = 0; i < N; i++) {
+            push_back(vec, mt19937.randint(-10, 10));
+        }
     }
     sort(vec);
     //pmsort(vec, size(vec), sizeof(int), LESS(int));
-    for (int i = 0; i < size(vec); i++) {
-        printf("[%d]", vec[i]);
-        if (i < size(vec) - 1) {
-            putchar(',');
-        } else {
-            putchar('\n');
+    {
+        int i;
+        for (i = 0; i < size(vec); i++) {
+            printf("[%d]", vec[i]);
+            if (i < size(vec) - 1) {
+                putchar(',');
+            } else {
+                putchar('\n');
+            }
         }
     }
 
@@ -119,13 +155,19 @@ void cstl_vector_test3(void) {
 void cstl_vector_test4(void) {
     MsgBoxCLI("OpenCSTL / VECTOR TEST04");
     VECTOR(int) v = new_vector(int);
-    for (int i = 0; i < 100; i++) {
-        push_back(v, i);
-        printf("%d : %d\n",size(v),capacity(v));
+    {
+        int i;
+        for (i = 0; i < 100; i++) {
+            push_back(v, i);
+            printf("%d : %d\n",size(v),capacity(v));
+        }
     }
     reverse(v);
-    for (int *it = begin(v); it != end(v); it = next(it)) {
-        printf("[%d]", *it);
+    {
+        int *it;
+        for (it = begin(v); it != end(v); it = next(it)) {
+            printf("[%d]", *it);
+        }
     }
     putchar('\n');
     destroy(v);
@@ -135,8 +177,11 @@ void cstl_list_test01(void) {
     MsgBoxCLI("OpenCSTL / LIST TEST01");
     LIST(int) list = new_list(int);
 
-    for (int i = 0; i < 10; i++) {
-        push_back(list, i);
+    {
+        int i;
+        for (i = 0; i < 10; i++) {
+            push_back(list, i);
+        }
     }
     ///[0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
     printf("list size: %d\n", size(list));
@@ -149,9 +194,12 @@ void cstl_list_test01(void) {
     ///[777] [0] [1] [2] [3] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
     erase(list, find(list, 2), find(list, 999));
     ///[777] [0] [1] [999] [999] [999] [999] [999] [4] [5] [6] [7] [8]
-    for (int *it = begin(list); it != end(list); it = next(it)) {
-        printf("[%d] ", *it);
-        //print("[{}]->", *it);
+    {
+        int *it;
+        for (it = begin(list); it != end(list); it = next(it)) {
+            printf("[%d] ", *it);
+            //print("[{}]->", *it);
+        }
     }
     puts("[NULL]");
 
@@ -167,17 +215,23 @@ void cstl_list_test01(void) {
     resize(list, 0);
     printf("list size: %d\n", size(list));
 
-    for (int i = 0; i < 50; i++) {
-        int val = mt19937.randint(0, 1000);
-        push_back(list, val);
+    {
+        int i;
+        for (i = 0; i < 50; i++) {
+            int val = mt19937.randint(0, 1000);
+            push_back(list, val);
+        }
     }
 
 
     sort(list);
 
     logging.info("list size: %d", size(list));
-    for (int *it = begin(list); it != end(list); it = next(it)) {
-        printf("[%d]->", *it);
+    {
+        int *it;
+        for (it = begin(list); it != end(list); it = next(it)) {
+            printf("[%d]->", *it);
+        }
     }
     puts("[NULL]");
 
@@ -189,19 +243,28 @@ void cstl_list_test01(void) {
 void cstl_set_test01(void) {
     MsgBoxCLI("OpenCSTL / SET TEST01");
     SET(float) tree = new_set(float);
-    for (float i = 0; i < 100; i++) {
-        insert(tree, i);
+    {
+        float i;
+        for (i = 0; i < 100; i++) {
+            insert(tree, i);
+        }
     }
 
     /// [0.0] [1.0] ... [98.0] [99.0]
-    for (float i = 50; i < 70; i++) {
-        float *it = find(tree, i);
-        erase(tree, it);
+    {
+        float i;
+        for (i = 50; i < 70; i++) {
+            float *it = find(tree, i);
+            erase(tree, it);
+        }
     }
 
     /// [0] [1] ... [48] [49] [70] [71] ... [98] [99]
-    for (float *it = begin(tree); it != end(tree); it = next(it)) {
-        printf("[%f]", *it);
+    {
+        float *it;
+        for (it = begin(tree); it != end(tree); it = next(it)) {
+            printf("[%f]", *it);
+        }
     }
     puts("");
     printf("size : %d\n", size(tree));
@@ -211,18 +274,27 @@ void cstl_set_test01(void) {
 void cstl_map_test01(void) {
     MsgBoxCLI("OpenCSTL / MAP TEST01");
     MAP(int) tree = new_map(int, double);
-    for (int i = 0; i < 10; i++) {
-        double d = (double) i * i;
-        insert(tree, i, d);
+    {
+        int i;
+        for (i = 0; i < 10; i++) {
+            double d = (double) i * i;
+            insert(tree, i, d);
+        }
     }
     ///[0]{0} [1]{1} [2]{4} [3]{9} [4]{16} [5]{25} [6]{36} [7]{49} [8]{64} [9]{81}
-    for (int i = 0; i < 10; i += 2) {
-        int *it = find(tree, i);
-        erase(tree, it);
+    {
+        int i;
+        for (i = 0; i < 10; i += 2) {
+            int *it = find(tree, i);
+            erase(tree, it);
+        }
     }
     ///[1]{1} [3]{9} [5]{25} [7]{49} [9]{81}
-    for (int *it = begin(tree); it != end(tree); it = next(it)) {
-        printf("[%1d]{%.1f} ", first(it), second(it, double));
+    {
+        int *it;
+        for (it = begin(tree); it != end(tree); it = next(it)) {
+            printf("[%1d]{%.1f} ", first(it), second(it, double));
+        }
     }
     puts("");
     printf("size : %d\n", size(tree));
@@ -234,9 +306,12 @@ void cstl_map_test02(void) {
     void *p = LESS(short);
     printf("rows: %d\ncols: %d\n", data.rows, data.cols);
 
-    for (int i = 0; i < data.rows; i++) {
-        //puts(data.table[i][0]);
-        printf("[%d][%s]\n", i, data.table[i][1]);
+    {
+        int i;
+        for (i = 0; i < data.rows; i++) {
+            //puts(data.table[i][0]);
+            printf("[%d][%s]\n", i, data.table[i][1]);
+        }
     }
     destroy(data);
 }
@@ -244,19 +319,28 @@ void cstl_map_test02(void) {
 void cstl_deque_test01(void) {
     MsgBoxCLI("OpenCSTL / DEQUE TEST01");
     DEQUE(int) deque = new_deque(int);
-    for (int i = 0; i < 10; i++) {
-        push_back(deque, i);
+    {
+        int i;
+        for (i = 0; i < 10; i++) {
+            push_back(deque, i);
+        }
     }
     printf("deque pb size: %d\n", size(deque));
-    for (int i = 0; i < 10; i++) {
-        push_front(deque, i);
+    {
+        int i;
+        for (i = 0; i < 10; i++) {
+            push_front(deque, i);
+        }
     }
     printf("deque pf size: %d\n", size(deque));
     // for (int i = 0; i < size(deque); i++) {
     //     printf("[%3d]", deque[i]);
     // }
-    for (int *it = begin(deque); it != end(deque); it = next(it)) {
-        printf("[%d]", *it);
+    {
+        int *it;
+        for (it = begin(deque); it != end(deque); it = next(it)) {
+            printf("[%d]", *it);
+        }
     }
     puts("");
 
@@ -267,15 +351,21 @@ void cstl_deque_test01(void) {
     assign(deque, 5);
     ///[0] [0] [0] [0] [0]
     printf("size: %d\n", size(deque));
-    for (int i = 0; i < size(deque); i++) {
-        printf("[%d] ", deque[i]);
+    {
+        int i;
+        for (i = 0; i < size(deque); i++) {
+            printf("[%d] ", deque[i]);
+        }
     }
     puts("");
     assign(deque, 5, 7);
     resize(deque, 10);
     ///[7] [7] [7] [7] [7]
-    for (int i = 0; i < size(deque); i++) {
-        printf("[%d] ", deque[i]);
+    {
+        int i;
+        for (i = 0; i < size(deque); i++) {
+            printf("[%d] ", deque[i]);
+        }
     }
     puts("");
 
@@ -286,12 +376,18 @@ void cstl_deque_test01(void) {
 void cstl_stack_test01(void) {
     MsgBoxCLI("OpenCSTL / STACK TEST01");
     STACK(int) stack = new_stack(int);
-    for (int i = 0; i < 10; i++) {
-        push(stack, i);
+    {
+        int i;
+        for (i = 0; i < 10; i++) {
+            push(stack, i);
+        }
     }
-    for (int i = 0; i < 10; i++) {
-        printf("[%3d]", top(stack));
-        pop(stack);
+    {
+        int i;
+        for (i = 0; i < 10; i++) {
+            printf("[%3d]", top(stack));
+            pop(stack);
+        }
     }
     puts("");
     destroy(stack);
@@ -300,12 +396,18 @@ void cstl_stack_test01(void) {
 void cstl_queue_test01(void) {
     MsgBoxCLI("OpenCSTL / QUEUE TEST01");
     QUEUE(int) queue = new_queue(int);
-    for (int i = 0; i < 100; i++) {
-        push(queue, i);
+    {
+        int i;
+        for (i = 0; i < 100; i++) {
+            push(queue, i);
+        }
     }
-    for (int i = 0; i < 100; i++) {
-        printf("[%3d]", front(queue));
-        pop(queue);
+    {
+        int i;
+        for (i = 0; i < 100; i++) {
+            printf("[%3d]", front(queue));
+            pop(queue);
+        }
     }
     puts("");
     destroy(queue);
@@ -314,8 +416,11 @@ void cstl_queue_test01(void) {
 void cstl_priority_queue_test01(void) {
     MsgBoxCLI("OpenCSTL / PRIORITY_QUEUE TEST01");
     QUEUE(int) queue = new_priority_queue(int);
-    for (int i = 0; i < 10; i++) {
-        push(queue, i);
+    {
+        int i;
+        for (i = 0; i < 10; i++) {
+            push(queue, i);
+        }
     }
     while (!empty(queue)) {
         printf("[%3d]", top(queue));
@@ -350,14 +455,17 @@ int *dijkstra(Edge **vec, int beg) {
         Edge e = top(pqueue);
         pop(pqueue);
         int end = size(vec[e.to]);
-        for (int i = 0; i < end; i++) {
-            int *a = &d[vec[e.to][i].to];
-            int b = d[e.to];
-            int c = vec[e.to][i].cost;
-            if (*a > b + c) {
-                *a = b + c;
-                int value = vec[e.to][i].to;
-                push(pqueue, make_edge(*a, value));
+        {
+            int i;
+            for (i = 0; i < end; i++) {
+                int *a = &d[vec[e.to][i].to];
+                int b = d[e.to];
+                int c = vec[e.to][i].cost;
+                if (*a > b + c) {
+                    *a = b + c;
+                    int value = vec[e.to][i].to;
+                    push(pqueue, make_edge(*a, value));
+                }
             }
         }
     }
@@ -369,8 +477,11 @@ void cstl_priority_queue_test02(void) {
     MsgBoxCLI("OpenCSTL / PRIORITY_QUEUE TEST02");
     Edge **vec = new_vector(Edge*);
     assign(vec, 7);
-    for (int i = 0; i < size(vec); i++) {
-        vec[i] = new_vector(Edge);
+    {
+        int i;
+        for (i = 0; i < size(vec); i++) {
+            vec[i] = new_vector(Edge);
+        }
     }
     push_back(vec[1], make_edge(10, 2));
     push_back(vec[1], make_edge(30, 3));
@@ -383,12 +494,18 @@ void cstl_priority_queue_test02(void) {
     push_back(vec[6], make_edge(20, 4));
 
     int *d = dijkstra(vec, 1);
-    for (int i = 0; i < size(d); i++) {
-        printf("%d\n", d[i]);
+    {
+        int i;
+        for (i = 0; i < size(d); i++) {
+            printf("%d\n", d[i]);
+        }
     }
     destroy(d);
-    for (int i = 0; i < size(vec); i++) {
-        destroy(vec[i]);
+    {
+        int i;
+        for (i = 0; i < size(vec); i++) {
+            destroy(vec[i]);
+        }
     }
     destroy(vec);
 }
@@ -397,24 +514,33 @@ void cstl_unordered_set_test01(void) {
     MsgBoxCLI("OpenCSTL / UNORDERED_SET TEST01");
     UNORDERED_SET(int) h = new_unordered_set(int);
 
-    for (int i = 1; i < 100; i++) {
-        insert(h, i);
+    {
+        int i;
+        for (i = 1; i < 100; i++) {
+            insert(h, i);
+        }
     }
 
     size_type64 capacity_max = capacity(h);
 
-    for (int i = 0; i < (int) capacity_max; i++) {
-        int k = h[i];
-        if (k == 0) {
-            printf("[---]");
-        } else {
-            printf("[%3d]", k);
+    {
+        int i;
+        for (i = 0; i < (int) capacity_max; i++) {
+            int k = h[i];
+            if (k == 0) {
+                printf("[---]");
+            } else {
+                printf("[%3d]", k);
+            }
         }
     }
 
     printf("\n=============================================\n");
-    for (int *it = rbegin(h); it != rend(h); it = (int *) prev(it)) {
-        printf("[%3d]", *it);
+    {
+        int *it;
+        for (it = rbegin(h); it != rend(h); it = (int *) prev(it)) {
+            printf("[%3d]", *it);
+        }
     }
     printf("\n");
     destroy(h);
@@ -424,8 +550,11 @@ void cstl_unordered_set_test02(void) {
     MsgBoxCLI("OpenCSTL / UNORDERED_SET TEST02");
     UNORDERED_SET(int) v = new_unordered_set(int);
     double t_beg = ttime();
-    for (int i = 0; i < 500000; ++i) {
-        insert(v, mt19937.randint(0,10000000));
+    {
+        int i;
+        for (i = 0; i < 500000; ++i) {
+            insert(v, mt19937.randint(0,10000000));
+        }
     }
     double t_end = ttime();
     printf("size: %d\n", size(v));
@@ -437,12 +566,15 @@ void cstl_unordered_set_test02(void) {
 void test_bitset(void) {
     MsgBoxCLI("OpenCSTL / BITSET TEST");
     BITSET bs = new_bitset(100);
-    for (int i = 0; i < 100; i++) {
-        bool b = false;
-        if (i % 3 == 0) {
-            b = true;
+    {
+        int i;
+        for (i = 0; i < 100; i++) {
+            bool b = false;
+            if (i % 3 == 0) {
+                b = true;
+            }
+            bitset.set_at(bs, i, b);
         }
-        bitset.set_at(bs, i, b);
     }
     printf("count: %d\n", bitset.count(bs));
     puts(bitset.to_string(bs));
@@ -457,8 +589,11 @@ void test_string(void) {
     int *pos = string.kmp(s, p, &count);
 
 
-    for (int i = 0; i < count; i++) {
-        printf("%d\n", pos[i]);
+    {
+        int i;
+        for (i = 0; i < count; i++) {
+            printf("%d\n", pos[i]);
+        }
     }
     char *r = string.reverse(s);
     printf("%s\n", r);
@@ -504,11 +639,17 @@ void test03(void) {
     file.close(fp);
 
 
-    for (int i = 0; i < size(words); i++) {
-        logging.info(words[i]);
+    {
+        int i;
+        for (i = 0; i < size(words); i++) {
+            logging.info(words[i]);
+        }
     }
-    for (int i = 0; i < size(words); i++) {
-        free(words[i]);
+    {
+        int i;
+        for (i = 0; i < size(words); i++) {
+            free(words[i]);
+        }
     }
     destroy(words);
 }

@@ -271,7 +271,7 @@ static void __cstl_glob_parse_(const char *pat,
     char **segs = (char **) malloc(cap * sizeof(char *));
 
     const char *start = rest;
-    for (const char *p = rest; ; p++) {
+    { const char * p; for (p = rest; ; p++) {
         if (__cstl_glob_is_sep(*p) || *p == '\0') {
             size_type64 sl = (size_type64) (p - start);
             if (sl > 0) {
@@ -287,7 +287,7 @@ static void __cstl_glob_parse_(const char *pat,
             if (*p == '\0') break;
             start = p + 1;
         }
-    }
+    } }
 
     *base_out = base;
     *segs_out = segs;
@@ -331,7 +331,7 @@ static void __cstl_glob_walk_(const char *base,
         __cstl_glob_walk_(base, segs, i + 1, n, recursive, out);
         int dn;
         char **dnames = __cstl_glob_listdir_(base, &dn);
-        for (int k = 0; k < dn; k++) {
+        { int k; for (k = 0; k < dn; k++) {
             if (dnames[k][0] != '.') {
                 char *sub = __cstl_glob_join_(base, dnames[k]);
                 if (__cstl_glob_isdir_(sub)) {
@@ -340,7 +340,7 @@ static void __cstl_glob_walk_(const char *base,
                 free(sub);
             }
             free(dnames[k]);
-        }
+        } }
         free(dnames);
         return;
     }
@@ -361,7 +361,7 @@ static void __cstl_glob_walk_(const char *base,
     int dn;
     char **dnames = __cstl_glob_listdir_(base, &dn);
     bool pat_starts_dot = (seg[0] == '.');
-    for (int k = 0; k < dn; k++) {
+    { int k; for (k = 0; k < dn; k++) {
         if (dnames[k][0] == '.' && !pat_starts_dot) {
             free(dnames[k]);
             continue;
@@ -376,7 +376,7 @@ static void __cstl_glob_walk_(const char *base,
             free(full);
         }
         free(dnames[k]);
-    }
+    } }
     free(dnames);
 }
 
@@ -395,7 +395,7 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
     __cstl_glob_result_ r = {0};
     __cstl_glob_walk_(base, segs, 0, n_segs, recursive, &r);
 
-    for (int i = 0; i < n_segs; i++) free(segs[i]);
+    { int i; for (i = 0; i < n_segs; i++) free(segs[i]); }
     free(segs);
     free(base);
 
@@ -408,16 +408,16 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
     r.items[r.cnt] = NULL;
 
     // Normalize paths: backslash → forward slash, strip leading "./"
-    for (int i = 0; i < r.cnt; i++) {
+    { int i; for (i = 0; i < r.cnt; i++) {
         char *s = r.items[i];
-        for (char *p = s; *p; p++) {
+        { char * p; for (p = s; *p; p++) {
             if (*p == '\\') *p = '/';
-        }
+        } }
         if (s[0] == '.' && s[1] == '/') {
             size_type64 l = strlen(s);
             memmove(s, s + 2, l - 1); // includes '\0'
         }
-    }
+    } }
     bool iveb_init = false;
     if (iveb == NULL) {
         iveb = iveb_new();
@@ -432,7 +432,7 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
 
 static void __glob_free(char **results) {
     if (!results) return;
-    for (char **p = results; *p; p++) free(*p);
+    { char ** p; for (p = results; *p; p++) free(*p); }
     iveb_erase(iveb,results);
     free(results);
 }

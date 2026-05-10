@@ -53,11 +53,11 @@ OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
     }
     return htm_find(htm, it) != NULL;
 #else
-    for (size_type64 i = 0; i < htm_length; i++) {
+    { size_type64 i; for (i = 0; i < htm_length; i++) {
         if (htm[i].p1 <= it && it < htm[i].p2) {
             return true;
         }
-    }
+    } }
     return false;
 #endif
 }
