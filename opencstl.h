@@ -2708,7 +2708,7 @@ static CSTL_COMPARE CSTL_LESS(const char *type_str) {
     const char *end = type_str + strlen(type_str);
     while (end > type_str && *(end - 1) == ' ') end--;
     char buf[256];
-    size_type64 len = end - type_str;
+    size_t len = (end > type_str) ? (size_t)(end - type_str) : 0;
     if (len >= sizeof(buf)) return NULL;
     memcpy(buf, type_str, len);
     buf[len] = '\0';
@@ -2727,7 +2727,7 @@ static CSTL_COMPARE CSTL_GREATER(const char *type_str) {
     const char *end = type_str + strlen(type_str);
     while (end > type_str && *(end - 1) == ' ') end--;
     char buf[256];
-    size_type64 len = end - type_str;
+    size_t len = (end > type_str) ? (size_t)(end - type_str) : 0;
     if (len >= sizeof(buf)) return NULL;
     memcpy(buf, type_str, len);
     buf[len] = '\0';
@@ -2767,7 +2767,7 @@ static CSTL_COMPARE_BYTES CSTL_EQUALS(const char *type_str) {
     const char *end = type_str + strlen(type_str);
     while (end > type_str && *(end - 1) == ' ') end--;
     char buf[256];
-    size_type64 len = end - type_str;
+    size_t len = (end > type_str) ? (size_t)(end - type_str) : 0;
     if (len >= sizeof(buf)) return NULL;
     memcpy(buf, type_str, len);
     buf[len] = '\0';
