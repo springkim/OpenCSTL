@@ -9,7 +9,7 @@
  - [x] Bitset
  - [x] String
  - [ ] re
- - [ ] json
+ - [x] json
  - [ ] html
  - [ ] xml
  - [ ] csv

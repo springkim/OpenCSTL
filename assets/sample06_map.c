@@ -4,7 +4,7 @@ int main() {
     char *containers[] = {
         "vector", "list", "set", "map", "stack", "queue", "priority_queue", "unordered_map", "unordered_set"
     };
-    size_t len = sizeof(containers) / sizeof(containers[0]);
+    size_type64 len = sizeof(containers) / sizeof(containers[0]);
     printf("Number of elements: %d\n", len);
     
     MAP(int) d = new_map(int, char*, NULL);

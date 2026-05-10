@@ -2,7 +2,6 @@
 #include "opencstl/opencstl.h"
 #include "gmp.h"
 
-// mpz_t → 문자열 출력 헬퍼
 static void mpz_print(const char *label, mpz_t n) {
     char *s = mpz_get_str(NULL, 10, n);
     printf("%s%s\n", label, s);

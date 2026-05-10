@@ -108,7 +108,7 @@ int main() {
     puts(OCSTL_CC_STR);
     puts(OCSTL_C_VERSION_STR);
     puts(OCSTL_OPTIMIZED_STR);
-    if (sizeof(void*)==4) {
+    if (sizeof(void *) == 4) {
         puts("32bit");
     } else {
         puts("64bit");
@@ -122,6 +122,7 @@ int main() {
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #if defined(OCSTL_OS_WINDOWS)
 #include <windows.h>
 #elif defined(OCSTL_OS_MACOS)
@@ -7533,6 +7534,7 @@ static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMP
 #define _OPENCSTL_PMSORT_H
 #ifndef OPENCSTL_PTHREAD_H
 #define OPENCSTL_PTHREAD_H
+#include<string.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -9566,15 +9568,15 @@ static void __glob_free(char **results) {
 #include <string.h>
 #include <stdarg.h>
 #if defined(OCSTL_OS_WINDOWS)
-#include <windows.h>
+    #include <windows.h>
 #endif
 static void MsgBoxCLI(const char *format, ...) {
 #if defined(OCSTL_CC_MSVC)
     SetConsoleOutputCP(CP_UTF8);
-#elif defined(OCSTL_CC_TCC)
-#ifdef OCSTL_OS_WINDOWS
-    SetConsoleOutputCP(65001);
-#endif
+#else
+    #ifdef OCSTL_OS_WINDOWS
+        SetConsoleOutputCP(65001);
+    #endif
     setvbuf(stdout, NULL, _IONBF, 0);
 #endif
     int width = 80;

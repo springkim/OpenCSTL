@@ -1,8 +1,8 @@
 import os
 
-N = 128
+N = 512
 for i in range(1, N + 1):
-    c_func = f'int _memcmp{i}(const void *a, const void *b) {{ return memcmp(a, b, {i}); }}'
+    c_func = f'static int _memcmp{i}(const void *a, const void *b) {{ return memcmp(a, b, {i}); }}'
     print(c_func)
 
 print(f'_OpenCSTLCompareFunc _memcmp_funcs[{N+1}]={{')
