@@ -168,12 +168,16 @@ typedef long long _opencstl_ll_ua;
 #define cstl_pop_front(container)	_cstl_pop_front(&(container))
 #define cstl_size(container)	    _cstl_size(&(container))
 #define cstl_capacity(container)	_cstl_capacity(&(container))
+
+
 #define cstl_next(iterator)	        _cstl_next(iterator)
 #define cstl_prev(iterator)	        _cstl_prev(iterator)
 #define cstl_begin(container)	    _cstl_begin(&(container))
 #define cstl_rbegin(container)	    _cstl_rbegin(&(container))
 #define cstl_end(container)	        _cstl_end(&(container))
 #define cstl_rend(container)	    _cstl_rend(&(container))
+
+
 #define cstl_clear(container)	    _cstl_clear(&(container))
 #define cstl_empty(container)	    _cstl_empty(&(container))
 #define cstl_free(container)	    _cstl_free(&(container))

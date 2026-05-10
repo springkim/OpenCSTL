@@ -34,7 +34,7 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#pragma once
+
 #ifndef HG_B3857317B6F909AAF025A5EE1CA7602C70A9E539A3A0FBCF3FB0BD10FDD835B7_H
 #define HG_B3857317B6F909AAF025A5EE1CA7602C70A9E539A3A0FBCF3FB0BD10FDD835B7_H
 
@@ -178,6 +178,7 @@ int main() {
         puts("64bit");
     }
     puts(LANGUAGE);
+
 }
 #endif
 #endif

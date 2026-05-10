@@ -70,7 +70,8 @@ static void zinsert(void *ptr, char *file, const char *func, int line) {
 }
 
 static void zremove(void *ptr) {
-    for (size_type64 i = 0; i < zalloc_size; i++) {
+    size_type64 i = 0;
+    for (i = 0; i < zalloc_size; i++) {
         if (zmem[i].ptr == ptr) {
             memmove(zmem + i, zmem + i + 1, (zalloc_size - i - 1) * sizeof(ZMEM));
             zalloc_size--;
@@ -91,8 +92,8 @@ static void zremove(void *ptr) {
 static void opencstl_exit(void) {
     if (zalloc_size > 0) {
         logging.warning("%d memory blocks were not released", zalloc_size);
-
-        for (size_type64 i = 0; i < zalloc_size; i++) {
+        size_type64 i = 0;
+        for (i = 0; i < zalloc_size; i++) {
             logging.debug("%p: %s, %s, %d", zmem[i].ptr, zmem[i].file, zmem[i].func, zmem[i].line);
         }
     }

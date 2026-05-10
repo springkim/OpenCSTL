@@ -1473,8 +1473,8 @@ void giveb_insert(GIntervalVEB *iv, void *a, void *b, int type_size) {
         giveb_hm_set(iv->data, k, it);
         giveb_veb_ins(iv->veb, k);
     }
-    it->p1 = a;
-    it->p2 = b;
+    it->p1 = (unsigned char*)a;
+    it->p2 = (unsigned char*)b;
     it->type_size = type_size;
 }
 void giveb_erase(GIntervalVEB *iv, void *a) {
@@ -2793,7 +2793,7 @@ OPENCSTL_FUNC size_type64 __opencstl_container_type(void **container, ptrdiff_t 
     }
     return *(_opencstl_ll_ua *) ((char *) *container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + *distance);
 }
-#define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
+#define cstl_deque(TYPE) (TYPE*)__cstl_deque(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_deque(size_type64 type_size, char *type) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *block = calloc(header_sz + type_size * 2, 1);
@@ -3278,7 +3278,7 @@ static int get_new_capacity(int _capacity) {
     return (int) grown;
 }
 #endif
-#define cstl_vector(TYPE)	__cstl_vector(sizeof(TYPE),#TYPE)
+#define cstl_vector(TYPE)	(TYPE*)__cstl_vector(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_vector(size_type64 type_size, char *type) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *block = calloc(header_sz + type_size, 1);
@@ -4187,7 +4187,7 @@ OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_type64 type_s
 #define _CSTL_SET_EXPAND(x) x
 #define cstl_set         _cstl_set
 #define _cstl_set(...)	    _CSTL_SET_EXPAND(_CSTL_SET_DISPATCH(__VA_ARGS__, NULL, NULL))
-#define _CSTL_SET_DISPATCH(KEY, COMP, ...) __cstl_set(sizeof(KEY),#KEY,(void*)(COMP))
+#define _CSTL_SET_DISPATCH(KEY, COMP, ...) (KEY**)__cstl_set(sizeof(KEY),#KEY,(void*)(COMP))
 OPENCSTL_FUNC void *__cstl_set(size_type64 key_size, char *type_key, void *compare) {
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * NIDX_TREE_NODE_SIZE;
@@ -4213,7 +4213,7 @@ OPENCSTL_FUNC void *__cstl_set(size_type64 key_size, char *type_key, void *compa
 #define _CSTL_MAP_EXPAND(x) x
 #define cstl_map         _cstl_map
 #define _cstl_map(...)	_CSTL_MAP_EXPAND(_CSTL_MAP_DISPATCH(__VA_ARGS__, NULL, NULL))
-#define _CSTL_MAP_DISPATCH(KEY, VALUE, COMP, ...) __cstl_map(sizeof(KEY), sizeof(VALUE), #KEY, #VALUE, (void*)(COMP))
+#define _CSTL_MAP_DISPATCH(KEY, VALUE, COMP, ...) (KEY**)__cstl_map(sizeof(KEY), sizeof(VALUE), #KEY, #VALUE, (void*)(COMP))
 OPENCSTL_FUNC void *__cstl_map(size_type64 key_size, size_type64 value_size, char *type_key, char *type_value, void *compare) {
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * 5;
@@ -4536,7 +4536,7 @@ OPENCSTL_FUNC size_type __cstl_tree_size(void **container) {
 #endif
 #if !defined(_OPENCSTL_STACK_H)
 #define _OPENCSTL_STACK_H
-#define cstl_stack(TYPE)	__cstl_stack(sizeof(TYPE),#TYPE)
+#define cstl_stack(TYPE)	(TYPE*)__cstl_stack(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_stack(size_type64 type_size, char *type) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + type_size * 2) + header_sz;
@@ -4566,7 +4566,7 @@ OPENCSTL_FUNC void *__cstl_stack(size_type64 type_size, char *type) {
 #error "No Alloca Function"
 #endif
 #endif
-#define cstl_queue(TYPE)	__cstl_queue(sizeof(TYPE),#TYPE)
+#define cstl_queue(TYPE)	(TYPE*)__cstl_queue(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_queue(size_type64 type_size, char *type) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + type_size * 2) + header_sz;
@@ -4584,7 +4584,7 @@ OPENCSTL_FUNC void *__cstl_queue(size_type64 type_size, char *type) {
 }
 #define _CSTL_PQ_EXPAND(x) x
 #define cstl_priority_queue(...)	_CSTL_PQ_EXPAND(_CSTL_PQ_DISPATCH(__VA_ARGS__, NULL, NULL))
-#define _CSTL_PQ_DISPATCH(TYPE, COMP, ...) __cstl_priority_queue(sizeof(TYPE),#TYPE,(void*)(COMP))
+#define _CSTL_PQ_DISPATCH(TYPE, COMP, ...) (TYPE*)__cstl_priority_queue(sizeof(TYPE),#TYPE,(void*)(COMP))
 OPENCSTL_FUNC void *__cstl_priority_queue(size_type64 type_size, char *type, void *compare) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + type_size * 1) + header_sz;
@@ -5120,7 +5120,7 @@ void __cstl_hashtable_reserve(void **container, size_type64 n) {
 #define _CSTL_USET_EXPAND(x) x
 #define cstl_unordered_set _cstl_unordered_set
 #define _cstl_unordered_set(...) _CSTL_USET_EXPAND(_CSTL_USET_DISPATCH(__VA_ARGS__, NULL, NULL))
-#define _CSTL_USET_DISPATCH(KEY, FUNC, ...) __cstl_unordered_set(sizeof(KEY),#KEY,(void*)(FUNC))
+#define _CSTL_USET_DISPATCH(KEY, FUNC, ...) (KEY*)__cstl_unordered_set(sizeof(KEY),#KEY,(void*)(FUNC))
 OPENCSTL_FUNC
 void *__cstl_unordered_set(size_type64 key_size, const char *type_key, void *hash_func) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
@@ -5154,7 +5154,7 @@ void *__cstl_unordered_set(size_type64 key_size, const char *type_key, void *has
 #define _CSTL_UMAP_EXPAND(x) x
 #define cstl_unordered_map(...) _CSTL_UMAP_EXPAND(_CSTL_UMAP_DISPATCH(__VA_ARGS__, NULL, NULL))
 #define _cstl_unordered_map(...) _CSTL_UMAP_EXPAND(_CSTL_UMAP_DISPATCH(__VA_ARGS__, NULL, NULL))
-#define _CSTL_UMAP_DISPATCH(KEY,VALUE,FUNC,...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,(void*)(FUNC))
+#define _CSTL_UMAP_DISPATCH(KEY,VALUE,FUNC,...) (KEY*)__cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,(void*)(FUNC))
 OPENCSTL_FUNC
 void *__cstl_unordered_map(size_type64 key_size, size_type64 value_size,
                            const char *type_key, const char *type_value,
@@ -12080,7 +12080,7 @@ OPENCSTL_FUNC void _cstl_free(void *container) {
                 __free_json((JSON *) *tmp);
                 goto _BYE_;
             } else if (iv->ctype == CT_GLOB) {
-                __glob_free(*tmp);
+                __glob_free((char**)*tmp);
                 goto _BYE_;
             } else if (iv->ctype == CT_CSV) {
                 __free_csv((CSV *) tmp);

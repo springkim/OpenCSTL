@@ -449,23 +449,24 @@ char *__mt19937_uuid(void) {
 
     int p = 0;
     // time_low: 8자 (hi >> 32)
-    for (int i = 60; i >= 32; i -= 4)
+    int i = 0;
+    for (i = 60; i >= 32; i -= 4)
         buf[p++] = hex[(hi >> i) & 0xF];
     buf[p++] = '-';
     // time_mid: 4자 (hi >> 16)
-    for (int i = 28; i >= 16; i -= 4)
+    for (i = 28; i >= 16; i -= 4)
         buf[p++] = hex[(hi >> i) & 0xF];
     buf[p++] = '-';
     // time_hi_and_version: 4자 (hi >> 0)
-    for (int i = 12; i >= 0; i -= 4)
+    for (i = 12; i >= 0; i -= 4)
         buf[p++] = hex[(hi >> i) & 0xF];
     buf[p++] = '-';
     // clock_seq: 4자 (lo >> 48)
-    for (int i = 60; i >= 48; i -= 4)
+    for (i = 60; i >= 48; i -= 4)
         buf[p++] = hex[(lo >> i) & 0xF];
     buf[p++] = '-';
     // node: 12자 (lo >> 0)
-    for (int i = 44; i >= 0; i -= 4)
+    for (i = 44; i >= 0; i -= 4)
         buf[p++] = hex[(lo >> i) & 0xF];
 
     buf[36] = '\0';
@@ -596,8 +597,8 @@ BOOLEAN NTAPI RtlGenRandom(PVOID RandomBuffer, ULONG RandomBufferLength);
 static uint64_t random_device(void) {
     uint64_t val = 0;
 #if defined(OCSTL_CC_TCC)
-    val  = (uint64_t)time(NULL);
-    val ^= (uint64_t)(uintptr_t)&val;       // 스택 주소 XOR
+    val = (uint64_t) time(NULL);
+    val ^= (uint64_t) (uintptr_t) &val; // 스택 주소 XOR
     val ^= val << 21;
     val ^= val >> 35;
     val ^= val << 4;

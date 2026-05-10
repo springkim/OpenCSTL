@@ -68,7 +68,7 @@ OPENCSTL_FUNC size_type64 __opencstl_container_type(void **container, ptrdiff_t 
     return *(_opencstl_ll_ua *) ((char *) *container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + *distance);
 }
 
-#define cstl_deque(TYPE) __cstl_deque(sizeof(TYPE),#TYPE)
+#define cstl_deque(TYPE) (TYPE*)__cstl_deque(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_deque(size_type64 type_size, char *type) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *block = calloc(header_sz + type_size * 2, 1);

@@ -150,7 +150,7 @@ OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_type64 type_s
 #define _CSTL_SET_EXPAND(x) x
 #define cstl_set         _cstl_set
 #define _cstl_set(...)	    _CSTL_SET_EXPAND(_CSTL_SET_DISPATCH(__VA_ARGS__, NULL, NULL))
-#define _CSTL_SET_DISPATCH(KEY, COMP, ...) __cstl_set(sizeof(KEY),#KEY,(void*)(COMP))
+#define _CSTL_SET_DISPATCH(KEY, COMP, ...) (KEY**)__cstl_set(sizeof(KEY),#KEY,(void*)(COMP))
 
 
 OPENCSTL_FUNC void *__cstl_set(size_type64 key_size, char *type_key, void *compare) {
@@ -185,7 +185,7 @@ OPENCSTL_FUNC void *__cstl_set(size_type64 key_size, char *type_key, void *compa
 #define _CSTL_MAP_EXPAND(x) x
 #define cstl_map         _cstl_map
 #define _cstl_map(...)	_CSTL_MAP_EXPAND(_CSTL_MAP_DISPATCH(__VA_ARGS__, NULL, NULL))
-#define _CSTL_MAP_DISPATCH(KEY, VALUE, COMP, ...) __cstl_map(sizeof(KEY), sizeof(VALUE), #KEY, #VALUE, (void*)(COMP))
+#define _CSTL_MAP_DISPATCH(KEY, VALUE, COMP, ...) (KEY**)__cstl_map(sizeof(KEY), sizeof(VALUE), #KEY, #VALUE, (void*)(COMP))
 OPENCSTL_FUNC void *__cstl_map(size_type64 key_size, size_type64 value_size, char *type_key, char *type_value, void *compare) {
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * 5;

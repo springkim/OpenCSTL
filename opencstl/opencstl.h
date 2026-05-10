@@ -822,7 +822,7 @@ OPENCSTL_FUNC void _cstl_free(void *container) {
                 __free_json((JSON *) *tmp);
                 goto _BYE_;
             } else if (iv->ctype == CT_GLOB) {
-                __glob_free(*tmp);
+                __glob_free((char**)*tmp);
                 goto _BYE_;
             } else if (iv->ctype == CT_CSV) {
                 __free_csv((CSV *) tmp);

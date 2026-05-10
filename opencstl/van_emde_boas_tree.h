@@ -91,7 +91,8 @@ static void hm_grow(HashMap *h) {
     h->cap = oc * 2;
     h->e = (HMEntry *) calloc(h->cap, sizeof(HMEntry));
     h->size = 0;
-    for (size_type64 i = 0; i < oc; i++)
+    size_type64 i = 0;
+    for (i = 0; i < oc; i++)
         if (oe[i].used) hm_set(h, oe[i].key, oe[i].val);
     free(oe);
 }
@@ -163,7 +164,8 @@ static VEB *veb_new(int bits) {
 static void veb_free(VEB *v);
 
 static void cls_free_all(HashMap *hm) {
-    for (size_type64 i = 0; i < hm->cap; i++)
+    size_type64 i = 0;
+    for (i = 0; i < hm->cap; i++)
         if (hm->e[i].used) veb_free((VEB *) hm->e[i].val);
     hm_free(hm);
 }
@@ -366,7 +368,8 @@ HTMVEB *htm_new(void) {
 }
 
 void htm_free(HTMVEB *iv) {
-    for (size_type64 i = 0; i < iv->data->cap; i++)
+    size_type64 i = 0;
+    for (i = 0; i < iv->data->cap; i++)
         if (iv->data->e[i].used)
             free(iv->data->e[i].val);
     hm_free(iv->data);
@@ -426,7 +429,8 @@ IntervalVEB *iveb_new(void) {
 
 
 void iveb_free(IntervalVEB *iv) {
-    for (size_type64 i = 0; i < iv->data->cap; i++)
+    size_type64 i = 0;
+    for (i = 0; i < iv->data->cap; i++)
         if (iv->data->e[i].used)
             free(iv->data->e[i].val);
     hm_free(iv->data);
@@ -546,7 +550,8 @@ static void giveb_hm_grow(HashMap *h) {
     h->cap = oc * 2;
     h->e = (HMEntry *) _ocstl_dblock_alloc(h->cap * sizeof(HMEntry));
     h->size = 0;
-    for (size_type64 i = 0; i < oc; i++)
+    size_type64 i = 0;
+    for (i = 0; i < oc; i++)
         if (oe[i].used) giveb_hm_set(h, oe[i].key, oe[i].val);
     _ocstl_dblock_free(oe, oc * sizeof(HMEntry));
 }
@@ -708,8 +713,8 @@ void giveb_insert(GIntervalVEB *iv, void *a, void *b, int type_size) {
         giveb_hm_set(iv->data, k, it);
         giveb_veb_ins(iv->veb, k);
     }
-    it->p1 = a;
-    it->p2 = b;
+    it->p1 = (unsigned char *) a;
+    it->p2 = (unsigned char *) b;
     it->type_size = type_size;
 }
 
@@ -770,7 +775,7 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
     if (veb_empty(iv->veb)) {
         if (sz <= ___OCSTL_512MB) {
             giveb_insert(iv, block_start,
-                         (void *) ((unsigned char *) block_start + sz - 1), (int)type_size);
+                         (void *) ((unsigned char *) block_start + sz - 1), (int) type_size);
             return block_start;
         }
         return NULL;
@@ -783,9 +788,9 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
     if (first) {
         u64 gap_start = (u64) (uintptr_t) block_start;
         u64 gap_end = (u64) (uintptr_t) first->p1;
-        if (gap_end > gap_start && gap_end - gap_start >= (int)sz) {
+        if (gap_end > gap_start && gap_end - gap_start >= (int) sz) {
             void *p = (void *) (uintptr_t) gap_start;
-            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), (int)type_size);
+            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), (int) type_size);
             return p;
         }
     }
@@ -808,9 +813,9 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
         if (gap_end > (u64) (uintptr_t) block_end)
             gap_end = (u64) (uintptr_t) block_end;
 
-        if (gap_end > gap_start && gap_end - gap_start >= (int)sz) {
+        if (gap_end > gap_start && gap_end - gap_start >= (int) sz) {
             void *p = (void *) (uintptr_t) gap_start;
-            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), (int)type_size);
+            giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), (int) type_size);
             return p;
         }
 
@@ -858,7 +863,7 @@ static void *_galloc(size_type64 sz, size_type64 type_size) {
     if (p == NULL) {
         return NULL;
     }
-    giveb_insert(giveb, p, (char *) p + (sz), (int)type_size);
+    giveb_insert(giveb, p, (char *) p + (sz), (int) type_size);
     if (giveb_init) {
         atexit(__opencstl_giveb_destroy);
     }

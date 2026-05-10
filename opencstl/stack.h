@@ -38,7 +38,7 @@
 #define _OPENCSTL_STACK_H
 #include"error.h"
 
-#define cstl_stack(TYPE)	__cstl_stack(sizeof(TYPE),#TYPE)
+#define cstl_stack(TYPE)	(TYPE*)__cstl_stack(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_stack(size_type64 type_size, char *type) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + type_size * 2) + header_sz; // 2 = capacity

@@ -614,7 +614,7 @@ void __cstl_hashtable_reserve(void **container, size_type64 n) {
 #define _CSTL_USET_EXPAND(x) x
 #define cstl_unordered_set _cstl_unordered_set
 #define _cstl_unordered_set(...) _CSTL_USET_EXPAND(_CSTL_USET_DISPATCH(__VA_ARGS__, NULL, NULL))
-#define _CSTL_USET_DISPATCH(KEY, FUNC, ...) __cstl_unordered_set(sizeof(KEY),#KEY,(void*)(FUNC))
+#define _CSTL_USET_DISPATCH(KEY, FUNC, ...) (KEY*)__cstl_unordered_set(sizeof(KEY),#KEY,(void*)(FUNC))
 OPENCSTL_FUNC
 
 void *__cstl_unordered_set(size_type64 key_size, const char *type_key, void *hash_func) {
@@ -660,7 +660,7 @@ void *__cstl_unordered_set(size_type64 key_size, const char *type_key, void *has
 #define _CSTL_UMAP_EXPAND(x) x
 #define cstl_unordered_map(...) _CSTL_UMAP_EXPAND(_CSTL_UMAP_DISPATCH(__VA_ARGS__, NULL, NULL))
 #define _cstl_unordered_map(...) _CSTL_UMAP_EXPAND(_CSTL_UMAP_DISPATCH(__VA_ARGS__, NULL, NULL))
-#define _CSTL_UMAP_DISPATCH(KEY,VALUE,FUNC,...) __cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,(void*)(FUNC))
+#define _CSTL_UMAP_DISPATCH(KEY,VALUE,FUNC,...) (KEY*)__cstl_unordered_map(sizeof(KEY),sizeof(VALUE),#KEY,#VALUE,(void*)(FUNC))
 OPENCSTL_FUNC
 
 void *__cstl_unordered_map(size_type64 key_size, size_type64 value_size,

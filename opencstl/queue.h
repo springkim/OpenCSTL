@@ -42,7 +42,7 @@
 #include"salloc.h"
 
 
-#define cstl_queue(TYPE)	__cstl_queue(sizeof(TYPE),#TYPE)
+#define cstl_queue(TYPE)	(TYPE*)__cstl_queue(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_queue(size_type64 type_size, char *type) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + type_size * 2) + header_sz; // 2 = capacity
@@ -62,7 +62,7 @@ OPENCSTL_FUNC void *__cstl_queue(size_type64 type_size, char *type) {
 
 #define _CSTL_PQ_EXPAND(x) x
 #define cstl_priority_queue(...)	_CSTL_PQ_EXPAND(_CSTL_PQ_DISPATCH(__VA_ARGS__, NULL, NULL))
-#define _CSTL_PQ_DISPATCH(TYPE, COMP, ...) __cstl_priority_queue(sizeof(TYPE),#TYPE,(void*)(COMP))
+#define _CSTL_PQ_DISPATCH(TYPE, COMP, ...) (TYPE*)__cstl_priority_queue(sizeof(TYPE),#TYPE,(void*)(COMP))
 OPENCSTL_FUNC void *__cstl_priority_queue(size_type64 type_size, char *type, void *compare) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
     void *ptr = (char *) malloc(header_sz + type_size * 1) + header_sz;

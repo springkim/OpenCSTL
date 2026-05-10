@@ -140,6 +140,8 @@ OPENCSTL_FUNC void *_cstl_prev(void *it) {
     return NULL;
 }
 
+
+
 OPENCSTL_FUNC void *_cstl_begin(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -303,4 +305,8 @@ OPENCSTL_FUNC void *_cstl_rend(void *container) {
     }
     return NULL;
 }
+
+
+
+
 #endif //OPENCSTL_ITERATOR_H

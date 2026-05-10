@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(OpenCSTL C)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 90)
 #set(CMAKE_CXX_STANDARD 17)
 
 
@@ -28,7 +28,7 @@ add_executable(test_fstream test_fstream.c)
 add_executable(test_logging test_logging.c)
 add_executable(test_string test_string.c)
 add_executable(test_gmp test_gmp.c)
-
+add_executable(cenv cenv.c)
 #if (MSVC)
 #    target_compile_options(test_gmp PRIVATE /W3 /utf-8 /std:c11)
 #else ()
