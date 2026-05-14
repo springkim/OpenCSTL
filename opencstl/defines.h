@@ -180,7 +180,7 @@ typedef long long _opencstl_ll_ua;
 
 #define cstl_clear(container)	    _cstl_clear(&(container))
 #define cstl_empty(container)	    _cstl_empty(&(container))
-#define cstl_free(container)	    _cstl_free(&(container))
+#define cstl_free(container)	    _cstl_free(&(container), sizeof(container))
 // #define cstl_max_capacity(container) _cstl_max_size(&(container))
 //Macro only functions
 

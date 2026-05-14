@@ -34,6 +34,7 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
+#pragma once
 #if !defined(HG_9DA4009D62E5E7D106F7626FEFBC314CAB0144090E5B2F58B01682E31C54BC1A_H)
 #define HG_9DA4009D62E5E7D106F7626FEFBC314CAB0144090E5B2F58B01682E31C54BC1A_H
 #include "types.h"
@@ -202,9 +203,12 @@ static bool __cstl_bitset_all(BITSET b) {
     if (b.nbits == 0) { return true; }
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
-    { size_type i; for (i = 0; i < full_bytes; i++) {
-        if (b.bits[i] != 0xFF) { return false; }
-    } }
+    {
+        size_type i;
+        for (i = 0; i < full_bytes; i++) {
+            if (b.bits[i] != 0xFF) { return false; }
+        }
+    }
     if (rem != 0) {
         ubyte_x mask = (ubyte_x) ((1 << rem) - 1);
         if ((b.bits[full_bytes] & mask) != mask) { return false; }
@@ -217,9 +221,12 @@ static bool __cstl_bitset_any(BITSET b) {
     if (b.nbits == 0) { return false; }
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
-    { size_type i; for (i = 0; i < full_bytes; i++) {
-        if (b.bits[i] != 0) { return true; }
-    } }
+    {
+        size_type i;
+        for (i = 0; i < full_bytes; i++) {
+            if (b.bits[i] != 0) { return true; }
+        }
+    }
     if (rem != 0) {
         ubyte_x mask = (ubyte_x) ((1 << rem) - 1);
         if ((b.bits[full_bytes] & mask) != 0) { return true; }
@@ -236,9 +243,12 @@ static void __cstl_bitset_flip(BITSET b) {
     // 모든 비트를 반전
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
-    { size_type i; for (i = 0; i < full_bytes; i++) {
-        b.bits[i] = ~b.bits[i];
-    } }
+    {
+        size_type i;
+        for (i = 0; i < full_bytes; i++) {
+            b.bits[i] = ~b.bits[i];
+        }
+    }
     if (rem != 0) {
         ubyte_x mask = (ubyte_x) ((1 << rem) - 1);
         b.bits[full_bytes] ^= mask;
@@ -268,10 +278,13 @@ static bool __cstl_bitset_test(BITSET b, size_type idx) {
 
 static char *__cstl_bitset_to_string(BITSET b) {
     // 비트셋을 문자열로 변환 (MSB가 앞, C++ bitset::to_string과 동일)
-    { size_type i; for (i = 0; i < b.nbits; i++) {
-        size_type bit_pos = b.nbits - 1 - i;
-        b.str[i] = __cstl_bitset_test(b, bit_pos) ? '1' : '0';
-    } }
+    {
+        size_type i;
+        for (i = 0; i < b.nbits; i++) {
+            size_type bit_pos = b.nbits - 1 - i;
+            b.str[i] = __cstl_bitset_test(b, bit_pos) ? '1' : '0';
+        }
+    }
     b.str[b.nbits] = '\0';
     return b.str;
 }

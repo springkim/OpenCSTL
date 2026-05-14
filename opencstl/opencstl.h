@@ -245,7 +245,7 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
         }
         break;
         case OPENCSTL_DEQUE: {
-            if (argc == 1) {param2 = NULL; }
+            if (argc == 1) { param2 = NULL; }
             __cstl_deque_assign((void **) container, *(int *) param1, param2);
         }
         break;
@@ -570,44 +570,38 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
 
     switch (container_type) {
         case OPENCSTL_VECTOR: {
-            if (argc == 2) {__cstl_vector_insert((void **) container, param1, 1, param2); }
-            else { __cstl_vector_insert((void **) container, param1, *(int *) param2, param3); }
+            if (argc == 2) { __cstl_vector_insert((void **) container, param1, 1, param2); } else { __cstl_vector_insert((void **) container, param1, *(int *) param2, param3); }
         }
         break;
         case OPENCSTL_LIST: {
-            if (argc == 2) {__cstl_list_insert((void **) container, (void **) param1, 1, param2); }
-            else { __cstl_list_insert((void **) container, (void **) param1, *(int *) param2, param3); }
+            if (argc == 2) { __cstl_list_insert((void **) container, (void **) param1, 1, param2); } else { __cstl_list_insert((void **) container, (void **) param1, *(int *) param2, param3); }
         }
         break;
         case OPENCSTL_DEQUE: {
-            if (argc == 2) {__cstl_deque_insert((void **) container, param1, 1, param2); }
-            else { __cstl_deque_insert((void **) container, param1, *(int *) param2, param3); }
+            if (argc == 2) { __cstl_deque_insert((void **) container, param1, 1, param2); } else { __cstl_deque_insert((void **) container, param1, *(int *) param2, param3); }
         }
         break;
         case OPENCSTL_MAP: {
-            if (argc == 2) { __cstl_tree_insert((void **) container, param1, param2); }
-            else {
+            if (argc == 2) { __cstl_tree_insert((void **) container, param1, param2); } else {
                 fault("Invalid operation");
             }
         }
         break;
         case OPENCSTL_SET: {
-            if (argc == 1) { __cstl_tree_insert((void **) container, param1,NULL); }
-            else {
+            if (argc == 1) { __cstl_tree_insert((void **) container, param1, NULL); } else {
                 fault("Invalid operation");
             }
         }
         break;
         case OPENCSTL_UNORDERED_MAP: {
-            if (argc == 2) {__cstl_hashtable_insert((void **) container, param1, param2); }
-            else {
+            if (argc == 2) { __cstl_hashtable_insert((void **) container, param1, param2); } else {
                 fault("Invalid operation");
             }
         }
         break;
         case OPENCSTL_UNORDERED_SET: {
             if (argc == 1) {
-                __cstl_hashtable_insert((void **) container, param1,NULL);
+                __cstl_hashtable_insert((void **) container, param1, NULL);
             } else {
                 fault("Invalid operation");
             }
@@ -700,17 +694,17 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
     }
     switch (container_type) {
         case OPENCSTL_VECTOR: {
-            if (argc == 1) {param2 = NULL; }
+            if (argc == 1) { param2 = NULL; }
             __cstl_vector_resize((void **) container, *(int *) param1, param2);
         }
         break;
         case OPENCSTL_LIST: {
-            if (argc == 1) {param2 = NULL; }
+            if (argc == 1) { param2 = NULL; }
             __cstl_list_resize((void **) container, *(int *) param1, param2);
         }
         break;
         case OPENCSTL_DEQUE: {
-            if (argc == 1) {param2 = NULL; }
+            if (argc == 1) { param2 = NULL; }
             __cstl_deque_resize((void **) container, *(int *) param1, &param2);
         }
         break;
@@ -807,16 +801,18 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
     return sz ? false : true;
 }
 
-OPENCSTL_FUNC void _cstl_free(void *container) {
+OPENCSTL_FUNC void _cstl_free(void *container, size_t container_size) {
     void **tmp = (void **) container;
     if (iveb != NULL) {
         // BITSET's first field is `nbits` (a value), not a pointer, so iveb was
         // keyed on its `.bits` field. Probe that first to correctly detect BITSET.
-        BITSET *bs = (BITSET *) container;
-        Interval *iv_bs = iveb_find(iveb, bs->bits);
-        if (iv_bs != NULL && iv_bs->ctype == CT_BITSET) {
-            __cstl_bitset_free(*bs);
-            goto _BYE_;
+        if (container_size == sizeof(BITSET)) {
+            BITSET *bs = (BITSET *) container;
+            Interval *iv_bs = iveb_find(iveb, bs->bits);
+            if (iv_bs != NULL && iv_bs->ctype == CT_BITSET) {
+                __cstl_bitset_free(*bs);
+                goto _BYE_;
+            }
         }
 
         Interval *iv = iveb_find(iveb, *tmp);
@@ -825,7 +821,7 @@ OPENCSTL_FUNC void _cstl_free(void *container) {
                 __free_json((JSON *) *tmp);
                 goto _BYE_;
             } else if (iv->ctype == CT_GLOB) {
-                __glob_free((char**)*tmp);
+                __glob_free((char **) *tmp);
                 goto _BYE_;
             } else if (iv->ctype == CT_CSV) {
                 __free_csv((CSV *) tmp);
@@ -903,26 +899,22 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     }
     switch (container_type) {
         case OPENCSTL_ARRAY: {
-            if (argc == 1) { return __cstl_array_find((void **) container, (void **) container, param2); }
-            else { return __cstl_array_find((void **) container, param1, param2); }
+            if (argc == 1) { return __cstl_array_find((void **) container, (void **) container, param2); } else { return __cstl_array_find((void **) container, param1, param2); }
         }
         break;
         case OPENCSTL_VECTOR: {
-            if (argc == 1) { return __cstl_vector_find((void **) container, container, param1); }
-            else { return __cstl_vector_find((void **) container, param1, param2); }
+            if (argc == 1) { return __cstl_vector_find((void **) container, container, param1); } else { return __cstl_vector_find((void **) container, param1, param2); }
         }
         break;
         case OPENCSTL_LIST: {
             if (argc == 1) {
                 return __cstl_list_find((void **) container, (void **) &OPENCSTL_NIDX((void**)container, 0),
                                         param1);
-            }
-            else { return __cstl_list_find((void **) container, (void **) param1, param2); }
+            } else { return __cstl_list_find((void **) container, (void **) param1, param2); }
         }
         break;
         case OPENCSTL_DEQUE: {
-            if (argc == 1) { return __cstl_deque_find((void **) container, container, param1); }
-            else { return __cstl_deque_find((void **) container, param1, param2); }
+            if (argc == 1) { return __cstl_deque_find((void **) container, container, param1); } else { return __cstl_deque_find((void **) container, param1, param2); }
         }
         break;
         case OPENCSTL_MAP:
