@@ -35,8 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#if !defined(_OPENCSTL_TYPES_H)
-#define _OPENCSTL_TYPES_H
+#if !defined(HG_92A3FCC3A5203DA9589B58B73E1D039CAFDC8DBF18FEE170312D938F7400A58A_H)
+#define HG_92A3FCC3A5203DA9589B58B73E1D039CAFDC8DBF18FEE170312D938F7400A58A_H
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>

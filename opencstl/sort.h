@@ -34,9 +34,10 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
+#pragma once
 
-#if !defined(_OPENCSTL_SORT_H)
-#define _OPENCSTL_SORT_H
+#if !defined(HG_9EE9C96CA1195C35CD536FFEBDD01E45043E984BC44A62D627A09C0F9B62439A_H)
+#define HG_9EE9C96CA1195C35CD536FFEBDD01E45043E984BC44A62D627A09C0F9B62439A_H
 #include <stdlib.h>
 #include <string.h>
 #include "crossplatform.h"
@@ -45,7 +46,7 @@
 #include "pdqsort.h"
 #include "deque.h"
 #include "pmsort.h"
-#include "ipnsort.h"
+
 #include "list.h"
 #include "defines.h"
 
@@ -67,7 +68,7 @@
 OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
     ptrdiff_t distance = 0;
     size_type64 container_type = __opencstl_container_type((void **) &container, &distance);
-    if (container_type == 0) return;
+    if (container_type == 0) { return; }
 
     switch (container_type) {
         case OPENCSTL_VECTOR: {
@@ -140,7 +141,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
 OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
     ptrdiff_t distance = 0;
     size_type64 container_type = __opencstl_container_type((void **) &container, &distance);
-    if (container_type == 0) return;
+    if (container_type == 0) { return; }
 
     switch (container_type) {
         case OPENCSTL_VECTOR: {
@@ -264,7 +265,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
 OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
     ptrdiff_t distance = 0;
     size_type64 container_type = __opencstl_container_type((void **) &container, &distance);
-    if (container_type == 0) return 0;
+    if (container_type == 0) { return 0; }
 
     switch (container_type) {
         case OPENCSTL_VECTOR: {

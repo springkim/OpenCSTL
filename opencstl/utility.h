@@ -60,7 +60,7 @@ static unsigned int fast_sqrt(unsigned int x) {
 //   capacity → ∞   : ratio → √2 ≈ 1.414
 //   K = conversion rate. If K = 16, then √capacity = K points (i.e., capacity 256) is exactly halfway.
 static int get_new_capacity(int _capacity) {
-    if (_capacity < 2) return 2;
+    if (_capacity < 2) { return 2; }
 
     enum {
         SQRT2_Q16 = 92682, // √2 · 65536
@@ -72,8 +72,8 @@ static int get_new_capacity(int _capacity) {
     int ratio_q16 = SQRT2_Q16 + (int) ((unsigned int) DIFF_Q16 * K / (K + s));
 
     long long grown = ((long long) _capacity * ratio_q16) >> 16;
-    if (grown <= _capacity) grown = _capacity + 1;
-    if (grown > 2147483647LL) grown = 2147483647LL;
+    if (grown <= _capacity) { grown = _capacity + 1; }
+    if (grown > 2147483647LL) { grown = 2147483647LL; }
     return (int) grown;
 }
 

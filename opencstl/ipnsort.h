@@ -84,7 +84,7 @@
 #endif
 
 static IPN_ALWAYS_INLINE void ipn__swap(unsigned char *a, unsigned char *b, size_type64 n) {
-    if (a == b) return;
+    if (a == b) { return; }
     if (IPN_LIKELY(n == 8)) {
         uint64_t t;
         memcpy(&t, a, 8);
@@ -124,7 +124,7 @@ static IPN_ALWAYS_INLINE void ipn__swap(unsigned char *a, unsigned char *b, size
 #define IPN_CSWAP(bp, ai, bi, w, cmp) do {                         \
     unsigned char *_ipn_a = (bp) + (ai) * (w);                     \
     unsigned char *_ipn_b = (bp) + (bi) * (w);                     \
-    if ((cmp)(_ipn_a, _ipn_b) > 0) ipn__swap(_ipn_a, _ipn_b, (w)); \
+    if ((cmp)(_ipn_a, _ipn_b) > 0) { ipn__swap(_ipn_a, _ipn_b, (w)); } \
 } while (0)
 
 static IPN_ALWAYS_INLINE uint32_t ipn_log2u(size_type64 v) {
@@ -146,7 +146,7 @@ static IPN_ALWAYS_INLINE uint64_t ipn_xorshift(uint64_t *s) {
 }
 
 static void ipn_reverse(unsigned char *base, size_type64 n, size_type64 width) {
-    if (n < 2) return;
+    if (n < 2) { return; }
     unsigned char *lo = base;
     unsigned char *hi = base + (n - 1) * width;
     while (lo < hi) {
@@ -175,7 +175,7 @@ static void ipn_isort_shift_swap(unsigned char *base, size_type64 n, size_type64
             while (cmp(j - width, j) > 0) {
                 ipn__swap(j - width, j, width);
                 j -= width;
-                if (j == base) break;
+                if (j == base) { break; }
             }
         } }
     }
@@ -192,7 +192,7 @@ static void ipn_isort_shift_left(unsigned char *base, size_type64 n, size_type64
     unsigned char tmp[IPN_ISORT_TMP_BYTES];
     { size_type64 i; for (i = offset; i < n; ++i) {
         unsigned char *c = base + i * width;
-        if (cmp(c - width, c) <= 0) continue;
+        if (cmp(c - width, c) <= 0) { continue; }
         memcpy(tmp, c, width);
         unsigned char *j = c;
         do {
@@ -213,7 +213,7 @@ static void ipn_isort_shift_left_unguard(unsigned char *base, size_type64 n, siz
     unsigned char tmp[IPN_ISORT_TMP_BYTES];
     { size_type64 i; for (i = offset; i < n; ++i) {
         unsigned char *c = base + i * width;
-        if (cmp(c - width, c) <= 0) continue;
+        if (cmp(c - width, c) <= 0) { continue; }
         memcpy(tmp, c, width);
         unsigned char *j = c;
         do {
@@ -244,7 +244,7 @@ static IPN_ALWAYS_INLINE void ipn_sort4(unsigned char *b, size_type64 w, CSTL_CO
    When `unguarded`, skips the left-bound check on insertion shift. */
 static void ipn_small_sort(unsigned char *base, size_type64 n, size_type64 width,
                            CSTL_COMPARE cmp, int unguarded) {
-    if (n < 2) return;
+    if (n < 2) { return; }
     if (n == 2) {
         IPN_CSWAP(base, 0, 1, width, cmp);
         return;
@@ -254,17 +254,19 @@ static void ipn_small_sort(unsigned char *base, size_type64 n, size_type64 width
         return;
     }
     ipn_sort4(base, width, cmp);
-    if (n == 4) return;
-    if (unguarded)
+    if (n == 4) { return; }
+    if (unguarded) {
         ipn_isort_shift_left_unguard(base, n, 4, width, cmp);
-    else
+    }
+    else {
         ipn_isort_shift_left(base, n, 4, width, cmp);
+    }
 }
 
 /* Top-level insertion sort (guarded). */
 static IPN_ALWAYS_INLINE void ipn_isort(unsigned char *base, size_type64 n, size_type64 width,
                                         CSTL_COMPARE cmp) {
-    if (n < 2) return;
+    if (n < 2) { return; }
     ipn_small_sort(base, n, width, cmp, 0);
 }
 
@@ -272,7 +274,7 @@ static IPN_ALWAYS_INLINE void ipn_isort(unsigned char *base, size_type64 n, size
 static size_type64 ipn_find_existing_run(const unsigned char *base, size_type64 n, size_type64 width,
                                     CSTL_COMPARE cmp, int *was_reversed) {
     *was_reversed = 0;
-    if (n < 2) return n;
+    if (n < 2) { return n; }
     size_type64 i = 1;
     if (cmp(base, base + width) > 0) {
         *was_reversed = 1;
@@ -287,18 +289,18 @@ static void ipn_sift(unsigned char *base, size_type64 root, size_type64 n, size_
                      CSTL_COMPARE cmp) {
     for (;;) {
         size_type64 c = root * 2 + 1;
-        if (c >= n) break;
+        if (c >= n) { break; }
         size_type64 mx = root;
-        if (cmp(base + mx * width, base + c * width) < 0) mx = c;
-        if (c + 1 < n && cmp(base + mx * width, base + (c + 1) * width) < 0) mx = c + 1;
-        if (mx == root) break;
+        if (cmp(base + mx * width, base + c * width) < 0) { mx = c; }
+        if (c + 1 < n && cmp(base + mx * width, base + (c + 1) * width) < 0) { mx = c + 1; }
+        if (mx == root) { break; }
         ipn__swap(base + root * width, base + mx * width, width);
         root = mx;
     }
 }
 
 static void ipn_heapsort(unsigned char *base, size_type64 n, size_type64 width, CSTL_COMPARE cmp) {
-    if (n < 2) return;
+    if (n < 2) { return; }
     { size_type64 i; for (i = n / 2; i-- > 0; ) ipn_sift(base, i, n, width, cmp); }
     { size_type64 e; for (e = n; e-- > 1; ) {
         ipn__swap(base, base + e * width, width);
@@ -347,8 +349,9 @@ static size_type64 ipn_choose_pivot(unsigned char *base, size_type64 n, size_typ
    were needed during scanning. */
 static size_type64 ipn_partition(unsigned char *base, size_type64 n, size_type64 pivot_pos,
                             size_type64 width, CSTL_COMPARE cmp, int *was_partitioned) {
-    if (pivot_pos != 0)
+    if (pivot_pos != 0) {
         ipn__swap(base, base + pivot_pos * width, width);
+    }
     unsigned char *piv = base;
 
     unsigned char *lo = base + width;
@@ -368,8 +371,9 @@ static size_type64 ipn_partition(unsigned char *base, size_type64 n, size_type64
     }
 
     unsigned char *pp = lo - width;
-    if (pp > base)
+    if (pp > base) {
         ipn__swap(base, pp, width);
+    }
 
     return (size_type64) (pp - base) / width;
 }
@@ -377,8 +381,9 @@ static size_type64 ipn_partition(unsigned char *base, size_type64 n, size_type64
 /* Equal-pivot partition: elements <= pivot go left. In-place pivot at base[0]. */
 static size_type64 ipn_partition_eq(unsigned char *base, size_type64 n, size_type64 pivot_pos,
                                size_type64 width, CSTL_COMPARE cmp) {
-    if (pivot_pos != 0)
+    if (pivot_pos != 0) {
         ipn__swap(base, base + pivot_pos * width, width);
+    }
     unsigned char *piv = base;
 
     unsigned char *lo = base + width;
@@ -396,8 +401,9 @@ static size_type64 ipn_partition_eq(unsigned char *base, size_type64 n, size_typ
     }
 
     unsigned char *pp = lo - width;
-    if (pp > base)
+    if (pp > base) {
         ipn__swap(base, pp, width);
+    }
 
     return (size_type64) (pp - base) / width;
 }
@@ -406,7 +412,7 @@ static size_type64 ipn_partition_eq(unsigned char *base, size_type64 n, size_typ
    it gave up after IPN_PARTIAL_LIMIT shifts. Stack-local tmp. */
 static int ipn_partial_isort(unsigned char *base, size_type64 n, size_type64 width,
                              CSTL_COMPARE cmp) {
-    if (n < 2) return 1;
+    if (n < 2) { return 1; }
     if (IPN_UNLIKELY(width > IPN_ISORT_TMP_BYTES)) {
         /* Swap-based variant with shift budget. */
         size_type64 cnt = 0;
@@ -415,7 +421,7 @@ static int ipn_partial_isort(unsigned char *base, size_type64 n, size_type64 wid
             while (j > base && cmp(j - width, j) > 0) {
                 ipn__swap(j - width, j, width);
                 j -= width;
-                if (++cnt > IPN_PARTIAL_LIMIT) return 0;
+                if (++cnt > IPN_PARTIAL_LIMIT) { return 0; }
             }
         } }
         return 1;
@@ -424,7 +430,7 @@ static int ipn_partial_isort(unsigned char *base, size_type64 n, size_type64 wid
     size_type64 cnt = 0;
     { size_type64 i; for (i = 1; i < n; ++i) {
         unsigned char *c = base + i * width;
-        if (cmp(c - width, c) <= 0) continue;
+        if (cmp(c - width, c) <= 0) { continue; }
         memcpy(tmp, c, width);
         unsigned char *j = c;
         do {
@@ -433,14 +439,14 @@ static int ipn_partial_isort(unsigned char *base, size_type64 n, size_type64 wid
             ++cnt;
         } while (j > base && cmp(j - width, tmp) > 0);
         memcpy(j, tmp, width);
-        if (cnt > IPN_PARTIAL_LIMIT) return 0;
+        if (cnt > IPN_PARTIAL_LIMIT) { return 0; }
     } }
     return 1;
 }
 
 /* Pseudo-random shuffle of 3 elements near the middle to break adversarial patterns. */
 static void ipn_break_patterns(unsigned char *base, size_type64 n, size_type64 width, uint64_t *rs) {
-    if (n < 8) return;
+    if (n < 8) { return; }
     size_type64 q = n >> 2;
     size_type64 h = n >> 1;
     size_type64 span = (h > 0) ? h : 1;
@@ -504,7 +510,7 @@ static void ipn_quicksort(unsigned char *base0, size_type64 n0, size_type64 widt
 
             if (has_anc && cmp(anc, base + pivot_pos * width) >= 0) {
                 size_type64 num_le = ipn_partition_eq(base, n, pivot_pos, width, cmp);
-                if (num_le + 1 >= n) break;
+                if (num_le + 1 >= n) { break; }
                 anc = base + num_le * width;
                 has_anc = 1;
                 base += (num_le + 1) * width;
@@ -521,12 +527,12 @@ static void ipn_quicksort(unsigned char *base0, size_type64 n0, size_type64 widt
             int unbalanced = (lsz < (n >> 3)) || (rsz < (n >> 3));
 
             if (unbalanced) {
-                if (lsz >= 8) ipn_break_patterns(base, lsz, width, rs);
-                if (rsz >= 8) ipn_break_patterns(base + (num_lt + 1) * width, rsz, width, rs);
+                if (lsz >= 8) { ipn_break_patterns(base, lsz, width, rs); }
+                if (rsz >= 8) { ipn_break_patterns(base + (num_lt + 1) * width, rsz, width, rs); }
             } else if (was_partitioned) {
                 int lok = ipn_partial_isort(base, lsz, width, cmp);
                 int rok = ipn_partial_isort(base + (num_lt + 1) * width, rsz, width, cmp);
-                if (lok && rok) break;
+                if (lok && rok) { break; }
             }
 
             /* Push left partition for later; continue walking right in-loop.
@@ -548,7 +554,7 @@ static void ipn_quicksort(unsigned char *base0, size_type64 n0, size_type64 widt
                 }
             }
 
-            if (rsz < 2) break;
+            if (rsz < 2) { break; }
             anc = base + num_lt * width;
             has_anc = 1;
             base += (num_lt + 1) * width;
@@ -559,7 +565,7 @@ static void ipn_quicksort(unsigned char *base0, size_type64 n0, size_type64 widt
 }
 
 static void ipnsort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
-    if (!base || !compare || width == 0 || number < 2) return;
+    if (!base || !compare || width == 0 || number < 2) { return; }
 
     unsigned char *arr = (unsigned char *) base;
 
@@ -571,7 +577,7 @@ static void ipnsort(void *base, size_type64 number, size_type64 width, CSTL_COMP
     int was_reversed = 0;
     size_type64 run_len = ipn_find_existing_run(arr, number, width, compare, &was_reversed);
     if (run_len == number) {
-        if (was_reversed) ipn_reverse(arr, number, width);
+        if (was_reversed) { ipn_reverse(arr, number, width); }
         return;
     }
 

@@ -77,17 +77,19 @@ static void ps_merge(char *base, char *buf, size_type64 n1, size_type64 n2,
         }
         d += sz;
     }
-    if (l < l_end)
+    if (l < l_end) {
         memcpy(d, l, (size_type64) (l_end - l));
-    if (r < r_end)
+    }
+    if (r < r_end) {
         memcpy(d, r, (size_type64) (r_end - r));
+    }
     memcpy(base, buf, (n1 + n2) * sz);
 }
 
 static void *ps_run(void *p) {
     struct ps_args *a = (struct ps_args *) p;
 
-    if (a->n < 2) return NULL;
+    if (a->n < 2) { return NULL; }
     if (a->n <= PS_SEQ_CUTOFF || a->depth >= PS_MAX_DEPTH) {
         qsort(a->base, a->n, a->sz, a->cmp);
         return NULL;
@@ -104,16 +106,16 @@ static void *ps_run(void *p) {
 
     pthread_t tid;
     int spawned = (pthread_create(&tid, NULL, ps_run, &left) == 0);
-    if (!spawned) ps_run(&left);
+    if (!spawned) { ps_run(&left); }
     ps_run(&right);
-    if (spawned) pthread_join(tid, NULL);
+    if (spawned) { pthread_join(tid, NULL); }
 
     ps_merge(a->base, a->buf, mid, a->n - mid, a->sz, a->cmp);
     return NULL;
 }
 
 static void pmsort(void *base, const size_type64 number, const size_type64 width, CSTL_COMPARE cmp) {
-    if (number < 2) return;
+    if (number < 2) { return; }
     if (number <= PS_SEQ_CUTOFF) {
         msort(base, number, width, cmp);
         return;

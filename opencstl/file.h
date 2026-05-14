@@ -115,22 +115,22 @@ void __cstl_fclose(FILE *fp) {
 
 char *__cstl_get_line(FILE *fp) {
     long start = ftell(fp);
-    if (start < 0) return NULL;
+    if (start < 0) { return NULL; }
 
     size_type64 len = 0;
     int c;
     int found_any = 0;
     while ((c = fgetc(fp)) != EOF) {
         found_any = 1;
-        if (c == '\n') break;
+        if (c == '\n') { break; }
         len++;
     }
-    if (!found_any && len == 0) return NULL;
+    if (!found_any && len == 0) { return NULL; }
 
-    if (fseek(fp, start, SEEK_SET) != 0) return NULL;
+    if (fseek(fp, start, SEEK_SET) != 0) { return NULL; }
 
     char *buf = (char *) calloc(len + 1, sizeof(char));
-    if (!buf) return NULL;
+    if (!buf) { return NULL; }
 
     { size_type64 i; for (i = 0; i < len; i++) {
         int ch = fgetc(fp);
@@ -158,7 +158,7 @@ FILE *__cstl_fwrite_all(FILE *fp, const char *buf) {
     __cstl_fclose(fp);
     FILE *new_fp = __cstl_fopen(filepath, "wt");
     fpm_append(new_fp, filepath);
-    if (!new_fp) return NULL;
+    if (!new_fp) { return NULL; }
     size_type64 len = strlen(buf);
     fwrite(buf, 1, len, new_fp);
     return new_fp;

@@ -91,7 +91,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
         void *c = ((char *) *container) + type_size * idx;
         void *p = ((char *) *container) + type_size * HEAP_PARENT(idx);
         int r = compare ? compare(tmp, p) : memcmp(tmp, p, type_size);
-        if (r <= 0)break;
+        if (r <= 0) {break; }
         memcpy(c, p, type_size);
         idx = HEAP_PARENT(idx);
     }
@@ -128,7 +128,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
         if (R < length && r > 0) {
             C = R;
         }
-        if (C == idx)break;
+        if (C == idx) {break; }
         memcpy(((char *) *container) + type_size * idx, ((char *) *container) + type_size * C, type_size);
         idx = C;
     } while (1);

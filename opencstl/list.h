@@ -94,8 +94,9 @@ OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, in
         value = &valuef;
     }
 #endif
-    if (value)
+    if (value) {
         memcpy(n, value, type_size);
+    }
     if (*head == NULL && *tail == NULL) {
         *head = *tail = n;
     } else {
@@ -394,8 +395,9 @@ OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_type64 n) {
     memcpy(tmp, a, n);
     memcpy(a, b, n);
     memcpy(b, tmp, n);
-    if (tmp != buf)
+    if (tmp != buf) {
         free(tmp);
+    }
 }
 
 OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
@@ -403,7 +405,7 @@ OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
     void *fast = low;
     while (fast != high) {
         fast = (void *) OPENCSTL_NIDX(&fast, -1);
-        if (fast == high) break;
+        if (fast == high) { break; }
         fast = (void *) OPENCSTL_NIDX(&fast, -1);
         slow = (void *) OPENCSTL_NIDX(&slow, -1);
     }
@@ -413,10 +415,10 @@ OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
 OPENCSTL_FUNC void __cstl_list_median_of_three(void *low, void *high, size_type64 type_size,
                                                int (*cmp)(const void *, const void *)) {
     void *mid = __cstl_list_mid_node(low, high);
-    if (mid == low || mid == high) return;
-    if (cmp(low, mid) > 0) __cstl_list_swap_data(low, mid, type_size);
-    if (cmp(low, high) > 0) __cstl_list_swap_data(low, high, type_size);
-    if (cmp(mid, high) > 0) __cstl_list_swap_data(mid, high, type_size);
+    if (mid == low || mid == high) { return; }
+    if (cmp(low, mid) > 0) { __cstl_list_swap_data(low, mid, type_size); }
+    if (cmp(low, high) > 0) { __cstl_list_swap_data(low, high, type_size); }
+    if (cmp(mid, high) > 0) { __cstl_list_swap_data(mid, high, type_size); }
     __cstl_list_swap_data(mid, high, type_size);
 }
 

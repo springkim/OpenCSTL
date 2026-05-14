@@ -498,7 +498,7 @@ OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     size_type length = (size_type) OPENCSTL_NIDX(container, -1);
-    if (length <= 1) return;
+    if (length <= 1) { return; }
 
     // Copy list data to flat array
     void *ptr = malloc(type_size * length);
@@ -614,7 +614,7 @@ static uint64_t random_device(void) {
         long ret = syscall(SYS_getrandom,
                            (char *) &val + done, sizeof(val) - done, 0);
         if (ret < 0) {
-            if (errno == EINTR) continue;
+            if (errno == EINTR) { continue; }
             FILE *f = fopen("/dev/urandom", "rb");
             if (f) {
                 fread((char *) &val + done, 1, sizeof(val) - done, f);

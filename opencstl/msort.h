@@ -45,7 +45,7 @@
 
 static void msort_merge(char *arr, size_type64 len1, size_type64 len2, size_type64 sz,
                         CSTL_COMPARE cmp, char *buf) {
-    if (cmp(arr + (len1 - 1) * sz, arr + len1 * sz) <= 0) return;
+    if (cmp(arr + (len1 - 1) * sz, arr + len1 * sz) <= 0) { return; }
     if (len1 <= len2) {
         memcpy(buf, arr, len1 * sz);
         char *c1 = buf, *e1 = buf + len1 * sz;
@@ -61,8 +61,9 @@ static void msort_merge(char *arr, size_type64 len1, size_type64 len2, size_type
             }
             d += sz;
         }
-        if (c1 < e1)
+        if (c1 < e1) {
             memcpy(d, c1, (size_type64) (e1 - c1));
+        }
     } else {
         memcpy(buf, arr + len1 * sz, len2 * sz);
         size_type64 i = len1, j = len2, k = len1 + len2;
@@ -76,27 +77,28 @@ static void msort_merge(char *arr, size_type64 len1, size_type64 len2, size_type
                 j--;
             }
         }
-        if (j > 0)
+        if (j > 0) {
             memcpy(arr, buf, j * sz);
+        }
     }
 }
 
 static void msort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
-    if (number < 2) return;
+    if (number < 2) { return; }
     char *arr = (char *) base;
     size_type64 sz = width;
     { size_type64 i; for (i = 0; i < number; i += MSORT_ISORT_THRESH) {
         size_type64 blk = number - i;
-        if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
+        if (blk > MSORT_ISORT_THRESH) { blk = MSORT_ISORT_THRESH; }
         isort(arr + i * sz, blk, sz, compare);
     } }
     char *buf = (char *) calloc(((number + 1) / 2), sz);
-    if (!buf) return;
+    if (!buf) { return; }
     { size_type64 mb; for (mb = MSORT_ISORT_THRESH; mb < number; mb *= 2) {
         { size_type64 i; for (i = 0; i + mb < number; i += 2 * mb) {
             size_type64 len1 = mb;
             size_type64 len2 = number - i - mb;
-            if (len2 > mb) len2 = mb;
+            if (len2 > mb) { len2 = mb; }
             msort_merge(arr + i * sz, len1, len2, sz, compare, buf);
         } }
     } }

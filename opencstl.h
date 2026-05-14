@@ -117,8 +117,8 @@ int main() {
 }
 #endif
 #endif
-#ifndef OPENCSTL_THREADING_CC_H
-#define OPENCSTL_THREADING_CC_H
+#ifndef HG_A14A71B161F34F419D8D45EB76E9CD66B57502B891727C94C93ECAD01AC2F808_H
+#define HG_A14A71B161F34F419D8D45EB76E9CD66B57502B891727C94C93ECAD01AC2F808_H
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -269,13 +269,13 @@ static void cpu_pin(void) {
 #if!defined(HG_61156A4C704519E4CE57DAB09ABAD57E1108C67C598C40FE87080E76A0E99BE1_H)
 #define HG_61156A4C704519E4CE57DAB09ABAD57E1108C67C598C40FE87080E76A0E99BE1_H
 #include <stdlib.h>
-#ifndef OPENCSTL_TRACER_H
-#define OPENCSTL_TRACER_H
+#ifndef HG_A409AB715AF164966758B335B837430124F108376DF685E94C6822880E7BBC95_H
+#define HG_A409AB715AF164966758B335B837430124F108376DF685E94C6822880E7BBC95_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if !defined(_OPENCSTL_TYPES_H)
-#define _OPENCSTL_TYPES_H
+#if !defined(HG_92A3FCC3A5203DA9589B58B73E1D039CAFDC8DBF18FEE170312D938F7400A58A_H)
+#define HG_92A3FCC3A5203DA9589B58B73E1D039CAFDC8DBF18FEE170312D938F7400A58A_H
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -344,12 +344,12 @@ static int try_enable_ansi(void) {
     return s_ansi_enabled;
 }
 static WORD ansi_to_winattr(const char *color) {
-    if (color == __red) return FOREGROUND_RED | FOREGROUND_INTENSITY;
-    if (color == __green) return FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-    if (color == __yellow) return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-    if (color == __blue) return FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-    if (color == __magenta) return FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-    if (color == __cyan) return FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+    if (color == __red) { return FOREGROUND_RED | FOREGROUND_INTENSITY; }
+    if (color == __green) { return FOREGROUND_GREEN | FOREGROUND_INTENSITY; }
+    if (color == __yellow) { return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY; }
+    if (color == __blue) { return FOREGROUND_BLUE | FOREGROUND_INTENSITY; }
+    if (color == __magenta) { return FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY; }
+    if (color == __cyan) { return FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY; }
     return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 }
 #endif
@@ -406,8 +406,9 @@ void __fatal_message_box(const char *msg) {
              "zenity --error --title=\"FATAL\" --text=\"%s\" 2>/dev/null"
              " || kdialog --error \"%s\" --title \"FATAL\" 2>/dev/null",
              msg, msg);
-    if (system(cmd) != 0)
+    if (system(cmd) != 0) {
         fprintf(stderr, "[FATAL] %s\n", msg);
+    }
 }
 #endif
 int __clogging(const char *color, const char *format, ...) {
@@ -936,8 +937,8 @@ void *__dso_handle = (void *) 0;
 #define USE_CSTL_FUNC
 #if !defined(_OPENCSTL_DEQUE_H)
 #define _OPENCSTL_DEQUE_H
-#if !defined(_OPENCSTL_VAN_EMDE_BOAS_TREE_H)
-#define _OPENCSTL_VAN_EMDE_BOAS_TREE_H
+#if !defined(HG_C9EC87EF45021DD1FAAADF8E8EE23B574E90CD47E2796E2D9923D720B1D780F6_H)
+#define HG_C9EC87EF45021DD1FAAADF8E8EE23B574E90CD47E2796E2D9923D720B1D780F6_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -980,21 +981,21 @@ static void hm_grow(HashMap *h) {
     h->size = 0;
     size_type64 i = 0;
     for (i = 0; i < oc; i++)
-        if (oe[i].used) hm_set(h, oe[i].key, oe[i].val);
+        if (oe[i].used) { hm_set(h, oe[i].key, oe[i].val); }
     free(oe);
 }
 static void hm_set(HashMap *h, u64 k, void *v) {
-    if (h->size * 2 >= h->cap) hm_grow(h);
+    if (h->size * 2 >= h->cap) { hm_grow(h); }
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used && h->e[i].key != k)
         i = (i + 1) % h->cap;
-    if (!h->e[i].used) h->size++;
+    if (!h->e[i].used) { h->size++; }
     h->e[i] = (HMEntry){k, v, 1};
 }
 static void *hm_get(const HashMap *h, u64 k) {
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used) {
-        if (h->e[i].key == k) return h->e[i].val;
+        if (h->e[i].key == k) { return h->e[i].val; }
         i = (i + 1) % h->cap;
     }
     return NULL;
@@ -1003,7 +1004,7 @@ static void hm_del(HashMap *h, u64 k) {
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used && h->e[i].key != k)
         i = (i + 1) % h->cap;
-    if (!h->e[i].used) return;
+    if (!h->e[i].used) { return; }
     h->e[i].used = 0;
     h->size--;
     size_type64 j = (i + 1) % h->cap;
@@ -1032,21 +1033,21 @@ static VEB *veb_new(int bits) {
     v->bits = bits;
     v->min = VEB_EMPTY;
     v->max = VEB_EMPTY;
-    if (bits > 1) v->cls = hm_new();
+    if (bits > 1) { v->cls = hm_new(); }
     return v;
 }
 static void veb_free(VEB *v);
 static void cls_free_all(HashMap *hm) {
     size_type64 i = 0;
     for (i = 0; i < hm->cap; i++)
-        if (hm->e[i].used) veb_free((VEB *) hm->e[i].val);
+        if (hm->e[i].used) { veb_free((VEB *) hm->e[i].val); }
     hm_free(hm);
 }
 static void veb_free(VEB *v) {
-    if (!v) return;
+    if (!v) { return; }
     if (v->bits > 1) {
         veb_free(v->sum);
-        if (v->cls) cls_free_all(v->cls);
+        if (v->cls) { cls_free_all(v->cls); }
     }
     free(v);
 }
@@ -1061,7 +1062,7 @@ static VEB *cls_or_new(VEB *v, u64 h) {
     return c;
 }
 static VEB *sum_or_new(VEB *v) {
-    if (!v->sum) v->sum = veb_new(hi_b(v->bits));
+    if (!v->sum) { v->sum = veb_new(hi_b(v->bits)); }
     return v->sum;
 }
 static void veb_ins(VEB *v, u64 x) {
@@ -1075,14 +1076,14 @@ static void veb_ins(VEB *v, u64 x) {
         x = t;
     }
     if (v->bits == 1) {
-        if (x > v->max) v->max = x;
+        if (x > v->max) { v->max = x; }
         return;
     }
     u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
     VEB *c = cls_or_new(v, h);
-    if (veb_empty(c)) veb_ins(sum_or_new(v), h);
+    if (veb_empty(c)) { veb_ins(sum_or_new(v), h); }
     veb_ins(c, l);
-    if (x > v->max) v->max = x;
+    if (x > v->max) { v->max = x; }
 }
 static void veb_del(VEB *v, u64 x) {
     if (v->min == v->max) {
@@ -1104,14 +1105,14 @@ static void veb_del(VEB *v, u64 x) {
     }
     u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
     VEB *c = cls_get(v, h);
-    if (!c) return;
+    if (!c) { return; }
     veb_del(c, l);
     if (veb_empty(c)) {
         hm_del(v->cls, h);
         veb_free(c);
-        if (v->sum) veb_del(v->sum, h);
+        if (v->sum) { veb_del(v->sum, h); }
         if (x == v->max) {
-            if (!v->sum || veb_empty(v->sum)) v->max = v->min;
+            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; }
             else {
                 u64 lh = v->sum->max;
                 VEB *lc = cls_get(v, lh);
@@ -1123,22 +1124,23 @@ static void veb_del(VEB *v, u64 x) {
     }
 }
 static u64 veb_pred(VEB *v, u64 x) {
-    if (veb_empty(v) || x <= v->min) return VEB_EMPTY;
-    if (x > v->max) return v->max;
-    if (v->bits == 1) return 0;
+    if (veb_empty(v) || x <= v->min) { return VEB_EMPTY; }
+    if (x > v->max) { return v->max; }
+    if (v->bits == 1) { return 0; }
     u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
     VEB *c = cls_get(v, h);
-    if (c && !veb_empty(c) && l > c->min)
+    if (c && !veb_empty(c) && l > c->min) {
         return vidx(h, veb_pred(c, l), v->bits);
+    }
     u64 ph = (v->sum && !veb_empty(v->sum)) ? veb_pred(v->sum, h) : VEB_EMPTY;
-    if (ph == VEB_EMPTY) return (x > v->min) ? v->min : VEB_EMPTY;
+    if (ph == VEB_EMPTY) { return (x > v->min) ? v->min : VEB_EMPTY; }
     VEB *pc = cls_get(v, ph);
     return pc ? vidx(ph, pc->max, v->bits) : VEB_EMPTY;
 }
 static u64 veb_floor(VEB *v, u64 x) {
-    if (veb_empty(v) || x < v->min) return VEB_EMPTY;
-    if (x >= v->max) return v->max;
-    if (x == v->min) return v->min;
+    if (veb_empty(v) || x < v->min) { return VEB_EMPTY; }
+    if (x >= v->max) { return v->max; }
+    if (x == v->min) { return v->min; }
     return veb_pred(v, x + 1);
 }
 typedef enum CONTAINER_TYPE {
@@ -1195,8 +1197,9 @@ HTMVEB *htm_new(void) {
 void htm_free(HTMVEB *iv) {
     size_type64 i = 0;
     for (i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used)
+        if (iv->data->e[i].used) {
             free(iv->data->e[i].val);
+        }
     hm_free(iv->data);
     veb_free(iv->veb);
     free(iv);
@@ -1218,7 +1221,7 @@ void htm_insert(HTMVEB *iv, void *a, void *b, char *tombstone, int type_size) {
 void htm_erase(HTMVEB *iv, void *a) {
     u64 k = (u64) (uintptr_t) a;
     HashtableManager *it = (HashtableManager *) hm_get(iv->data, k);
-    if (!it) return;
+    if (!it) { return; }
     free(it);
     hm_del(iv->data, k);
     veb_del(iv->veb, k);
@@ -1226,9 +1229,9 @@ void htm_erase(HTMVEB *iv, void *a) {
 HashtableManager *htm_find(HTMVEB *iv, void *x) {
     u64 key = (u64) (uintptr_t) x;
     u64 start = veb_floor(iv->veb, key);
-    if (start == VEB_EMPTY) return NULL;
+    if (start == VEB_EMPTY) { return NULL; }
     HashtableManager *it = (HashtableManager *) hm_get(iv->data, start);
-    if (!it) return NULL;
+    if (!it) { return NULL; }
     return ((uintptr_t) x <= (uintptr_t) it->p2) ? it : NULL;
 }
 IntervalVEB *iveb_new(void) {
@@ -1240,8 +1243,9 @@ IntervalVEB *iveb_new(void) {
 void iveb_free(IntervalVEB *iv) {
     size_type64 i = 0;
     for (i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used)
+        if (iv->data->e[i].used) {
             free(iv->data->e[i].val);
+        }
     hm_free(iv->data);
     veb_free(iv->veb);
     free(iv);
@@ -1263,18 +1267,18 @@ void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_t
 void iveb_erase(IntervalVEB *iv, void *a) {
     u64 k = (u64) (uintptr_t) a;
     Interval *it = (Interval *) hm_get(iv->data, k);
-    if (!it) return;
+    if (!it) { return; }
     free(it);
     hm_del(iv->data, k);
     veb_del(iv->veb, k);
 }
 Interval *iveb_find(IntervalVEB *iv, void *x) {
-    if (iv == NULL) return NULL;
+    if (iv == NULL) { return NULL; }
     u64 key = (u64) (uintptr_t) x;
     u64 start = veb_floor(iv->veb, key);
-    if (start == VEB_EMPTY) return NULL;
+    if (start == VEB_EMPTY) { return NULL; }
     Interval *it = (Interval *) hm_get(iv->data, start);
-    if (!it) return NULL;
+    if (!it) { return NULL; }
     return ((uintptr_t) x <= (uintptr_t) it->b) ? it : NULL;
 }
 #if !defined(_HG_B0BA2BCEE842F587B495A9DAC23CC19DF2528F0D7D48D49AA5462B025137A965_H)
@@ -1316,14 +1320,14 @@ static void *_ocstl_dblock_alloc(size_type64 sz) {
         memset(n, 0, real);
         return n;
     }
-    if (_ocstl_dblock_bump + real > ___OCSTL_1MB) return NULL;
+    if (_ocstl_dblock_bump + real > ___OCSTL_1MB) { return NULL; }
     void *p = &OCSTL_DBLOCK[_ocstl_dblock_bump];
     _ocstl_dblock_bump += real;
     memset(p, 0, real);
     return p;
 }
 static void _ocstl_dblock_free(void *p, size_type64 sz) {
-    if (!p) return;
+    if (!p) { return; }
     int b = _ocstl_dblock_bucket(sz);
     _OCSTLDBlockNode *n = (_OCSTLDBlockNode *) p;
     n->next = _ocstl_dblock_freelist[b];
@@ -1348,22 +1352,22 @@ static void giveb_hm_grow(HashMap *h) {
     h->size = 0;
     size_type64 i = 0;
     for (i = 0; i < oc; i++)
-        if (oe[i].used) giveb_hm_set(h, oe[i].key, oe[i].val);
+        if (oe[i].used) { giveb_hm_set(h, oe[i].key, oe[i].val); }
     _ocstl_dblock_free(oe, oc * sizeof(HMEntry));
 }
 static void giveb_hm_set(HashMap *h, u64 k, void *v) {
-    if (h->size * 2 >= h->cap) giveb_hm_grow(h);
+    if (h->size * 2 >= h->cap) { giveb_hm_grow(h); }
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used && h->e[i].key != k)
         i = (i + 1) % h->cap;
-    if (!h->e[i].used) h->size++;
+    if (!h->e[i].used) { h->size++; }
     h->e[i] = (HMEntry){k, v, 1};
 }
 static void giveb_hm_del(HashMap *h, u64 k) {
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used && h->e[i].key != k)
         i = (i + 1) % h->cap;
-    if (!h->e[i].used) return;
+    if (!h->e[i].used) { return; }
     h->e[i].used = 0;
     h->size--;
     size_type64 j = (i + 1) % h->cap;
@@ -1380,20 +1384,20 @@ static VEB *giveb_veb_new(int bits) {
     v->bits = bits;
     v->min = VEB_EMPTY;
     v->max = VEB_EMPTY;
-    if (bits > 1) v->cls = giveb_hm_new();
+    if (bits > 1) { v->cls = giveb_hm_new(); }
     return v;
 }
 static void giveb_veb_free(VEB *v);
 static void giveb_cls_free_all(HashMap *hm) {
     { size_type64 i; for (i = 0; i < hm->cap; i++)
-        if (hm->e[i].used) giveb_veb_free((VEB *) hm->e[i].val); }
+        if (hm->e[i].used) { giveb_veb_free((VEB *) hm->e[i].val); } }
     giveb_hm_free(hm);
 }
 static void giveb_veb_free(VEB *v) {
-    if (!v) return;
+    if (!v) { return; }
     if (v->bits > 1) {
         giveb_veb_free(v->sum);
-        if (v->cls) giveb_cls_free_all(v->cls);
+        if (v->cls) { giveb_cls_free_all(v->cls); }
     }
     _ocstl_dblock_free(v, sizeof(VEB));
 }
@@ -1406,7 +1410,7 @@ static VEB *giveb_cls_or_new(VEB *v, u64 h) {
     return c;
 }
 static VEB *giveb_sum_or_new(VEB *v) {
-    if (!v->sum) v->sum = giveb_veb_new(hi_b(v->bits));
+    if (!v->sum) { v->sum = giveb_veb_new(hi_b(v->bits)); }
     return v->sum;
 }
 static void giveb_veb_ins(VEB *v, u64 x) {
@@ -1420,14 +1424,14 @@ static void giveb_veb_ins(VEB *v, u64 x) {
         x = t;
     }
     if (v->bits == 1) {
-        if (x > v->max) v->max = x;
+        if (x > v->max) { v->max = x; }
         return;
     }
     u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
     VEB *c = giveb_cls_or_new(v, h);
-    if (veb_empty(c)) giveb_veb_ins(giveb_sum_or_new(v), h);
+    if (veb_empty(c)) { giveb_veb_ins(giveb_sum_or_new(v), h); }
     giveb_veb_ins(c, l);
-    if (x > v->max) v->max = x;
+    if (x > v->max) { v->max = x; }
 }
 static void giveb_veb_del(VEB *v, u64 x) {
     if (v->min == v->max) {
@@ -1449,14 +1453,14 @@ static void giveb_veb_del(VEB *v, u64 x) {
     }
     u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
     VEB *c = cls_get(v, h);
-    if (!c) return;
+    if (!c) { return; }
     giveb_veb_del(c, l);
     if (veb_empty(c)) {
         giveb_hm_del(v->cls, h);
         giveb_veb_free(c);
-        if (v->sum) giveb_veb_del(v->sum, h);
+        if (v->sum) { giveb_veb_del(v->sum, h); }
         if (x == v->max) {
-            if (!v->sum || veb_empty(v->sum)) v->max = v->min;
+            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; }
             else {
                 u64 lh = v->sum->max;
                 VEB *lc = cls_get(v, lh);
@@ -1475,8 +1479,9 @@ GIntervalVEB *giveb_new(void) {
 }
 void giveb_free(GIntervalVEB *iv) {
     { size_type64 i; for (i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used)
-            _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval)); }
+        if (iv->data->e[i].used) {
+            _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval));
+        } }
     giveb_hm_free(iv->data);
     giveb_veb_free(iv->veb);
     _ocstl_dblock_free(iv, sizeof(GIntervalVEB));
@@ -1496,27 +1501,27 @@ void giveb_insert(GIntervalVEB *iv, void *a, void *b, int type_size) {
 void giveb_erase(GIntervalVEB *iv, void *a) {
     u64 key = (u64) (uintptr_t) a;
     u64 start = veb_floor(iv->veb, key);
-    if (start == VEB_EMPTY) return;
+    if (start == VEB_EMPTY) { return; }
     GInterval *it = (GInterval *) hm_get(iv->data, start);
-    if (!it) return;
-    if ((uintptr_t) a > (uintptr_t) it->p2) return;
+    if (!it) { return; }
+    if ((uintptr_t) a > (uintptr_t) it->p2) { return; }
     _ocstl_dblock_free(it, sizeof(GInterval));
     giveb_hm_del(iv->data, start);
     giveb_veb_del(iv->veb, start);
 }
 GInterval *giveb_find(GIntervalVEB *iv, void *x) {
-    if (iv == NULL) return NULL;
+    if (iv == NULL) { return NULL; }
     u64 key = (u64) (uintptr_t) x;
     u64 start = veb_floor(iv->veb, key);
-    if (start == VEB_EMPTY) return NULL;
+    if (start == VEB_EMPTY) { return NULL; }
     GInterval *it = (GInterval *) hm_get(iv->data, start);
-    if (!it) return NULL;
+    if (!it) { return NULL; }
     return ((uintptr_t) x <= (uintptr_t) it->p2) ? it : NULL;
 }
 static u64 veb_succ(VEB *v, u64 x) {
-    if (veb_empty(v) || x >= v->max) return VEB_EMPTY;
-    if (x < v->min) return v->min;
-    if (v->bits == 1) return 1;
+    if (veb_empty(v) || x >= v->max) { return VEB_EMPTY; }
+    if (x < v->min) { return v->min; }
+    if (v->bits == 1) { return 1; }
     u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
     VEB *c = cls_get(v, h);
     if (c && !veb_empty(c) && l < c->max) {
@@ -1526,13 +1531,13 @@ static u64 veb_succ(VEB *v, u64 x) {
     u64 nh = (v->sum && !veb_empty(v->sum))
                  ? veb_succ(v->sum, h)
                  : VEB_EMPTY;
-    if (nh == VEB_EMPTY) return VEB_EMPTY;
+    if (nh == VEB_EMPTY) { return VEB_EMPTY; }
     VEB *nc = cls_get(v, nh);
-    if (!nc) return VEB_EMPTY;
+    if (!nc) { return VEB_EMPTY; }
     return vidx(nh, nc->min, v->bits);
 }
 void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
-    if (!iv || sz == 0) return NULL;
+    if (!iv || sz == 0) { return NULL; }
     void *block_start = (void *) OCSTL_GBLOCK;
     void *block_end = (void *) (OCSTL_GBLOCK + ___OCSTL_512MB);
     if (veb_empty(iv->veb)) {
@@ -1556,22 +1561,24 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
     }
     while (cur_key != VEB_EMPTY) {
         GInterval *cur = (GInterval *) hm_get(iv->data, cur_key);
-        if (!cur) break;
+        if (!cur) { break; }
         u64 gap_start = (u64) (uintptr_t) cur->p2 + 1;
         u64 next_key = veb_succ(iv->veb, cur_key);
         u64 gap_end = (next_key != VEB_EMPTY)
                           ? (u64) (uintptr_t) ((GInterval *) hm_get(iv->data, next_key))->p1
                           : (u64) (uintptr_t) block_end;
-        if (gap_start < (u64) (uintptr_t) block_start)
+        if (gap_start < (u64) (uintptr_t) block_start) {
             gap_start = (u64) (uintptr_t) block_start;
-        if (gap_end > (u64) (uintptr_t) block_end)
+        }
+        if (gap_end > (u64) (uintptr_t) block_end) {
             gap_end = (u64) (uintptr_t) block_end;
+        }
         if (gap_end > gap_start && gap_end - gap_start >= (int) sz) {
             void *p = (void *) (uintptr_t) gap_start;
             giveb_insert(iv, p, (void *) ((unsigned char *) p + sz - 1), (int) type_size);
             return p;
         }
-        if (next_key == VEB_EMPTY) break;
+        if (next_key == VEB_EMPTY) { break; }
         cur_key = next_key;
     }
     return NULL;
@@ -2724,18 +2731,18 @@ static CSTL_COMPARE CSTL_LESS(const char *type_str) {
     const char *end = type_str + strlen(type_str);
     while (end > type_str && *(end - 1) == ' ') end--;
     char buf[256];
-    size_t len = (end > type_str) ? (size_t)(end - type_str) : 0;
-    if (len >= sizeof(buf)) return NULL;
+    size_type64 len = (end > type_str) ? (size_type64)(end - type_str) : 0;
+    if (len >= sizeof(buf)) { return NULL; }
     memcpy(buf, type_str, len);
     buf[len] = '\0';
-    if (strcmp(buf, "float") == 0) return less_float;
-    if (strcmp(buf, "double") == 0) return less_double;
-    if (strcmp(buf, "int") == 0) return less_int32;
-    if (strcmp(buf, "long long") == 0) return less_int64;
-    if (strcmp(buf, "unsigned long long") == 0) return less_uint64;
-    if (strcmp(buf, "unsigned int") == 0) return less_uint32;
-    if (strcmp(buf, "char*") == 0) return less_string;
-    if (strcmp(buf, "char *") == 0) return less_string;
+    if (strcmp(buf, "float") == 0) { return less_float; }
+    if (strcmp(buf, "double") == 0) { return less_double; }
+    if (strcmp(buf, "int") == 0) { return less_int32; }
+    if (strcmp(buf, "long long") == 0) { return less_int64; }
+    if (strcmp(buf, "unsigned long long") == 0) { return less_uint64; }
+    if (strcmp(buf, "unsigned int") == 0) { return less_uint32; }
+    if (strcmp(buf, "char*") == 0) { return less_string; }
+    if (strcmp(buf, "char *") == 0) { return less_string; }
     return NULL;
 }
 static CSTL_COMPARE CSTL_GREATER(const char *type_str) {
@@ -2743,18 +2750,18 @@ static CSTL_COMPARE CSTL_GREATER(const char *type_str) {
     const char *end = type_str + strlen(type_str);
     while (end > type_str && *(end - 1) == ' ') end--;
     char buf[256];
-    size_t len = (end > type_str) ? (size_t)(end - type_str) : 0;
-    if (len >= sizeof(buf)) return NULL;
+    size_type64 len = (end > type_str) ? (size_type64)(end - type_str) : 0;
+    if (len >= sizeof(buf)) { return NULL; }
     memcpy(buf, type_str, len);
     buf[len] = '\0';
-    if (strcmp(buf, "float") == 0) return greater_float;
-    if (strcmp(buf, "double") == 0) return greater_double;
-    if (strcmp(buf, "int") == 0) return greater_int32;
-    if (strcmp(buf, "long long") == 0) return greater_int64;
-    if (strcmp(buf, "unsigned long long") == 0) return greater_uint64;
-    if (strcmp(buf, "unsigned int") == 0) return greater_uint32;
-    if (strcmp(buf, "char*") == 0) return greater_string;
-    if (strcmp(buf, "char *") == 0) return greater_string;
+    if (strcmp(buf, "float") == 0) { return greater_float; }
+    if (strcmp(buf, "double") == 0) { return greater_double; }
+    if (strcmp(buf, "int") == 0) { return greater_int32; }
+    if (strcmp(buf, "long long") == 0) { return greater_int64; }
+    if (strcmp(buf, "unsigned long long") == 0) { return greater_uint64; }
+    if (strcmp(buf, "unsigned int") == 0) { return greater_uint32; }
+    if (strcmp(buf, "char*") == 0) { return greater_string; }
+    if (strcmp(buf, "char *") == 0) { return greater_string; }
     return NULL;
 }
 #define LESS(TYPE)    ((void*)CSTL_LESS(#TYPE))
@@ -2765,14 +2772,14 @@ static int _cstl_equals_float(CVP a, CVP b, size_t dummy) {
     float a1 = *(float *) a;
     float b1 = *(float *) b;
     float diff = a1 - b1;
-    if (diff < 0)diff = -diff;
+    if (diff < 0) {diff = -diff; }
     return diff < CSTL_FLOAT_EPS;
 }
 static int _cstl_equals_double(CVP a, CVP b, size_t dummy) {
     double a1 = *(double *) a;
     double b1 = *(double *) b;
     double diff = a1 - b1;
-    if (diff < 0)diff = -diff;
+    if (diff < 0) {diff = -diff; }
     return diff < CSTL_DOUBLE_EPS;
 }
 static int _cstl_equals_str(CVP a, CVP b, size_t dummy) {
@@ -2783,27 +2790,28 @@ static CSTL_COMPARE_BYTES CSTL_EQUALS(const char *type_str) {
     const char *end = type_str + strlen(type_str);
     while (end > type_str && *(end - 1) == ' ') end--;
     char buf[256];
-    size_t len = (end > type_str) ? (size_t)(end - type_str) : 0;
-    if (len >= sizeof(buf)) return NULL;
+    size_type64 len = (end > type_str) ? (size_type64)(end - type_str) : 0;
+    if (len >= sizeof(buf)) { return NULL; }
     memcpy(buf, type_str, len);
     buf[len] = '\0';
-    if (strcmp(buf, "float") == 0) return _cstl_equals_float;
-    if (strcmp(buf, "double") == 0) return _cstl_equals_double;
-    if (strcmp(buf, "char*") == 0) return _cstl_equals_str;
-    if (strcmp(buf, "char *") == 0) return _cstl_equals_str;
+    if (strcmp(buf, "float") == 0) { return _cstl_equals_float; }
+    if (strcmp(buf, "double") == 0) { return _cstl_equals_double; }
+    if (strcmp(buf, "char*") == 0) { return _cstl_equals_str; }
+    if (strcmp(buf, "char *") == 0) { return _cstl_equals_str; }
     return memcmp;
 }
 #endif
 OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
-    if (OPENCSTL_NIDX(container, -1) < 0)
+    if (OPENCSTL_NIDX(container, -1) < 0) {
         return 1;
+    }
     return 0;
 }
 OPENCSTL_FUNC size_type64 __opencstl_container_type(void **container, ptrdiff_t *distance) {
     *distance = 0;
-    if (iveb == NULL) return 0;
+    if (iveb == NULL) { return 0; }
     Interval *it = iveb_find(iveb, *container);
-    if (it == NULL) return 0;
+    if (it == NULL) { return 0; }
     if (it->ctype == CT_DEQUE) {
         *distance = OPENCSTL_NIDX(container, -1) + 1;
     }
@@ -2865,9 +2873,12 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_type64 n, void *va
     if (value == NULL) {
         memset((char *) *container, 0, n * type_size);
     } else {
-        { size_type64 i; for (i = 0; i < n; i++) {
-            memcpy((char *) *container + type_size * (i), value, type_size);
-        } }
+        {
+            size_type64 i;
+            for (i = 0; i < n; i++) {
+                memcpy((char *) *container + type_size * (i), value, type_size);
+            }
+        }
     }
 }
 OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
@@ -2982,9 +2993,12 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n
     }
     memcpy((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
            (length - pos) * type_size);
-    { size_type64 i; for (i = 0; i < n; i++) {
-        memcpy((char *) *container + (pos + i) * type_size, value, type_size);
-    } }
+    {
+        size_type64 i;
+        for (i = 0; i < n; i++) {
+            memcpy((char *) *container + (pos + i) * type_size, value, type_size);
+        }
+    }
     *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance) += n;
 }
 OPENCSTL_FUNC void __cstl_deque_erase(void **container, void *begin, void *end) {
@@ -3036,9 +3050,12 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_type64 n, void *va
         if (*(void **) value == NULL) {
             memset((char *) *container + length * type_size, 0, (n - length) * type_size);
         } else {
-            { size_type64 i; for (i = length; i < n; i++) {
-                memcpy((char *) *container + i * type_size, value, type_size);
-            } }
+            {
+                size_type64 i;
+                for (i = length; i < n; i++) {
+                    memcpy((char *) *container + i * type_size, value, type_size);
+                }
+            }
         }
     }
 }
@@ -3085,11 +3102,14 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
     }
 #endif
     size_type64 pos = (*(char **) iter_begin - *(char **) container) / type_size;
-    { size_type64 i; for (i = pos; i < length; i++) {
-        if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
-            return (char *) *container + type_size * (i);
+    {
+        size_type64 i;
+        for (i = pos; i < length; i++) {
+            if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
+                return (char *) *container + type_size * (i);
+            }
         }
-    } }
+    }
     return NULL;
 }
 OPENCSTL_FUNC size_type __cstl_deque_max_size(void **container) {
@@ -3133,11 +3153,14 @@ OPENCSTL_FUNC void __cstl_deque_reverse(void **container) {
                              : (unsigned char *) calloc(type_size, 1);
     verify(tmp != NULL);
     char *base = (char *) *container;
-    { size_type64 i, j; for (i = 0, j = length - 1; i < j; i++, j--) {
-        memcpy(tmp, base + i * type_size, type_size);
-        memcpy(base + i * type_size, base + j * type_size, type_size);
-        memcpy(base + j * type_size, tmp, type_size);
-    } }
+    {
+        size_type64 i, j;
+        for (i = 0, j = length - 1; i < j; i++, j--) {
+            memcpy(tmp, base + i * type_size, type_size);
+            memcpy(base + i * type_size, base + j * type_size, type_size);
+            memcpy(base + j * type_size, tmp, type_size);
+        }
+    }
     if (tmp != stackbuf) {
         free(tmp);
     }
@@ -3157,12 +3180,15 @@ OPENCSTL_FUNC size_type64 __cstl_deque_count(void **container, void *value) {
 #endif
     CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
     size_type64 cnt = 0;
-    { size_type64 i; for (i = 0; i < length; i++) {
-        void *ptr = (char *) *container + (type_size * i);
-        if (is_equal(ptr, value, type_size) == 0) {
-            cnt++;
+    {
+        size_type64 i;
+        for (i = 0; i < length; i++) {
+            void *ptr = (char *) *container + (type_size * i);
+            if (is_equal(ptr, value, type_size) == 0) {
+                cnt++;
+            }
         }
-    } }
+    }
     return cnt;
 }
 OPENCSTL_FUNC size_type64 __cstl_deque_count_if(void **container, CSTL_COND cond) {
@@ -3170,12 +3196,15 @@ OPENCSTL_FUNC size_type64 __cstl_deque_count_if(void **container, CSTL_COND cond
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 cnt = 0;
-    { size_type64 i; for (i = 0; i < length; i++) {
-        void *ptr = (char *) *container + (type_size * i);
-        if (cond(ptr)) {
-            cnt++;
+    {
+        size_type64 i;
+        for (i = 0; i < length; i++) {
+            void *ptr = (char *) *container + (type_size * i);
+            if (cond(ptr)) {
+                cnt++;
+            }
         }
-    } }
+    }
     return cnt;
 }
 OPENCSTL_FUNC void *__cstl_deque_lower_bound(void **container, void *value, CSTL_COMPARE compare) {
@@ -3190,18 +3219,19 @@ OPENCSTL_FUNC void *__cstl_deque_lower_bound(void **container, void *value, CSTL
         value = &valuef;
     }
 #endif
-    if (length == 0) return NULL;
+    if (length == 0) { return NULL; }
     size_type64 L = 0;
     size_type64 R = length;
     while (L < R) {
         size_type64 M = L + (R - L) / 2;
         void *Mptr = ((char *) *container) + (type_size * M);
-        if (compare(Mptr, value) < 0)
+        if (compare(Mptr, value) < 0) {
             L = M + 1;
-        else
+        } else {
             R = M;
+        }
     }
-    if (L >= length) return NULL;
+    if (L >= length) { return NULL; }
     return ((char *) *container) + (type_size * L);
 }
 OPENCSTL_FUNC void *__cstl_deque_upper_bound(void **container, void *value, CSTL_COMPARE compare) {
@@ -3216,25 +3246,26 @@ OPENCSTL_FUNC void *__cstl_deque_upper_bound(void **container, void *value, CSTL
         value = &valuef;
     }
 #endif
-    if (length == 0) return NULL;
+    if (length == 0) { return NULL; }
     size_type64 L = 0;
     size_type64 R = length;
     while (L < R) {
         size_type64 M = L + (R - L) / 2;
         void *Mptr = ((char *) *container) + (type_size * M);
-        if (compare(value, Mptr) < 0)
+        if (compare(value, Mptr) < 0) {
             R = M;
-        else
+        } else {
             L = M + 1;
+        }
     }
-    if (L >= length) return NULL;
+    if (L >= length) { return NULL; }
     return ((char *) *container) + (type_size * L);
 }
 #endif
 #if !defined(_OPENCSTL_VECTOR_H)
 #define _OPENCSTL_VECTOR_H
-#ifndef OPENCSTL_SWAP_H
-#define OPENCSTL_SWAP_H
+#ifndef HG_048A8560242521EC2F3FE622B58C4E931B7EBB509AC4D88DC0BBD5819918F689_H
+#define HG_048A8560242521EC2F3FE622B58C4E931B7EBB509AC4D88DC0BBD5819918F689_H
 #include <stddef.h>
 #include <string.h>
 #include <stdint.h>
@@ -3280,7 +3311,7 @@ static unsigned int fast_sqrt(unsigned int x) {
     return res;
 }
 static int get_new_capacity(int _capacity) {
-    if (_capacity < 2) return 2;
+    if (_capacity < 2) { return 2; }
     enum {
         SQRT2_Q16 = 92682,
         DIFF_Q16 = 103926,
@@ -3289,8 +3320,8 @@ static int get_new_capacity(int _capacity) {
     unsigned int s = fast_sqrt((unsigned int) _capacity);
     int ratio_q16 = SQRT2_Q16 + (int) ((unsigned int) DIFF_Q16 * K / (K + s));
     long long grown = ((long long) _capacity * ratio_q16) >> 16;
-    if (grown <= _capacity) grown = _capacity + 1;
-    if (grown > 2147483647LL) grown = 2147483647LL;
+    if (grown <= _capacity) { grown = _capacity + 1; }
+    if (grown > 2147483647LL) { grown = 2147483647LL; }
     return (int) grown;
 }
 #endif
@@ -3627,18 +3658,20 @@ OPENCSTL_FUNC void *__cstl_vector_lower_bound(void **container, void *value, CST
         value = &valuef;
     }
 #endif
-    if (length == 0) return NULL;
+    if (length == 0) { return NULL; }
     size_type64 L = 0;
     size_type64 R = length;
     while (L < R) {
         size_type64 M = L + (R - L) / 2;
         void *Mptr = ((char *) *container) + (type_size * M);
-        if (compare(Mptr, value) < 0)
+        if (compare(Mptr, value) < 0) {
             L = M + 1;
-        else
+        }
+        else {
             R = M;
+        }
     }
-    if (L >= length) return NULL;
+    if (L >= length) { return NULL; }
     return ((char *) *container) + (type_size * L);
 }
 OPENCSTL_FUNC void *__cstl_vector_upper_bound(void **container, void *value, CSTL_COMPARE compare) {
@@ -3655,18 +3688,20 @@ OPENCSTL_FUNC void *__cstl_vector_upper_bound(void **container, void *value, CST
         value = &valuef;
     }
 #endif
-    if (length == 0) return NULL;
+    if (length == 0) { return NULL; }
     size_type64 L = 0;
     size_type64 R = length;
     while (L < R) {
         size_type64 M = L + (R - L) / 2;
         void *Mptr = ((char *) *container) + (type_size * M);
-        if (compare(value, Mptr) < 0)
+        if (compare(value, Mptr) < 0) {
             R = M;
-        else
+        }
+        else {
             L = M + 1;
+        }
     }
-    if (L >= length) return NULL;
+    if (L >= length) { return NULL; }
     return ((char *) *container) + (type_size * L);
 }
 #endif
@@ -3723,8 +3758,9 @@ OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, in
         value = &valuef;
     }
 #endif
-    if (value)
+    if (value) {
         memcpy(n, value, type_size);
+    }
     if (*head == NULL && *tail == NULL) {
         *head = *tail = n;
     } else {
@@ -3965,15 +4001,16 @@ OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_type64 n) {
     memcpy(tmp, a, n);
     memcpy(a, b, n);
     memcpy(b, tmp, n);
-    if (tmp != buf)
+    if (tmp != buf) {
         free(tmp);
+    }
 }
 OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
     void *slow = low;
     void *fast = low;
     while (fast != high) {
         fast = (void *) OPENCSTL_NIDX(&fast, -1);
-        if (fast == high) break;
+        if (fast == high) { break; }
         fast = (void *) OPENCSTL_NIDX(&fast, -1);
         slow = (void *) OPENCSTL_NIDX(&slow, -1);
     }
@@ -3982,10 +4019,10 @@ OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
 OPENCSTL_FUNC void __cstl_list_median_of_three(void *low, void *high, size_type64 type_size,
                                                int (*cmp)(const void *, const void *)) {
     void *mid = __cstl_list_mid_node(low, high);
-    if (mid == low || mid == high) return;
-    if (cmp(low, mid) > 0) __cstl_list_swap_data(low, mid, type_size);
-    if (cmp(low, high) > 0) __cstl_list_swap_data(low, high, type_size);
-    if (cmp(mid, high) > 0) __cstl_list_swap_data(mid, high, type_size);
+    if (mid == low || mid == high) { return; }
+    if (cmp(low, mid) > 0) { __cstl_list_swap_data(low, mid, type_size); }
+    if (cmp(low, high) > 0) { __cstl_list_swap_data(low, high, type_size); }
+    if (cmp(mid, high) > 0) { __cstl_list_swap_data(mid, high, type_size); }
     __cstl_list_swap_data(mid, high, type_size);
 }
 OPENCSTL_FUNC void *__cstl_list_partition(void *low, void *high, size_type64 type_size,
@@ -4436,7 +4473,7 @@ OPENCSTL_FUNC void __cstl_tree_erase_fixup(void **container, void *x) {
     COLOR(x) = BLACK;
 }
 OPENCSTL_FUNC void __cstl_tree_erase(void **container, void **iter) {
-    if (iter == NULL)return;
+    if (iter == NULL) {return; }
     void *z = iter;
     void *y = z;
     void *x = NULL;
@@ -4550,8 +4587,8 @@ OPENCSTL_FUNC size_type __cstl_tree_size(void **container) {
 #undef RED
 #undef BLACK
 #endif
-#if !defined(_OPENCSTL_STACK_H)
-#define _OPENCSTL_STACK_H
+#if !defined(HG_7509721A7FD14A6CB4B5E697AE6518C9F6C48E374CA5D7308A94EE27E1D59F86_H)
+#define HG_7509721A7FD14A6CB4B5E697AE6518C9F6C48E374CA5D7308A94EE27E1D59F86_H
 #define cstl_stack(TYPE)	(TYPE*)__cstl_stack(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_stack(size_type64 type_size, char *type) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
@@ -4627,7 +4664,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
         void *c = ((char *) *container) + type_size * idx;
         void *p = ((char *) *container) + type_size * HEAP_PARENT(idx);
         int r = compare ? compare(tmp, p) : memcmp(tmp, p, type_size);
-        if (r <= 0)break;
+        if (r <= 0) {break; }
         memcpy(c, p, type_size);
         idx = HEAP_PARENT(idx);
     }
@@ -4663,7 +4700,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
         if (R < length && r > 0) {
             C = R;
         }
-        if (C == idx)break;
+        if (C == idx) {break; }
         memcpy(((char *) *container) + type_size * idx, ((char *) *container) + type_size * C, type_size);
         idx = C;
     } while (1);
@@ -4862,8 +4899,9 @@ static void __ht_reinsert(
     while (ctrl[idx] != HT_CTRL_EMPTY) idx = (idx + 1) & cap_mask;
     ctrl[idx] = c;
     memcpy((char *) base + idx * type_size, key, key_size);
-    if (value_size && value)
+    if (value_size && value) {
         memcpy((char *) base + idx * type_size + key_size, value, value_size);
+    }
 }
 static void __ht_do_rehash(
     void **container, size_type64 header_sz,
@@ -4923,9 +4961,10 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
     char *base = (char *) *container;
     while (true) {
         uint8_t m = ctrl[idx];
-        if (m == HT_CTRL_EMPTY) break;
-        if (m == c && __ht_key_eq(base + idx * type_size, key, key_size))
+        if (m == HT_CTRL_EMPTY) { break; }
+        if (m == c && __ht_key_eq(base + idx * type_size, key, key_size)) {
             return;
+        }
         idx = (idx + 1) & cap_mask;
     }
     size_type64 length = OPENCSTL_NIDX(container, -1);
@@ -4941,8 +4980,9 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
     }
     ctrl[idx] = c;
     memcpy(base + idx * type_size, key, key_size);
-    if (value_size && value)
+    if (value_size && value) {
         memcpy(base + idx * type_size + key_size, value, value_size);
+    }
     OPENCSTL_NIDX(container, -1) = length + 1;
 }
 OPENCSTL_FUNC
@@ -4966,9 +5006,10 @@ void __cstl_hashtable_erase(void **container, void *key) {
     char *base = (char *) *container;
     while (true) {
         uint8_t m = ctrl[idx];
-        if (m == HT_CTRL_EMPTY) return;
-        if (m == c && __ht_key_eq(base + idx * type_size, key, key_size))
+        if (m == HT_CTRL_EMPTY) { return; }
+        if (m == c && __ht_key_eq(base + idx * type_size, key, key_size)) {
             break;
+        }
         idx = (idx + 1) & cap_mask;
     }
     size_type64 hole = idx;
@@ -5008,9 +5049,10 @@ void *__cstl_hashtable_find(void **container, void *key) {
     char *base = (char *) *container;
     while (true) {
         uint8_t m = ctrl[idx];
-        if (m == HT_CTRL_EMPTY) return NULL;
-        if (m == c && __ht_key_eq(base + idx * type_size, key, key_size))
+        if (m == HT_CTRL_EMPTY) { return NULL; }
+        if (m == c && __ht_key_eq(base + idx * type_size, key, key_size)) {
             return base + idx * type_size;
+        }
         idx = (idx + 1) & cap_mask;
     }
 }
@@ -5027,8 +5069,9 @@ void *__cstl_hashtable_begin(void **container) {
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     { size_type64 i; for (i = 0; i <= cap_mask; i++)
-        if (ctrl[i] != HT_CTRL_EMPTY)
-            return (char *) *container + i * type_size; }
+        if (ctrl[i] != HT_CTRL_EMPTY) {
+            return (char *) *container + i * type_size;
+        } }
     return NULL;
 }
 OPENCSTL_FUNC
@@ -5039,8 +5082,9 @@ void *__cstl_hashtable_rbegin(void **container) {
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     { int i; for (i = (int) cap_mask; i >= 0; i--)
-        if (ctrl[i] != HT_CTRL_EMPTY)
-            return (char *) *container + i * type_size; }
+        if (ctrl[i] != HT_CTRL_EMPTY) {
+            return (char *) *container + i * type_size;
+        } }
     return NULL;
 }
 OPENCSTL_FUNC
@@ -5067,17 +5111,19 @@ void *__cstl_hashtable_next_prev(void *it, int n) {
     if (n == -1) {
         size_type64 pos = ((char *) it - (char *) chtm->p1) / ts + 1;
         for (; pos < cap; pos++)
-            if (ctrl[pos] != HT_CTRL_EMPTY)
+            if (ctrl[pos] != HT_CTRL_EMPTY) {
                 return (char *) chtm->p1 + pos * ts;
+            }
         return NULL;
     }
     if (n == -2) {
         size_type64 pos = ((char *) it - (char *) chtm->p1) / ts;
-        if (pos == 0) return (char *) chtm->p1 - ts;
+        if (pos == 0) { return (char *) chtm->p1 - ts; }
         { size_type64 i; for (i = pos - 1; ; i--) {
-            if (ctrl[i] != HT_CTRL_EMPTY)
+            if (ctrl[i] != HT_CTRL_EMPTY) {
                 return (char *) chtm->p1 + i * ts;
-            if (i == 0) break;
+            }
+            if (i == 0) { break; }
         } }
         return (char *) chtm->p1 - ts;
     }
@@ -5104,9 +5150,9 @@ void __cstl_hashtable_reserve(void **container, size_type64 n) {
     uint8_t *old_ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     size_type64 want = length + n;
     size_type64 min_cap = (want * HT_LOAD_DEN + (HT_LOAD_NUM - 1)) / HT_LOAD_NUM;
-    if (min_cap < __HASHTABLE_DEFAULT_SIZE__) min_cap = __HASHTABLE_DEFAULT_SIZE__;
+    if (min_cap < __HASHTABLE_DEFAULT_SIZE__) { min_cap = __HASHTABLE_DEFAULT_SIZE__; }
     size_type64 new_cap = __ht_next_pow2(min_cap);
-    if (new_cap <= cap_mask_old + 1) return;
+    if (new_cap <= cap_mask_old + 1) { return; }
     void *new_raw = calloc(header_sz + new_cap * type_size, 1);
     verify(new_raw!=NULL);
     memcpy(new_raw, (char *) *container - header_sz, header_sz);
@@ -5354,18 +5400,20 @@ OPENCSTL_FUNC void *__cstl_array_lower_bound(void **container, void *value, CSTL
         value = &valuef;
     }
 #endif
-    if (length == 0) return NULL;
+    if (length == 0) { return NULL; }
     size_type64 L = 0;
     size_type64 R = length;
     while (L < R) {
         size_type64 M = L + (R - L) / 2;
         void *Mptr = ((char *) *container) + (type_size * M);
-        if (compare(Mptr, value) < 0)
+        if (compare(Mptr, value) < 0) {
             L = M + 1;
-        else
+        }
+        else {
             R = M;
+        }
     }
-    if (L >= length) return NULL;
+    if (L >= length) { return NULL; }
     return ((char *) *container) + (type_size * L);
 }
 OPENCSTL_FUNC void *__cstl_array_upper_bound(void **container, void *value, CSTL_COMPARE compare) {
@@ -5382,18 +5430,20 @@ OPENCSTL_FUNC void *__cstl_array_upper_bound(void **container, void *value, CSTL
         value = &valuef;
     }
 #endif
-    if (length == 0) return NULL;
+    if (length == 0) { return NULL; }
     size_type64 L = 0;
     size_type64 R = length;
     while (L < R) {
         size_type64 M = L + (R - L) / 2;
         void *Mptr = ((char *) *container) + (type_size * M);
-        if (compare(value, Mptr) < 0)
+        if (compare(value, Mptr) < 0) {
             R = M;
-        else
+        }
+        else {
             L = M + 1;
+        }
     }
-    if (L >= length) return NULL;
+    if (L >= length) { return NULL; }
     return ((char *) *container) + (type_size * L);
 }
 #endif
@@ -6352,7 +6402,7 @@ OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     size_type length = (size_type) OPENCSTL_NIDX(container, -1);
-    if (length <= 1) return;
+    if (length <= 1) { return; }
     void *ptr = malloc(type_size * length);
     void *it = *head;
     { size_type i; for (i = 0; i < length; i++) {
@@ -6444,7 +6494,7 @@ static uint64_t random_device(void) {
         long ret = syscall(SYS_getrandom,
                            (char *) &val + done, sizeof(val) - done, 0);
         if (ret < 0) {
-            if (errno == EINTR) continue;
+            if (errno == EINTR) { continue; }
             FILE *f = fopen("/dev/urandom", "rb");
             if (f) {
                 fread((char *) &val + done, 1, sizeof(val) - done, f);
@@ -6464,8 +6514,8 @@ static uint64_t random_device(void) {
     return val;
 }
 #endif
-#if !defined(_OPENCSTL_CSTL_TICKTOCK_H)
-#define _OPENCSTL_CSTL_TICKTOCK_H
+#if !defined(HG_A1170DE02D1586974502913B9A22BCD0BF76B2551E53583764290C33DA38A9E7_H)
+#define HG_A1170DE02D1586974502913B9A22BCD0BF76B2551E53583764290C33DA38A9E7_H
 #include <stdio.h>
 #if defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_TCC) ||defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_POCC) || defined(OCSTL_CC_NVCC))
 #if defined(OCSTL_CC_TCC) || defined(OCSTL_CC_POCC) || defined(OCSTL_CC_NVCC) || defined(OCSTL_CC_CLANG)
@@ -6556,19 +6606,19 @@ void __cstl_fclose(FILE *fp) {
 }
 char *__cstl_get_line(FILE *fp) {
     long start = ftell(fp);
-    if (start < 0) return NULL;
+    if (start < 0) { return NULL; }
     size_type64 len = 0;
     int c;
     int found_any = 0;
     while ((c = fgetc(fp)) != EOF) {
         found_any = 1;
-        if (c == '\n') break;
+        if (c == '\n') { break; }
         len++;
     }
-    if (!found_any && len == 0) return NULL;
-    if (fseek(fp, start, SEEK_SET) != 0) return NULL;
+    if (!found_any && len == 0) { return NULL; }
+    if (fseek(fp, start, SEEK_SET) != 0) { return NULL; }
     char *buf = (char *) calloc(len + 1, sizeof(char));
-    if (!buf) return NULL;
+    if (!buf) { return NULL; }
     { size_type64 i; for (i = 0; i < len; i++) {
         int ch = fgetc(fp);
         if (ch == EOF) {
@@ -6593,7 +6643,7 @@ FILE *__cstl_fwrite_all(FILE *fp, const char *buf) {
     __cstl_fclose(fp);
     FILE *new_fp = __cstl_fopen(filepath, "wt");
     fpm_append(new_fp, filepath);
-    if (!new_fp) return NULL;
+    if (!new_fp) { return NULL; }
     size_type64 len = strlen(buf);
     fwrite(buf, 1, len, new_fp);
     return new_fp;
@@ -6657,13 +6707,13 @@ static bool __cstl_exists(char *path) {
 #endif
 }
 static char *__cstl_join(char *path1, char *path2) {
-    if (!path1) path1 = "";
-    if (!path2) path2 = "";
+    if (!path1) { path1 = ""; }
+    if (!path2) { path2 = ""; }
     bool p2_abs = false;
     if (path2[0] != '\0') {
-        if (__cstl_is_sep(path2[0])) p2_abs = true;
+        if (__cstl_is_sep(path2[0])) { p2_abs = true; }
 #if defined(OCSTL_OS_WINDOWS)
-        if (isalpha((unsigned char) path2[0]) && path2[1] == ':') p2_abs = true;
+        if (isalpha((unsigned char) path2[0]) && path2[1] == ':') { p2_abs = true; }
 #endif
     }
     if (p2_abs) {
@@ -6684,7 +6734,7 @@ static char *__cstl_join(char *path1, char *path2) {
     char *ret = (char *) malloc(total + 1);
     memcpy(ret, path1, l1);
     size_type64 pos = l1;
-    if (need_sep) ret[pos++] = CSTL_PATH_SEP;
+    if (need_sep) { ret[pos++] = CSTL_PATH_SEP; }
     memcpy(ret + pos, path2, l2);
     ret[pos + l2] = '\0';
     return ret;
@@ -6693,7 +6743,7 @@ static char *__cstl_basename(char *path) {
     size_type64 len = strlen(path);
     size_type64 start = 0;
     { size_type64 i; for (i = 0; i < len; i++) {
-        if (__cstl_is_sep(path[i])) start = i + 1;
+        if (__cstl_is_sep(path[i])) { start = i + 1; }
     } }
     size_type64 base_len = len - start;
     char *ret = (char *) malloc(base_len + 1);
@@ -6705,13 +6755,13 @@ static char **__cstl_splitext(char *path) {
     size_type64 len = strlen(path);
     size_type64 base_start = 0;
     { size_type64 i; for (i = 0; i < len; i++) {
-        if (__cstl_is_sep(path[i])) base_start = i + 1;
+        if (__cstl_is_sep(path[i])) { base_start = i + 1; }
     } }
     size_type64 nonleading = base_start;
     while (nonleading < len && path[nonleading] == '.') nonleading++;
     size_type64 dot_pos = (size_type64) -1;
     { size_type64 i; for (i = nonleading; i < len; i++) {
-        if (path[i] == '.') dot_pos = i;
+        if (path[i] == '.') { dot_pos = i; }
     } }
     size_type64 root_len = (dot_pos == (size_type64) -1) ? len : dot_pos;
     size_type64 ext_len = (dot_pos == (size_type64) -1) ? 0 : (len - dot_pos);
@@ -6729,20 +6779,20 @@ static char **__cstl_splitext(char *path) {
 static size_type64 __cstl_getsize(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     WIN32_FILE_ATTRIBUTE_DATA attr;
-    if (!GetFileAttributesExA(path, GetFileExInfoStandard, &attr)) return 0;
+    if (!GetFileAttributesExA(path, GetFileExInfoStandard, &attr)) { return 0; }
     ULARGE_INTEGER sz;
     sz.LowPart = attr.nFileSizeLow;
     sz.HighPart = attr.nFileSizeHigh;
     return (size_type64) sz.QuadPart;
 #else
     struct stat st;
-    if (stat(path, &st) != 0) return 0;
+    if (stat(path, &st) != 0) { return 0; }
     return (size_type64) st.st_size;
 #endif
 }
 static void __cstl_makedirs(char *path) {
     size_type64 len = strlen(path);
-    if (len == 0) return;
+    if (len == 0) { return; }
     char *tmp = (char *) malloc(len + 1);
     memcpy(tmp, path, len + 1);
     { size_type64 i; for (i = 1; i < len; i++) {
@@ -6778,7 +6828,7 @@ static char *__cstl_dirname(char *path) {
     size_type64 len = strlen(path);
     size_type64 last_sep = (size_type64) -1;
     { size_type64 i; for (i = 0; i < len; i++) {
-        if (__cstl_is_sep(path[i])) last_sep = i;
+        if (__cstl_is_sep(path[i])) { last_sep = i; }
     } }
     if (last_sep == (size_type64) -1) {
         char *ret = (char *) malloc(1);
@@ -6786,7 +6836,7 @@ static char *__cstl_dirname(char *path) {
         return ret;
     }
     size_type64 dir_len = last_sep;
-    if (dir_len == 0) dir_len = 1;
+    if (dir_len == 0) { dir_len = 1; }
 #if defined(OCSTL_OS_WINDOWS)
     if (last_sep == 2 && isalpha((unsigned char) path[0]) && path[1] == ':') {
         dir_len = 3;
@@ -6798,7 +6848,7 @@ static char *__cstl_dirname(char *path) {
     return ret;
 }
 static char *__cstl_abspath(char *path) {
-    if (!path) path = "";
+    if (!path) { path = ""; }
 #if defined(OCSTL_OS_WINDOWS)
     DWORD len = GetFullPathNameA(path, 0, NULL, NULL);
     if (len == 0) {
@@ -6839,7 +6889,7 @@ static bool __cstl_is_dir(char *path) {
     return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY);
 #else
     struct stat st;
-    if (stat(path, &st) != 0) return false;
+    if (stat(path, &st) != 0) { return false; }
     return S_ISDIR(st.st_mode);
 #endif
 }
@@ -6849,7 +6899,7 @@ static bool __cstl_is_file(char *path) {
     return a != INVALID_FILE_ATTRIBUTES && !(a & FILE_ATTRIBUTE_DIRECTORY);
 #else
     struct stat st;
-    if (stat(path, &st) != 0) return false;
+    if (stat(path, &st) != 0) { return false; }
     return S_ISREG(st.st_mode);
 #endif
 }
@@ -6894,8 +6944,8 @@ static FileSystem fs = {
     __cstl_is_file,
 };
 #endif
-#if !defined(_OPENCSTL_SORT_H)
-#define _OPENCSTL_SORT_H
+#if !defined(HG_9EE9C96CA1195C35CD536FFEBDD01E45043E984BC44A62D627A09C0F9B62439A_H)
+#define HG_9EE9C96CA1195C35CD536FFEBDD01E45043E984BC44A62D627A09C0F9B62439A_H
 #include <stdlib.h>
 #include <string.h>
 #if !defined(_OPENCSTL_MSORT_H)
@@ -6915,8 +6965,8 @@ static void isort(void *base, size_type64 number, size_type64 width, CSTL_COMPAR
         size_type64 lo = 0, hi = i;
         while (lo < hi) {
             size_type64 mid = lo + ((hi - lo) >> 1);
-            if (compare(tmp, arr + mid * width) < 0) hi = mid;
-            else lo = mid + 1;
+            if (compare(tmp, arr + mid * width) < 0) { hi = mid; }
+            else { lo = mid + 1; }
         }
         if (lo < i) {
             memmove(arr + (lo + 1) * width, arr + lo * width, (i - lo) * width);
@@ -6931,7 +6981,7 @@ static void isort(void *base, size_type64 number, size_type64 width, CSTL_COMPAR
 #define MSORT_ISORT_THRESH 32
 static void msort_merge(char *arr, size_type64 len1, size_type64 len2, size_type64 sz,
                         CSTL_COMPARE cmp, char *buf) {
-    if (cmp(arr + (len1 - 1) * sz, arr + len1 * sz) <= 0) return;
+    if (cmp(arr + (len1 - 1) * sz, arr + len1 * sz) <= 0) { return; }
     if (len1 <= len2) {
         memcpy(buf, arr, len1 * sz);
         char *c1 = buf, *e1 = buf + len1 * sz;
@@ -6947,8 +6997,9 @@ static void msort_merge(char *arr, size_type64 len1, size_type64 len2, size_type
             }
             d += sz;
         }
-        if (c1 < e1)
+        if (c1 < e1) {
             memcpy(d, c1, (size_type64) (e1 - c1));
+        }
     } else {
         memcpy(buf, arr + len1 * sz, len2 * sz);
         size_type64 i = len1, j = len2, k = len1 + len2;
@@ -6962,34 +7013,35 @@ static void msort_merge(char *arr, size_type64 len1, size_type64 len2, size_type
                 j--;
             }
         }
-        if (j > 0)
+        if (j > 0) {
             memcpy(arr, buf, j * sz);
+        }
     }
 }
 static void msort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
-    if (number < 2) return;
+    if (number < 2) { return; }
     char *arr = (char *) base;
     size_type64 sz = width;
     { size_type64 i; for (i = 0; i < number; i += MSORT_ISORT_THRESH) {
         size_type64 blk = number - i;
-        if (blk > MSORT_ISORT_THRESH) blk = MSORT_ISORT_THRESH;
+        if (blk > MSORT_ISORT_THRESH) { blk = MSORT_ISORT_THRESH; }
         isort(arr + i * sz, blk, sz, compare);
     } }
     char *buf = (char *) calloc(((number + 1) / 2), sz);
-    if (!buf) return;
+    if (!buf) { return; }
     { size_type64 mb; for (mb = MSORT_ISORT_THRESH; mb < number; mb *= 2) {
         { size_type64 i; for (i = 0; i + mb < number; i += 2 * mb) {
             size_type64 len1 = mb;
             size_type64 len2 = number - i - mb;
-            if (len2 > mb) len2 = mb;
+            if (len2 > mb) { len2 = mb; }
             msort_merge(arr + i * sz, len1, len2, sz, compare, buf);
         } }
     } }
     free(buf);
 }
 #endif
-#if !defined(_OPENCSTL_TSORT_H)
-#define _OPENCSTL_TSORT_H
+#if !defined(HG_4D255DAEF399705797AC93BC162A1BB35E09F993B99FFC91244FC1917E828ECD_H)
+#define HG_4D255DAEF399705797AC93BC162A1BB35E09F993B99FFC91244FC1917E828ECD_H
 #include <stdlib.h>
 #include <string.h>
 #define TS_MIN_MERGE   32
@@ -7016,20 +7068,21 @@ static void ts_binsort(char *arr, size_type64 lo, size_type64 hi, size_type64 st
         size_type64 left = lo, right = i;
         while (left < right) {
             size_type64 mid = left + ((right - left) >> 1);
-            if (cmp(tmp, arr + mid * sz) < 0) right = mid;
-            else left = mid + 1;
+            if (cmp(tmp, arr + mid * sz) < 0) { right = mid; }
+            else { left = mid + 1; }
         }
         if (left < i) {
             memmove(arr + (left + 1) * sz, arr + left * sz, (i - left) * sz);
             memcpy(arr + left * sz, tmp, sz);
         }
     } }
-    if (tmp != sbuf)
+    if (tmp != sbuf) {
         free(tmp);
+    }
 }
 static size_type64 ts_count_run(char *arr, size_type64 lo, size_type64 hi,
                            size_type64 sz, CSTL_COMPARE cmp) {
-    if (hi - lo < 2) return hi - lo;
+    if (hi - lo < 2) { return hi - lo; }
     size_type64 run_hi = lo + 1;
     if (cmp(arr + run_hi * sz, arr + lo * sz) < 0) {
         while (run_hi + 1 < hi &&
@@ -7046,8 +7099,9 @@ static size_type64 ts_count_run(char *arr, size_type64 lo, size_type64 hi,
             a++;
             b--;
         }
-        if (t != rbuf)
+        if (t != rbuf) {
             free(t);
+        }
     } else {
         while (run_hi + 1 < hi &&
                cmp(arr + (run_hi + 1) * sz, arr + run_hi * sz) >= 0)
@@ -7058,35 +7112,35 @@ static size_type64 ts_count_run(char *arr, size_type64 lo, size_type64 hi,
 }
 static size_type64 ts_gallop_right(const char *key, const char *a, size_type64 n,
                               size_type64 sz, CSTL_COMPARE cmp) {
-    if (n == 0 || cmp(key, a) < 0) return 0;
+    if (n == 0 || cmp(key, a) < 0) { return 0; }
     size_type64 last = 0, ofs = 1;
     while (ofs < n && cmp(key, a + ofs * sz) >= 0) {
         last = ofs;
         ofs = (ofs << 1) + 1;
     }
-    if (ofs > n) ofs = n;
+    if (ofs > n) { ofs = n; }
     size_type64 lo = last + 1, hi = ofs;
     while (lo < hi) {
         size_type64 m = lo + ((hi - lo) >> 1);
-        if (cmp(key, a + m * sz) >= 0) lo = m + 1;
-        else hi = m;
+        if (cmp(key, a + m * sz) >= 0) { lo = m + 1; }
+        else { hi = m; }
     }
     return lo;
 }
 static size_type64 ts_gallop_left(const char *key, const char *a, size_type64 n,
                              size_type64 sz, CSTL_COMPARE cmp) {
-    if (n == 0 || cmp(key, a) <= 0) return 0;
+    if (n == 0 || cmp(key, a) <= 0) { return 0; }
     size_type64 last = 0, ofs = 1;
     while (ofs < n && cmp(key, a + ofs * sz) > 0) {
         last = ofs;
         ofs = (ofs << 1) + 1;
     }
-    if (ofs > n) ofs = n;
+    if (ofs > n) { ofs = n; }
     size_type64 lo = last + 1, hi = ofs;
     while (lo < hi) {
         size_type64 m = lo + ((hi - lo) >> 1);
-        if (cmp(key, a + m * sz) > 0) lo = m + 1;
-        else hi = m;
+        if (cmp(key, a + m * sz) > 0) { lo = m + 1; }
+        else { hi = m; }
     }
     return lo;
 }
@@ -7106,14 +7160,14 @@ static void ts_merge_lo(char *base, size_type64 len1, size_type64 len2,
                 d += sz;
                 cnt2++;
                 cnt1 = 0;
-                if (c2 >= e2) goto tail_lo;
+                if (c2 >= e2) { goto tail_lo; }
             } else {
                 memcpy(d, c1, sz);
                 c1 += sz;
                 d += sz;
                 cnt1++;
                 cnt2 = 0;
-                if (c1 >= e1) return;
+                if (c1 >= e1) { return; }
             }
         } while ((cnt1 | cnt2) < mg);
         do {
@@ -7123,29 +7177,30 @@ static void ts_merge_lo(char *base, size_type64 len1, size_type64 len2,
                 c1 += cnt1 * sz;
                 d += cnt1 * sz;
             }
-            if (c1 >= e1) return;
+            if (c1 >= e1) { return; }
             memcpy(d, c2, sz);
             c2 += sz;
             d += sz;
-            if (c2 >= e2) goto tail_lo;
+            if (c2 >= e2) { goto tail_lo; }
             cnt2 = ts_gallop_left(c1, c2, (size_type64) (e2 - c2) / sz, sz, cmp);
             if (cnt2) {
                 memmove(d, c2, cnt2 * sz);
                 c2 += cnt2 * sz;
                 d += cnt2 * sz;
             }
-            if (c2 >= e2) goto tail_lo;
+            if (c2 >= e2) { goto tail_lo; }
             memcpy(d, c1, sz);
             c1 += sz;
             d += sz;
-            if (c1 >= e1) return;
-            if (mg > 1) mg--;
+            if (c1 >= e1) { return; }
+            if (mg > 1) { mg--; }
         } while ((cnt1 | cnt2) >= TS_MIN_GALLOP);
         mg += 2;
     }
 tail_lo:
-    if (c1 < e1)
+    if (c1 < e1) {
         memcpy(d, c1, (size_type64) (e1 - c1));
+    }
 }
 static void ts_merge_hi(char *base, size_type64 len1, size_type64 len2,
                         size_type64 sz, CSTL_COMPARE cmp, char *buf) {
@@ -7162,18 +7217,21 @@ static void ts_merge_hi(char *base, size_type64 len1, size_type64 len2,
             j--;
         }
     }
-    if (j > 0)
+    if (j > 0) {
         memcpy(base, buf, j * sz);
+    }
 }
 static inline void ts_do_merge(char *arr, size_type64 base1, size_type64 len1,
                                size_type64 len2, size_type64 sz, CSTL_COMPARE cmp,
                                char *buf) {
     size_type64 mid = base1 + len1;
-    if (cmp(arr + (mid - 1) * sz, arr + mid * sz) <= 0) return;
-    if (len1 <= len2)
+    if (cmp(arr + (mid - 1) * sz, arr + mid * sz) <= 0) { return; }
+    if (len1 <= len2) {
         ts_merge_lo(arr + base1 * sz, len1, len2, sz, cmp, buf);
-    else
+    }
+    else {
         ts_merge_hi(arr + base1 * sz, len1, len2, sz, cmp, buf);
+    }
 }
 static void ts_merge_collapse(char *arr, struct ts_run *stk, size_type64 *sp,
                               size_type64 sz, CSTL_COMPARE cmp, char *buf) {
@@ -7181,12 +7239,12 @@ static void ts_merge_collapse(char *arr, struct ts_run *stk, size_type64 *sp,
         size_type64 n = *sp - 2;
         int need_merge = 0;
         if (n > 0 && stk[n - 1].len <= stk[n].len + stk[n + 1].len) {
-            if (stk[n - 1].len < stk[n + 1].len) n--;
+            if (stk[n - 1].len < stk[n + 1].len) { n--; }
             need_merge = 1;
         } else if (stk[n].len <= stk[n + 1].len) {
             need_merge = 1;
         }
-        if (!need_merge) break;
+        if (!need_merge) { break; }
         ts_do_merge(arr, stk[n].base, stk[n].len, stk[n + 1].len,
                     sz, cmp, buf);
         stk[n].len += stk[n + 1].len;
@@ -7199,7 +7257,7 @@ static void ts_merge_force(char *arr, struct ts_run *stk, size_type64 *sp,
                            size_type64 sz, CSTL_COMPARE cmp, char *buf) {
     while (*sp > 1) {
         size_type64 n = *sp - 2;
-        if (n > 0 && stk[n - 1].len < stk[n + 1].len) n--;
+        if (n > 0 && stk[n - 1].len < stk[n + 1].len) { n--; }
         ts_do_merge(arr, stk[n].base, stk[n].len, stk[n + 1].len,
                     sz, cmp, buf);
         stk[n].len += stk[n + 1].len;
@@ -7209,7 +7267,7 @@ static void ts_merge_force(char *arr, struct ts_run *stk, size_type64 *sp,
     }
 }
 static void tsort(void *base, const size_type64 number, const size_type64 width, CSTL_COMPARE cmp) {
-    if (number < 2) return;
+    if (number < 2) { return; }
     char *arr = (char *) base;
     size_type64 sz = width;
     if (number < TS_MIN_MERGE) {
@@ -7218,7 +7276,7 @@ static void tsort(void *base, const size_type64 number, const size_type64 width,
         return;
     }
     char *buf = (char *) malloc(number * sz);
-    if (!buf) return;
+    if (!buf) { return; }
     struct ts_run stk[TS_MAX_STACK];
     size_type64 sp = 0;
     size_type64 minrun = ts_minrun(number);
@@ -7227,7 +7285,7 @@ static void tsort(void *base, const size_type64 number, const size_type64 width,
         size_type64 run_len = ts_count_run(arr, lo, number, sz, cmp);
         if (run_len < minrun) {
             size_type64 force = number - lo;
-            if (force > minrun) force = minrun;
+            if (force > minrun) { force = minrun; }
             ts_binsort(arr, lo, lo + force, lo + run_len, sz, cmp);
             run_len = force;
         }
@@ -7292,14 +7350,14 @@ static inline size_type64 pdq_log2(size_type64 n) {
 }
 static void pdq_isort(unsigned char *base, size_type64 n, size_type64 sz,
                       int (*cmp)(const void *, const void *), unsigned char *tmp) {
-    if (n < 2) return;
+    if (n < 2) { return; }
     { size_type64 i; for (i = 1; i < n; ++i)
         if (cmp(PDQ_ELEM(base, i), base) < 0) {
             pdq__swap(PDQ_ELEM(base, i), base, sz); }
         }
     { size_type64 i; for (i = 2; i < n; ++i) {
         unsigned char *c = PDQ_ELEM(base, i);
-        if (cmp(c - sz, c) <= 0) continue;
+        if (cmp(c - sz, c) <= 0) { continue; }
         memcpy(tmp, c, sz);
         unsigned char *j = c;
         do {
@@ -7313,7 +7371,7 @@ static void pdq_isort_unguard(unsigned char *base, size_type64 n, size_type64 sz
                               int (*cmp)(const void *, const void *), unsigned char *tmp) {
     { size_type64 i; for (i = 1; i < n; ++i) {
         unsigned char *c = PDQ_ELEM(base, i);
-        if (cmp(c - sz, c) <= 0) continue;
+        if (cmp(c - sz, c) <= 0) { continue; }
         memcpy(tmp, c, sz);
         unsigned char *j = c;
         do {
@@ -7325,17 +7383,17 @@ static void pdq_isort_unguard(unsigned char *base, size_type64 n, size_type64 sz
 }
 static int pdq_partial_isort(unsigned char *base, size_type64 n, size_type64 sz,
                              int (*cmp)(const void *, const void *), unsigned char *tmp) {
-    if (n < 2) return 1;
+    if (n < 2) { return 1; }
     size_type64 cnt = 0;
     { size_type64 i; for (i = 1; i < n; ++i) {
         unsigned char *c = PDQ_ELEM(base, i);
-        if (cmp(c - sz, c) <= 0) continue;
+        if (cmp(c - sz, c) <= 0) { continue; }
         memcpy(tmp, c, sz);
         unsigned char *j = c;
         do {
             memcpy(j, j - sz, sz);
             j -= sz;
-            if (++cnt > PDQ_PARTIAL_LIMIT) return 0;
+            if (++cnt > PDQ_PARTIAL_LIMIT) { return 0; }
         } while (j > base && cmp(j - sz, tmp) > 0);
         memcpy(j, tmp, sz);
     } }
@@ -7376,18 +7434,19 @@ static void pdq_sift(unsigned char *base, size_type64 root, size_type64 n,
                      size_type64 sz, int (*cmp)(const void *, const void *)) {
     for (;;) {
         size_type64 c = root * 2 + 1;
-        if (c >= n) break;
+        if (c >= n) { break; }
         size_type64 mx = root;
-        if (cmp(PDQ_ELEM(base, mx), PDQ_ELEM(base, c)) < 0) mx = c;
-        if (c + 1 < n && cmp(PDQ_ELEM(base, mx), PDQ_ELEM(base, c + 1)) < 0)
+        if (cmp(PDQ_ELEM(base, mx), PDQ_ELEM(base, c)) < 0) { mx = c; }
+        if (c + 1 < n && cmp(PDQ_ELEM(base, mx), PDQ_ELEM(base, c + 1)) < 0) {
             mx = c + 1;
-        if (mx == root) break;
+        }
+        if (mx == root) { break; }
         pdq__swap(PDQ_ELEM(base, root), PDQ_ELEM(base, mx), sz);
         root = mx;
     }
 }
 static void pdq_heap(unsigned char *base, size_type64 n, size_type64 sz, int (*cmp)(const void *, const void *)) {
-    if (n < 2) return;
+    if (n < 2) { return; }
     { size_type64 i; for (i = n / 2; i-- > 0; ) pdq_sift(base, i, n, sz, cmp); }
     { size_type64 e; for (e = n; e-- > 1; ) {
         pdq__swap(base, PDQ_ELEM(base, e), sz);
@@ -7402,7 +7461,7 @@ static inline uint64_t pdq_rng(uint64_t *s) {
     return (*s = x);
 }
 static void pdq_break(unsigned char *base, size_type64 n, size_type64 sz, uint64_t *rs) {
-    if (n < 8) return;
+    if (n < 8) { return; }
     size_type64 h = n >> 1, q = n >> 2;
     pdq__swap(PDQ_ELEM(base, q), PDQ_ELEM(base, q + pdq_rng(rs) % (h?h:1)), sz);
     pdq__swap(PDQ_ELEM(base, h), PDQ_ELEM(base, q + pdq_rng(rs) % (h?h:1)), sz);
@@ -7424,8 +7483,9 @@ static inline size_type64 pdq_part_r(unsigned char *base, size_type64 n, size_ty
         while (cmp(hi, piv) >= 0) hi -= sz;
     }
     unsigned char *pp = lo - sz;
-    if (pp > base)
+    if (pp > base) {
         memcpy(base, pp, sz);
+    }
     memcpy(pp, piv, sz);
     *ap = was_partitioned;
     return (size_type64) (pp - base) / sz;
@@ -7444,20 +7504,21 @@ static inline size_type64 pdq_part_l(unsigned char *base, size_type64 n, size_ty
         while (cmp(lo, piv) <= 0) lo += sz;
         while (cmp(piv, hi) < 0) hi -= sz;
     }
-    if (hi > base)
+    if (hi > base) {
         memcpy(base, hi, sz);
+    }
     memcpy(hi, piv, sz);
     return (size_type64) (hi - base) / sz;
 }
 static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE cmp) {
-    if (!base || !cmp || width == 0 || number < 2) return;
+    if (!base || !cmp || width == 0 || number < 2) { return; }
     const size_type64 sz = width;
     unsigned char *arr = (unsigned char *) base;
     unsigned char sbuf[512];
     unsigned char *scratch;
     size_type64 need = sz * 2;
     scratch = (need <= sizeof(sbuf)) ? sbuf : (unsigned char *) malloc(need);
-    if (!scratch) return;
+    if (!scratch) { return; }
     unsigned char *tmp = scratch;
     unsigned char *piv = scratch + sz;
     uint64_t rs = (uint64_t) number ^ 0x517cc1b727220a95ULL;
@@ -7482,10 +7543,12 @@ static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMP
         int leftmost = stk[sp].left;
     again:
         if (n <= PDQ_ISORT_THRESH) {
-            if (leftmost)
+            if (leftmost) {
                 pdq_isort(base, n, sz, cmp, tmp);
-            else
+            }
+            else {
                 pdq_isort_unguard(base, n, sz, cmp, tmp);
+            }
             continue;
         }
         if (bad == 0) {
@@ -7507,12 +7570,12 @@ static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMP
         int unbal = (lsz < n / 8 || rsz < n / 8);
         if (unbal) {
             bad--;
-            if (lsz >= PDQ_ISORT_THRESH) pdq_break(base, lsz, sz, &rs);
-            if (rsz >= PDQ_ISORT_THRESH) pdq_break(base + (pp + 1) * sz, rsz, sz, &rs);
+            if (lsz >= PDQ_ISORT_THRESH) { pdq_break(base, lsz, sz, &rs); }
+            if (rsz >= PDQ_ISORT_THRESH) { pdq_break(base + (pp + 1) * sz, rsz, sz, &rs); }
         } else if (ap) {
             int lok = pdq_partial_isort(base, lsz, sz, cmp, tmp);
             int rok = pdq_partial_isort(base + (pp + 1) * sz, rsz, sz, cmp, tmp);
-            if (lok && rok) continue;
+            if (lok && rok) { continue; }
         }
         unsigned char *rbase = base + (pp + 1) * sz;
         if (lsz < rsz) {
@@ -7538,8 +7601,9 @@ static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMP
         }
         goto again;
     }
-    if (scratch != sbuf)
+    if (scratch != sbuf) {
         free(scratch);
+    }
 }
 #undef PDQ_ELEM
 #undef PDQ_ISORT_THRESH
@@ -7589,9 +7653,10 @@ static int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(
     return thread->handle == (HANDLE) NULL;
 }
 static void pthread_exit(void *value_ptr) {
-    if (!_pthread_cleanup_mutex)
+    if (!_pthread_cleanup_mutex) {
         if (!_pthread_cleanup_mutex)
             _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
+    }
     WaitForSingleObject(_pthread_cleanup_mutex, INFINITE);
     HANDLE thread = GetCurrentThread();
     _pthread_cleanup_stack **head = &_pthread_cleanup_stack_head;
@@ -7599,9 +7664,9 @@ static void pthread_exit(void *value_ptr) {
     while (*head) {
         _pthread_cleanup_stack *tmp = *head;
         int b = (*head)->thread == thread;
-        if (b) *head = (*head)->next;
-        if (*head)head = &(*head)->next;
-        if (b)rts = tmp;
+        if (b) { *head = (*head)->next; }
+        if (*head) {head = &(*head)->next; }
+        if (b) {rts = tmp; }
     }
     if (rts) {
         while (rts->index--) {
@@ -7630,14 +7695,15 @@ static int pthread_cancel(pthread_t thread) {
     return 0;
 }
 static void pthread_cleanup_push(void (*routine)(void *), void *arg) {
-    if (!_pthread_cleanup_mutex)
+    if (!_pthread_cleanup_mutex) {
         if (!_pthread_cleanup_mutex)
             _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
+    }
     WaitForSingleObject(_pthread_cleanup_mutex, INFINITE);
     HANDLE thread = GetCurrentThread();
     _pthread_cleanup_stack **head = &_pthread_cleanup_stack_head;
     while (*head) {
-        if ((*head)->thread == thread) break;
+        if ((*head)->thread == thread) { break; }
         head = &(*head)->next;
     }
     if (!*head) {
@@ -7653,9 +7719,10 @@ static void pthread_cleanup_push(void (*routine)(void *), void *arg) {
     ReleaseMutex(_pthread_cleanup_mutex);
 }
 static void pthread_cleanup_pop(int execute) {
-    if (!_pthread_cleanup_mutex)
+    if (!_pthread_cleanup_mutex) {
         if (!_pthread_cleanup_mutex)
             _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
+    }
     WaitForSingleObject(_pthread_cleanup_mutex, INFINITE);
     HANDLE thread = GetCurrentThread();
     _pthread_cleanup_stack **head = &_pthread_cleanup_stack_head;
@@ -7767,15 +7834,17 @@ static void ps_merge(char *base, char *buf, size_type64 n1, size_type64 n2,
         }
         d += sz;
     }
-    if (l < l_end)
+    if (l < l_end) {
         memcpy(d, l, (size_type64) (l_end - l));
-    if (r < r_end)
+    }
+    if (r < r_end) {
         memcpy(d, r, (size_type64) (r_end - r));
+    }
     memcpy(base, buf, (n1 + n2) * sz);
 }
 static void *ps_run(void *p) {
     struct ps_args *a = (struct ps_args *) p;
-    if (a->n < 2) return NULL;
+    if (a->n < 2) { return NULL; }
     if (a->n <= PS_SEQ_CUTOFF || a->depth >= PS_MAX_DEPTH) {
         qsort(a->base, a->n, a->sz, a->cmp);
         return NULL;
@@ -7790,14 +7859,14 @@ static void *ps_run(void *p) {
     };
     pthread_t tid;
     int spawned = (pthread_create(&tid, NULL, ps_run, &left) == 0);
-    if (!spawned) ps_run(&left);
+    if (!spawned) { ps_run(&left); }
     ps_run(&right);
-    if (spawned) pthread_join(tid, NULL);
+    if (spawned) { pthread_join(tid, NULL); }
     ps_merge(a->base, a->buf, mid, a->n - mid, a->sz, a->cmp);
     return NULL;
 }
 static void pmsort(void *base, const size_type64 number, const size_type64 width, CSTL_COMPARE cmp) {
-    if (number < 2) return;
+    if (number < 2) { return; }
     if (number <= PS_SEQ_CUTOFF) {
         msort(base, number, width, cmp);
         return;
@@ -7815,456 +7884,6 @@ static void pmsort(void *base, const size_type64 number, const size_type64 width
 }
 #undef PS_MAX_DEPTH
 #undef PS_SEQ_CUTOFF
-#endif
-#if !defined(_OPENCSTL_IPNSORT_H)
-#define _OPENCSTL_IPNSORT_H
-#include <stddef.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#define IPN_INSERTION_SORT_THRESHOLD    20
-#define IPN_SMALL_SORT_THRESHOLD        20
-#define IPN_PSEUDO_MEDIAN_REC_THRESHOLD 1024
-#define IPN_PARTIAL_LIMIT                8
-#define IPN_ISORT_TMP_BYTES            128
-#define IPN_STACK_MAX                  128
-#if defined(_MSC_VER)
-#define IPN_LIKELY(x)   (x)
-#define IPN_UNLIKELY(x) (x)
-#define IPN_ALWAYS_INLINE __forceinline
-#else
-#define IPN_LIKELY(x)   __builtin_expect(!!(x), 1)
-#define IPN_UNLIKELY(x) __builtin_expect(!!(x), 0)
-#define IPN_ALWAYS_INLINE __attribute__((always_inline)) inline
-#endif
-static IPN_ALWAYS_INLINE void ipn__swap(unsigned char *a, unsigned char *b, size_type64 n) {
-    if (a == b) return;
-    if (IPN_LIKELY(n == 8)) {
-        uint64_t t;
-        memcpy(&t, a, 8);
-        memcpy(a, b, 8);
-        memcpy(b, &t, 8);
-    } else if (n == 16) {
-        uint64_t t0, t1;
-        memcpy(&t0, a, 8);
-        memcpy(&t1, a + 8, 8);
-        memcpy(a, b, 16);
-        memcpy(b, &t0, 8);
-        memcpy(b + 8, &t1, 8);
-    } else if (n == 4) {
-        uint32_t t;
-        memcpy(&t, a, 4);
-        memcpy(a, b, 4);
-        memcpy(b, &t, 4);
-    } else {
-        unsigned char buf[64];
-        size_type64 left = n;
-        while (left >= sizeof(buf)) {
-            memcpy(buf, a, sizeof(buf));
-            memcpy(a, b, sizeof(buf));
-            memcpy(b, buf, sizeof(buf));
-            a += sizeof(buf);
-            b += sizeof(buf);
-            left -= sizeof(buf);
-        }
-        if (left) {
-            memcpy(buf, a, left);
-            memcpy(a, b, left);
-            memcpy(b, buf, left);
-        }
-    }
-}
-#define IPN_CSWAP(bp, ai, bi, w, cmp) do {                         \
-    unsigned char *_ipn_a = (bp) + (ai) * (w);                     \
-    unsigned char *_ipn_b = (bp) + (bi) * (w);                     \
-    if ((cmp)(_ipn_a, _ipn_b) > 0) ipn__swap(_ipn_a, _ipn_b, (w)); \
-} while (0)
-static IPN_ALWAYS_INLINE uint32_t ipn_log2u(size_type64 v) {
-    uint32_t r = 0;
-    v |= 1;
-    while (v > 1) {
-        v >>= 1;
-        ++r;
-    }
-    return r;
-}
-static IPN_ALWAYS_INLINE uint64_t ipn_xorshift(uint64_t *s) {
-    uint64_t x = *s;
-    x ^= x << 13;
-    x ^= x >> 7;
-    x ^= x << 17;
-    return (*s = x);
-}
-static void ipn_reverse(unsigned char *base, size_type64 n, size_type64 width) {
-    if (n < 2) return;
-    unsigned char *lo = base;
-    unsigned char *hi = base + (n - 1) * width;
-    while (lo < hi) {
-        ipn__swap(lo, hi, width);
-        lo += width;
-        hi -= width;
-    }
-}
-static void ipn_isort_shift_swap(unsigned char *base, size_type64 n, size_type64 offset,
-                                 size_type64 width, CSTL_COMPARE cmp, int guarded) {
-    if (guarded) {
-        { size_type64 i; for (i = offset; i < n; ++i) {
-            unsigned char *j = base + i * width;
-            while (j > base && cmp(j - width, j) > 0) {
-                ipn__swap(j - width, j, width);
-                j -= width;
-            }
-        } }
-    } else {
-        { size_type64 i; for (i = offset; i < n; ++i) {
-            unsigned char *j = base + i * width;
-            while (cmp(j - width, j) > 0) {
-                ipn__swap(j - width, j, width);
-                j -= width;
-                if (j == base) break;
-            }
-        } }
-    }
-}
-static void ipn_isort_shift_left(unsigned char *base, size_type64 n, size_type64 offset,
-                                 size_type64 width, CSTL_COMPARE cmp) {
-    if (IPN_UNLIKELY(width > IPN_ISORT_TMP_BYTES)) {
-        ipn_isort_shift_swap(base, n, offset, width, cmp, 1);
-        return;
-    }
-    unsigned char tmp[IPN_ISORT_TMP_BYTES];
-    { size_type64 i; for (i = offset; i < n; ++i) {
-        unsigned char *c = base + i * width;
-        if (cmp(c - width, c) <= 0) continue;
-        memcpy(tmp, c, width);
-        unsigned char *j = c;
-        do {
-            memcpy(j, j - width, width);
-            j -= width;
-        } while (j > base && cmp(j - width, tmp) > 0);
-        memcpy(j, tmp, width);
-    } }
-}
-static void ipn_isort_shift_left_unguard(unsigned char *base, size_type64 n, size_type64 offset,
-                                         size_type64 width, CSTL_COMPARE cmp) {
-    if (IPN_UNLIKELY(width > IPN_ISORT_TMP_BYTES)) {
-        ipn_isort_shift_swap(base, n, offset, width, cmp, 0);
-        return;
-    }
-    unsigned char tmp[IPN_ISORT_TMP_BYTES];
-    { size_type64 i; for (i = offset; i < n; ++i) {
-        unsigned char *c = base + i * width;
-        if (cmp(c - width, c) <= 0) continue;
-        memcpy(tmp, c, width);
-        unsigned char *j = c;
-        do {
-            memcpy(j, j - width, width);
-            j -= width;
-        } while (cmp(j - width, tmp) > 0);
-        memcpy(j, tmp, width);
-    } }
-}
-static IPN_ALWAYS_INLINE void ipn_sort3(unsigned char *b, size_type64 w, CSTL_COMPARE cmp) {
-    IPN_CSWAP(b, 0, 1, w, cmp);
-    IPN_CSWAP(b, 1, 2, w, cmp);
-    IPN_CSWAP(b, 0, 1, w, cmp);
-}
-static IPN_ALWAYS_INLINE void ipn_sort4(unsigned char *b, size_type64 w, CSTL_COMPARE cmp) {
-    IPN_CSWAP(b, 0, 2, w, cmp);
-    IPN_CSWAP(b, 1, 3, w, cmp);
-    IPN_CSWAP(b, 0, 1, w, cmp);
-    IPN_CSWAP(b, 2, 3, w, cmp);
-    IPN_CSWAP(b, 1, 2, w, cmp);
-}
-static void ipn_small_sort(unsigned char *base, size_type64 n, size_type64 width,
-                           CSTL_COMPARE cmp, int unguarded) {
-    if (n < 2) return;
-    if (n == 2) {
-        IPN_CSWAP(base, 0, 1, width, cmp);
-        return;
-    }
-    if (n == 3) {
-        ipn_sort3(base, width, cmp);
-        return;
-    }
-    ipn_sort4(base, width, cmp);
-    if (n == 4) return;
-    if (unguarded)
-        ipn_isort_shift_left_unguard(base, n, 4, width, cmp);
-    else
-        ipn_isort_shift_left(base, n, 4, width, cmp);
-}
-static IPN_ALWAYS_INLINE void ipn_isort(unsigned char *base, size_type64 n, size_type64 width,
-                                        CSTL_COMPARE cmp) {
-    if (n < 2) return;
-    ipn_small_sort(base, n, width, cmp, 0);
-}
-static size_type64 ipn_find_existing_run(const unsigned char *base, size_type64 n, size_type64 width,
-                                    CSTL_COMPARE cmp, int *was_reversed) {
-    *was_reversed = 0;
-    if (n < 2) return n;
-    size_type64 i = 1;
-    if (cmp(base, base + width) > 0) {
-        *was_reversed = 1;
-        while (i < n && cmp(base + (i - 1) * width, base + i * width) > 0) ++i;
-    } else {
-        while (i < n && cmp(base + (i - 1) * width, base + i * width) <= 0) ++i;
-    }
-    return i;
-}
-static void ipn_sift(unsigned char *base, size_type64 root, size_type64 n, size_type64 width,
-                     CSTL_COMPARE cmp) {
-    for (;;) {
-        size_type64 c = root * 2 + 1;
-        if (c >= n) break;
-        size_type64 mx = root;
-        if (cmp(base + mx * width, base + c * width) < 0) mx = c;
-        if (c + 1 < n && cmp(base + mx * width, base + (c + 1) * width) < 0) mx = c + 1;
-        if (mx == root) break;
-        ipn__swap(base + root * width, base + mx * width, width);
-        root = mx;
-    }
-}
-static void ipn_heapsort(unsigned char *base, size_type64 n, size_type64 width, CSTL_COMPARE cmp) {
-    if (n < 2) return;
-    { size_type64 i; for (i = n / 2; i-- > 0; ) ipn_sift(base, i, n, width, cmp); }
-    { size_type64 e; for (e = n; e-- > 1; ) {
-        ipn__swap(base, base + e * width, width);
-        ipn_sift(base, 0, e, width, cmp);
-    } }
-}
-static IPN_ALWAYS_INLINE unsigned char *ipn_median3(unsigned char *a, unsigned char *b,
-                                                    unsigned char *c, CSTL_COMPARE cmp) {
-    int x = (cmp(a, b) < 0);
-    int y = (cmp(a, c) < 0);
-    if (x == y) {
-        int z = (cmp(b, c) < 0);
-        return (z ^ x) ? c : b;
-    }
-    return a;
-}
-static unsigned char *ipn_median3_rec(unsigned char *a, unsigned char *b, unsigned char *c,
-                                      size_type64 n, size_type64 width, CSTL_COMPARE cmp) {
-    if (n * 8 >= IPN_PSEUDO_MEDIAN_REC_THRESHOLD) {
-        size_type64 n8 = n / 8;
-        a = ipn_median3_rec(a, a + n8 * 4 * width, a + n8 * 7 * width, n8, width, cmp);
-        b = ipn_median3_rec(b, b + n8 * 4 * width, b + n8 * 7 * width, n8, width, cmp);
-        c = ipn_median3_rec(c, c + n8 * 4 * width, c + n8 * 7 * width, n8, width, cmp);
-    }
-    return ipn_median3(a, b, c, cmp);
-}
-static size_type64 ipn_choose_pivot(unsigned char *base, size_type64 n, size_type64 width, CSTL_COMPARE cmp) {
-    size_type64 n8 = n / 8;
-    unsigned char *a = base;
-    unsigned char *b = base + n8 * 4 * width;
-    unsigned char *c = base + n8 * 7 * width;
-    unsigned char *r;
-    if (n < IPN_PSEUDO_MEDIAN_REC_THRESHOLD) {
-        r = ipn_median3(a, b, c, cmp);
-    } else {
-        r = ipn_median3_rec(a, b, c, n8, width, cmp);
-    }
-    return (size_type64) (r - base) / width;
-}
-static size_type64 ipn_partition(unsigned char *base, size_type64 n, size_type64 pivot_pos,
-                            size_type64 width, CSTL_COMPARE cmp, int *was_partitioned) {
-    if (pivot_pos != 0)
-        ipn__swap(base, base + pivot_pos * width, width);
-    unsigned char *piv = base;
-    unsigned char *lo = base + width;
-    unsigned char *hi = base + (n - 1) * width;
-    while (lo <= hi && cmp(lo, piv) < 0) lo += width;
-    while (lo <= hi && cmp(hi, piv) >= 0) hi -= width;
-    *was_partitioned = (lo > hi);
-    while (lo < hi) {
-        ipn__swap(lo, hi, width);
-        lo += width;
-        hi -= width;
-        while (cmp(lo, piv) < 0) lo += width;
-        while (cmp(hi, piv) >= 0) hi -= width;
-    }
-    unsigned char *pp = lo - width;
-    if (pp > base)
-        ipn__swap(base, pp, width);
-    return (size_type64) (pp - base) / width;
-}
-static size_type64 ipn_partition_eq(unsigned char *base, size_type64 n, size_type64 pivot_pos,
-                               size_type64 width, CSTL_COMPARE cmp) {
-    if (pivot_pos != 0)
-        ipn__swap(base, base + pivot_pos * width, width);
-    unsigned char *piv = base;
-    unsigned char *lo = base + width;
-    unsigned char *hi = base + (n - 1) * width;
-    while (lo <= hi && cmp(lo, piv) <= 0) lo += width;
-    while (lo <= hi && cmp(hi, piv) > 0) hi -= width;
-    while (lo < hi) {
-        ipn__swap(lo, hi, width);
-        lo += width;
-        hi -= width;
-        while (cmp(lo, piv) <= 0) lo += width;
-        while (cmp(hi, piv) > 0) hi -= width;
-    }
-    unsigned char *pp = lo - width;
-    if (pp > base)
-        ipn__swap(base, pp, width);
-    return (size_type64) (pp - base) / width;
-}
-static int ipn_partial_isort(unsigned char *base, size_type64 n, size_type64 width,
-                             CSTL_COMPARE cmp) {
-    if (n < 2) return 1;
-    if (IPN_UNLIKELY(width > IPN_ISORT_TMP_BYTES)) {
-        size_type64 cnt = 0;
-        { size_type64 i; for (i = 1; i < n; ++i) {
-            unsigned char *j = base + i * width;
-            while (j > base && cmp(j - width, j) > 0) {
-                ipn__swap(j - width, j, width);
-                j -= width;
-                if (++cnt > IPN_PARTIAL_LIMIT) return 0;
-            }
-        } }
-        return 1;
-    }
-    unsigned char tmp[IPN_ISORT_TMP_BYTES];
-    size_type64 cnt = 0;
-    { size_type64 i; for (i = 1; i < n; ++i) {
-        unsigned char *c = base + i * width;
-        if (cmp(c - width, c) <= 0) continue;
-        memcpy(tmp, c, width);
-        unsigned char *j = c;
-        do {
-            memcpy(j, j - width, width);
-            j -= width;
-            ++cnt;
-        } while (j > base && cmp(j - width, tmp) > 0);
-        memcpy(j, tmp, width);
-        if (cnt > IPN_PARTIAL_LIMIT) return 0;
-    } }
-    return 1;
-}
-static void ipn_break_patterns(unsigned char *base, size_type64 n, size_type64 width, uint64_t *rs) {
-    if (n < 8) return;
-    size_type64 q = n >> 2;
-    size_type64 h = n >> 1;
-    size_type64 span = (h > 0) ? h : 1;
-    size_type64 r1 = (size_type64) (ipn_xorshift(rs) % span);
-    size_type64 r2 = (size_type64) (ipn_xorshift(rs) % span);
-    size_type64 r3 = (size_type64) (ipn_xorshift(rs) % span);
-    ipn__swap(base + q * width,       base + (q + r1) * width, width);
-    ipn__swap(base + h * width,       base + (q + r2) * width, width);
-    ipn__swap(base + (q + h) * width, base + (q + r3) * width, width);
-}
-typedef struct ipn_frame {
-    unsigned char *base;
-    const unsigned char *anc;
-    size_type64 n;
-    uint32_t limit;
-    uint32_t flags;
-} ipn_frame_t;
-#define IPN_F_LEFTMOST 1u
-#define IPN_F_HAS_ANC  2u
-static void ipn_quicksort(unsigned char *base0, size_type64 n0, size_type64 width,
-                          CSTL_COMPARE cmp, uint32_t limit0, uint64_t *rs) {
-    ipn_frame_t stk[IPN_STACK_MAX];
-    int sp = 0;
-    stk[0].base = base0;
-    stk[0].n = n0;
-    stk[0].limit = limit0;
-    stk[0].anc = NULL;
-    stk[0].flags = IPN_F_LEFTMOST;
-    sp = 1;
-    while (sp > 0) {
-        --sp;
-        unsigned char *base = stk[sp].base;
-        size_type64 n = stk[sp].n;
-        uint32_t limit = stk[sp].limit;
-        const unsigned char *anc = stk[sp].anc;
-        int leftmost = (int) (stk[sp].flags & IPN_F_LEFTMOST);
-        int has_anc  = (int) (stk[sp].flags & IPN_F_HAS_ANC);
-        for (;;) {
-            if (n <= IPN_SMALL_SORT_THRESHOLD) {
-                ipn_small_sort(base, n, width, cmp, !leftmost);
-                break;
-            }
-            if (limit == 0) {
-                ipn_heapsort(base, n, width, cmp);
-                break;
-            }
-            --limit;
-            size_type64 pivot_pos = ipn_choose_pivot(base, n, width, cmp);
-            if (has_anc && cmp(anc, base + pivot_pos * width) >= 0) {
-                size_type64 num_le = ipn_partition_eq(base, n, pivot_pos, width, cmp);
-                if (num_le + 1 >= n) break;
-                anc = base + num_le * width;
-                has_anc = 1;
-                base += (num_le + 1) * width;
-                n -= num_le + 1;
-                leftmost = 0;
-                continue;
-            }
-            int was_partitioned = 0;
-            size_type64 num_lt = ipn_partition(base, n, pivot_pos, width, cmp, &was_partitioned);
-            size_type64 lsz = num_lt;
-            size_type64 rsz = n - num_lt - 1;
-            int unbalanced = (lsz < (n >> 3)) || (rsz < (n >> 3));
-            if (unbalanced) {
-                if (lsz >= 8) ipn_break_patterns(base, lsz, width, rs);
-                if (rsz >= 8) ipn_break_patterns(base + (num_lt + 1) * width, rsz, width, rs);
-            } else if (was_partitioned) {
-                int lok = ipn_partial_isort(base, lsz, width, cmp);
-                int rok = ipn_partial_isort(base + (num_lt + 1) * width, rsz, width, cmp);
-                if (lok && rok) break;
-            }
-            if (lsz >= 2) {
-                if (IPN_LIKELY(sp < IPN_STACK_MAX)) {
-                    stk[sp].base = base;
-                    stk[sp].n = lsz;
-                    stk[sp].limit = limit;
-                    stk[sp].anc = anc;
-                    stk[sp].flags = (uint32_t) ((leftmost ? IPN_F_LEFTMOST : 0u) |
-                                                (has_anc  ? IPN_F_HAS_ANC  : 0u));
-                    ++sp;
-                } else {
-                    ipn_heapsort(base, lsz, width, cmp);
-                }
-            }
-            if (rsz < 2) break;
-            anc = base + num_lt * width;
-            has_anc = 1;
-            base += (num_lt + 1) * width;
-            n = rsz;
-            leftmost = 0;
-        }
-    }
-}
-static void ipnsort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
-    if (!base || !compare || width == 0 || number < 2) return;
-    unsigned char *arr = (unsigned char *) base;
-    if (number <= IPN_INSERTION_SORT_THRESHOLD) {
-        ipn_isort(arr, number, width, compare);
-        return;
-    }
-    int was_reversed = 0;
-    size_type64 run_len = ipn_find_existing_run(arr, number, width, compare, &was_reversed);
-    if (run_len == number) {
-        if (was_reversed) ipn_reverse(arr, number, width);
-        return;
-    }
-    uint32_t limit = 2 * ipn_log2u(number);
-    uint64_t rs = (uint64_t) number ^ 0x517cc1b727220a95ULL;
-    ipn_quicksort(arr, number, width, compare, limit, &rs);
-}
-#undef IPN_INSERTION_SORT_THRESHOLD
-#undef IPN_SMALL_SORT_THRESHOLD
-#undef IPN_PSEUDO_MEDIAN_REC_THRESHOLD
-#undef IPN_PARTIAL_LIMIT
-#undef IPN_ISORT_TMP_BYTES
-#undef IPN_STACK_MAX
-#undef IPN_F_LEFTMOST
-#undef IPN_F_HAS_ANC
-#undef IPN_LIKELY
-#undef IPN_UNLIKELY
-#undef IPN_ALWAYS_INLINE
-#undef IPN_CSWAP
 #endif
 #ifndef HG_D7646DD772B09DF3EE2DCC0297DBFB1B7FD25970A91191BCE38ED4816C2801D7_H
 #define HG_D7646DD772B09DF3EE2DCC0297DBFB1B7FD25970A91191BCE38ED4816C2801D7_H
@@ -8424,7 +8043,7 @@ static void rsort64(int64_t *__base, size_type64 n) {
 OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
     ptrdiff_t distance = 0;
     size_type64 container_type = __opencstl_container_type((void **) &container, &distance);
-    if (container_type == 0) return;
+    if (container_type == 0) { return; }
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
@@ -8488,7 +8107,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
 OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
     ptrdiff_t distance = 0;
     size_type64 container_type = __opencstl_container_type((void **) &container, &distance);
-    if (container_type == 0) return;
+    if (container_type == 0) { return; }
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
@@ -8592,7 +8211,7 @@ OPENCSTL_FUNC void _cstl_stable_sort(void *container, void *_cmp) {
 OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
     ptrdiff_t distance = 0;
     size_type64 container_type = __opencstl_container_type((void **) &container, &distance);
-    if (container_type == 0) return 0;
+    if (container_type == 0) { return 0; }
     switch (container_type) {
         case OPENCSTL_VECTOR: {
             size_type64 type_size = (size_type64) OPENCSTL_NIDX(&container, NIDX_TSIZE);
@@ -8818,28 +8437,28 @@ static size_type __cstl_bitset_count(BITSET b) {
     return (size_type) count;
 }
 static bool __cstl_bitset_all(BITSET b) {
-    if (b.nbits == 0) return true;
+    if (b.nbits == 0) { return true; }
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
     { size_type i; for (i = 0; i < full_bytes; i++) {
-        if (b.bits[i] != 0xFF) return false;
+        if (b.bits[i] != 0xFF) { return false; }
     } }
     if (rem != 0) {
         ubyte_x mask = (ubyte_x) ((1 << rem) - 1);
-        if ((b.bits[full_bytes] & mask) != mask) return false;
+        if ((b.bits[full_bytes] & mask) != mask) { return false; }
     }
     return true;
 }
 static bool __cstl_bitset_any(BITSET b) {
-    if (b.nbits == 0) return false;
+    if (b.nbits == 0) { return false; }
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
     { size_type i; for (i = 0; i < full_bytes; i++) {
-        if (b.bits[i] != 0) return true;
+        if (b.bits[i] != 0) { return true; }
     } }
     if (rem != 0) {
         ubyte_x mask = (ubyte_x) ((1 << rem) - 1);
-        if ((b.bits[full_bytes] & mask) != 0) return true;
+        if ((b.bits[full_bytes] & mask) != 0) { return true; }
     }
     return false;
 }
@@ -8912,8 +8531,8 @@ static __BITSET bitset = {
     __cstl_bitset_to_string,
 };
 #endif
-#ifndef OPENCSTL_STRING_H
-#define OPENCSTL_STRING_H
+#ifndef HG_EECEDC83AA2AE1E2D2F56E15B218EE31EC7AA44422F39F1D52E5B5A10AA6B73B_H
+#define HG_EECEDC83AA2AE1E2D2F56E15B218EE31EC7AA44422F39F1D52E5B5A10AA6B73B_H
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -9028,13 +8647,13 @@ static bool __cstl_string_starts_with(const char *src, const char *prefix) {
 static bool __cstl_string_ends_with(const char *src, const char *suffix) {
     size_type64 slen = strlen(src);
     size_type64 flen = strlen(suffix);
-    if (flen > slen) return false;
+    if (flen > slen) { return false; }
     return memcmp(src + slen - flen, suffix, flen) == 0;
 }
 static int __cstl_string_count(const char *src, const char *sub) {
     int count = 0;
     size_type64 sub_len = strlen(sub);
-    if (sub_len == 0) return 0;
+    if (sub_len == 0) { return 0; }
     const char *p = src;
     while ((p = strstr(p, sub)) != NULL) {
         count++;
@@ -9082,31 +8701,31 @@ static char *__cstl_string_reverse(const char *src) {
     return ret;
 }
 static bool __cstl_string_is_digit(const char *src) {
-    if (!*src) return false;
+    if (!*src) { return false; }
     { const char * p; for (p = src; *p; p++)
-        if (!isdigit((unsigned char) *p)) return false; }
+        if (!isdigit((unsigned char) *p)) { return false; } }
     return true;
 }
 static bool __cstl_string_is_alpha(const char *src) {
-    if (!*src) return false;
+    if (!*src) { return false; }
     { const char * p; for (p = src; *p; p++)
-        if (!isalpha((unsigned char) *p)) return false; }
+        if (!isalpha((unsigned char) *p)) { return false; } }
     return true;
 }
 static bool __cstl_string_is_alnum(const char *src) {
-    if (!*src) return false;
+    if (!*src) { return false; }
     { const char * p; for (p = src; *p; p++)
-        if (!isalnum((unsigned char) *p)) return false; }
+        if (!isalnum((unsigned char) *p)) { return false; } }
     return true;
 }
 static bool __cstl_string_is_space(const char *src) {
-    if (!*src) return false;
+    if (!*src) { return false; }
     { const char * p; for (p = src; *p; p++)
-        if (!isspace((unsigned char) *p)) return false; }
+        if (!isspace((unsigned char) *p)) { return false; } }
     return true;
 }
 static int *__cstl_string_kmp(char *src, char *pattern, int *count) {
-    if (count != NULL) *count = 0;
+    if (count != NULL) { *count = 0; }
     if (src == NULL || pattern == NULL || count == NULL) {
         return NULL;
     }
@@ -9116,7 +8735,7 @@ static int *__cstl_string_kmp(char *src, char *pattern, int *count) {
         return NULL;
     }
     int *lps = (int *) malloc(sizeof(int) * m);
-    if (lps == NULL) return NULL;
+    if (lps == NULL) { return NULL; }
     lps[0] = 0;
     size_type64 len = 0;
     size_type64 i = 1;
@@ -9268,7 +8887,7 @@ static bool __cstl_glob_isdir_(const char *path) {
     return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY);
 #else
     struct stat st;
-    if (stat(path, &st) != 0) return false;
+    if (stat(path, &st) != 0) { return false; }
     return S_ISDIR(st.st_mode);
 #endif
 }
@@ -9294,15 +8913,15 @@ static char **__cstl_glob_listdir_(const char *path, int *n_out) {
     char *pat = (char *) malloc(plen + 3);
     memcpy(pat, path, plen);
     size_type64 pos = plen;
-    if (plen > 0 && !__cstl_glob_is_sep(path[plen - 1])) pat[pos++] = '\\';
+    if (plen > 0 && !__cstl_glob_is_sep(path[plen - 1])) { pat[pos++] = '\\'; }
     pat[pos++] = '*';
     pat[pos] = '\0';
     WIN32_FIND_DATAA data;
     HANDLE h = FindFirstFileA(pat, &data);
     free(pat);
-    if (h == INVALID_HANDLE_VALUE) return names;
+    if (h == INVALID_HANDLE_VALUE) { return names; }
     do {
-        if (strcmp(data.cFileName, ".") == 0 || strcmp(data.cFileName, "..") == 0) continue;
+        if (strcmp(data.cFileName, ".") == 0 || strcmp(data.cFileName, "..") == 0) { continue; }
         if (cnt >= cap) {
             cap *= 2;
             names = (char **) realloc(names, cap * sizeof(char *));
@@ -9315,10 +8934,10 @@ static char **__cstl_glob_listdir_(const char *path, int *n_out) {
     FindClose(h);
 #else
     DIR *d = opendir(path);
-    if (!d) return names;
+    if (!d) { return names; }
     struct dirent *e;
     while ((e = readdir(d))) {
-        if (strcmp(e->d_name, ".") == 0 || strcmp(e->d_name, "..") == 0) continue;
+        if (strcmp(e->d_name, ".") == 0 || strcmp(e->d_name, "..") == 0) { continue; }
         if (cnt >= cap) {
             cap *= 2;
             names = (char **) realloc(names, cap * sizeof(char *));
@@ -9337,14 +8956,14 @@ static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
     while (*pat) {
         if (*pat == '*') {
             while (*pat == '*') pat++;
-            if (!*pat) return true;
+            if (!*pat) { return true; }
             while (*name) {
-                if (__cstl_glob_fnmatch_(pat, name)) return true;
+                if (__cstl_glob_fnmatch_(pat, name)) { return true; }
                 name++;
             }
             return false;
         }
-        if (!*name) return false;
+        if (!*name) { return false; }
         if (*pat == '?') {
             pat++;
             name++;
@@ -9357,26 +8976,26 @@ static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
             }
             bool matched = false;
             if (*p == ']') {
-                if (*name == ']') matched = true;
+                if (*name == ']') { matched = true; }
                 p++;
             }
             while (*p && *p != ']') {
                 if (p[1] == '-' && p[2] && p[2] != ']') {
                     unsigned char lo = (unsigned char) p[0], hi = (unsigned char) p[2];
                     unsigned char c = (unsigned char) *name;
-                    if (c >= lo && c <= hi) matched = true;
+                    if (c >= lo && c <= hi) { matched = true; }
                     p += 3;
                 } else {
-                    if (*name == *p) matched = true;
+                    if (*name == *p) { matched = true; }
                     p++;
                 }
             }
-            if (*p != ']') return false;
+            if (*p != ']') { return false; }
             pat = p + 1;
-            if (matched == negate) return false;
+            if (matched == negate) { return false; }
             name++;
         } else {
-            if (*pat != *name) return false;
+            if (*pat != *name) { return false; }
             pat++;
             name++;
         }
@@ -9385,7 +9004,7 @@ static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
 }
 static bool __cstl_glob_has_magic_(const char *s) {
     for (; *s; s++) {
-        if (*s == '*' || *s == '?' || *s == '[') return true;
+        if (*s == '*' || *s == '?' || *s == '[') { return true; }
     }
     return false;
 }
@@ -9448,7 +9067,7 @@ static void __cstl_glob_parse_(const char *pat,
                 segs[n][sl] = '\0';
                 n++;
             }
-            if (*p == '\0') break;
+            if (*p == '\0') { break; }
             start = p + 1;
         }
     } }
@@ -9476,7 +9095,7 @@ static void __cstl_glob_walk_(const char *base,
                               bool recursive,
                               __cstl_glob_result_ *out) {
     if (i >= n) {
-        if (__cstl_glob_exists_(base)) __cstl_glob_push_(out, base);
+        if (__cstl_glob_exists_(base)) { __cstl_glob_push_(out, base); }
         return;
     }
     const char *seg = segs[i];
@@ -9501,7 +9120,7 @@ static void __cstl_glob_walk_(const char *base,
     if (!__cstl_glob_has_magic_(seg)) {
         char *full = __cstl_glob_join_(base, seg);
         if (is_last) {
-            if (__cstl_glob_exists_(full)) __cstl_glob_push_(out, full);
+            if (__cstl_glob_exists_(full)) { __cstl_glob_push_(out, full); }
         } else if (__cstl_glob_isdir_(full)) {
             __cstl_glob_walk_(full, segs, i + 1, n, recursive, out);
         }
@@ -9548,7 +9167,7 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
     { int i; for (i = 0; i < r.cnt; i++) {
         char *s = r.items[i];
         { char * p; for (p = s; *p; p++) {
-            if (*p == '\\') *p = '/';
+            if (*p == '\\') { *p = '/'; }
         } }
         if (s[0] == '.' && s[1] == '/') {
             size_type64 l = strlen(s);
@@ -9567,7 +9186,7 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
     return r.items;
 }
 static void __glob_free(char **results) {
-    if (!results) return;
+    if (!results) { return; }
     { char ** p; for (p = results; *p; p++) free(*p); }
     iveb_erase(iveb,results);
     free(results);
@@ -9621,15 +9240,15 @@ static void MsgBoxCLI(const char *format, ...) {
             int len = (int) (p - line_start);
             int lpadding = (inner - len) / 2;
             int rpadding = inner - len - lpadding;
-            if (lpadding < 0) lpadding = 0;
-            if (rpadding < 0) rpadding = 0;
+            if (lpadding < 0) { lpadding = 0; }
+            if (rpadding < 0) { rpadding = 0; }
             fputs(hline, stdout);
             { int i; for (i = 0; i < lpadding; i++) putchar(' '); }
             fwrite(line_start, 1, (size_type64) len, stdout);
             { int i; for (i = 0; i < rpadding; i++) putchar(' '); }
             fputs(hline, stdout);
             putchar('\n');
-            if (*p == '\0') break;
+            if (*p == '\0') { break; }
             line_start = p + 1;
         }
         p++;
@@ -9694,7 +9313,7 @@ static void MsgBoxGUI(const char *format, ...) {
             0
         );
     }
-    if (h) FreeLibrary(h);
+    if (h) { FreeLibrary(h); }
     switch (r) {
         case IDABORT: ExitProcess(3);
             break;
@@ -9739,9 +9358,9 @@ static const struct lang_labels kLangs[] = {
 };
 static const struct lang_labels *detect_lang(void) {
     const char *lang = getenv("LC_ALL");
-    if (!lang || !*lang) lang = getenv("LC_MESSAGES");
-    if (!lang || !*lang) lang = getenv("LANG");
-    if (!lang || !*lang) lang = "en";
+    if (!lang || !*lang) { lang = getenv("LC_MESSAGES"); }
+    if (!lang || !*lang) { lang = getenv("LANG"); }
+    if (!lang || !*lang) { lang = "en"; }
     { int i; for (i = 0; kLangs[i].prefix; i++) {
         size_type64 n = strlen(kLangs[i].prefix);
         if (strncmp(lang, kLangs[i].prefix, n) == 0 &&
@@ -9758,12 +9377,12 @@ static const struct lang_labels *detect_lang(void) {
 #define IDIGNORE  5
 static void get_exe_path(char *out, size_type64 n) {
     ssize_t r = readlink("/proc/self/exe", out, n - 1);
-    if (r < 0) r = 0;
+    if (r < 0) { r = 0; }
     out[r] = '\0';
 }
 static int zenity_abort_retry_ignore(const char *title, const char *body) {
     int pipefd[2];
-    if (pipe(pipefd) < 0) return IDABORT;
+    if (pipe(pipefd) < 0) { return IDABORT; }
     pid_t pid = fork();
     if (pid < 0) {
         close(pipefd[0]);
@@ -9801,7 +9420,7 @@ static int zenity_abort_retry_ignore(const char *title, const char *body) {
     char out[256] = {0};
     ssize_t n = read(pipefd[0], out, sizeof(out) - 1);
     close(pipefd[0]);
-    if (n > 0) out[n] = '\0';
+    if (n > 0) { out[n] = '\0'; }
     int status = 0;
     waitpid(pid, &status, 0);
     int code = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
@@ -9810,7 +9429,7 @@ static int zenity_abort_retry_ignore(const char *title, const char *body) {
     }
     size_type64 Llen = strlen(out);
     while (Llen > 0 && (out[Llen - 1] == '\n' || out[Llen - 1] == '\r')) out[--Llen] = '\0';
-    if (strcmp(out, L->retry_s) == 0) return IDRETRY;
+    if (strcmp(out, L->retry_s) == 0) { return IDRETRY; }
     return IDABORT;
 }
 static void MsgBoxGUI(const char *format, ...) {
@@ -9856,9 +9475,9 @@ break;
 #include<stdbool.h>
 #if defined(OCSTL_CC_TCC) || defined(OCSTL_OS_LINUX) || defined(OCSTL_CC_POCC)
 char *strtok_s(char *str, char *delimiters, char **last) {
-    if (!delimiters || !last) return NULL;
+    if (!delimiters || !last) { return NULL; }
     char *s = str ? str : *last;
-    if (!s) return NULL;
+    if (!s) { return NULL; }
     while (*s && strchr(delimiters, *s)) s++;
     if (!*s) {
         *last = NULL;
@@ -9901,13 +9520,13 @@ struct JSON_TOKEN {
 typedef struct JSON_TOKEN JSON;
 int __as_int() {
     JSON_TOKEN *p = __g_last_token;
-    if (!p || !p->p) return 0;
+    if (!p || !p->p) { return 0; }
     return (int) strtol(p->p, NULL, 10);
 }
 char *__as_string() {
     JSON_TOKEN *p = __g_last_token;
-    if (!p || !p->p || !p->q) return NULL;
-    if (p->str_buf) return p->str_buf;
+    if (!p || !p->p || !p->q) { return NULL; }
+    if (p->str_buf) { return p->str_buf; }
     char *start;
     char *end;
     if (*(p->p) == '"') {
@@ -9919,7 +9538,7 @@ char *__as_string() {
     }
     size_type64 cap = (size_type64) (end - start) + 1;
     char *out = (char *) malloc(cap);
-    if (!out) return NULL;
+    if (!out) { return NULL; }
     char *dst = out;
     { char * s; for (s = start; s < end; s++) {
         if (*s != '\\' || s + 1 >= end) {
@@ -9955,12 +9574,12 @@ char *__as_string() {
 }
 bool __as_bool() {
     JSON_TOKEN *p = __g_last_token;
-    if (!p || !p->p) return false;
+    if (!p || !p->p) { return false; }
     return *(p->p) == 't';
 }
 double __as_double() {
     JSON_TOKEN *p = __g_last_token;
-    if (!p || !p->p) return 0.0;
+    if (!p || !p->p) { return 0.0; }
     return strtod(p->p, NULL);
 }
 bool __is_null() {
@@ -9976,7 +9595,7 @@ static char *__parse_string(char *s, JSON_TOKEN *node) {
     node->p = s;
     s++;
     while (*s && *s != '"') {
-        if (*s == '\\' && *(s + 1)) s++;
+        if (*s == '\\' && *(s + 1)) { s++; }
         s++;
     }
     node->q = s;
@@ -9984,7 +9603,7 @@ static char *__parse_string(char *s, JSON_TOKEN *node) {
 }
 static char *__parse_number(char *s, JSON_TOKEN *node) {
     node->p = s;
-    if (*s == '-' || *s == '+') s++;
+    if (*s == '-' || *s == '+') { s++; }
     while (*s && (isdigit((unsigned char) *s) || *s == '.' ||
                   *s == 'e' || *s == 'E' || *s == '+' || *s == '-')) {
         s++;
@@ -10019,7 +9638,7 @@ static char *parse_array(char *s, JSON_TOKEN *node) {
         } else if (*s == ']') {
             node->q = s;
             return s + 1;
-        } else break;
+        } else { break; }
     }
     node->q = s;
     return s;
@@ -10035,44 +9654,44 @@ static char *__parse_object(char *s, JSON_TOKEN *node) {
     }
     while (*s) {
         s = __skip_ws(s);
-        if (*s != '"') break;
+        if (*s != '"') { break; }
         s++;
         char *key_start = s;
         while (*s && *s != '"') {
-            if (*s == '\\' && *(s + 1)) s++;
+            if (*s == '\\' && *(s + 1)) { s++; }
             s++;
         }
         char *key_end = s;
-        if (*s == '"') s++;
+        if (*s == '"') { s++; }
         s = __skip_ws(s);
-        if (*s != ':') break;
+        if (*s != ':') { break; }
         s++;
         s = __skip_ws(s);
         JSON_TOKEN *child = (JSON_TOKEN *) calloc(1, sizeof(JSON_TOKEN));
         size_type64 klen = (size_type64) (key_end - key_start);
-        if (klen > sizeof(child->key) - 1) klen = sizeof(child->key) - 1;
+        if (klen > sizeof(child->key) - 1) { klen = sizeof(child->key) - 1; }
         memcpy(child->key, key_start, klen);
         child->key[klen] = '\0';
         s = __parse_value(s, child);
         *tail = child;
         tail = &child->next;
         s = __skip_ws(s);
-        if (*s == ',') s++;
+        if (*s == ',') { s++; }
         else if (*s == '}') {
             node->q = s;
             return s + 1;
-        } else break;
+        } else { break; }
     }
     node->q = s;
     return s;
 }
 static char *__parse_value(char *s, JSON_TOKEN *node) {
     s = __skip_ws(s);
-    if (*s == '{') return __parse_object(s, node);
-    if (*s == '[') return parse_array(s, node);
-    if (*s == '"') return __parse_string(s, node);
-    if (*s == '-' || *s == '+' || isdigit((unsigned char) *s)) return __parse_number(s, node);
-    if (isalpha((unsigned char) *s)) return __parse_literal(s, node);
+    if (*s == '{') { return __parse_object(s, node); }
+    if (*s == '[') { return parse_array(s, node); }
+    if (*s == '"') { return __parse_string(s, node); }
+    if (*s == '-' || *s == '+' || isdigit((unsigned char) *s)) { return __parse_number(s, node); }
+    if (isalpha((unsigned char) *s)) { return __parse_literal(s, node); }
     return s;
 }
 JSON_TOKEN *__parse(char *json_str) {
@@ -10091,9 +9710,9 @@ JSON_TOKEN *__parse(char *json_str) {
     return root;
 }
 JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
-    if (!root || !keys) return NULL;
+    if (!root || !keys) { return NULL; }
     char buf[1024];
-#ifdef OCSTL_CC_MSVC
+#if defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_CLANG)
     strncpy_s(buf, sizeof(buf), keys, _TRUNCATE);
 #else
     strncpy(buf, keys, sizeof(buf) - 1);
@@ -10117,7 +9736,7 @@ JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
                 }
             } }
         }
-        if (!found) return NULL;
+        if (!found) { return NULL; }
         cur = found;
         tok = strtok_s(NULL, ".", &ctx);
     }
@@ -10130,7 +9749,7 @@ JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
     return cur;
 }
 static void __free_subtree(JSON_TOKEN *node) {
-    if (!node) return;
+    if (!node) { return; }
     JSON_TOKEN *c = node->children;
     while (c) {
         JSON_TOKEN *nx = c->next;
@@ -10141,7 +9760,7 @@ static void __free_subtree(JSON_TOKEN *node) {
     free(node);
 }
 void __free_json(JSON *root) {
-    if (!root) return;
+    if (!root) { return; }
     iveb_erase(iveb, root);
     JSON_TOKEN *c = root->children;
     while (c) {
@@ -10156,11 +9775,11 @@ void __free_json(JSON *root) {
     free(root);
 }
 static void __dumps(JSON_TOKEN *node, int depth) {
-    if (!node || !node->p || !node->q) return;
+    if (!node || !node->p || !node->q) { return; }
     { int i; for (i = 0; i < depth; i++) printf("  "); }
     int len = (int) (node->q - node->p + 1);
-    if (node->key[0]) printf("\"%s\": [%.*s]\n", node->key, len, node->p);
-    else printf("[%.*s]\n", len, node->p);
+    if (node->key[0]) { printf("\"%s\": [%.*s]\n", node->key, len, node->p); }
+    else { printf("[%.*s]\n", len, node->p); }
     { JSON_TOKEN * c; for (c = node->children; c; c = c->next) __dumps(c, depth + 1); }
 }
 static void _dumps(JSON *root) {
@@ -10198,7 +9817,7 @@ static const char *csv__next_field(const char *p, const char *end,
         while (p < end) {
             if (*p == '"') {
                 if (p + 1 < end && *(p + 1) == '"') {
-                    if (dst) dst[len] = '"';
+                    if (dst) { dst[len] = '"'; }
                     len++;
                     p += 2;
                 } else {
@@ -10206,23 +9825,23 @@ static const char *csv__next_field(const char *p, const char *end,
                     break;
                 }
             } else {
-                if (dst) dst[len] = *p;
+                if (dst) { dst[len] = *p; }
                 len++;
                 p++;
             }
         }
     } else {
         while (p < end && *p != ',' && *p != '\r' && *p != '\n') {
-            if (dst) dst[len] = *p;
+            if (dst) { dst[len] = *p; }
             len++;
             p++;
         }
     }
-    if (dst) dst[len] = '\0';
+    if (dst) { dst[len] = '\0'; }
     *out_len = len;
     if (p >= end) { *eol = 1; } else if (*p == '\r') {
         p++;
-        if (p < end && *p == '\n') p++;
+        if (p < end && *p == '\n') { p++; }
         *eol = 1;
     } else if (*p == '\n') {
         p++;
@@ -10237,7 +9856,7 @@ static CSV __parse_csv(char *csv_path, bool is_header) {
     ret.rows = 0;
     ret.cols = 0;
     FILE *f = file.open(csv_path, "rb");
-    if (!f) return ret;
+    if (!f) { return ret; }
     fseek(f, 0, SEEK_END);
     long fsz = ftell(f);
     rewind(f);
@@ -10266,19 +9885,20 @@ static CSV __parse_csv(char *csv_path, bool is_header) {
         while (!eol) {
             size_t flen;
             const char *next = csv__next_field(p, end, NULL, &flen, &eol);
-            if (next == p) goto done_pass1;
+            if (next == p) { goto done_pass1; }
             str_bytes += flen + 1;
             ncols++;
             p = next;
         }
-        if (ncols == 0) break;
+        if (ncols == 0) { break; }
         row_cols[total_rows++] = ncols;
-        if (ncols > max_cols) max_cols = ncols;
+        if (ncols > max_cols) { max_cols = ncols; }
     }
 done_pass1:;
     { int i; for (i = 0; i < total_rows; i++)
-        if (row_cols[i] < max_cols)
-            str_bytes += (size_t) (max_cols - row_cols[i]); }
+        if (row_cols[i] < max_cols) {
+            str_bytes += (size_t) (max_cols - row_cols[i]);
+        } }
     int data_rows = is_header
                         ? (total_rows > 0 ? total_rows - 1 : 0)
                         : total_rows;
@@ -10355,1107 +9975,6 @@ typedef struct CSV_CLASS {
 CSV_CLASS csv = {
     __parse_csv
 };
-#endif
-#if defined(OCSTL_C_VERSION_11) || defined(OCSTL_C_VERSION_17) || defined(OCSTL_C_VERSION_23) || defined(OCSTL_CC_TCC)
-#  define OCSTL_CSTLIO_DISPATCH_GENERIC 1
-#elif defined(OCSTL_C_VERSION_99) && (defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG))
-#  define OCSTL_CSTLIO_DISPATCH_BUILTIN 1
-#elif defined(OCSTL_CC_MSVC) && !defined(OCSTL_C_VERSION_PRE_ANSI)
-#  define OCSTL_CSTLIO_DISPATCH_SIZEOF 1
-#else
-#  define OCSTL_CSTLIO_DISPATCH_VARARGS 1
-#endif
-#if defined(OCSTL_CSTLIO_DISPATCH_GENERIC) || defined(OCSTL_CSTLIO_DISPATCH_BUILTIN) || defined(OCSTL_CSTLIO_DISPATCH_VARARGS) || defined(OCSTL_CSTLIO_DISPATCH_SIZEOF)
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#define OCSTL_STR_INNER(x) #x
-#define OCSTL_STR(x)       OCSTL_STR_INNER(x)
-#ifdef OCSTL_OS_WINDOWS
-#if defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_GCC)
-#include <codecapi.h>
-#include <processenv.h>
-#else
-#include <WinBase.h>
-#endif
-#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
-#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
-#endif
-#ifndef CP_UTF8
-#define CP_UTF8 65001
-#endif
-static int s_cio_unicode_init = -1;
-static void ocstl_ensure_unicode(void) {
-    HANDLE h;
-    DWORD mode = 0;
-    if (s_cio_unicode_init != -1) return;
-    SetConsoleOutputCP(CP_UTF8);
-    h = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (GetConsoleMode(h, &mode))
-        SetConsoleMode(h, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-    s_cio_unicode_init = 1;
-}
-#else
-#define ocstl_ensure_unicode() ((void)0)
-#endif
-#if defined(OCSTL_CSTLIO_DISPATCH_GENERIC) || defined(OCSTL_CSTLIO_DISPATCH_BUILTIN) || defined(OCSTL_CSTLIO_DISPATCH_SIZEOF)
-typedef enum {
-    OCSTL_COUT_BOOL,
-    OCSTL_COUT_SCHAR,
-    OCSTL_COUT_UCHAR,
-    OCSTL_COUT_SHORT,
-    OCSTL_COUT_USHORT,
-    OCSTL_COUT_INT,
-    OCSTL_COUT_UINT,
-    OCSTL_COUT_LONG,
-    OCSTL_COUT_ULONG,
-    OCSTL_COUT_LLONG,
-    OCSTL_COUT_ULLONG,
-    OCSTL_COUT_FLOAT,
-    OCSTL_COUT_DOUBLE,
-    OCSTL_COUT_CHAR,
-    OCSTL_COUT_STR,
-    OCSTL_COUT_INTPTR,
-} ocstl_cout_type_t;
-typedef struct {
-    ocstl_cout_type_t type;
-    union {
-        _Bool b;
-        signed char sc;
-        unsigned char uc;
-        short h;
-        unsigned short uh;
-        int i;
-        unsigned int u;
-        long l;
-        unsigned long ul;
-        long long ll;
-        unsigned long long ull;
-        float f;
-        double d;
-        char c;
-        const char *s;
-        void *p;
-    };
-} ocstl_val_t;
-static ocstl_val_t ocstl_mk_bool(_Bool x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_BOOL;
-    v.b = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_schar(signed char x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_SCHAR;
-    v.sc = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_uchar(unsigned char x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_UCHAR;
-    v.uc = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_short(short x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_SHORT;
-    v.h = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_ushort(unsigned short x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_USHORT;
-    v.uh = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_int(int x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_INT;
-    v.i = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_intptr(int *x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_INTPTR;
-    v.p = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_uint(unsigned int x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_UINT;
-    v.u = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_long(long x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_LONG;
-    v.l = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_ulong(unsigned long x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_ULONG;
-    v.ul = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_llong(long long x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_LLONG;
-    v.ll = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_ullong(unsigned long long x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_ULLONG;
-    v.ull = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_float(float x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_FLOAT;
-    v.f = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_double(double x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_DOUBLE;
-    v.d = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_char(char x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_CHAR;
-    v.c = x;
-    return v;
-}
-static ocstl_val_t ocstl_mk_str(const char *x) {
-    ocstl_val_t v;
-    v.type = OCSTL_COUT_STR;
-    v.s = x;
-    return v;
-}
-#if defined(OCSTL_CSTLIO_DISPATCH_GENERIC)
-#define OCSTL_VAL(x) ((OCSTL_STR(x)[0] == '\'')                      \
-    ? ocstl_mk_char((char)((intptr_t)(x)))                           \
-    : _Generic((x),                                                  \
-        _Bool:              ocstl_mk_bool,                           \
-        signed char:        ocstl_mk_schar,                          \
-        unsigned char:      ocstl_mk_uchar,                          \
-        short:              ocstl_mk_short,                          \
-        unsigned short:     ocstl_mk_ushort,                         \
-        int:                ocstl_mk_int,                            \
-        unsigned int:       ocstl_mk_uint,                           \
-        long:               ocstl_mk_long,                           \
-        unsigned long:      ocstl_mk_ulong,                          \
-        long long:          ocstl_mk_llong,                          \
-        unsigned long long: ocstl_mk_ullong,                         \
-        float:              ocstl_mk_float,                          \
-        double:             ocstl_mk_double,                         \
-        char:               ocstl_mk_char,                           \
-        char *:             ocstl_mk_str,                            \
-        const char *:       ocstl_mk_str,                             \
-        int*:                ocstl_mk_intptr                             \
-      )(x))
-#elif defined(OCSTL_CSTLIO_DISPATCH_BUILTIN)
-#define OCSTL_TYPEEQ(x, T) __builtin_types_compatible_p(__typeof__(x), T)
-#define OCSTL_AS(x, T)                                          \
-    (*(T*)__builtin_choose_expr(OCSTL_TYPEEQ(x, T),             \
-        (void*)&(__typeof__(x)){(x)},                           \
-        (void*)0))
-#define OCSTL_VAL(x) ((OCSTL_STR(x)[0] == '\'')                                                                     \
-    ? ocstl_mk_char((char)((intptr_t)(x)))                                                                          \
-    : (__builtin_choose_expr(OCSTL_TYPEEQ(x, _Bool),              ocstl_mk_bool  (OCSTL_AS(x, _Bool)),               \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, signed char),        ocstl_mk_schar (OCSTL_AS(x, signed char)),         \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned char),      ocstl_mk_uchar (OCSTL_AS(x, unsigned char)),       \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, short),              ocstl_mk_short (OCSTL_AS(x, short)),               \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned short),     ocstl_mk_ushort(OCSTL_AS(x, unsigned short)),      \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, int),                ocstl_mk_int   (OCSTL_AS(x, int)),                 \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned int),       ocstl_mk_uint  (OCSTL_AS(x, unsigned int)),        \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, long),               ocstl_mk_long  (OCSTL_AS(x, long)),                \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned long),      ocstl_mk_ulong (OCSTL_AS(x, unsigned long)),       \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, long long),          ocstl_mk_llong (OCSTL_AS(x, long long)),           \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, unsigned long long), ocstl_mk_ullong(OCSTL_AS(x, unsigned long long)),  \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, float),              ocstl_mk_float (OCSTL_AS(x, float)),               \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, double),             ocstl_mk_double(OCSTL_AS(x, double)),              \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, char),               ocstl_mk_char  (OCSTL_AS(x, char)),                \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, char *),             ocstl_mk_str   (OCSTL_AS(x, char *)),              \
-       __builtin_choose_expr(OCSTL_TYPEEQ(x, const char *),       ocstl_mk_str   (OCSTL_AS(x, const char *)),        \
-           ocstl_mk_int(0)))))))))))))))))))
-#elif defined(OCSTL_CSTLIO_DISPATCH_SIZEOF)
-#if defined(OCSTL_CC_TCC) || defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG)
-#  define OCSTL_ADDR(x) (&((__typeof__(x)){(x)}))
-#  define OCSTL_VAL(x) (                                                       \
-    (OCSTL_STR(x)[0] == '"')                                                   \
-        ? ocstl_mk_str((const char *) (uintptr_t) (x)) :                       \
-    (OCSTL_STR(x)[0] == '\'')                                                  \
-        ? ocstl_mk_char((char) (intptr_t) (x)) :                               \
-    ((const void *) OCSTL_ADDR(x) == (const void *) (uintptr_t) (x))           \
-        ? ocstl_mk_str((const char *) (uintptr_t) (x)) :                       \
-    (sizeof(x) == 1)                                                           \
-        ? ocstl_mk_char(*(const char *) (const void *) OCSTL_ADDR(x)) :        \
-    (sizeof(x) == 2)                                                           \
-        ? ocstl_mk_short(*(const short *) (const void *) OCSTL_ADDR(x)) :      \
-    (sizeof(x) == 4) ? (                                                       \
-        ((*(const int *) (const void *) OCSTL_ADDR(x)) == (int) (intptr_t) (x))\
-            ? ocstl_mk_int(*(const int *) (const void *) OCSTL_ADDR(x))        \
-            : ocstl_mk_float(*(const float *) (const void *) OCSTL_ADDR(x))    \
-    ) :                                                                        \
-    (sizeof(x) == 8) ? (                                                       \
-        ((*(const long long *) (const void *) OCSTL_ADDR(x))                   \
-            == (long long) (intptr_t) (x))                                     \
-            ? ocstl_mk_str(*(const char * const *) (const void *) OCSTL_ADDR(x))\
-            : ocstl_mk_double(*(const double *) (const void *) OCSTL_ADDR(x)) \
-    ) :                                                                        \
-    ocstl_mk_int(0)                                                            \
-)
-#else
-#  define OCSTL_VAL(x) (                                                       \
-    (OCSTL_STR(x)[0] == '"')                                                   \
-        ? ocstl_mk_str((const char *) (uintptr_t) (x)) :                       \
-    (OCSTL_STR(x)[0] == '\'')                                                  \
-        ? ocstl_mk_char((char) (intptr_t) (x)) :                               \
-    (sizeof(x) == 1)                                                           \
-        ? ocstl_mk_char((char) (intptr_t) (x)) :                               \
-    (sizeof(x) == 2)                                                           \
-        ? ocstl_mk_short((short) (intptr_t) (x)) :                             \
-    (sizeof(x) == 4) ? (                                                       \
-        ((int) (intptr_t) (x) == (x))                                          \
-            ? ocstl_mk_int((int) (intptr_t) (x))                               \
-            : ocstl_mk_float((float) (x))                                      \
-    ) :                                                                        \
-    (sizeof(x) == 8) ? (                                                       \
-        ((long long) (intptr_t) (x) == (x))                                    \
-            ? ocstl_mk_str((const char *) (uintptr_t) (x))                     \
-            : ocstl_mk_double((double) (intptr_t) (x))                         \
-    ) :                                                                        \
-            \
-    ocstl_mk_str((const char *) (uintptr_t) (x))                               \
-)
-#endif
-#endif
-#endif
-typedef struct {
-    char fill;
-    char align;
-    char sign;
-    bool alt;
-    bool zero_pad;
-    int width;
-    int precision;
-    int length;
-    char type;
-} ocstl_fmt_spec_t;
-static void ocstl_spec_init(ocstl_fmt_spec_t *s) {
-    s->fill = ' ';
-    s->align = 0;
-    s->sign = 0;
-    s->alt = false;
-    s->zero_pad = false;
-    s->width = -1;
-    s->precision = -1;
-    s->length = 0;
-    s->type = 0;
-}
-static bool ocstl_is_align(char c) { return c == '<' || c == '>' || c == '^'; }
-static const char *ocstl_parse_spec(const char *p, ocstl_fmt_spec_t *spec) {
-    if (p[0] && p[1] && ocstl_is_align(p[1])) {
-        spec->fill = p[0];
-        spec->align = p[1];
-        p += 2;
-    } else if (ocstl_is_align(p[0])) {
-        spec->align = p[0];
-        p += 1;
-    }
-    if (*p == '+') {
-        spec->sign = '+';
-        p++;
-    }
-    if (*p == '#') {
-        spec->alt = true;
-        p++;
-    }
-    if (*p == '0') {
-        spec->zero_pad = true;
-        p++;
-    }
-    if (*p >= '0' && *p <= '9') {
-        int w = 0;
-        while (*p >= '0' && *p <= '9') {
-            w = w * 10 + (*p - '0');
-            p++;
-        }
-        spec->width = w;
-    }
-    if (*p == '.') {
-        p++;
-        int pr = 0;
-        while (*p >= '0' && *p <= '9') {
-            pr = pr * 10 + (*p - '0');
-            p++;
-        }
-        spec->precision = pr;
-    }
-    if (*p == 'l') {
-        p++;
-        if (*p == 'l') {
-            p++;
-            spec->length = 2;
-        } else {
-            spec->length = 1;
-        }
-    }
-    if (*p && *p != '}') {
-        spec->type = *p;
-        p++;
-    }
-    return p;
-}
-static void ocstl_emit_pad(char ch, int n) {
-    { int i; for (i = 0; i < n; i++) putchar(ch); }
-}
-static void ocstl_emit_padded(const char *core, int core_len,
-                              const ocstl_fmt_spec_t *spec,
-                              int sign_prefix_len) {
-    int width = spec->width;
-    if (width < 0 || width <= core_len) {
-        fwrite(core, 1, core_len, stdout);
-        return;
-    }
-    int pad = width - core_len;
-    char align = spec->align;
-    char fill = spec->fill;
-    if (align == 0 && spec->zero_pad && sign_prefix_len >= 0) {
-        fwrite(core, 1, sign_prefix_len, stdout);
-        ocstl_emit_pad('0', pad);
-        fwrite(core + sign_prefix_len, 1, core_len - sign_prefix_len, stdout);
-        return;
-    }
-    if (align == 0) align = (sign_prefix_len >= 0) ? '>' : '<';
-    if (align == '<') {
-        fwrite(core, 1, core_len, stdout);
-        ocstl_emit_pad(fill, pad);
-    } else if (align == '>') {
-        ocstl_emit_pad(fill, pad);
-        fwrite(core, 1, core_len, stdout);
-    } else {
-        int left = pad / 2;
-        int right = pad - left;
-        ocstl_emit_pad(fill, left);
-        fwrite(core, 1, core_len, stdout);
-        ocstl_emit_pad(fill, right);
-    }
-}
-static int ocstl_format_int(char *buf, int bufsz,
-                            unsigned long long uval, bool negative,
-                            const ocstl_fmt_spec_t *spec,
-                            int *sign_prefix_len) {
-    int base = 10;
-    bool upper = false;
-    const char *prefix = "";
-    switch (spec->type) {
-        case 'x': base = 16;
-            break;
-        case 'X': base = 16;
-            upper = true;
-            break;
-        case 'o': base = 8;
-            break;
-        case 'b': base = 2;
-            break;
-        default: break;
-    }
-    if (spec->alt) {
-        if (spec->type == 'x') prefix = "0x";
-        else if (spec->type == 'X') prefix = "0X";
-        else if (spec->type == 'b') prefix = "0b";
-        else if (spec->type == 'o') prefix = "0o";
-    }
-    char tmp[80];
-    int tlen = 0;
-    if (uval == 0) tmp[tlen++] = '0';
-    while (uval > 0) {
-        unsigned digit = (unsigned) (uval % (unsigned long long) base);
-        char c = (digit < 10)
-                     ? (char) ('0' + digit)
-                     : (char) ((upper ? 'A' : 'a') + (digit - 10));
-        tmp[tlen++] = c;
-        uval /= base;
-    }
-    int pos = 0;
-    if (negative) buf[pos++] = '-';
-    else if (spec->sign == '+' && base == 10) buf[pos++] = '+';
-    int plen = (int) strlen(prefix);
-    { int i; for (i = 0; i < plen; i++) buf[pos++] = prefix[i]; }
-    *sign_prefix_len = pos;
-    { int i; for (i = tlen - 1; i >= 0 && pos < bufsz - 1; i--) buf[pos++] = tmp[i]; }
-    buf[pos] = '\0';
-    return pos;
-}
-static int ocstl_format_float(char *buf, int bufsz, double dval,
-                              const ocstl_fmt_spec_t *spec,
-                              int *sign_prefix_len) {
-    bool negative = dval < 0.0;
-    if (negative) dval = -dval;
-    int prec = spec->precision >= 0 ? spec->precision : 6;
-    char fmt[16];
-    char type = spec->type ? spec->type : 'f';
-    if (type != 'f' && type != 'e' && type != 'E' && type != 'g' && type != 'G') type = 'f';
-    snprintf(fmt, sizeof fmt, "%%.%d%c", prec, type);
-    int pos = 0;
-    if (negative) buf[pos++] = '-';
-    else if (spec->sign == '+') buf[pos++] = '+';
-    *sign_prefix_len = pos;
-    int n = snprintf(buf + pos, bufsz - pos, fmt, dval);
-    if (n < 0) n = 0;
-    return pos + n;
-}
-#if defined(OCSTL_CSTLIO_DISPATCH_GENERIC) || defined(OCSTL_CSTLIO_DISPATCH_BUILTIN) || defined(OCSTL_CSTLIO_DISPATCH_SIZEOF)
-static void ocstl_print_val(const ocstl_val_t *v, const ocstl_fmt_spec_t *spec) {
-    char buf[128];
-    int len = 0;
-    int sign_prefix_len = -1;
-    if (spec->type == 'c') {
-        long long ch = 0;
-        int handled = 1;
-        switch (v->type) {
-            case OCSTL_COUT_BOOL: ch = v->b;
-                break;
-            case OCSTL_COUT_SCHAR: ch = v->sc;
-                break;
-            case OCSTL_COUT_UCHAR: ch = v->uc;
-                break;
-            case OCSTL_COUT_SHORT: ch = v->h;
-                break;
-            case OCSTL_COUT_USHORT: ch = v->uh;
-                break;
-            case OCSTL_COUT_INT: ch = v->i;
-                break;
-            case OCSTL_COUT_UINT: ch = v->u;
-                break;
-            case OCSTL_COUT_LONG: ch = v->l;
-                break;
-            case OCSTL_COUT_ULONG: ch = v->ul;
-                break;
-            case OCSTL_COUT_LLONG: ch = v->ll;
-                break;
-            case OCSTL_COUT_ULLONG: ch = (long long) v->ull;
-                break;
-            case OCSTL_COUT_CHAR: ch = v->c;
-                break;
-            case OCSTL_COUT_INTPTR: ch = (long long) v->p;
-                break;
-            default: handled = 0;
-                break;
-        }
-        if (handled) {
-            buf[0] = (char) ch;
-            ocstl_emit_padded(buf, 1, spec, -1);
-            return;
-        }
-    }
-    switch (v->type) {
-        case OCSTL_COUT_BOOL:
-            len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long) v->b, false,
-                                   spec, &sign_prefix_len);
-            break;
-        case OCSTL_COUT_SCHAR: {
-            long long sv = v->sc;
-            len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long) (sv < 0 ? -sv : sv),
-                                   sv < 0, spec, &sign_prefix_len);
-            break;
-        }
-        case OCSTL_COUT_UCHAR:
-            len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long) v->uc, false,
-                                   spec, &sign_prefix_len);
-            break;
-        case OCSTL_COUT_SHORT: {
-            long long sv = v->h;
-            len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long) (sv < 0 ? -sv : sv),
-                                   sv < 0, spec, &sign_prefix_len);
-            break;
-        }
-        case OCSTL_COUT_USHORT:
-            len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long) v->uh, false,
-                                   spec, &sign_prefix_len);
-            break;
-        case OCSTL_COUT_INT: {
-            long long sv = v->i;
-            len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long) (sv < 0 ? -sv : sv),
-                                   sv < 0, spec, &sign_prefix_len);
-            break;
-        }
-        case OCSTL_COUT_INTPTR: {
-            long long sv = (long long)v->p;
-            len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long) (sv < 0 ? -sv : sv),
-                                   sv < 0, spec, &sign_prefix_len);
-            break;
-        }
-        case OCSTL_COUT_LONG: {
-            long long sv = v->l;
-            len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long) (sv < 0 ? -sv : sv),
-                                   sv < 0, spec, &sign_prefix_len);
-            break;
-        }
-        case OCSTL_COUT_LLONG: {
-            long long sv = v->ll;
-            len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long) (sv < 0 ? -sv : sv),
-                                   sv < 0, spec, &sign_prefix_len);
-            break;
-        }
-        case OCSTL_COUT_UINT:
-            len = ocstl_format_int(buf, sizeof buf, (unsigned long long) v->u, false, spec, &sign_prefix_len);
-            break;
-        case OCSTL_COUT_ULONG:
-            len = ocstl_format_int(buf, sizeof buf, (unsigned long long) v->ul, false, spec, &sign_prefix_len);
-            break;
-        case OCSTL_COUT_ULLONG:
-            len = ocstl_format_int(buf, sizeof buf, v->ull, false, spec, &sign_prefix_len);
-            break;
-        case OCSTL_COUT_FLOAT:
-            len = ocstl_format_float(buf, sizeof buf, (double) v->f, spec, &sign_prefix_len);
-            break;
-        case OCSTL_COUT_DOUBLE:
-            len = ocstl_format_float(buf, sizeof buf, v->d, spec, &sign_prefix_len);
-            break;
-        case OCSTL_COUT_CHAR: {
-            buf[0] = v->c;
-            buf[1] = '\0';
-            len = 1;
-            break;
-        }
-        case OCSTL_COUT_STR: {
-            switch (spec->type) {
-                case 'd':
-                case 'i': {
-                    long long sv = v->ll;
-                    len = ocstl_format_int(buf, sizeof buf,
-                                           (unsigned long long) (sv < 0 ? -sv : sv),
-                                           sv < 0, spec, &sign_prefix_len);
-                    break;
-                }
-                case 'u':
-                case 'x':
-                case 'X':
-                case 'o':
-                case 'b':
-                    len = ocstl_format_int(buf, sizeof buf, v->ull, false,
-                                           spec, &sign_prefix_len);
-                    break;
-                case 'f':
-                case 'e':
-                case 'E':
-                case 'g':
-                case 'G':
-                    len = ocstl_format_float(buf, sizeof buf, v->d,
-                                             spec, &sign_prefix_len);
-                    break;
-                default: {
-                    const char *s = v->s ? v->s : "(null)";
-                    ocstl_emit_padded(s, (int) strlen(s), spec, -1);
-                    return;
-                }
-            }
-            break;
-        }
-    }
-    ocstl_emit_padded(buf, len, spec, sign_prefix_len);
-}
-static void ocstl_print_impl(const char *fmt, const ocstl_val_t *args, int n) {
-    int idx = 0;
-    const char *p = fmt;
-    ocstl_ensure_unicode();
-    while (*p) {
-        if (p[0] == '{' && p[1] == '{') {
-            putchar('{');
-            p += 2;
-        } else if (p[0] == '}' && p[1] == '}') {
-            putchar('}');
-            p += 2;
-        } else if (p[0] == '{') {
-            const char *q = p + 1;
-            ocstl_fmt_spec_t spec;
-            ocstl_spec_init(&spec);
-            if (*q == ':') {
-                q = ocstl_parse_spec(q + 1, &spec);
-            }
-            if (*q == '}') {
-                if (idx < n) ocstl_print_val(&args[idx++], &spec);
-                p = q + 1;
-            } else {
-                putchar((unsigned char) *p++);
-            }
-        } else {
-            putchar((unsigned char) *p++);
-        }
-    }
-}
-#define OCSTL_PRINT_N1(fmt) \
-    do { ocstl_ensure_unicode(); ocstl_print_impl((fmt), NULL, 0); } while (0)
-#define OCSTL_PRINT_1(fmt) OCSTL_PRINT_N1(fmt)
-#define OCSTL_PRINT_2(fmt, _a) do {                                                       \
-    ocstl_val_t _args[1];                                                                  \
-    _args[0] = OCSTL_VAL(_a);                                                              \
-    ocstl_print_impl((fmt), _args, 1);                                                     \
-} while (0)
-#define OCSTL_PRINT_3(fmt, _a, _b) do {                                                   \
-    ocstl_val_t _args[2];                                                                  \
-    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b);                                    \
-    ocstl_print_impl((fmt), _args, 2);                                                     \
-} while (0)
-#define OCSTL_PRINT_4(fmt, _a, _b, _c) do {                                               \
-    ocstl_val_t _args[3];                                                                  \
-    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
-    ocstl_print_impl((fmt), _args, 3);                                                     \
-} while (0)
-#define OCSTL_PRINT_5(fmt, _a, _b, _c, _d) do {                                           \
-    ocstl_val_t _args[4];                                                                  \
-    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b);                                    \
-    _args[2] = OCSTL_VAL(_c); _args[3] = OCSTL_VAL(_d);                                    \
-    ocstl_print_impl((fmt), _args, 4);                                                     \
-} while (0)
-#define OCSTL_PRINT_6(fmt, _a, _b, _c, _d, _e) do {                                       \
-    ocstl_val_t _args[5];                                                                  \
-    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b);                                    \
-    _args[2] = OCSTL_VAL(_c); _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e);          \
-    ocstl_print_impl((fmt), _args, 5);                                                     \
-} while (0)
-#define OCSTL_PRINT_7(fmt, _a, _b, _c, _d, _e, _f) do {                                   \
-    ocstl_val_t _args[6];                                                                  \
-    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
-    _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e); _args[5] = OCSTL_VAL(_f);          \
-    ocstl_print_impl((fmt), _args, 6);                                                     \
-} while (0)
-#define OCSTL_PRINT_8(fmt, _a, _b, _c, _d, _e, _f, _g) do {                               \
-    ocstl_val_t _args[7];                                                                  \
-    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
-    _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e); _args[5] = OCSTL_VAL(_f);          \
-    _args[6] = OCSTL_VAL(_g);                                                              \
-    ocstl_print_impl((fmt), _args, 7);                                                     \
-} while (0)
-#define OCSTL_PRINT_9(fmt, _a, _b, _c, _d, _e, _f, _g, _h) do {                           \
-    ocstl_val_t _args[8];                                                                  \
-    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
-    _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e); _args[5] = OCSTL_VAL(_f);          \
-    _args[6] = OCSTL_VAL(_g); _args[7] = OCSTL_VAL(_h);                                    \
-    ocstl_print_impl((fmt), _args, 8);                                                     \
-} while (0)
-#define OCSTL_PRINT_10(fmt, _a, _b, _c, _d, _e, _f, _g, _h, _i) do {                      \
-    ocstl_val_t _args[9];                                                                  \
-    _args[0] = OCSTL_VAL(_a); _args[1] = OCSTL_VAL(_b); _args[2] = OCSTL_VAL(_c);          \
-    _args[3] = OCSTL_VAL(_d); _args[4] = OCSTL_VAL(_e); _args[5] = OCSTL_VAL(_f);          \
-    _args[6] = OCSTL_VAL(_g); _args[7] = OCSTL_VAL(_h); _args[8] = OCSTL_VAL(_i);          \
-    ocstl_print_impl((fmt), _args, 9);                                                     \
-} while (0)
-#define OCSTL_PASTE2(a, b) a##b
-#define OCSTL_PASTE(a, b)  OCSTL_PASTE2(a, b)
-#define OCSTL_EXPAND(x) x
-#define print(...)   OCSTL_EXPAND(OCSTL_PASTE(OCSTL_PRINT_, ARGN(__VA_ARGS__))(__VA_ARGS__))
-#define println(...) do { print(__VA_ARGS__); putchar('\n'); } while (0)
-#elif defined(OCSTL_CSTLIO_DISPATCH_VARARGS)
-#include <stdarg.h>
-#include <ctype.h>
-#if defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_MSVC)
-#ifndef OPENCSTL_MSVC_C99_OPTIMIZE
-#pragma warning(disable:4081)
-#pragma comment(compiler, "/Zi")
-#pragma comment(linker, "/DEBUG")
-#pragma comment(linker, "/DEBUGTYPE:cv")
-#pragma optimize("", off)
-#endif
-#  define OCSTL_VA_USE_DBGHELP 1
-#  include <intrin.h>
-#  define _NO_CVCONST_H
-#  include <dbghelp.h>
-#  pragma comment(lib, "dbghelp.lib")
-enum {
-    OCSTL_DH_btVoid = 1, OCSTL_DH_btChar = 2, OCSTL_DH_btWChar = 3,
-    OCSTL_DH_btInt = 6, OCSTL_DH_btUInt = 7, OCSTL_DH_btFloat = 8,
-    OCSTL_DH_btBool = 10, OCSTL_DH_btLong = 13, OCSTL_DH_btULong = 14
-};
-#endif
-typedef enum {
-    OCSTL_VAK_UNKNOWN = 0,
-    OCSTL_VAK_BOOL,
-    OCSTL_VAK_CHAR, OCSTL_VAK_UCHAR,
-    OCSTL_VAK_SHORT, OCSTL_VAK_USHORT,
-    OCSTL_VAK_INT, OCSTL_VAK_UINT,
-    OCSTL_VAK_LONG, OCSTL_VAK_ULONG,
-    OCSTL_VAK_LLONG, OCSTL_VAK_ULLONG,
-    OCSTL_VAK_FLOAT, OCSTL_VAK_DOUBLE,
-    OCSTL_VAK_STR
-} ocstl_vak_t;
-#ifdef OCSTL_VA_USE_DBGHELP
-static HANDLE g_ocstl_dh_proc = NULL;
-static int g_ocstl_dh_ready = 0;
-static void ocstl_dh_init(void) {
-    if (g_ocstl_dh_ready) return;
-    g_ocstl_dh_proc = GetCurrentProcess();
-    SymInitialize(g_ocstl_dh_proc, NULL, TRUE);
-    SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
-    g_ocstl_dh_ready = 1;
-}
-static ocstl_vak_t ocstl_dh_classify_base(DWORD base, ULONG64 size) {
-    switch (base) {
-        case OCSTL_DH_btBool: return OCSTL_VAK_BOOL;
-        case OCSTL_DH_btChar: return OCSTL_VAK_CHAR;
-        case OCSTL_DH_btInt:
-            if (size == 1) return OCSTL_VAK_CHAR;
-            if (size == 2) return OCSTL_VAK_SHORT;
-            if (size == 8) return OCSTL_VAK_LLONG;
-            return OCSTL_VAK_INT;
-        case OCSTL_DH_btUInt:
-            if (size == 1) return OCSTL_VAK_UCHAR;
-            if (size == 2) return OCSTL_VAK_USHORT;
-            if (size == 8) return OCSTL_VAK_ULLONG;
-            return OCSTL_VAK_UINT;
-        case OCSTL_DH_btFloat: return (size == 8) ? OCSTL_VAK_DOUBLE : OCSTL_VAK_FLOAT;
-        case OCSTL_DH_btLong: return OCSTL_VAK_LONG;
-        case OCSTL_DH_btULong: return OCSTL_VAK_ULONG;
-        default: return OCSTL_VAK_UNKNOWN;
-    }
-}
-static ocstl_vak_t ocstl_dh_resolve_typeidx(ULONG64 mod_base, DWORD type_idx, int depth) {
-    DWORD tag = 0;
-    ULONG64 size = 0;
-    if (depth > 4) return OCSTL_VAK_UNKNOWN;
-    SymGetTypeInfo(g_ocstl_dh_proc, mod_base, type_idx, TI_GET_SYMTAG, &tag);
-    SymGetTypeInfo(g_ocstl_dh_proc, mod_base, type_idx, TI_GET_LENGTH, &size);
-    if (tag == SymTagBaseType) {
-        DWORD base = 0;
-        SymGetTypeInfo(g_ocstl_dh_proc, mod_base, type_idx, TI_GET_BASETYPE, &base);
-        return ocstl_dh_classify_base(base, size);
-    }
-    if (tag == SymTagPointerType) {
-        DWORD child = 0, ctag = 0, cbase = 0;
-        SymGetTypeInfo(g_ocstl_dh_proc, mod_base, type_idx, TI_GET_TYPE, &child);
-        SymGetTypeInfo(g_ocstl_dh_proc, mod_base, child, TI_GET_SYMTAG, &ctag);
-        if (ctag == SymTagBaseType) {
-            SymGetTypeInfo(g_ocstl_dh_proc, mod_base, child, TI_GET_BASETYPE, &cbase);
-            if (cbase == OCSTL_DH_btChar) return OCSTL_VAK_STR;
-        }
-        return OCSTL_VAK_ULLONG;
-    }
-    if (tag == SymTagArrayType) {
-        DWORD child = 0, cbase = 0;
-        SymGetTypeInfo(g_ocstl_dh_proc, mod_base, type_idx, TI_GET_TYPE, &child);
-        SymGetTypeInfo(g_ocstl_dh_proc, mod_base, child, TI_GET_BASETYPE, &cbase);
-        if (cbase == OCSTL_DH_btChar) return OCSTL_VAK_STR;
-        return OCSTL_VAK_ULLONG;
-    }
-    if (tag == SymTagTypedef) {
-        DWORD child = 0;
-        SymGetTypeInfo(g_ocstl_dh_proc, mod_base, type_idx, TI_GET_TYPE, &child);
-        return ocstl_dh_resolve_typeidx(mod_base, child, depth + 1);
-    }
-    return OCSTL_VAK_UNKNOWN;
-}
-typedef struct {
-    const char *target;
-    ocstl_vak_t result;
-    int found;
-} ocstl_dh_lookup_t;
-static BOOL CALLBACK ocstl_dh_enum_cb(SYMBOL_INFO *sym, ULONG sz, PVOID user) {
-    ocstl_dh_lookup_t *ctx = (ocstl_dh_lookup_t *) user;
-    (void) sz;
-    if (strcmp(sym->Name, ctx->target) != 0) return TRUE;
-    ctx->result = ocstl_dh_resolve_typeidx(sym->ModBase, sym->TypeIndex, 0);
-    ctx->found = 1;
-    return FALSE;
-}
-#endif
-static ocstl_vak_t ocstl_va_classify_literal(const char *t) {
-    const char *p;
-    int has_dot = 0, is_hex = 0, u = 0, l = 0;
-    size_t n;
-    char last, prev, prev2;
-    if (!t || !t[0]) return OCSTL_VAK_UNKNOWN;
-    if (t[0] == '"') return OCSTL_VAK_STR;
-    if (t[0] == '\'') return OCSTL_VAK_CHAR;
-    p = t;
-    if (*p == '+' || *p == '-') p++;
-    if (!((*p >= '0' && *p <= '9') || *p == '.')) return OCSTL_VAK_UNKNOWN;
-    if (p[0] == '0' && (p[1] == 'x' || p[1] == 'X')) is_hex = 1;
-    while (*p) {
-        char c = *p++;
-        if (!is_hex && (c == '.' || c == 'e' || c == 'E')) has_dot = 1;
-        if (is_hex && (c == 'p' || c == 'P')) has_dot = 1;
-    }
-    n = strlen(t);
-    last = (char) ((unsigned char) t[n - 1] | 0x20);
-    prev = (n >= 2) ? (char) ((unsigned char) t[n - 2] | 0x20) : 0;
-    prev2 = (n >= 3) ? (char) ((unsigned char) t[n - 3] | 0x20) : 0;
-    if (last == 'f' && !is_hex) return OCSTL_VAK_FLOAT;
-    if (has_dot) return OCSTL_VAK_DOUBLE;
-    if (last == 'u') {
-        u = 1;
-        if (prev == 'l') l = (prev2 == 'l') ? 2 : 1;
-    } else if (last == 'l') {
-        l = (prev == 'l') ? 2 : 1;
-        if ((l == 2 ? prev2 : prev) == 'u') u = 1;
-    }
-    if (l == 2) return u ? OCSTL_VAK_ULLONG : OCSTL_VAK_LLONG;
-    if (l == 1) return u ? OCSTL_VAK_ULONG : OCSTL_VAK_LONG;
-    if (u) return OCSTL_VAK_UINT;
-    return OCSTL_VAK_INT;
-}
-static ocstl_vak_t ocstl_va_lookup_token(const char *token, void *caller_pc) {
-    (void) caller_pc;
-    if (!token || !token[0]) return OCSTL_VAK_UNKNOWN;
-    if (token[0] == '"') return OCSTL_VAK_STR;
-    if (token[0] == '\'') return OCSTL_VAK_CHAR;
-    if ((token[0] >= '0' && token[0] <= '9') ||
-        token[0] == '-' || token[0] == '+' || token[0] == '.') {
-        return ocstl_va_classify_literal(token);
-    }
-#ifdef OCSTL_VA_USE_DBGHELP
-{
-        IMAGEHLP_STACK_FRAME isf;
-        ocstl_dh_lookup_t ctx;
-        memset(&isf, 0, sizeof isf);
-        ocstl_dh_init();
-        isf.InstructionOffset = (DWORD64) (uintptr_t) caller_pc;
-        SymSetContext(g_ocstl_dh_proc, &isf, NULL);
-        ctx.target = token;
-        ctx.result = OCSTL_VAK_UNKNOWN;
-        ctx.found = 0;
-        SymEnumSymbols(g_ocstl_dh_proc, 0, token, ocstl_dh_enum_cb, &ctx);
-        return ctx.result;
-    }
-#else
-return OCSTL_VAK_UNKNOWN;
-#endif
-}
-typedef struct {
-    ocstl_vak_t kind;
-    long long ll;
-    unsigned long long ull;
-    double d;
-    const char *s;
-} ocstl_va_arg_t;
-#ifdef OCSTL_VA_USE_DBGHELP
-__declspec(noinline)
-#endif
-static void ocstl_print_impl_va(const char *fmt, int n_args, ...) {
-    ocstl_va_arg_t args[16];
-    va_list ap;
-    const char *p;
-    void *caller_pc = NULL;
-    int i, idx;
-#ifdef OCSTL_VA_USE_DBGHELP
-caller_pc = _ReturnAddress();
-#endif
-va_start(ap, n_args);
-ocstl_ensure_unicode();
-    if (n_args> 16) n_args = 16;
-    for (i =0; i<n_args; i++) {
-        const char *token = va_arg(ap, const char *);
-        ocstl_vak_t k = ocstl_va_lookup_token(token, caller_pc);
-        args[i].kind = k;
-        args[i].ll = 0;
-        args[i].ull = 0;
-        args[i].d = 0.0;
-        args[i].s = NULL;
-        switch (k) {
-            case OCSTL_VAK_BOOL: args[i].ll = (int) va_arg(ap, int);
-                break;
-            case OCSTL_VAK_CHAR: args[i].ll = (signed char) va_arg(ap, int);
-                break;
-            case OCSTL_VAK_UCHAR: args[i].ull = (unsigned char) va_arg(ap, int);
-                break;
-            case OCSTL_VAK_SHORT: args[i].ll = (short) va_arg(ap, int);
-                break;
-            case OCSTL_VAK_USHORT: args[i].ull = (unsigned short) va_arg(ap, int);
-                break;
-            case OCSTL_VAK_INT: args[i].ll = va_arg(ap, int);
-                break;
-            case OCSTL_VAK_UINT: args[i].ull = va_arg(ap, unsigned int);
-                break;
-            case OCSTL_VAK_LONG: args[i].ll = va_arg(ap, long);
-                break;
-            case OCSTL_VAK_ULONG: args[i].ull = va_arg(ap, unsigned long);
-                break;
-            case OCSTL_VAK_LLONG: args[i].ll = va_arg(ap, long long);
-                break;
-            case OCSTL_VAK_ULLONG: args[i].ull = va_arg(ap, unsigned long long);
-                break;
-            case OCSTL_VAK_FLOAT: args[i].d = va_arg(ap, double);
-                break;
-            case OCSTL_VAK_DOUBLE: args[i].d = va_arg(ap, double);
-                break;
-            case OCSTL_VAK_STR: args[i].s = va_arg(ap, const char *);
-                break;
-            default:
-                args[i].kind = OCSTL_VAK_INT;
-                args[i].ll = va_arg(ap, int);
-                break;
-        }
-    }
-va_end(ap);
-p = fmt;
-idx = 0;
-    while (*p) {
-    char buf[128];
-    int len = 0, sign_prefix_len = -1;
-    const char *q;
-    ocstl_fmt_spec_t spec;
-    ocstl_vak_t k;
-    char t;
-    if (p[0] == '{' && p[1] == '{') {
-        putchar('{');
-        p += 2;
-        continue;
-    }
-    if (p[0] == '}' && p[1] == '}') {
-        putchar('}');
-        p += 2;
-        continue;
-    }
-    if (p[0] != '{') {
-        putchar((unsigned char) *p++);
-        continue;
-    }
-    q = p + 1;
-    ocstl_spec_init(&spec);
-    if (*q == ':') q = ocstl_parse_spec(q + 1, &spec);
-    if (*q != '}') {
-        putchar((unsigned char) *p++);
-        continue;
-    }
-    if (idx >= n_args) {
-        p = q + 1;
-        continue;
-    }
-    k = args[idx].kind;
-    t = spec.type;
-    if (t == 's') k = OCSTL_VAK_STR;
-    else if (t == 'c') k = OCSTL_VAK_CHAR;
-    else if (t == 'f' || t == 'e' || t == 'E' || t == 'g' || t == 'G') k = OCSTL_VAK_DOUBLE;
-    else if (t == 'd' || t == 'i') {
-        if (k == OCSTL_VAK_FLOAT || k == OCSTL_VAK_DOUBLE) {
-            args[idx].ll = (long long) args[idx].d;
-            k = OCSTL_VAK_LLONG;
-        } else if (k == OCSTL_VAK_UCHAR || k == OCSTL_VAK_USHORT ||
-                   k == OCSTL_VAK_UINT || k == OCSTL_VAK_ULONG ||
-                   k == OCSTL_VAK_ULLONG) {
-            args[idx].ll = (long long) args[idx].ull;
-            k = OCSTL_VAK_LLONG;
-        }
-    } else if (t == 'u' || t == 'x' || t == 'X' || t == 'o' || t == 'b') {
-        if (k == OCSTL_VAK_FLOAT || k == OCSTL_VAK_DOUBLE) {
-            args[idx].ull = (unsigned long long) args[idx].d;
-            k = OCSTL_VAK_ULLONG;
-        } else if (k == OCSTL_VAK_CHAR || k == OCSTL_VAK_SHORT ||
-                   k == OCSTL_VAK_INT || k == OCSTL_VAK_LONG ||
-                   k == OCSTL_VAK_LLONG) {
-            args[idx].ull = (unsigned long long) args[idx].ll;
-            k = OCSTL_VAK_ULLONG;
-        }
-    }
-    switch (k) {
-        case OCSTL_VAK_STR: {
-            const char *s = args[idx].s ? args[idx].s : "(null)";
-            ocstl_emit_padded(s, (int) strlen(s), &spec, -1);
-            idx++;
-            p = q + 1;
-            continue;
-        }
-        case OCSTL_VAK_CHAR:
-        case OCSTL_VAK_UCHAR: {
-            if (t == 0 || t == 'c') {
-                buf[0] = (k == OCSTL_VAK_UCHAR)
-                             ? (char) args[idx].ull
-                             : (char) args[idx].ll;
-                ocstl_emit_padded(buf, 1, &spec, -1);
-                idx++;
-                p = q + 1;
-                continue;
-            }
-            {
-                long long sv = (k == OCSTL_VAK_CHAR)
-                                   ? args[idx].ll
-                                   : (long long) args[idx].ull;
-                len = ocstl_format_int(buf, sizeof buf,
-                                       (unsigned long long) (sv < 0 ? -sv : sv),
-                                       sv < 0, &spec, &sign_prefix_len);
-            }
-            break;
-        }
-        case OCSTL_VAK_FLOAT:
-        case OCSTL_VAK_DOUBLE:
-            len = ocstl_format_float(buf, sizeof buf, args[idx].d,
-                                     &spec, &sign_prefix_len);
-            break;
-        case OCSTL_VAK_BOOL:
-        case OCSTL_VAK_SHORT:
-        case OCSTL_VAK_INT:
-        case OCSTL_VAK_LONG:
-        case OCSTL_VAK_LLONG: {
-            long long sv = args[idx].ll;
-            len = ocstl_format_int(buf, sizeof buf,
-                                   (unsigned long long) (sv < 0 ? -sv : sv),
-                                   sv < 0, &spec, &sign_prefix_len);
-            break;
-        }
-        case OCSTL_VAK_USHORT:
-        case OCSTL_VAK_UINT:
-        case OCSTL_VAK_ULONG:
-        case OCSTL_VAK_ULLONG:
-            len = ocstl_format_int(buf, sizeof buf, args[idx].ull, 0,
-                                   &spec, &sign_prefix_len);
-            break;
-        default:
-            len = ocstl_format_int(buf, sizeof buf, 0, 0,
-                                   &spec, &sign_prefix_len);
-            break;
-    }
-    ocstl_emit_padded(buf, len, &spec, sign_prefix_len);
-    idx++;
-    p = q + 1;
-}
-}
-#define OCSTL_PASTE2(a, b) a##b
-#define OCSTL_PASTE(a, b)  OCSTL_PASTE2(a, b)
-#define OCSTL_EXPAND(x)    x
-#define OCSTL_VA_PRINT_1(fmt) \
-    ocstl_print_impl_va((fmt), 0)
-#define OCSTL_VA_PRINT_2(fmt, _a) \
-    ocstl_print_impl_va((fmt), 1, #_a, (_a))
-#define OCSTL_VA_PRINT_3(fmt, _a, _b) \
-    ocstl_print_impl_va((fmt), 2, #_a, (_a), #_b, (_b))
-#define OCSTL_VA_PRINT_4(fmt, _a, _b, _c) \
-    ocstl_print_impl_va((fmt), 3, #_a, (_a), #_b, (_b), #_c, (_c))
-#define OCSTL_VA_PRINT_5(fmt, _a, _b, _c, _d) \
-    ocstl_print_impl_va((fmt), 4, #_a, (_a), #_b, (_b), #_c, (_c), #_d, (_d))
-#define OCSTL_VA_PRINT_6(fmt, _a, _b, _c, _d, _e) \
-    ocstl_print_impl_va((fmt), 5, #_a, (_a), #_b, (_b), #_c, (_c), #_d, (_d), \
-                                  #_e, (_e))
-#define OCSTL_VA_PRINT_7(fmt, _a, _b, _c, _d, _e, _f) \
-    ocstl_print_impl_va((fmt), 6, #_a, (_a), #_b, (_b), #_c, (_c), #_d, (_d), \
-                                  #_e, (_e), #_f, (_f))
-#define OCSTL_VA_PRINT_8(fmt, _a, _b, _c, _d, _e, _f, _g) \
-    ocstl_print_impl_va((fmt), 7, #_a, (_a), #_b, (_b), #_c, (_c), #_d, (_d), \
-                                  #_e, (_e), #_f, (_f), #_g, (_g))
-#define OCSTL_VA_PRINT_9(fmt, _a, _b, _c, _d, _e, _f, _g, _h) \
-    ocstl_print_impl_va((fmt), 8, #_a, (_a), #_b, (_b), #_c, (_c), #_d, (_d), \
-                                  #_e, (_e), #_f, (_f), #_g, (_g), #_h, (_h))
-#define OCSTL_VA_PRINT_10(fmt, _a, _b, _c, _d, _e, _f, _g, _h, _i) \
-    ocstl_print_impl_va((fmt), 9, #_a, (_a), #_b, (_b), #_c, (_c), #_d, (_d), \
-                                  #_e, (_e), #_f, (_f), #_g, (_g), #_h, (_h), \
-                                  #_i, (_i))
-#define print(...)   OCSTL_EXPAND(OCSTL_PASTE(OCSTL_VA_PRINT_, ARGN(__VA_ARGS__))(__VA_ARGS__))
-#define println(...) do { print(__VA_ARGS__); putchar('\n'); } while (0)
-#endif
 #endif
 #define ARRAY(TYPE)             TYPE*
 #define VECTOR(TYPE)            TYPE*
@@ -11551,7 +10070,7 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
         }
         break;
         case OPENCSTL_DEQUE: {
-            if (argc == 1)param2 = NULL;
+            if (argc == 1) {param2 = NULL; }
             __cstl_deque_assign((void **) container, *(int *) param1, param2);
         }
         break;
@@ -11858,43 +10377,47 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
     }
     switch (container_type) {
         case OPENCSTL_VECTOR: {
-            if (argc == 2)__cstl_vector_insert((void **) container, param1, 1, param2);
-            else __cstl_vector_insert((void **) container, param1, *(int *) param2, param3);
+            if (argc == 2) {__cstl_vector_insert((void **) container, param1, 1, param2); }
+            else { __cstl_vector_insert((void **) container, param1, *(int *) param2, param3); }
         }
         break;
         case OPENCSTL_LIST: {
-            if (argc == 2)__cstl_list_insert((void **) container, (void **) param1, 1, param2);
-            else __cstl_list_insert((void **) container, (void **) param1, *(int *) param2, param3);
+            if (argc == 2) {__cstl_list_insert((void **) container, (void **) param1, 1, param2); }
+            else { __cstl_list_insert((void **) container, (void **) param1, *(int *) param2, param3); }
         }
         break;
         case OPENCSTL_DEQUE: {
-            if (argc == 2)__cstl_deque_insert((void **) container, param1, 1, param2);
-            else __cstl_deque_insert((void **) container, param1, *(int *) param2, param3);
+            if (argc == 2) {__cstl_deque_insert((void **) container, param1, 1, param2); }
+            else { __cstl_deque_insert((void **) container, param1, *(int *) param2, param3); }
         }
         break;
         case OPENCSTL_MAP: {
-            if (argc == 2) __cstl_tree_insert((void **) container, param1, param2);
-            else
+            if (argc == 2) { __cstl_tree_insert((void **) container, param1, param2); }
+            else {
                 fault("Invalid operation");
+            }
         }
         break;
         case OPENCSTL_SET: {
-            if (argc == 1) __cstl_tree_insert((void **) container, param1,NULL);
-            else
+            if (argc == 1) { __cstl_tree_insert((void **) container, param1,NULL); }
+            else {
                 fault("Invalid operation");
+            }
         }
         break;
         case OPENCSTL_UNORDERED_MAP: {
-            if (argc == 2)__cstl_hashtable_insert((void **) container, param1, param2);
-            else
+            if (argc == 2) {__cstl_hashtable_insert((void **) container, param1, param2); }
+            else {
                 fault("Invalid operation");
+            }
         }
         break;
         case OPENCSTL_UNORDERED_SET: {
             if (argc == 1) {
                 __cstl_hashtable_insert((void **) container, param1,NULL);
-            } else
+            } else {
                 fault("Invalid operation");
+            }
         }
         break;
         default: fault("Invalid operation");
@@ -11925,14 +10448,14 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
             if (argc == 1) {
                 param2 = (*(char **) param1) + OPENCSTL_NIDX((void**)container, NIDX_TSIZE);
                 __cstl_vector_erase((void **) container, param1, &param2);
-            } else __cstl_vector_erase((void **) container, param1, param2);
+            } else { __cstl_vector_erase((void **) container, param1, param2); }
         }
         break;
         case OPENCSTL_LIST: {
             if (argc == 1) {
                 param2 = cstl_next(*(void**)param1);
                 __cstl_list_erase((void **) container, (void **) param1, (void **) &param2);
-            } else __cstl_list_erase((void **) container, (void **) param1, (void **) param2);
+            } else { __cstl_list_erase((void **) container, (void **) param1, (void **) param2); }
         }
         break;
         case OPENCSTL_DEQUE: {
@@ -11941,7 +10464,7 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
                                                              NIDX_TSIZE + (ptrdiff_t)OPENCSTL_NIDX(((void**)container),
                                                                  -1) + 1);
                 __cstl_deque_erase((void **) container, param1, &param2);
-            } else __cstl_deque_erase((void **) container, param1, param2);
+            } else { __cstl_deque_erase((void **) container, param1, param2); }
         }
         break;
         case OPENCSTL_MAP:
@@ -11979,17 +10502,17 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
     }
     switch (container_type) {
         case OPENCSTL_VECTOR: {
-            if (argc == 1)param2 = NULL;
+            if (argc == 1) {param2 = NULL; }
             __cstl_vector_resize((void **) container, *(int *) param1, param2);
         }
         break;
         case OPENCSTL_LIST: {
-            if (argc == 1)param2 = NULL;
+            if (argc == 1) {param2 = NULL; }
             __cstl_list_resize((void **) container, *(int *) param1, param2);
         }
         break;
         case OPENCSTL_DEQUE: {
-            if (argc == 1)param2 = NULL;
+            if (argc == 1) {param2 = NULL; }
             __cstl_deque_resize((void **) container, *(int *) param1, &param2);
         }
         break;
@@ -12171,25 +10694,26 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     }
     switch (container_type) {
         case OPENCSTL_ARRAY: {
-            if (argc == 1) return __cstl_array_find((void **) container, (void **) container, param2);
-            else return __cstl_array_find((void **) container, param1, param2);
+            if (argc == 1) { return __cstl_array_find((void **) container, (void **) container, param2); }
+            else { return __cstl_array_find((void **) container, param1, param2); }
         }
         break;
         case OPENCSTL_VECTOR: {
-            if (argc == 1) return __cstl_vector_find((void **) container, container, param1);
-            else return __cstl_vector_find((void **) container, param1, param2);
+            if (argc == 1) { return __cstl_vector_find((void **) container, container, param1); }
+            else { return __cstl_vector_find((void **) container, param1, param2); }
         }
         break;
         case OPENCSTL_LIST: {
-            if (argc == 1)
+            if (argc == 1) {
                 return __cstl_list_find((void **) container, (void **) &OPENCSTL_NIDX((void**)container, 0),
                                         param1);
-            else return __cstl_list_find((void **) container, (void **) param1, param2);
+            }
+            else { return __cstl_list_find((void **) container, (void **) param1, param2); }
         }
         break;
         case OPENCSTL_DEQUE: {
-            if (argc == 1) return __cstl_deque_find((void **) container, container, param1);
-            else return __cstl_deque_find((void **) container, param1, param2);
+            if (argc == 1) { return __cstl_deque_find((void **) container, container, param1); }
+            else { return __cstl_deque_find((void **) container, param1, param2); }
         }
         break;
         case OPENCSTL_MAP:

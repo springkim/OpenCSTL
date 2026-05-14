@@ -34,9 +34,9 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-
-#ifndef OPENCSTL_TRACER_H
-#define OPENCSTL_TRACER_H
+#pragma once
+#ifndef HG_A409AB715AF164966758B335B837430124F108376DF685E94C6822880E7BBC95_H
+#define HG_A409AB715AF164966758B335B837430124F108376DF685E94C6822880E7BBC95_H
 
 
 #include <stdio.h>

@@ -276,8 +276,9 @@ static void __ht_reinsert(
     while (ctrl[idx] != HT_CTRL_EMPTY) idx = (idx + 1) & cap_mask;
     ctrl[idx] = c;
     memcpy((char *) base + idx * type_size, key, key_size);
-    if (value_size && value)
+    if (value_size && value) {
         memcpy((char *) base + idx * type_size + key_size, value, value_size);
+    }
 }
 
 static void __ht_do_rehash(
@@ -346,9 +347,10 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
      * consulted on the rare brand-new-slot exit below. */
     while (true) {
         uint8_t m = ctrl[idx];
-        if (m == HT_CTRL_EMPTY) break;
-        if (m == c && __ht_key_eq(base + idx * type_size, key, key_size))
+        if (m == HT_CTRL_EMPTY) { break; }
+        if (m == c && __ht_key_eq(base + idx * type_size, key, key_size)) {
             return;
+        }
         idx = (idx + 1) & cap_mask;
     }
 
@@ -366,8 +368,9 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
 
     ctrl[idx] = c;
     memcpy(base + idx * type_size, key, key_size);
-    if (value_size && value)
+    if (value_size && value) {
         memcpy(base + idx * type_size + key_size, value, value_size);
+    }
     OPENCSTL_NIDX(container, -1) = length + 1;
 }
 
@@ -394,9 +397,10 @@ void __cstl_hashtable_erase(void **container, void *key) {
 
     while (true) {
         uint8_t m = ctrl[idx];
-        if (m == HT_CTRL_EMPTY) return;
-        if (m == c && __ht_key_eq(base + idx * type_size, key, key_size))
+        if (m == HT_CTRL_EMPTY) { return; }
+        if (m == c && __ht_key_eq(base + idx * type_size, key, key_size)) {
             break;
+        }
         idx = (idx + 1) & cap_mask;
     }
 
@@ -445,9 +449,10 @@ void *__cstl_hashtable_find(void **container, void *key) {
 
     while (true) {
         uint8_t m = ctrl[idx];
-        if (m == HT_CTRL_EMPTY) return NULL;
-        if (m == c && __ht_key_eq(base + idx * type_size, key, key_size))
+        if (m == HT_CTRL_EMPTY) { return NULL; }
+        if (m == c && __ht_key_eq(base + idx * type_size, key, key_size)) {
             return base + idx * type_size;
+        }
         idx = (idx + 1) & cap_mask;
     }
 }
@@ -468,8 +473,9 @@ void *__cstl_hashtable_begin(void **container) {
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     { size_type64 i; for (i = 0; i <= cap_mask; i++)
-        if (ctrl[i] != HT_CTRL_EMPTY)
-            return (char *) *container + i * type_size; }
+        if (ctrl[i] != HT_CTRL_EMPTY) {
+            return (char *) *container + i * type_size;
+        } }
     return NULL;
 }
 
@@ -483,8 +489,9 @@ void *__cstl_hashtable_rbegin(void **container) {
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     { int i; for (i = (int) cap_mask; i >= 0; i--)
-        if (ctrl[i] != HT_CTRL_EMPTY)
-            return (char *) *container + i * type_size; }
+        if (ctrl[i] != HT_CTRL_EMPTY) {
+            return (char *) *container + i * type_size;
+        } }
     return NULL;
 }
 
@@ -521,18 +528,20 @@ void *__cstl_hashtable_next_prev(void *it, int n) {
     if (n == -1) {
         size_type64 pos = ((char *) it - (char *) chtm->p1) / ts + 1;
         for (; pos < cap; pos++)
-            if (ctrl[pos] != HT_CTRL_EMPTY)
+            if (ctrl[pos] != HT_CTRL_EMPTY) {
                 return (char *) chtm->p1 + pos * ts;
+            }
         return NULL;
     }
     if (n == -2) {
         size_type64 pos = ((char *) it - (char *) chtm->p1) / ts;
-        if (pos == 0) return (char *) chtm->p1 - ts;
+        if (pos == 0) { return (char *) chtm->p1 - ts; }
 
         { size_type64 i; for (i = pos - 1; ; i--) {
-            if (ctrl[i] != HT_CTRL_EMPTY)
+            if (ctrl[i] != HT_CTRL_EMPTY) {
                 return (char *) chtm->p1 + i * ts;
-            if (i == 0) break;
+            }
+            if (i == 0) { break; }
         } }
         return (char *) chtm->p1 - ts;
     }
@@ -565,9 +574,9 @@ void __cstl_hashtable_reserve(void **container, size_type64 n) {
 
     size_type64 want = length + n;
     size_type64 min_cap = (want * HT_LOAD_DEN + (HT_LOAD_NUM - 1)) / HT_LOAD_NUM;
-    if (min_cap < __HASHTABLE_DEFAULT_SIZE__) min_cap = __HASHTABLE_DEFAULT_SIZE__;
+    if (min_cap < __HASHTABLE_DEFAULT_SIZE__) { min_cap = __HASHTABLE_DEFAULT_SIZE__; }
     size_type64 new_cap = __ht_next_pow2(min_cap);
-    if (new_cap <= cap_mask_old + 1) return;
+    if (new_cap <= cap_mask_old + 1) { return; }
 
     void *new_raw = calloc(header_sz + new_cap * type_size, 1);
     verify(new_raw!=NULL);

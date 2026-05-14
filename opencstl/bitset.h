@@ -199,30 +199,30 @@ static size_type __cstl_bitset_count(BITSET b) {
 
 static bool __cstl_bitset_all(BITSET b) {
     // 모든 비트가 1인지 검사
-    if (b.nbits == 0) return true;
+    if (b.nbits == 0) { return true; }
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
     { size_type i; for (i = 0; i < full_bytes; i++) {
-        if (b.bits[i] != 0xFF) return false;
+        if (b.bits[i] != 0xFF) { return false; }
     } }
     if (rem != 0) {
         ubyte_x mask = (ubyte_x) ((1 << rem) - 1);
-        if ((b.bits[full_bytes] & mask) != mask) return false;
+        if ((b.bits[full_bytes] & mask) != mask) { return false; }
     }
     return true;
 }
 
 static bool __cstl_bitset_any(BITSET b) {
     // 하나라도 1인 비트가 있는지 검사
-    if (b.nbits == 0) return false;
+    if (b.nbits == 0) { return false; }
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
     { size_type i; for (i = 0; i < full_bytes; i++) {
-        if (b.bits[i] != 0) return true;
+        if (b.bits[i] != 0) { return true; }
     } }
     if (rem != 0) {
         ubyte_x mask = (ubyte_x) ((1 << rem) - 1);
-        if ((b.bits[full_bytes] & mask) != 0) return true;
+        if ((b.bits[full_bytes] & mask) != 0) { return true; }
     }
     return false;
 }

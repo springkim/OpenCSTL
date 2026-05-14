@@ -33,9 +33,9 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-
-#ifndef OPENCSTL_THREADING_CC_H
-#define OPENCSTL_THREADING_CC_H
+#pragma once
+#ifndef HG_A14A71B161F34F419D8D45EB76E9CD66B57502B891727C94C93ECAD01AC2F808_H
+#define HG_A14A71B161F34F419D8D45EB76E9CD66B57502B891727C94C93ECAD01AC2F808_H
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -160,4 +160,4 @@ static void cpu_pin(void) {
 #undef NS_TO_MACH
 #endif
 }
-#endif //OPENCSTL_THREADING_CC_H
+#endif

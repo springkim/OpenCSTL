@@ -90,14 +90,14 @@ static inline size_type64 pdq_log2(size_type64 n) {
 
 static void pdq_isort(unsigned char *base, size_type64 n, size_type64 sz,
                       int (*cmp)(const void *, const void *), unsigned char *tmp) {
-    if (n < 2) return;
+    if (n < 2) { return; }
     { size_type64 i; for (i = 1; i < n; ++i)
         if (cmp(PDQ_ELEM(base, i), base) < 0) {
             pdq__swap(PDQ_ELEM(base, i), base, sz); }
         }
     { size_type64 i; for (i = 2; i < n; ++i) {
         unsigned char *c = PDQ_ELEM(base, i);
-        if (cmp(c - sz, c) <= 0) continue;
+        if (cmp(c - sz, c) <= 0) { continue; }
         memcpy(tmp, c, sz);
         unsigned char *j = c;
         do {
@@ -112,7 +112,7 @@ static void pdq_isort_unguard(unsigned char *base, size_type64 n, size_type64 sz
                               int (*cmp)(const void *, const void *), unsigned char *tmp) {
     { size_type64 i; for (i = 1; i < n; ++i) {
         unsigned char *c = PDQ_ELEM(base, i);
-        if (cmp(c - sz, c) <= 0) continue;
+        if (cmp(c - sz, c) <= 0) { continue; }
         memcpy(tmp, c, sz);
         unsigned char *j = c;
         do {
@@ -125,17 +125,17 @@ static void pdq_isort_unguard(unsigned char *base, size_type64 n, size_type64 sz
 
 static int pdq_partial_isort(unsigned char *base, size_type64 n, size_type64 sz,
                              int (*cmp)(const void *, const void *), unsigned char *tmp) {
-    if (n < 2) return 1;
+    if (n < 2) { return 1; }
     size_type64 cnt = 0;
     { size_type64 i; for (i = 1; i < n; ++i) {
         unsigned char *c = PDQ_ELEM(base, i);
-        if (cmp(c - sz, c) <= 0) continue;
+        if (cmp(c - sz, c) <= 0) { continue; }
         memcpy(tmp, c, sz);
         unsigned char *j = c;
         do {
             memcpy(j, j - sz, sz);
             j -= sz;
-            if (++cnt > PDQ_PARTIAL_LIMIT) return 0;
+            if (++cnt > PDQ_PARTIAL_LIMIT) { return 0; }
         } while (j > base && cmp(j - sz, tmp) > 0);
         memcpy(j, tmp, sz);
     } }
@@ -180,19 +180,20 @@ static void pdq_sift(unsigned char *base, size_type64 root, size_type64 n,
                      size_type64 sz, int (*cmp)(const void *, const void *)) {
     for (;;) {
         size_type64 c = root * 2 + 1;
-        if (c >= n) break;
+        if (c >= n) { break; }
         size_type64 mx = root;
-        if (cmp(PDQ_ELEM(base, mx), PDQ_ELEM(base, c)) < 0) mx = c;
-        if (c + 1 < n && cmp(PDQ_ELEM(base, mx), PDQ_ELEM(base, c + 1)) < 0)
+        if (cmp(PDQ_ELEM(base, mx), PDQ_ELEM(base, c)) < 0) { mx = c; }
+        if (c + 1 < n && cmp(PDQ_ELEM(base, mx), PDQ_ELEM(base, c + 1)) < 0) {
             mx = c + 1;
-        if (mx == root) break;
+        }
+        if (mx == root) { break; }
         pdq__swap(PDQ_ELEM(base, root), PDQ_ELEM(base, mx), sz);
         root = mx;
     }
 }
 
 static void pdq_heap(unsigned char *base, size_type64 n, size_type64 sz, int (*cmp)(const void *, const void *)) {
-    if (n < 2) return;
+    if (n < 2) { return; }
     { size_type64 i; for (i = n / 2; i-- > 0; ) pdq_sift(base, i, n, sz, cmp); }
     { size_type64 e; for (e = n; e-- > 1; ) {
         pdq__swap(base, PDQ_ELEM(base, e), sz);
@@ -209,7 +210,7 @@ static inline uint64_t pdq_rng(uint64_t *s) {
 }
 
 static void pdq_break(unsigned char *base, size_type64 n, size_type64 sz, uint64_t *rs) {
-    if (n < 8) return;
+    if (n < 8) { return; }
     size_type64 h = n >> 1, q = n >> 2;
     pdq__swap(PDQ_ELEM(base, q), PDQ_ELEM(base, q + pdq_rng(rs) % (h?h:1)), sz);
     pdq__swap(PDQ_ELEM(base, h), PDQ_ELEM(base, q + pdq_rng(rs) % (h?h:1)), sz);
@@ -232,8 +233,9 @@ static inline size_type64 pdq_part_r(unsigned char *base, size_type64 n, size_ty
         while (cmp(hi, piv) >= 0) hi -= sz;
     }
     unsigned char *pp = lo - sz;
-    if (pp > base)
+    if (pp > base) {
         memcpy(base, pp, sz);
+    }
     memcpy(pp, piv, sz);
     *ap = was_partitioned;
     return (size_type64) (pp - base) / sz;
@@ -253,14 +255,15 @@ static inline size_type64 pdq_part_l(unsigned char *base, size_type64 n, size_ty
         while (cmp(lo, piv) <= 0) lo += sz;
         while (cmp(piv, hi) < 0) hi -= sz;
     }
-    if (hi > base)
+    if (hi > base) {
         memcpy(base, hi, sz);
+    }
     memcpy(hi, piv, sz);
     return (size_type64) (hi - base) / sz;
 }
 
 static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE cmp) {
-    if (!base || !cmp || width == 0 || number < 2) return;
+    if (!base || !cmp || width == 0 || number < 2) { return; }
     const size_type64 sz = width;
 
     unsigned char *arr = (unsigned char *) base;
@@ -268,7 +271,7 @@ static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMP
     unsigned char *scratch;
     size_type64 need = sz * 2;
     scratch = (need <= sizeof(sbuf)) ? sbuf : (unsigned char *) malloc(need);
-    if (!scratch) return;
+    if (!scratch) { return; }
     unsigned char *tmp = scratch;
     unsigned char *piv = scratch + sz;
     uint64_t rs = (uint64_t) number ^ 0x517cc1b727220a95ULL;
@@ -293,10 +296,12 @@ static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMP
         int leftmost = stk[sp].left;
     again:
         if (n <= PDQ_ISORT_THRESH) {
-            if (leftmost)
+            if (leftmost) {
                 pdq_isort(base, n, sz, cmp, tmp);
-            else
+            }
+            else {
                 pdq_isort_unguard(base, n, sz, cmp, tmp);
+            }
             continue;
         }
         if (bad == 0) {
@@ -318,12 +323,12 @@ static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMP
         int unbal = (lsz < n / 8 || rsz < n / 8);
         if (unbal) {
             bad--;
-            if (lsz >= PDQ_ISORT_THRESH) pdq_break(base, lsz, sz, &rs);
-            if (rsz >= PDQ_ISORT_THRESH) pdq_break(base + (pp + 1) * sz, rsz, sz, &rs);
+            if (lsz >= PDQ_ISORT_THRESH) { pdq_break(base, lsz, sz, &rs); }
+            if (rsz >= PDQ_ISORT_THRESH) { pdq_break(base + (pp + 1) * sz, rsz, sz, &rs); }
         } else if (ap) {
             int lok = pdq_partial_isort(base, lsz, sz, cmp, tmp);
             int rok = pdq_partial_isort(base + (pp + 1) * sz, rsz, sz, cmp, tmp);
-            if (lok && rok) continue;
+            if (lok && rok) { continue; }
         }
         unsigned char *rbase = base + (pp + 1) * sz;
         if (lsz < rsz) {
@@ -349,8 +354,9 @@ static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMP
         }
         goto again;
     }
-    if (scratch != sbuf)
+    if (scratch != sbuf) {
         free(scratch);
+    }
 }
 #undef PDQ_ELEM
 #undef PDQ_ISORT_THRESH

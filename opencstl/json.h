@@ -46,11 +46,11 @@
 #if defined(OCSTL_CC_TCC) || defined(OCSTL_OS_LINUX) || defined(OCSTL_CC_POCC)
 // TCC는 strtok_s / strtok_r 둘 다 없으니 직접 구현
 char *strtok_s(char *str, char *delimiters, char **last) {
-    if (!delimiters || !last) return NULL;
+    if (!delimiters || !last) { return NULL; }
 
     // 첫 호출이면 str에서, 재호출이면 저장된 위치에서 재개
     char *s = str ? str : *last;
-    if (!s) return NULL;
+    if (!s) { return NULL; }
 
     // 선행 delimiter 건너뛰기 (연속된 구분자는 하나로 취급)
     while (*s && strchr(delimiters, *s)) s++;
@@ -115,14 +115,14 @@ typedef struct JSON_TOKEN JSON;
 
 int __as_int() {
     JSON_TOKEN *p = __g_last_token;
-    if (!p || !p->p) return 0;
+    if (!p || !p->p) { return 0; }
     return (int) strtol(p->p, NULL, 10);
 }
 
 char *__as_string() {
     JSON_TOKEN *p = __g_last_token;
-    if (!p || !p->p || !p->q) return NULL;
-    if (p->str_buf) return p->str_buf; // 이미 디코딩됨 → 캐시 반환
+    if (!p || !p->p || !p->q) { return NULL; }
+    if (p->str_buf) { return p->str_buf; } // 이미 디코딩됨 → 캐시 반환
 
     char *start;
     char *end;
@@ -136,7 +136,7 @@ char *__as_string() {
 
     size_type64 cap = (size_type64) (end - start) + 1; // 이스케이프 처리 후 길이는 항상 원본 이하
     char *out = (char *) malloc(cap);
-    if (!out) return NULL;
+    if (!out) { return NULL; }
 
     char *dst = out;
     { char * s; for (s = start; s < end; s++) {
@@ -175,13 +175,13 @@ char *__as_string() {
 
 bool __as_bool() {
     JSON_TOKEN *p = __g_last_token;
-    if (!p || !p->p) return false;
+    if (!p || !p->p) { return false; }
     return *(p->p) == 't'; // "true" 만 true, 나머지는 false
 }
 
 double __as_double() {
     JSON_TOKEN *p = __g_last_token;
-    if (!p || !p->p) return 0.0;
+    if (!p || !p->p) { return 0.0; }
     return strtod(p->p, NULL);
 }
 
@@ -201,7 +201,7 @@ static char *__parse_string(char *s, JSON_TOKEN *node) {
     node->p = s;
     s++;
     while (*s && *s != '"') {
-        if (*s == '\\' && *(s + 1)) s++;
+        if (*s == '\\' && *(s + 1)) { s++; }
         s++;
     }
     node->q = s;
@@ -210,7 +210,7 @@ static char *__parse_string(char *s, JSON_TOKEN *node) {
 
 static char *__parse_number(char *s, JSON_TOKEN *node) {
     node->p = s;
-    if (*s == '-' || *s == '+') s++;
+    if (*s == '-' || *s == '+') { s++; }
     while (*s && (isdigit((unsigned char) *s) || *s == '.' ||
                   *s == 'e' || *s == 'E' || *s == '+' || *s == '-')) {
         s++;
@@ -247,7 +247,7 @@ static char *parse_array(char *s, JSON_TOKEN *node) {
         } else if (*s == ']') {
             node->q = s;
             return s + 1;
-        } else break;
+        } else { break; }
     }
     node->q = s;
     return s;
@@ -265,20 +265,20 @@ static char *__parse_object(char *s, JSON_TOKEN *node) {
 
     while (*s) {
         s = __skip_ws(s);
-        if (*s != '"') break;
+        if (*s != '"') { break; }
 
         // 키의 시작/끝 기록
         s++; // 여는 " 스킵
         char *key_start = s;
         while (*s && *s != '"') {
-            if (*s == '\\' && *(s + 1)) s++;
+            if (*s == '\\' && *(s + 1)) { s++; }
             s++;
         }
         char *key_end = s; // 닫는 " 위치
-        if (*s == '"') s++;
+        if (*s == '"') { s++; }
 
         s = __skip_ws(s);
-        if (*s != ':') break;
+        if (*s != ':') { break; }
         s++;
         s = __skip_ws(s);
 
@@ -286,7 +286,7 @@ static char *__parse_object(char *s, JSON_TOKEN *node) {
 
         // 자식의 key 필드에 복사
         size_type64 klen = (size_type64) (key_end - key_start);
-        if (klen > sizeof(child->key) - 1) klen = sizeof(child->key) - 1;
+        if (klen > sizeof(child->key) - 1) { klen = sizeof(child->key) - 1; }
         memcpy(child->key, key_start, klen);
         child->key[klen] = '\0';
 
@@ -295,11 +295,11 @@ static char *__parse_object(char *s, JSON_TOKEN *node) {
         tail = &child->next;
 
         s = __skip_ws(s);
-        if (*s == ',') s++;
+        if (*s == ',') { s++; }
         else if (*s == '}') {
             node->q = s;
             return s + 1;
-        } else break;
+        } else { break; }
     }
     node->q = s;
     return s;
@@ -307,11 +307,11 @@ static char *__parse_object(char *s, JSON_TOKEN *node) {
 
 static char *__parse_value(char *s, JSON_TOKEN *node) {
     s = __skip_ws(s);
-    if (*s == '{') return __parse_object(s, node);
-    if (*s == '[') return parse_array(s, node);
-    if (*s == '"') return __parse_string(s, node);
-    if (*s == '-' || *s == '+' || isdigit((unsigned char) *s)) return __parse_number(s, node);
-    if (isalpha((unsigned char) *s)) return __parse_literal(s, node);
+    if (*s == '{') { return __parse_object(s, node); }
+    if (*s == '[') { return parse_array(s, node); }
+    if (*s == '"') { return __parse_string(s, node); }
+    if (*s == '-' || *s == '+' || isdigit((unsigned char) *s)) { return __parse_number(s, node); }
+    if (isalpha((unsigned char) *s)) { return __parse_literal(s, node); }
     return s;
 }
 
@@ -332,10 +332,10 @@ JSON_TOKEN *__parse(char *json_str) {
 }
 
 JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
-    if (!root || !keys) return NULL;
+    if (!root || !keys) { return NULL; }
 
     char buf[1024];
-#ifdef OCSTL_CC_MSVC
+#if defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_CLANG)
     strncpy_s(buf, sizeof(buf), keys, _TRUNCATE);
 #else
     strncpy(buf, keys, sizeof(buf) - 1);
@@ -362,7 +362,7 @@ JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
             } }
         }
 
-        if (!found) return NULL;
+        if (!found) { return NULL; }
         cur = found;
         tok = strtok_s(NULL, ".", &ctx);
     }
@@ -378,7 +378,7 @@ JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
 
 
 static void __free_subtree(JSON_TOKEN *node) {
-    if (!node) return;
+    if (!node) { return; }
     JSON_TOKEN *c = node->children;
     while (c) {
         JSON_TOKEN *nx = c->next;
@@ -390,7 +390,7 @@ static void __free_subtree(JSON_TOKEN *node) {
 }
 
 void __free_json(JSON *root) {
-    if (!root) return;
+    if (!root) { return; }
     iveb_erase(iveb, root);
     JSON_TOKEN *c = root->children;
     while (c) {
@@ -406,11 +406,11 @@ void __free_json(JSON *root) {
 }
 
 static void __dumps(JSON_TOKEN *node, int depth) {
-    if (!node || !node->p || !node->q) return;
+    if (!node || !node->p || !node->q) { return; }
     { int i; for (i = 0; i < depth; i++) printf("  "); }
     int len = (int) (node->q - node->p + 1);
-    if (node->key[0]) printf("\"%s\": [%.*s]\n", node->key, len, node->p);
-    else printf("[%.*s]\n", len, node->p);
+    if (node->key[0]) { printf("\"%s\": [%.*s]\n", node->key, len, node->p); }
+    else { printf("[%.*s]\n", len, node->p); }
     { JSON_TOKEN * c; for (c = node->children; c; c = c->next) __dumps(c, depth + 1); }
 }
 

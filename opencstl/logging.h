@@ -79,12 +79,12 @@ static int try_enable_ansi(void) {
 }
 
 static WORD ansi_to_winattr(const char *color) {
-    if (color == __red) return FOREGROUND_RED | FOREGROUND_INTENSITY;
-    if (color == __green) return FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-    if (color == __yellow) return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-    if (color == __blue) return FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-    if (color == __magenta) return FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-    if (color == __cyan) return FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+    if (color == __red) { return FOREGROUND_RED | FOREGROUND_INTENSITY; }
+    if (color == __green) { return FOREGROUND_GREEN | FOREGROUND_INTENSITY; }
+    if (color == __yellow) { return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY; }
+    if (color == __blue) { return FOREGROUND_BLUE | FOREGROUND_INTENSITY; }
+    if (color == __magenta) { return FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY; }
+    if (color == __cyan) { return FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY; }
     //if (color == __white) return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
     return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 }
@@ -150,8 +150,9 @@ void __fatal_message_box(const char *msg) {
              "zenity --error --title=\"FATAL\" --text=\"%s\" 2>/dev/null"
              " || kdialog --error \"%s\" --title \"FATAL\" 2>/dev/null",
              msg, msg);
-    if (system(cmd) != 0)
+    if (system(cmd) != 0) {
         fprintf(stderr, "[FATAL] %s\n", msg);
+    }
 }
 #endif
 

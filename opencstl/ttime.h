@@ -35,8 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#if !defined(_OPENCSTL_CSTL_TICKTOCK_H)
-#define _OPENCSTL_CSTL_TICKTOCK_H
+#if !defined(HG_A1170DE02D1586974502913B9A22BCD0BF76B2551E53583764290C33DA38A9E7_H)
+#define HG_A1170DE02D1586974502913B9A22BCD0BF76B2551E53583764290C33DA38A9E7_H
 
 #include "crossplatform.h"
 #include <stdio.h>

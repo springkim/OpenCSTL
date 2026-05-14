@@ -437,7 +437,7 @@ OPENCSTL_FUNC void *__cstl_vector_lower_bound(void **container, void *value, CST
     }
 #endif
 
-    if (length == 0) return NULL;
+    if (length == 0) { return NULL; }
 
     size_type64 L = 0;
     size_type64 R = length;
@@ -446,12 +446,14 @@ OPENCSTL_FUNC void *__cstl_vector_lower_bound(void **container, void *value, CST
         size_type64 M = L + (R - L) / 2;
         void *Mptr = ((char *) *container) + (type_size * M);
 
-        if (compare(Mptr, value) < 0)
+        if (compare(Mptr, value) < 0) {
             L = M + 1;
-        else
+        }
+        else {
             R = M;
+        }
     }
-    if (L >= length) return NULL;
+    if (L >= length) { return NULL; }
     return ((char *) *container) + (type_size * L);
 }
 
@@ -471,7 +473,7 @@ OPENCSTL_FUNC void *__cstl_vector_upper_bound(void **container, void *value, CST
     }
 #endif
 
-    if (length == 0) return NULL;
+    if (length == 0) { return NULL; }
 
     size_type64 L = 0;
     size_type64 R = length;
@@ -480,12 +482,14 @@ OPENCSTL_FUNC void *__cstl_vector_upper_bound(void **container, void *value, CST
         size_type64 M = L + (R - L) / 2;
         void *Mptr = ((char *) *container) + (type_size * M);
 
-        if (compare(value, Mptr) < 0)
+        if (compare(value, Mptr) < 0) {
             R = M;
-        else
+        }
+        else {
             L = M + 1;
+        }
     }
-    if (L >= length) return NULL;
+    if (L >= length) { return NULL; }
     return ((char *) *container) + (type_size * L);
 }
 #endif

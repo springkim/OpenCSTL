@@ -77,13 +77,13 @@ static bool __cstl_exists(char *path) {
 }
 
 static char *__cstl_join(char *path1, char *path2) {
-    if (!path1) path1 = "";
-    if (!path2) path2 = "";
+    if (!path1) { path1 = ""; }
+    if (!path2) { path2 = ""; }
     bool p2_abs = false;
     if (path2[0] != '\0') {
-        if (__cstl_is_sep(path2[0])) p2_abs = true;
+        if (__cstl_is_sep(path2[0])) { p2_abs = true; }
 #if defined(OCSTL_OS_WINDOWS)
-        if (isalpha((unsigned char) path2[0]) && path2[1] == ':') p2_abs = true;
+        if (isalpha((unsigned char) path2[0]) && path2[1] == ':') { p2_abs = true; }
 #endif
     }
     if (p2_abs) {
@@ -104,7 +104,7 @@ static char *__cstl_join(char *path1, char *path2) {
     char *ret = (char *) malloc(total + 1);
     memcpy(ret, path1, l1);
     size_type64 pos = l1;
-    if (need_sep) ret[pos++] = CSTL_PATH_SEP;
+    if (need_sep) { ret[pos++] = CSTL_PATH_SEP; }
     memcpy(ret + pos, path2, l2);
     ret[pos + l2] = '\0';
     return ret;
@@ -114,7 +114,7 @@ static char *__cstl_basename(char *path) {
     size_type64 len = strlen(path);
     size_type64 start = 0;
     { size_type64 i; for (i = 0; i < len; i++) {
-        if (__cstl_is_sep(path[i])) start = i + 1;
+        if (__cstl_is_sep(path[i])) { start = i + 1; }
     } }
     size_type64 base_len = len - start;
     char *ret = (char *) malloc(base_len + 1);
@@ -127,13 +127,13 @@ static char **__cstl_splitext(char *path) {
     size_type64 len = strlen(path);
     size_type64 base_start = 0;
     { size_type64 i; for (i = 0; i < len; i++) {
-        if (__cstl_is_sep(path[i])) base_start = i + 1;
+        if (__cstl_is_sep(path[i])) { base_start = i + 1; }
     } }
     size_type64 nonleading = base_start;
     while (nonleading < len && path[nonleading] == '.') nonleading++;
     size_type64 dot_pos = (size_type64) -1;
     { size_type64 i; for (i = nonleading; i < len; i++) {
-        if (path[i] == '.') dot_pos = i;
+        if (path[i] == '.') { dot_pos = i; }
     } }
     size_type64 root_len = (dot_pos == (size_type64) -1) ? len : dot_pos;
     size_type64 ext_len = (dot_pos == (size_type64) -1) ? 0 : (len - dot_pos);
@@ -152,21 +152,21 @@ static char **__cstl_splitext(char *path) {
 static size_type64 __cstl_getsize(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     WIN32_FILE_ATTRIBUTE_DATA attr;
-    if (!GetFileAttributesExA(path, GetFileExInfoStandard, &attr)) return 0;
+    if (!GetFileAttributesExA(path, GetFileExInfoStandard, &attr)) { return 0; }
     ULARGE_INTEGER sz;
     sz.LowPart = attr.nFileSizeLow;
     sz.HighPart = attr.nFileSizeHigh;
     return (size_type64) sz.QuadPart;
 #else
     struct stat st;
-    if (stat(path, &st) != 0) return 0;
+    if (stat(path, &st) != 0) { return 0; }
     return (size_type64) st.st_size;
 #endif
 }
 
 static void __cstl_makedirs(char *path) {
     size_type64 len = strlen(path);
-    if (len == 0) return;
+    if (len == 0) { return; }
     char *tmp = (char *) malloc(len + 1);
     memcpy(tmp, path, len + 1);
     { size_type64 i; for (i = 1; i < len; i++) {
@@ -205,7 +205,7 @@ static char *__cstl_dirname(char *path) {
     size_type64 len = strlen(path);
     size_type64 last_sep = (size_type64) -1;
     { size_type64 i; for (i = 0; i < len; i++) {
-        if (__cstl_is_sep(path[i])) last_sep = i;
+        if (__cstl_is_sep(path[i])) { last_sep = i; }
     } }
     if (last_sep == (size_type64) -1) {
         char *ret = (char *) malloc(1);
@@ -213,7 +213,7 @@ static char *__cstl_dirname(char *path) {
         return ret;
     }
     size_type64 dir_len = last_sep;
-    if (dir_len == 0) dir_len = 1;
+    if (dir_len == 0) { dir_len = 1; }
 #if defined(OCSTL_OS_WINDOWS)
     if (last_sep == 2 && isalpha((unsigned char) path[0]) && path[1] == ':') {
         dir_len = 3;
@@ -226,7 +226,7 @@ static char *__cstl_dirname(char *path) {
 }
 
 static char *__cstl_abspath(char *path) {
-    if (!path) path = "";
+    if (!path) { path = ""; }
 #if defined(OCSTL_OS_WINDOWS)
     DWORD len = GetFullPathNameA(path, 0, NULL, NULL);
     if (len == 0) {
@@ -268,7 +268,7 @@ static bool __cstl_is_dir(char *path) {
     return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY);
 #else
     struct stat st;
-    if (stat(path, &st) != 0) return false;
+    if (stat(path, &st) != 0) { return false; }
     return S_ISDIR(st.st_mode);
 #endif
 }
@@ -279,7 +279,7 @@ static bool __cstl_is_file(char *path) {
     return a != INVALID_FILE_ATTRIBUTES && !(a & FILE_ATTRIBUTE_DIRECTORY);
 #else
     struct stat st;
-    if (stat(path, &st) != 0) return false;
+    if (stat(path, &st) != 0) { return false; }
     return S_ISREG(st.st_mode);
 #endif
 }

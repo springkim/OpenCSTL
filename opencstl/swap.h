@@ -35,8 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 
-#ifndef OPENCSTL_SWAP_H
-#define OPENCSTL_SWAP_H
+#ifndef HG_048A8560242521EC2F3FE622B58C4E931B7EBB509AC4D88DC0BBD5819918F689_H
+#define HG_048A8560242521EC2F3FE622B58C4E931B7EBB509AC4D88DC0BBD5819918F689_H
 #include <stddef.h>
 #include <string.h>
 #include "crossplatform.h"
@@ -69,4 +69,4 @@ static void swap(void *a, void *b, size_type64 sz) {
         }
     }
 }
-#endif //OPENCSTL_SWAP_H
+#endif

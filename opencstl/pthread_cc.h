@@ -91,9 +91,10 @@ static int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(
 }
 
 static void pthread_exit(void *value_ptr) {
-    if (!_pthread_cleanup_mutex)
+    if (!_pthread_cleanup_mutex) {
         if (!_pthread_cleanup_mutex)
             _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
+    }
     WaitForSingleObject(_pthread_cleanup_mutex, INFINITE);
     HANDLE thread = GetCurrentThread();
     _pthread_cleanup_stack **head = &_pthread_cleanup_stack_head;
@@ -101,9 +102,9 @@ static void pthread_exit(void *value_ptr) {
     while (*head) {
         _pthread_cleanup_stack *tmp = *head;
         int b = (*head)->thread == thread;
-        if (b) *head = (*head)->next;
-        if (*head)head = &(*head)->next;
-        if (b)rts = tmp;
+        if (b) { *head = (*head)->next; }
+        if (*head) {head = &(*head)->next; }
+        if (b) {rts = tmp; }
     }
     if (rts) {
         while (rts->index--) {
@@ -137,14 +138,15 @@ static int pthread_cancel(pthread_t thread) {
 }
 
 static void pthread_cleanup_push(void (*routine)(void *), void *arg) {
-    if (!_pthread_cleanup_mutex)
+    if (!_pthread_cleanup_mutex) {
         if (!_pthread_cleanup_mutex)
             _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
+    }
     WaitForSingleObject(_pthread_cleanup_mutex, INFINITE);
     HANDLE thread = GetCurrentThread();
     _pthread_cleanup_stack **head = &_pthread_cleanup_stack_head;
     while (*head) {
-        if ((*head)->thread == thread) break;
+        if ((*head)->thread == thread) { break; }
         head = &(*head)->next;
     }
     if (!*head) {
@@ -161,9 +163,10 @@ static void pthread_cleanup_push(void (*routine)(void *), void *arg) {
 }
 
 static void pthread_cleanup_pop(int execute) {
-    if (!_pthread_cleanup_mutex)
+    if (!_pthread_cleanup_mutex) {
         if (!_pthread_cleanup_mutex)
             _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
+    }
     WaitForSingleObject(_pthread_cleanup_mutex, INFINITE);
     HANDLE thread = GetCurrentThread();
     _pthread_cleanup_stack **head = &_pthread_cleanup_stack_head;

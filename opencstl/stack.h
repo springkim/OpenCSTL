@@ -34,8 +34,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#if !defined(_OPENCSTL_STACK_H)
-#define _OPENCSTL_STACK_H
+#if !defined(HG_7509721A7FD14A6CB4B5E697AE6518C9F6C48E374CA5D7308A94EE27E1D59F86_H)
+#define HG_7509721A7FD14A6CB4B5E697AE6518C9F6C48E374CA5D7308A94EE27E1D59F86_H
 #include"error.h"
 
 #define cstl_stack(TYPE)	(TYPE*)__cstl_stack(sizeof(TYPE),#TYPE)

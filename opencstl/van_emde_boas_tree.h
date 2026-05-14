@@ -36,8 +36,8 @@
 //
 
 #pragma once
-#if !defined(_OPENCSTL_VAN_EMDE_BOAS_TREE_H)
-#define _OPENCSTL_VAN_EMDE_BOAS_TREE_H
+#if !defined(HG_C9EC87EF45021DD1FAAADF8E8EE23B574E90CD47E2796E2D9923D720B1D780F6_H)
+#define HG_C9EC87EF45021DD1FAAADF8E8EE23B574E90CD47E2796E2D9923D720B1D780F6_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -93,23 +93,23 @@ static void hm_grow(HashMap *h) {
     h->size = 0;
     size_type64 i = 0;
     for (i = 0; i < oc; i++)
-        if (oe[i].used) hm_set(h, oe[i].key, oe[i].val);
+        if (oe[i].used) { hm_set(h, oe[i].key, oe[i].val); }
     free(oe);
 }
 
 static void hm_set(HashMap *h, u64 k, void *v) {
-    if (h->size * 2 >= h->cap) hm_grow(h);
+    if (h->size * 2 >= h->cap) { hm_grow(h); }
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used && h->e[i].key != k)
         i = (i + 1) % h->cap;
-    if (!h->e[i].used) h->size++;
+    if (!h->e[i].used) { h->size++; }
     h->e[i] = (HMEntry){k, v, 1};
 }
 
 static void *hm_get(const HashMap *h, u64 k) {
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used) {
-        if (h->e[i].key == k) return h->e[i].val;
+        if (h->e[i].key == k) { return h->e[i].val; }
         i = (i + 1) % h->cap;
     }
     return NULL;
@@ -119,7 +119,7 @@ static void hm_del(HashMap *h, u64 k) {
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used && h->e[i].key != k)
         i = (i + 1) % h->cap;
-    if (!h->e[i].used) return;
+    if (!h->e[i].used) { return; }
     h->e[i].used = 0;
     h->size--;
     // 삭제 후 뒤따르는 항목들 재배치 (프로빙 체인 불변 유지)
@@ -156,7 +156,7 @@ static VEB *veb_new(int bits) {
     v->bits = bits;
     v->min = VEB_EMPTY;
     v->max = VEB_EMPTY;
-    if (bits > 1) v->cls = hm_new();
+    if (bits > 1) { v->cls = hm_new(); }
     return v;
 }
 
@@ -166,15 +166,15 @@ static void veb_free(VEB *v);
 static void cls_free_all(HashMap *hm) {
     size_type64 i = 0;
     for (i = 0; i < hm->cap; i++)
-        if (hm->e[i].used) veb_free((VEB *) hm->e[i].val);
+        if (hm->e[i].used) { veb_free((VEB *) hm->e[i].val); }
     hm_free(hm);
 }
 
 static void veb_free(VEB *v) {
-    if (!v) return;
+    if (!v) { return; }
     if (v->bits > 1) {
         veb_free(v->sum);
-        if (v->cls) cls_free_all(v->cls);
+        if (v->cls) { cls_free_all(v->cls); }
     }
     free(v);
 }
@@ -195,7 +195,7 @@ static VEB *cls_or_new(VEB *v, u64 h) {
 
 
 static VEB *sum_or_new(VEB *v) {
-    if (!v->sum) v->sum = veb_new(hi_b(v->bits));
+    if (!v->sum) { v->sum = veb_new(hi_b(v->bits)); }
     return v->sum;
 }
 
@@ -216,16 +216,16 @@ static void veb_ins(VEB *v, u64 x) {
 
     // bits==1: universe {0,1}, 클러스터 없이 min/max로 처리
     if (v->bits == 1) {
-        if (x > v->max) v->max = x;
+        if (x > v->max) { v->max = x; }
         return;
     }
 
     u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
     VEB *c = cls_or_new(v, h);
     // 클러스터가 비어있었으면 summary에 h 삽입
-    if (veb_empty(c)) veb_ins(sum_or_new(v), h);
+    if (veb_empty(c)) { veb_ins(sum_or_new(v), h); }
     veb_ins(c, l);
-    if (x > v->max) v->max = x;
+    if (x > v->max) { v->max = x; }
 }
 
 
@@ -255,16 +255,16 @@ static void veb_del(VEB *v, u64 x) {
 
     u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
     VEB *c = cls_get(v, h);
-    if (!c) return;
+    if (!c) { return; }
     veb_del(c, l);
 
     if (veb_empty(c)) {
         // 클러스터가 비면 해제하고 summary에서도 제거
         hm_del(v->cls, h);
         veb_free(c);
-        if (v->sum) veb_del(v->sum, h);
+        if (v->sum) { veb_del(v->sum, h); }
         if (x == v->max) {
-            if (!v->sum || veb_empty(v->sum)) v->max = v->min;
+            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; }
             else {
                 u64 lh = v->sum->max; // 비어있지 않은 마지막 클러스터
                 VEB *lc = cls_get(v, lh);
@@ -278,30 +278,31 @@ static void veb_del(VEB *v, u64 x) {
 
 
 static u64 veb_pred(VEB *v, u64 x) {
-    if (veb_empty(v) || x <= v->min) return VEB_EMPTY;
-    if (x > v->max) return v->max;
+    if (veb_empty(v) || x <= v->min) { return VEB_EMPTY; }
+    if (x > v->max) { return v->max; }
     // bits==1: x==1, v->min==0 임이 보장됨
-    if (v->bits == 1) return 0;
+    if (v->bits == 1) { return 0; }
 
     u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
     VEB *c = cls_get(v, h);
 
     // 같은 클러스터 내에 l보다 작은 원소가 있으면 그것을 반환
-    if (c && !veb_empty(c) && l > c->min)
+    if (c && !veb_empty(c) && l > c->min) {
         return vidx(h, veb_pred(c, l), v->bits);
+    }
 
     // 이전 클러스터(summary 기준으로 h 미만)의 최댓값을 반환
     u64 ph = (v->sum && !veb_empty(v->sum)) ? veb_pred(v->sum, h) : VEB_EMPTY;
-    if (ph == VEB_EMPTY) return (x > v->min) ? v->min : VEB_EMPTY;
+    if (ph == VEB_EMPTY) { return (x > v->min) ? v->min : VEB_EMPTY; }
     VEB *pc = cls_get(v, ph);
     return pc ? vidx(ph, pc->max, v->bits) : VEB_EMPTY;
 }
 
 
 static u64 veb_floor(VEB *v, u64 x) {
-    if (veb_empty(v) || x < v->min) return VEB_EMPTY;
-    if (x >= v->max) return v->max;
-    if (x == v->min) return v->min;
+    if (veb_empty(v) || x < v->min) { return VEB_EMPTY; }
+    if (x >= v->max) { return v->max; }
+    if (x == v->min) { return v->min; }
     // pred(x+1) = x 이하의 최댓값
     // x < max 이므로 x+1 이 VEB_EMPTY 로 오버플로되지 않음
     return veb_pred(v, x + 1);
@@ -370,8 +371,9 @@ HTMVEB *htm_new(void) {
 void htm_free(HTMVEB *iv) {
     size_type64 i = 0;
     for (i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used)
+        if (iv->data->e[i].used) {
             free(iv->data->e[i].val);
+        }
     hm_free(iv->data);
     veb_free(iv->veb);
     free(iv);
@@ -396,7 +398,7 @@ void htm_insert(HTMVEB *iv, void *a, void *b, char *tombstone, int type_size) {
 void htm_erase(HTMVEB *iv, void *a) {
     u64 k = (u64) (uintptr_t) a;
     HashtableManager *it = (HashtableManager *) hm_get(iv->data, k);
-    if (!it) return;
+    if (!it) { return; }
     free(it);
     hm_del(iv->data, k);
     veb_del(iv->veb, k);
@@ -406,9 +408,9 @@ void htm_erase(HTMVEB *iv, void *a) {
 HashtableManager *htm_find(HTMVEB *iv, void *x) {
     u64 key = (u64) (uintptr_t) x;
     u64 start = veb_floor(iv->veb, key);
-    if (start == VEB_EMPTY) return NULL;
+    if (start == VEB_EMPTY) { return NULL; }
     HashtableManager *it = (HashtableManager *) hm_get(iv->data, start);
-    if (!it) return NULL;
+    if (!it) { return NULL; }
     return ((uintptr_t) x <= (uintptr_t) it->p2) ? it : NULL;
 }
 
@@ -431,8 +433,9 @@ IntervalVEB *iveb_new(void) {
 void iveb_free(IntervalVEB *iv) {
     size_type64 i = 0;
     for (i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used)
+        if (iv->data->e[i].used) {
             free(iv->data->e[i].val);
+        }
     hm_free(iv->data);
     veb_free(iv->veb);
     free(iv);
@@ -458,7 +461,7 @@ void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_t
 void iveb_erase(IntervalVEB *iv, void *a) {
     u64 k = (u64) (uintptr_t) a;
     Interval *it = (Interval *) hm_get(iv->data, k);
-    if (!it) return;
+    if (!it) { return; }
     free(it);
     hm_del(iv->data, k);
     veb_del(iv->veb, k);
@@ -466,12 +469,12 @@ void iveb_erase(IntervalVEB *iv, void *a) {
 
 
 Interval *iveb_find(IntervalVEB *iv, void *x) {
-    if (iv == NULL) return NULL;
+    if (iv == NULL) { return NULL; }
     u64 key = (u64) (uintptr_t) x;
     u64 start = veb_floor(iv->veb, key);
-    if (start == VEB_EMPTY) return NULL;
+    if (start == VEB_EMPTY) { return NULL; }
     Interval *it = (Interval *) hm_get(iv->data, start);
-    if (!it) return NULL;
+    if (!it) { return NULL; }
     return ((uintptr_t) x <= (uintptr_t) it->b) ? it : NULL;
 }
 
@@ -513,7 +516,7 @@ static void *_ocstl_dblock_alloc(size_type64 sz) {
         memset(n, 0, real);
         return n;
     }
-    if (_ocstl_dblock_bump + real > ___OCSTL_1MB) return NULL;
+    if (_ocstl_dblock_bump + real > ___OCSTL_1MB) { return NULL; }
     void *p = &OCSTL_DBLOCK[_ocstl_dblock_bump];
     _ocstl_dblock_bump += real;
     memset(p, 0, real);
@@ -521,7 +524,7 @@ static void *_ocstl_dblock_alloc(size_type64 sz) {
 }
 
 static void _ocstl_dblock_free(void *p, size_type64 sz) {
-    if (!p) return;
+    if (!p) { return; }
     int b = _ocstl_dblock_bucket(sz);
     _OCSTLDBlockNode *n = (_OCSTLDBlockNode *) p;
     n->next = _ocstl_dblock_freelist[b];
@@ -552,16 +555,16 @@ static void giveb_hm_grow(HashMap *h) {
     h->size = 0;
     size_type64 i = 0;
     for (i = 0; i < oc; i++)
-        if (oe[i].used) giveb_hm_set(h, oe[i].key, oe[i].val);
+        if (oe[i].used) { giveb_hm_set(h, oe[i].key, oe[i].val); }
     _ocstl_dblock_free(oe, oc * sizeof(HMEntry));
 }
 
 static void giveb_hm_set(HashMap *h, u64 k, void *v) {
-    if (h->size * 2 >= h->cap) giveb_hm_grow(h);
+    if (h->size * 2 >= h->cap) { giveb_hm_grow(h); }
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used && h->e[i].key != k)
         i = (i + 1) % h->cap;
-    if (!h->e[i].used) h->size++;
+    if (!h->e[i].used) { h->size++; }
     h->e[i] = (HMEntry){k, v, 1};
 }
 
@@ -569,7 +572,7 @@ static void giveb_hm_del(HashMap *h, u64 k) {
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used && h->e[i].key != k)
         i = (i + 1) % h->cap;
-    if (!h->e[i].used) return;
+    if (!h->e[i].used) { return; }
     h->e[i].used = 0;
     h->size--;
     size_type64 j = (i + 1) % h->cap;
@@ -590,7 +593,7 @@ static VEB *giveb_veb_new(int bits) {
     v->bits = bits;
     v->min = VEB_EMPTY;
     v->max = VEB_EMPTY;
-    if (bits > 1) v->cls = giveb_hm_new();
+    if (bits > 1) { v->cls = giveb_hm_new(); }
     return v;
 }
 
@@ -598,15 +601,15 @@ static void giveb_veb_free(VEB *v);
 
 static void giveb_cls_free_all(HashMap *hm) {
     { size_type64 i; for (i = 0; i < hm->cap; i++)
-        if (hm->e[i].used) giveb_veb_free((VEB *) hm->e[i].val); }
+        if (hm->e[i].used) { giveb_veb_free((VEB *) hm->e[i].val); } }
     giveb_hm_free(hm);
 }
 
 static void giveb_veb_free(VEB *v) {
-    if (!v) return;
+    if (!v) { return; }
     if (v->bits > 1) {
         giveb_veb_free(v->sum);
-        if (v->cls) giveb_cls_free_all(v->cls);
+        if (v->cls) { giveb_cls_free_all(v->cls); }
     }
     _ocstl_dblock_free(v, sizeof(VEB));
 }
@@ -621,7 +624,7 @@ static VEB *giveb_cls_or_new(VEB *v, u64 h) {
 }
 
 static VEB *giveb_sum_or_new(VEB *v) {
-    if (!v->sum) v->sum = giveb_veb_new(hi_b(v->bits));
+    if (!v->sum) { v->sum = giveb_veb_new(hi_b(v->bits)); }
     return v->sum;
 }
 
@@ -636,14 +639,14 @@ static void giveb_veb_ins(VEB *v, u64 x) {
         x = t;
     }
     if (v->bits == 1) {
-        if (x > v->max) v->max = x;
+        if (x > v->max) { v->max = x; }
         return;
     }
     u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
     VEB *c = giveb_cls_or_new(v, h);
-    if (veb_empty(c)) giveb_veb_ins(giveb_sum_or_new(v), h);
+    if (veb_empty(c)) { giveb_veb_ins(giveb_sum_or_new(v), h); }
     giveb_veb_ins(c, l);
-    if (x > v->max) v->max = x;
+    if (x > v->max) { v->max = x; }
 }
 
 static void giveb_veb_del(VEB *v, u64 x) {
@@ -666,14 +669,14 @@ static void giveb_veb_del(VEB *v, u64 x) {
     }
     u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
     VEB *c = cls_get(v, h);
-    if (!c) return;
+    if (!c) { return; }
     giveb_veb_del(c, l);
     if (veb_empty(c)) {
         giveb_hm_del(v->cls, h);
         giveb_veb_free(c);
-        if (v->sum) giveb_veb_del(v->sum, h);
+        if (v->sum) { giveb_veb_del(v->sum, h); }
         if (x == v->max) {
-            if (!v->sum || veb_empty(v->sum)) v->max = v->min;
+            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; }
             else {
                 u64 lh = v->sum->max;
                 VEB *lc = cls_get(v, lh);
@@ -697,8 +700,9 @@ GIntervalVEB *giveb_new(void) {
 
 void giveb_free(GIntervalVEB *iv) {
     { size_type64 i; for (i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used)
-            _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval)); }
+        if (iv->data->e[i].used) {
+            _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval));
+        } }
     giveb_hm_free(iv->data);
     giveb_veb_free(iv->veb);
     _ocstl_dblock_free(iv, sizeof(GIntervalVEB));
@@ -722,29 +726,29 @@ void giveb_insert(GIntervalVEB *iv, void *a, void *b, int type_size) {
 void giveb_erase(GIntervalVEB *iv, void *a) {
     u64 key = (u64) (uintptr_t) a;
     u64 start = veb_floor(iv->veb, key);
-    if (start == VEB_EMPTY) return;
+    if (start == VEB_EMPTY) { return; }
     GInterval *it = (GInterval *) hm_get(iv->data, start);
-    if (!it) return;
-    if ((uintptr_t) a > (uintptr_t) it->p2) return;
+    if (!it) { return; }
+    if ((uintptr_t) a > (uintptr_t) it->p2) { return; }
     _ocstl_dblock_free(it, sizeof(GInterval));
     giveb_hm_del(iv->data, start);
     giveb_veb_del(iv->veb, start);
 }
 
 GInterval *giveb_find(GIntervalVEB *iv, void *x) {
-    if (iv == NULL) return NULL;
+    if (iv == NULL) { return NULL; }
     u64 key = (u64) (uintptr_t) x;
     u64 start = veb_floor(iv->veb, key);
-    if (start == VEB_EMPTY) return NULL;
+    if (start == VEB_EMPTY) { return NULL; }
     GInterval *it = (GInterval *) hm_get(iv->data, start);
-    if (!it) return NULL;
+    if (!it) { return NULL; }
     return ((uintptr_t) x <= (uintptr_t) it->p2) ? it : NULL;
 }
 
 static u64 veb_succ(VEB *v, u64 x) {
-    if (veb_empty(v) || x >= v->max) return VEB_EMPTY;
-    if (x < v->min) return v->min;
-    if (v->bits == 1) return 1; // x==0, max==1 보장
+    if (veb_empty(v) || x >= v->max) { return VEB_EMPTY; }
+    if (x < v->min) { return v->min; }
+    if (v->bits == 1) { return 1; } // x==0, max==1 보장
 
     u64 h = vhi(x, v->bits), l = vlo(x, v->bits);
     VEB *c = cls_get(v, h);
@@ -759,14 +763,14 @@ static u64 veb_succ(VEB *v, u64 x) {
     u64 nh = (v->sum && !veb_empty(v->sum))
                  ? veb_succ(v->sum, h)
                  : VEB_EMPTY;
-    if (nh == VEB_EMPTY) return VEB_EMPTY;
+    if (nh == VEB_EMPTY) { return VEB_EMPTY; }
     VEB *nc = cls_get(v, nh);
-    if (!nc) return VEB_EMPTY;
+    if (!nc) { return VEB_EMPTY; }
     return vidx(nh, nc->min, v->bits);
 }
 
 void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
-    if (!iv || sz == 0) return NULL;
+    if (!iv || sz == 0) { return NULL; }
 
     void *block_start = (void *) OCSTL_GBLOCK;
     void *block_end = (void *) (OCSTL_GBLOCK + ___OCSTL_512MB);
@@ -798,7 +802,7 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
     // 등록된 구간 사이 빈 틈 탐색
     while (cur_key != VEB_EMPTY) {
         GInterval *cur = (GInterval *) hm_get(iv->data, cur_key);
-        if (!cur) break;
+        if (!cur) { break; }
 
         u64 gap_start = (u64) (uintptr_t) cur->p2 + 1;
         u64 next_key = veb_succ(iv->veb, cur_key);
@@ -808,10 +812,12 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
                           : (u64) (uintptr_t) block_end;
 
         // GBLOCK 범위 clamp
-        if (gap_start < (u64) (uintptr_t) block_start)
+        if (gap_start < (u64) (uintptr_t) block_start) {
             gap_start = (u64) (uintptr_t) block_start;
-        if (gap_end > (u64) (uintptr_t) block_end)
+        }
+        if (gap_end > (u64) (uintptr_t) block_end) {
             gap_end = (u64) (uintptr_t) block_end;
+        }
 
         if (gap_end > gap_start && gap_end - gap_start >= (int) sz) {
             void *p = (void *) (uintptr_t) gap_start;
@@ -819,7 +825,7 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
             return p;
         }
 
-        if (next_key == VEB_EMPTY) break;
+        if (next_key == VEB_EMPTY) { break; }
         cur_key = next_key;
     }
 
@@ -874,4 +880,4 @@ static void *_galloc(size_type64 sz, size_type64 type_size) {
 static void _gfree(void *p) {
     giveb_erase(giveb, p);
 }
-#endif //_OPENCSTL_VAN_EMDE_BOAS_TREE_H
+#endif

@@ -3,11 +3,13 @@
 #include <string.h>
 #include <time.h>
 #define OPENCSTL_TRACER
-#if defined(__POCC__) || defined(__BORLANDC__) || defined(__cplusplus)
+
 #include "opencstl.h"
-#else
-#include "opencstl/opencstl.h"
-#endif
+// #if defined(__POCC__) || defined(__BORLANDC__) || defined(__cplusplus)
+// #include "opencstl.h"
+// #else
+// #include "opencstl/opencstl.h"
+// #endif
 
 void cstl_vector_test01(void) {
     MsgBoxCLI("OpenCSTL / VECTOR TEST01");

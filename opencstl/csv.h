@@ -35,7 +35,7 @@ static const char *csv__next_field(const char *p, const char *end,
             if (*p == '"') {
                 if (p + 1 < end && *(p + 1) == '"') {
                     // escaped quote
-                    if (dst) dst[len] = '"';
+                    if (dst) { dst[len] = '"'; }
                     len++;
                     p += 2;
                 } else {
@@ -43,24 +43,24 @@ static const char *csv__next_field(const char *p, const char *end,
                     break;
                 }
             } else {
-                if (dst) dst[len] = *p;
+                if (dst) { dst[len] = *p; }
                 len++;
                 p++;
             }
         }
     } else {
         while (p < end && *p != ',' && *p != '\r' && *p != '\n') {
-            if (dst) dst[len] = *p;
+            if (dst) { dst[len] = *p; }
             len++;
             p++;
         }
     }
-    if (dst) dst[len] = '\0';
+    if (dst) { dst[len] = '\0'; }
     *out_len = len;
 
     if (p >= end) { *eol = 1; } else if (*p == '\r') {
         p++;
-        if (p < end && *p == '\n') p++;
+        if (p < end && *p == '\n') { p++; }
         *eol = 1;
     } else if (*p == '\n') {
         p++;
@@ -83,7 +83,7 @@ static CSV __parse_csv(char *csv_path, bool is_header) {
 
     // ── 파일 전체를 한 번에 읽기 ─────────────────────────────────────────
     FILE *f = file.open(csv_path, "rb");
-    if (!f) return ret;
+    if (!f) { return ret; }
     fseek(f, 0, SEEK_END);
     long fsz = ftell(f);
     rewind(f);
@@ -122,21 +122,22 @@ static CSV __parse_csv(char *csv_path, bool is_header) {
         while (!eol) {
             size_t flen;
             const char *next = csv__next_field(p, end, NULL, &flen, &eol);
-            if (next == p) goto done_pass1;
+            if (next == p) { goto done_pass1; }
             str_bytes += flen + 1; // +1 for '\0'
             ncols++;
             p = next;
         }
-        if (ncols == 0) break;
+        if (ncols == 0) { break; }
         row_cols[total_rows++] = ncols;
-        if (ncols > max_cols) max_cols = ncols;
+        if (ncols > max_cols) { max_cols = ncols; }
     }
 done_pass1:;
 
     // 짧은 행 패딩용 빈 문자열 공간
     { int i; for (i = 0; i < total_rows; i++)
-        if (row_cols[i] < max_cols)
-            str_bytes += (size_t) (max_cols - row_cols[i]); }
+        if (row_cols[i] < max_cols) {
+            str_bytes += (size_t) (max_cols - row_cols[i]);
+        } }
 
     // ── 단일 블록 레이아웃 ────────────────────────────────────────────────
     // [ char**  row_ptrs  : data_rows * sizeof(char**)         ]  ← table[i]

@@ -414,7 +414,7 @@ OPENCSTL_FUNC void __cstl_tree_erase_fixup(void **container, void *x) {
 }
 
 OPENCSTL_FUNC void __cstl_tree_erase(void **container, void **iter) {
-    if (iter == NULL)return;
+    if (iter == NULL) {return; }
     // size_type64 container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
     // size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     // size_type64 key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);

@@ -83,7 +83,7 @@ static bool __cstl_glob_isdir_(const char *path) {
     return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY);
 #else
     struct stat st;
-    if (stat(path, &st) != 0) return false;
+    if (stat(path, &st) != 0) { return false; }
     return S_ISDIR(st.st_mode);
 #endif
 }
@@ -113,16 +113,16 @@ static char **__cstl_glob_listdir_(const char *path, int *n_out) {
     char *pat = (char *) malloc(plen + 3);
     memcpy(pat, path, plen);
     size_type64 pos = plen;
-    if (plen > 0 && !__cstl_glob_is_sep(path[plen - 1])) pat[pos++] = '\\';
+    if (plen > 0 && !__cstl_glob_is_sep(path[plen - 1])) { pat[pos++] = '\\'; }
     pat[pos++] = '*';
     pat[pos] = '\0';
 
     WIN32_FIND_DATAA data;
     HANDLE h = FindFirstFileA(pat, &data);
     free(pat);
-    if (h == INVALID_HANDLE_VALUE) return names;
+    if (h == INVALID_HANDLE_VALUE) { return names; }
     do {
-        if (strcmp(data.cFileName, ".") == 0 || strcmp(data.cFileName, "..") == 0) continue;
+        if (strcmp(data.cFileName, ".") == 0 || strcmp(data.cFileName, "..") == 0) { continue; }
         if (cnt >= cap) {
             cap *= 2;
             names = (char **) realloc(names, cap * sizeof(char *));
@@ -135,10 +135,10 @@ static char **__cstl_glob_listdir_(const char *path, int *n_out) {
     FindClose(h);
 #else
     DIR *d = opendir(path);
-    if (!d) return names;
+    if (!d) { return names; }
     struct dirent *e;
     while ((e = readdir(d))) {
-        if (strcmp(e->d_name, ".") == 0 || strcmp(e->d_name, "..") == 0) continue;
+        if (strcmp(e->d_name, ".") == 0 || strcmp(e->d_name, "..") == 0) { continue; }
         if (cnt >= cap) {
             cap *= 2;
             names = (char **) realloc(names, cap * sizeof(char *));
@@ -163,14 +163,14 @@ static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
     while (*pat) {
         if (*pat == '*') {
             while (*pat == '*') pat++;
-            if (!*pat) return true;
+            if (!*pat) { return true; }
             while (*name) {
-                if (__cstl_glob_fnmatch_(pat, name)) return true;
+                if (__cstl_glob_fnmatch_(pat, name)) { return true; }
                 name++;
             }
             return false;
         }
-        if (!*name) return false;
+        if (!*name) { return false; }
 
         if (*pat == '?') {
             pat++;
@@ -184,26 +184,26 @@ static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
             }
             bool matched = false;
             if (*p == ']') {
-                if (*name == ']') matched = true;
+                if (*name == ']') { matched = true; }
                 p++;
             }
             while (*p && *p != ']') {
                 if (p[1] == '-' && p[2] && p[2] != ']') {
                     unsigned char lo = (unsigned char) p[0], hi = (unsigned char) p[2];
                     unsigned char c = (unsigned char) *name;
-                    if (c >= lo && c <= hi) matched = true;
+                    if (c >= lo && c <= hi) { matched = true; }
                     p += 3;
                 } else {
-                    if (*name == *p) matched = true;
+                    if (*name == *p) { matched = true; }
                     p++;
                 }
             }
-            if (*p != ']') return false;
+            if (*p != ']') { return false; }
             pat = p + 1;
-            if (matched == negate) return false;
+            if (matched == negate) { return false; }
             name++;
         } else {
-            if (*pat != *name) return false;
+            if (*pat != *name) { return false; }
             pat++;
             name++;
         }
@@ -213,7 +213,7 @@ static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
 
 static bool __cstl_glob_has_magic_(const char *s) {
     for (; *s; s++) {
-        if (*s == '*' || *s == '?' || *s == '[') return true;
+        if (*s == '*' || *s == '?' || *s == '[') { return true; }
     }
     return false;
 }
@@ -284,7 +284,7 @@ static void __cstl_glob_parse_(const char *pat,
                 segs[n][sl] = '\0';
                 n++;
             }
-            if (*p == '\0') break;
+            if (*p == '\0') { break; }
             start = p + 1;
         }
     } }
@@ -321,7 +321,7 @@ static void __cstl_glob_walk_(const char *base,
                               bool recursive,
                               __cstl_glob_result_ *out) {
     if (i >= n) {
-        if (__cstl_glob_exists_(base)) __cstl_glob_push_(out, base);
+        if (__cstl_glob_exists_(base)) { __cstl_glob_push_(out, base); }
         return;
     }
     const char *seg = segs[i];
@@ -350,7 +350,7 @@ static void __cstl_glob_walk_(const char *base,
     if (!__cstl_glob_has_magic_(seg)) {
         char *full = __cstl_glob_join_(base, seg);
         if (is_last) {
-            if (__cstl_glob_exists_(full)) __cstl_glob_push_(out, full);
+            if (__cstl_glob_exists_(full)) { __cstl_glob_push_(out, full); }
         } else if (__cstl_glob_isdir_(full)) {
             __cstl_glob_walk_(full, segs, i + 1, n, recursive, out);
         }
@@ -411,7 +411,7 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
     { int i; for (i = 0; i < r.cnt; i++) {
         char *s = r.items[i];
         { char * p; for (p = s; *p; p++) {
-            if (*p == '\\') *p = '/';
+            if (*p == '\\') { *p = '/'; }
         } }
         if (s[0] == '.' && s[1] == '/') {
             size_type64 l = strlen(s);
@@ -431,7 +431,7 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
 }
 
 static void __glob_free(char **results) {
-    if (!results) return;
+    if (!results) { return; }
     { char ** p; for (p = results; *p; p++) free(*p); }
     iveb_erase(iveb,results);
     free(results);

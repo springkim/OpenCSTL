@@ -34,9 +34,9 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-
-#ifndef OPENCSTL_STRING_H
-#define OPENCSTL_STRING_H
+#pragma once
+#ifndef HG_EECEDC83AA2AE1E2D2F56E15B218EE31EC7AA44422F39F1D52E5B5A10AA6B73B_H
+#define HG_EECEDC83AA2AE1E2D2F56E15B218EE31EC7AA44422F39F1D52E5B5A10AA6B73B_H
 
 #include "zalloc.h"
 #include "verify.h"
@@ -180,14 +180,14 @@ static bool __cstl_string_starts_with(const char *src, const char *prefix) {
 static bool __cstl_string_ends_with(const char *src, const char *suffix) {
     size_type64 slen = strlen(src);
     size_type64 flen = strlen(suffix);
-    if (flen > slen) return false;
+    if (flen > slen) { return false; }
     return memcmp(src + slen - flen, suffix, flen) == 0;
 }
 
 static int __cstl_string_count(const char *src, const char *sub) {
     int count = 0;
     size_type64 sub_len = strlen(sub);
-    if (sub_len == 0) return 0;
+    if (sub_len == 0) { return 0; }
     const char *p = src;
     while ((p = strstr(p, sub)) != NULL) {
         count++;
@@ -240,35 +240,35 @@ static char *__cstl_string_reverse(const char *src) {
 }
 
 static bool __cstl_string_is_digit(const char *src) {
-    if (!*src) return false;
+    if (!*src) { return false; }
     { const char * p; for (p = src; *p; p++)
-        if (!isdigit((unsigned char) *p)) return false; }
+        if (!isdigit((unsigned char) *p)) { return false; } }
     return true;
 }
 
 static bool __cstl_string_is_alpha(const char *src) {
-    if (!*src) return false;
+    if (!*src) { return false; }
     { const char * p; for (p = src; *p; p++)
-        if (!isalpha((unsigned char) *p)) return false; }
+        if (!isalpha((unsigned char) *p)) { return false; } }
     return true;
 }
 
 static bool __cstl_string_is_alnum(const char *src) {
-    if (!*src) return false;
+    if (!*src) { return false; }
     { const char * p; for (p = src; *p; p++)
-        if (!isalnum((unsigned char) *p)) return false; }
+        if (!isalnum((unsigned char) *p)) { return false; } }
     return true;
 }
 
 static bool __cstl_string_is_space(const char *src) {
-    if (!*src) return false;
+    if (!*src) { return false; }
     { const char * p; for (p = src; *p; p++)
-        if (!isspace((unsigned char) *p)) return false; }
+        if (!isspace((unsigned char) *p)) { return false; } }
     return true;
 }
 
 static int *__cstl_string_kmp(char *src, char *pattern, int *count) {
-    if (count != NULL) *count = 0;
+    if (count != NULL) { *count = 0; }
 
     if (src == NULL || pattern == NULL || count == NULL) {
         return NULL;
@@ -284,7 +284,7 @@ static int *__cstl_string_kmp(char *src, char *pattern, int *count) {
 
     // LPS 테이블 생성
     int *lps = (int *) malloc(sizeof(int) * m);
-    if (lps == NULL) return NULL;
+    if (lps == NULL) { return NULL; }
 
     lps[0] = 0;
     size_type64 len = 0;
@@ -432,4 +432,4 @@ static __STRING string = {
     __cstl_string_kmp
 };
 
-#endif //OPENCSTL_STRING_H
+#endif

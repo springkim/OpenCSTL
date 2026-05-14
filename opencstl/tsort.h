@@ -35,8 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#if !defined(_OPENCSTL_TSORT_H)
-#define _OPENCSTL_TSORT_H
+#if !defined(HG_4D255DAEF399705797AC93BC162A1BB35E09F993B99FFC91244FC1917E828ECD_H)
+#define HG_4D255DAEF399705797AC93BC162A1BB35E09F993B99FFC91244FC1917E828ECD_H
 #include <stdlib.h>
 #include <string.h>
 
@@ -67,21 +67,22 @@ static void ts_binsort(char *arr, size_type64 lo, size_type64 hi, size_type64 st
         size_type64 left = lo, right = i;
         while (left < right) {
             size_type64 mid = left + ((right - left) >> 1);
-            if (cmp(tmp, arr + mid * sz) < 0) right = mid;
-            else left = mid + 1;
+            if (cmp(tmp, arr + mid * sz) < 0) { right = mid; }
+            else { left = mid + 1; }
         }
         if (left < i) {
             memmove(arr + (left + 1) * sz, arr + left * sz, (i - left) * sz);
             memcpy(arr + left * sz, tmp, sz);
         }
     } }
-    if (tmp != sbuf)
+    if (tmp != sbuf) {
         free(tmp);
+    }
 }
 
 static size_type64 ts_count_run(char *arr, size_type64 lo, size_type64 hi,
                            size_type64 sz, CSTL_COMPARE cmp) {
-    if (hi - lo < 2) return hi - lo;
+    if (hi - lo < 2) { return hi - lo; }
     size_type64 run_hi = lo + 1;
     if (cmp(arr + run_hi * sz, arr + lo * sz) < 0) {
         while (run_hi + 1 < hi &&
@@ -98,8 +99,9 @@ static size_type64 ts_count_run(char *arr, size_type64 lo, size_type64 hi,
             a++;
             b--;
         }
-        if (t != rbuf)
+        if (t != rbuf) {
             free(t);
+        }
     } else {
         while (run_hi + 1 < hi &&
                cmp(arr + (run_hi + 1) * sz, arr + run_hi * sz) >= 0)
@@ -111,36 +113,36 @@ static size_type64 ts_count_run(char *arr, size_type64 lo, size_type64 hi,
 
 static size_type64 ts_gallop_right(const char *key, const char *a, size_type64 n,
                               size_type64 sz, CSTL_COMPARE cmp) {
-    if (n == 0 || cmp(key, a) < 0) return 0;
+    if (n == 0 || cmp(key, a) < 0) { return 0; }
     size_type64 last = 0, ofs = 1;
     while (ofs < n && cmp(key, a + ofs * sz) >= 0) {
         last = ofs;
         ofs = (ofs << 1) + 1;
     }
-    if (ofs > n) ofs = n;
+    if (ofs > n) { ofs = n; }
     size_type64 lo = last + 1, hi = ofs;
     while (lo < hi) {
         size_type64 m = lo + ((hi - lo) >> 1);
-        if (cmp(key, a + m * sz) >= 0) lo = m + 1;
-        else hi = m;
+        if (cmp(key, a + m * sz) >= 0) { lo = m + 1; }
+        else { hi = m; }
     }
     return lo;
 }
 
 static size_type64 ts_gallop_left(const char *key, const char *a, size_type64 n,
                              size_type64 sz, CSTL_COMPARE cmp) {
-    if (n == 0 || cmp(key, a) <= 0) return 0;
+    if (n == 0 || cmp(key, a) <= 0) { return 0; }
     size_type64 last = 0, ofs = 1;
     while (ofs < n && cmp(key, a + ofs * sz) > 0) {
         last = ofs;
         ofs = (ofs << 1) + 1;
     }
-    if (ofs > n) ofs = n;
+    if (ofs > n) { ofs = n; }
     size_type64 lo = last + 1, hi = ofs;
     while (lo < hi) {
         size_type64 m = lo + ((hi - lo) >> 1);
-        if (cmp(key, a + m * sz) > 0) lo = m + 1;
-        else hi = m;
+        if (cmp(key, a + m * sz) > 0) { lo = m + 1; }
+        else { hi = m; }
     }
     return lo;
 }
@@ -161,14 +163,14 @@ static void ts_merge_lo(char *base, size_type64 len1, size_type64 len2,
                 d += sz;
                 cnt2++;
                 cnt1 = 0;
-                if (c2 >= e2) goto tail_lo;
+                if (c2 >= e2) { goto tail_lo; }
             } else {
                 memcpy(d, c1, sz);
                 c1 += sz;
                 d += sz;
                 cnt1++;
                 cnt2 = 0;
-                if (c1 >= e1) return;
+                if (c1 >= e1) { return; }
             }
         } while ((cnt1 | cnt2) < mg);
         do {
@@ -178,29 +180,30 @@ static void ts_merge_lo(char *base, size_type64 len1, size_type64 len2,
                 c1 += cnt1 * sz;
                 d += cnt1 * sz;
             }
-            if (c1 >= e1) return;
+            if (c1 >= e1) { return; }
             memcpy(d, c2, sz);
             c2 += sz;
             d += sz;
-            if (c2 >= e2) goto tail_lo;
+            if (c2 >= e2) { goto tail_lo; }
             cnt2 = ts_gallop_left(c1, c2, (size_type64) (e2 - c2) / sz, sz, cmp);
             if (cnt2) {
                 memmove(d, c2, cnt2 * sz);
                 c2 += cnt2 * sz;
                 d += cnt2 * sz;
             }
-            if (c2 >= e2) goto tail_lo;
+            if (c2 >= e2) { goto tail_lo; }
             memcpy(d, c1, sz);
             c1 += sz;
             d += sz;
-            if (c1 >= e1) return;
-            if (mg > 1) mg--;
+            if (c1 >= e1) { return; }
+            if (mg > 1) { mg--; }
         } while ((cnt1 | cnt2) >= TS_MIN_GALLOP);
         mg += 2;
     }
 tail_lo:
-    if (c1 < e1)
+    if (c1 < e1) {
         memcpy(d, c1, (size_type64) (e1 - c1));
+    }
 }
 
 static void ts_merge_hi(char *base, size_type64 len1, size_type64 len2,
@@ -218,19 +221,22 @@ static void ts_merge_hi(char *base, size_type64 len1, size_type64 len2,
             j--;
         }
     }
-    if (j > 0)
+    if (j > 0) {
         memcpy(base, buf, j * sz);
+    }
 }
 
 static inline void ts_do_merge(char *arr, size_type64 base1, size_type64 len1,
                                size_type64 len2, size_type64 sz, CSTL_COMPARE cmp,
                                char *buf) {
     size_type64 mid = base1 + len1;
-    if (cmp(arr + (mid - 1) * sz, arr + mid * sz) <= 0) return;
-    if (len1 <= len2)
+    if (cmp(arr + (mid - 1) * sz, arr + mid * sz) <= 0) { return; }
+    if (len1 <= len2) {
         ts_merge_lo(arr + base1 * sz, len1, len2, sz, cmp, buf);
-    else
+    }
+    else {
         ts_merge_hi(arr + base1 * sz, len1, len2, sz, cmp, buf);
+    }
 }
 
 static void ts_merge_collapse(char *arr, struct ts_run *stk, size_type64 *sp,
@@ -239,12 +245,12 @@ static void ts_merge_collapse(char *arr, struct ts_run *stk, size_type64 *sp,
         size_type64 n = *sp - 2;
         int need_merge = 0;
         if (n > 0 && stk[n - 1].len <= stk[n].len + stk[n + 1].len) {
-            if (stk[n - 1].len < stk[n + 1].len) n--;
+            if (stk[n - 1].len < stk[n + 1].len) { n--; }
             need_merge = 1;
         } else if (stk[n].len <= stk[n + 1].len) {
             need_merge = 1;
         }
-        if (!need_merge) break;
+        if (!need_merge) { break; }
         ts_do_merge(arr, stk[n].base, stk[n].len, stk[n + 1].len,
                     sz, cmp, buf);
         stk[n].len += stk[n + 1].len;
@@ -258,7 +264,7 @@ static void ts_merge_force(char *arr, struct ts_run *stk, size_type64 *sp,
                            size_type64 sz, CSTL_COMPARE cmp, char *buf) {
     while (*sp > 1) {
         size_type64 n = *sp - 2;
-        if (n > 0 && stk[n - 1].len < stk[n + 1].len) n--;
+        if (n > 0 && stk[n - 1].len < stk[n + 1].len) { n--; }
         ts_do_merge(arr, stk[n].base, stk[n].len, stk[n + 1].len,
                     sz, cmp, buf);
         stk[n].len += stk[n + 1].len;
@@ -269,7 +275,7 @@ static void ts_merge_force(char *arr, struct ts_run *stk, size_type64 *sp,
 }
 
 static void tsort(void *base, const size_type64 number, const size_type64 width, CSTL_COMPARE cmp) {
-    if (number < 2) return;
+    if (number < 2) { return; }
     char *arr = (char *) base;
     size_type64 sz = width;
     if (number < TS_MIN_MERGE) {
@@ -278,7 +284,7 @@ static void tsort(void *base, const size_type64 number, const size_type64 width,
         return;
     }
     char *buf = (char *) malloc(number * sz);
-    if (!buf) return;
+    if (!buf) { return; }
     struct ts_run stk[TS_MAX_STACK];
     size_type64 sp = 0;
     size_type64 minrun = ts_minrun(number);
@@ -287,7 +293,7 @@ static void tsort(void *base, const size_type64 number, const size_type64 width,
         size_type64 run_len = ts_count_run(arr, lo, number, sz, cmp);
         if (run_len < minrun) {
             size_type64 force = number - lo;
-            if (force > minrun) force = minrun;
+            if (force > minrun) { force = minrun; }
             ts_binsort(arr, lo, lo + force, lo + run_len, sz, cmp);
             run_len = force;
         }

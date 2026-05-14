@@ -88,8 +88,8 @@ static void MsgBoxCLI(const char *format, ...) {
             int len = (int) (p - line_start);
             int lpadding = (inner - len) / 2;
             int rpadding = inner - len - lpadding;
-            if (lpadding < 0) lpadding = 0;
-            if (rpadding < 0) rpadding = 0;
+            if (lpadding < 0) { lpadding = 0; }
+            if (rpadding < 0) { rpadding = 0; }
 
             fputs(hline, stdout);
             { int i; for (i = 0; i < lpadding; i++) putchar(' '); }
@@ -98,7 +98,7 @@ static void MsgBoxCLI(const char *format, ...) {
             fputs(hline, stdout);
             putchar('\n');
 
-            if (*p == '\0') break;
+            if (*p == '\0') { break; }
             line_start = p + 1;
         }
         p++;
@@ -184,7 +184,7 @@ static void MsgBoxGUI(const char *format, ...) {
     }
 
     // 5) 정리는 반드시 MessageBox 호출 후에
-    if (h) FreeLibrary(h);
+    if (h) { FreeLibrary(h); }
 
     switch (r) {
         case IDABORT: ExitProcess(3);
@@ -234,9 +234,9 @@ static const struct lang_labels kLangs[] = {
 
 static const struct lang_labels *detect_lang(void) {
     const char *lang = getenv("LC_ALL");
-    if (!lang || !*lang) lang = getenv("LC_MESSAGES");
-    if (!lang || !*lang) lang = getenv("LANG");
-    if (!lang || !*lang) lang = "en";
+    if (!lang || !*lang) { lang = getenv("LC_MESSAGES"); }
+    if (!lang || !*lang) { lang = getenv("LANG"); }
+    if (!lang || !*lang) { lang = "en"; }
 
     // "ko_KR.UTF-8" -> "ko" 비교
     { int i; for (i = 0; kLangs[i].prefix; i++) {
@@ -259,14 +259,14 @@ static const struct lang_labels *detect_lang(void) {
 
 static void get_exe_path(char *out, size_type64 n) {
     ssize_t r = readlink("/proc/self/exe", out, n - 1);
-    if (r < 0) r = 0;
+    if (r < 0) { r = 0; }
     out[r] = '\0';
 }
 
 // Windows의 MessageBoxExA(MB_ABORTRETRYIGNORE|MB_ICONERROR) 대응
 static int zenity_abort_retry_ignore(const char *title, const char *body) {
     int pipefd[2];
-    if (pipe(pipefd) < 0) return IDABORT;
+    if (pipe(pipefd) < 0) { return IDABORT; }
 
     pid_t pid = fork();
     if (pid < 0) {
@@ -313,7 +313,7 @@ static int zenity_abort_retry_ignore(const char *title, const char *body) {
     char out[256] = {0};
     ssize_t n = read(pipefd[0], out, sizeof(out) - 1);
     close(pipefd[0]);
-    if (n > 0) out[n] = '\0';
+    if (n > 0) { out[n] = '\0'; }
 
     int status = 0;
     waitpid(pid, &status, 0);
@@ -330,7 +330,7 @@ static int zenity_abort_retry_ignore(const char *title, const char *body) {
     size_type64 Llen = strlen(out);
     while (Llen > 0 && (out[Llen - 1] == '\n' || out[Llen - 1] == '\r')) out[--Llen] = '\0';
 
-    if (strcmp(out, L->retry_s) == 0) return IDRETRY;
+    if (strcmp(out, L->retry_s) == 0) { return IDRETRY; }
     return IDABORT; // 취소 버튼, 창 닫기(X), Esc 모두 여기로
 }
 

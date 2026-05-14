@@ -109,20 +109,21 @@ static CSTL_COMPARE CSTL_LESS(const char *type_str) {
     while (end > type_str && *(end - 1) == ' ') end--;
 
     char buf[256];
-    size_type64 len = end - type_str;
-    if (len >= sizeof(buf)) return NULL;
+    //size_type64 len = end - type_str;
+    size_type64 len = (end > type_str) ? (size_type64)(end - type_str) : 0;
+    if (len >= sizeof(buf)) { return NULL; }
 
     memcpy(buf, type_str, len);
     buf[len] = '\0';
 
-    if (strcmp(buf, "float") == 0) return less_float;
-    if (strcmp(buf, "double") == 0) return less_double;
-    if (strcmp(buf, "int") == 0) return less_int32;
-    if (strcmp(buf, "long long") == 0) return less_int64;
-    if (strcmp(buf, "unsigned long long") == 0) return less_uint64;
-    if (strcmp(buf, "unsigned int") == 0) return less_uint32;
-    if (strcmp(buf, "char*") == 0) return less_string;
-    if (strcmp(buf, "char *") == 0) return less_string;
+    if (strcmp(buf, "float") == 0) { return less_float; }
+    if (strcmp(buf, "double") == 0) { return less_double; }
+    if (strcmp(buf, "int") == 0) { return less_int32; }
+    if (strcmp(buf, "long long") == 0) { return less_int64; }
+    if (strcmp(buf, "unsigned long long") == 0) { return less_uint64; }
+    if (strcmp(buf, "unsigned int") == 0) { return less_uint32; }
+    if (strcmp(buf, "char*") == 0) { return less_string; }
+    if (strcmp(buf, "char *") == 0) { return less_string; }
 
 
     return NULL;
@@ -135,20 +136,21 @@ static CSTL_COMPARE CSTL_GREATER(const char *type_str) {
     while (end > type_str && *(end - 1) == ' ') end--;
 
     char buf[256];
-    size_type64 len = end - type_str;
-    if (len >= sizeof(buf)) return NULL;
+    //size_type64 len = end - type_str;
+    size_type64 len = (end > type_str) ? (size_type64)(end - type_str) : 0;
+    if (len >= sizeof(buf)) { return NULL; }
 
     memcpy(buf, type_str, len);
     buf[len] = '\0';
 
-    if (strcmp(buf, "float") == 0) return greater_float;
-    if (strcmp(buf, "double") == 0) return greater_double;
-    if (strcmp(buf, "int") == 0) return greater_int32;
-    if (strcmp(buf, "long long") == 0) return greater_int64;
-    if (strcmp(buf, "unsigned long long") == 0) return greater_uint64;
-    if (strcmp(buf, "unsigned int") == 0) return greater_uint32;
-    if (strcmp(buf, "char*") == 0) return greater_string;
-    if (strcmp(buf, "char *") == 0) return greater_string;
+    if (strcmp(buf, "float") == 0) { return greater_float; }
+    if (strcmp(buf, "double") == 0) { return greater_double; }
+    if (strcmp(buf, "int") == 0) { return greater_int32; }
+    if (strcmp(buf, "long long") == 0) { return greater_int64; }
+    if (strcmp(buf, "unsigned long long") == 0) { return greater_uint64; }
+    if (strcmp(buf, "unsigned int") == 0) { return greater_uint32; }
+    if (strcmp(buf, "char*") == 0) { return greater_string; }
+    if (strcmp(buf, "char *") == 0) { return greater_string; }
 
     return NULL;
 }
@@ -171,7 +173,7 @@ static int _cstl_equals_float(CVP a, CVP b, size_t dummy) {
     float b1 = *(float *) b;
 
     float diff = a1 - b1;
-    if (diff < 0)diff = -diff;
+    if (diff < 0) {diff = -diff; }
     return diff < CSTL_FLOAT_EPS;
 }
 
@@ -179,7 +181,7 @@ static int _cstl_equals_double(CVP a, CVP b, size_t dummy) {
     double a1 = *(double *) a;
     double b1 = *(double *) b;
     double diff = a1 - b1;
-    if (diff < 0)diff = -diff;
+    if (diff < 0) {diff = -diff; }
     return diff < CSTL_DOUBLE_EPS;
 }
 
@@ -194,16 +196,17 @@ static CSTL_COMPARE_BYTES CSTL_EQUALS(const char *type_str) {
     while (end > type_str && *(end - 1) == ' ') end--;
 
     char buf[256];
-    size_type64 len = end - type_str;
-    if (len >= sizeof(buf)) return NULL;
+    //size_type64 len = end - type_str;
+    size_type64 len = (end > type_str) ? (size_type64)(end - type_str) : 0;
+    if (len >= sizeof(buf)) { return NULL; }
 
     memcpy(buf, type_str, len);
     buf[len] = '\0';
 
-    if (strcmp(buf, "float") == 0) return _cstl_equals_float;
-    if (strcmp(buf, "double") == 0) return _cstl_equals_double;
-    if (strcmp(buf, "char*") == 0) return _cstl_equals_str;
-    if (strcmp(buf, "char *") == 0) return _cstl_equals_str;
+    if (strcmp(buf, "float") == 0) { return _cstl_equals_float; }
+    if (strcmp(buf, "double") == 0) { return _cstl_equals_double; }
+    if (strcmp(buf, "char*") == 0) { return _cstl_equals_str; }
+    if (strcmp(buf, "char *") == 0) { return _cstl_equals_str; }
 
 
     return memcmp;

@@ -51,8 +51,8 @@ static void isort(void *base, size_type64 number, size_type64 width, CSTL_COMPAR
         size_type64 lo = 0, hi = i;
         while (lo < hi) {
             size_type64 mid = lo + ((hi - lo) >> 1);
-            if (compare(tmp, arr + mid * width) < 0) hi = mid;
-            else lo = mid + 1;
+            if (compare(tmp, arr + mid * width) < 0) { hi = mid; }
+            else { lo = mid + 1; }
         }
         if (lo < i) {
             memmove(arr + (lo + 1) * width, arr + lo * width, (i - lo) * width);
