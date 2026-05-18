@@ -151,19 +151,22 @@ extern "C" {
 // #define push_back       cstl_push_back
 #define pop_back        cstl_pop_back
 
-// #define __cstl_as_elem(c, v) ((typeof(*(c))){ (v) })
-// #define push_back(c, val) \
-// __cstl_vector_push_back((void **)&(c), &__cstl_as_elem(c, val))
-
+// push_back must match the platform's variadic ABI of _cstl_push_back:
+//   - Windows reads each arg's bytes directly from the va_list storage,
+//     so values must be passed by-value through __VA_ARGS__.
+//   - Linux/macOS reads via va_arg(vl, void*), so the macro stages each
+//     arg in a local and passes &local. The `1 ? (_1) : (_1)` form forces
+//     array-to-pointer decay so string literals ("123" has type char[4])
+//     are stored as char* — without it, push_back(v, "123") on a
+//     VECTOR(char*) would memcpy 8 bytes out of a 4-byte local.
+#if defined(_WIN32) || defined(_WIN64)
+#define push_back       cstl_push_back
+#else
 #define push_back(C,_1)    \
 {_CSTL_TYPEOF(&(C)) __0=&(C); \
-_CSTL_TYPEOF(*(C)) __1=(_1); \
+_CSTL_TYPEOF(1 ? (_1) : (_1)) __1=(_1); \
 _cstl_push_back(__0, &__1);}
-
-#define _cstl_push_back_1(C,_1)    \
-{_CSTL_TYPEOF(&(C)) __0=&(C); \
-_CSTL_TYPEOF(*(C)) __1=(_1); \
-_cstl_push_back(__0, &__1);}
+#endif
 
 #define push_front      cstl_push_front
 #define pop_front       cstl_pop_front

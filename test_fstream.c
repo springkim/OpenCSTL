@@ -18,6 +18,7 @@
 //     return 0;
 // }
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,29 +27,29 @@
 
 static int str_cmp(const void *a, const void *b)
 {
-    const char * const *pa = a;
-    const char * const *pb = b;
-    return strcmp(*pa, *pb);
+  const char * const *pa = a;
+  const char * const *pb = b;
+  return strcmp(*pa, *pb);
 }
 
 int main(void)
 {
-    VECTOR(char *) array = new_vector(char *);
-    if (!array) {
-        abort();
-    }
+  DEQUE(char *) array = new_deque(char *);
+  if (!array) {
+    abort();
+  }
 
-    push_back(array, "World");
-    push_back(array, "Hello");
-    push_back(array, "!");
+  push_front(array, "World");
+  push_front(array, "Hello");
+  push_front(array, "!");
 
-    // WORKAROUND: Use qsort directly on the underlying contiguous storage.
-    qsort(array, size(array), sizeof(char *), str_cmp);
+  // WORKAROUND: Use qsort directly on the underlying contiguous storage.
+  qsort(array, size(array), sizeof(char *), str_cmp);
 
-    for (int i = 0; i < size(array); i++) {
-        printf("%s\n", array[i]);
-    }
+  for (int i = 0; i < size(array); i++) {
+    printf("%s\n", array[i]);
+  }
 
-    destroy(array);
-    return 0;
+  destroy(array);
+  return 0;
 }
