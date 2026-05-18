@@ -28,7 +28,23 @@ if (MSVC)
 endif ()
 
 add_executable(bench_sort bench_sort.c)
+
 add_executable(test_fstream test_fstream.c)
+#######################################################
+target_compile_options(test_fstream PRIVATE
+        -O0
+        -Wall
+        -g
+        -fsanitize=address,undefined,leak
+        -Werror=incompatible-pointer-types
+)
+
+target_compile_definitions(test_fstream PRIVATE NDEBUG)
+
+target_link_options(test_fstream PRIVATE
+        -fsanitize=address,undefined,leak
+)
+###############################################################
 add_executable(test_logging test_logging.c)
 add_executable(test_string test_string.c)
 add_executable(test_gmp test_gmp.c)

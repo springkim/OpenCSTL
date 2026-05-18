@@ -148,8 +148,19 @@ extern "C" {
 
 #if defined(USE_CSTL_FUNC)
 
-#define push_back       cstl_push_back
+// #define push_back       cstl_push_back
 #define pop_back        cstl_pop_back
+
+// #define __cstl_as_elem(c, v) ((typeof(*(c))){ (v) })
+// #define push_back(c, val) \
+// __cstl_vector_push_back((void **)&(c), &__cstl_as_elem(c, val))
+
+#define push_back(C,_1)    \
+{_CSTL_TYPEOF(&(C)) __0=&(C); \
+_CSTL_TYPEOF(*(C)) __1=(_1); \
+_cstl_push_back(__0, &__1);}
+
+
 #define push_front      cstl_push_front
 #define pop_front       cstl_pop_front
 #define push            cstl_push
