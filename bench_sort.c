@@ -15,7 +15,7 @@ int sort_test() {
 
     DTYPE N = 1000000;
 
-    size_type64 ALGORITHMS = 7;
+    size_type64 ALGORITHMS = 6;
     size_type64 REPEAT = 10;
     // DTYPE *arr = (DTYPE *) calloc(N, sizeof(DTYPE));
     VECTOR(DTYPE) arr = new_vector(DTYPE);
@@ -85,13 +85,13 @@ int sort_test() {
                 pm_diff += t_end - t_beg;
             }
             break;
-            case 6: {
-                t_beg = ttime();
-                ipnsort(target, N, sizeof(DTYPE), compare);
-                t_end = ttime();
-                ipn_diff += t_end - t_beg;
-            }
-            break;
+            // case 6: {
+            //     t_beg = ttime();
+            //     ipnsort(target, N, sizeof(DTYPE), compare);
+            //     t_end = ttime();
+            //     ipn_diff += t_end - t_beg;
+            // }
+            // break;
             default: {
                 exit(-1);
             };
