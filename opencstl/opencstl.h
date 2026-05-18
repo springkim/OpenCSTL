@@ -160,6 +160,10 @@ extern "C" {
 _CSTL_TYPEOF(*(C)) __1=(_1); \
 _cstl_push_back(__0, &__1);}
 
+#define _cstl_push_back_1(C,_1)    \
+{_CSTL_TYPEOF(&(C)) __0=&(C); \
+_CSTL_TYPEOF(*(C)) __1=(_1); \
+_cstl_push_back(__0, &__1);}
 
 #define push_front      cstl_push_front
 #define pop_front       cstl_pop_front

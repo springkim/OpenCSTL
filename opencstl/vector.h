@@ -108,9 +108,12 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_type64 n, void *v
     if (value == NULL) {
         memset(*container, 0, type_size * n);
     } else {
-        { size_type64 i; for (i = 0; i < n; i++) {
-            memcpy((char *) *container + type_size * (i), value, type_size);
-        } }
+        {
+            size_type64 i;
+            for (i = 0; i < n; i++) {
+                memcpy((char *) *container + type_size * (i), value, type_size);
+            }
+        }
     }
     OPENCSTL_NIDX(container, -1) = n;
 }
@@ -131,8 +134,13 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     }
 #endif
     if (length == capacity) {
-        iveb_erase(iveb, *container);
-        size_type64 new_capaciy = get_new_capacity((int)capacity);
+        bool init = false;
+        if (iveb == NULL) {
+            init = true;
+        } else {
+            iveb_erase(iveb, *container);
+        }
+        size_type64 new_capaciy = get_new_capacity((int) capacity);
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             fault("Reallocation failed at vector push_back");
@@ -178,7 +186,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type6
 #endif
     if (length + N >= capacity) {
         iveb_erase(iveb, *container);
-        size_type64 new_capaciy = get_new_capacity((int)(capacity + N));
+        size_type64 new_capaciy = get_new_capacity((int) (capacity + N));
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             fault("Reallocation failed at vector insert");
@@ -189,9 +197,12 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type6
     }
     memmove((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
             (length - pos) * type_size);
-    { size_type64 i; for (i = 0; i < N; i++) {
-        memcpy((char *) *container + type_size * (pos + i), value, type_size);
-    } }
+    {
+        size_type64 i;
+        for (i = 0; i < N; i++) {
+            memcpy((char *) *container + type_size * (pos + i), value, type_size);
+        }
+    }
     OPENCSTL_NIDX(container, -1) += N;
 }
 
@@ -256,9 +267,12 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_type64 n, void *v
         if (value == NULL) {
             memset((char *) *container + type_size * length, 0, type_size * (n - length));
         } else {
-            { size_type64 i; for (i = length; i < n; i++) {
-                memcpy((char *) *container + type_size * (i), value, type_size);
-            } }
+            {
+                size_type64 i;
+                for (i = length; i < n; i++) {
+                    memcpy((char *) *container + type_size * (i), value, type_size);
+                }
+            }
         }
     }
     OPENCSTL_NIDX(container, -1) = n;
@@ -280,11 +294,14 @@ OPENCSTL_FUNC void *__cstl_vector_find(void **container, void *iter_begin, void 
         value = &valuef;
     }
 #endif
-    { size_type64 i; for (i = pos; i < length; i++) {
-        if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
-            return (char *) *container + type_size * (i);
+    {
+        size_type64 i;
+        for (i = pos; i < length; i++) {
+            if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
+                return (char *) *container + type_size * (i);
+            }
         }
-    } }
+    }
     return NULL;
 }
 
@@ -360,7 +377,7 @@ OPENCSTL_FUNC void __cstl_vector_reverse(void **container) {
     char *type = (char *) OPENCSTL_NIDX(container, -4);
 
     int idx = 0;
-    int idx_r = (int)length - 1;
+    int idx_r = (int) length - 1;
 
     while (idx < idx_r) {
         swap((char *) *container + type_size * (idx), (char *) *container + type_size * (idx_r), type_size);
@@ -393,12 +410,15 @@ OPENCSTL_FUNC size_type64 __cstl_vector_count(void **container, void *value) {
 #endif
     CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
     size_type64 cnt = 0;
-    { int i; for (i = 0; i < length; i++) {
-        void *ptr = ((char *) *container) + (type_size * i);
-        if (is_equal(ptr, value, type_size) == 0) {
-            cnt++;
+    {
+        int i;
+        for (i = 0; i < length; i++) {
+            void *ptr = ((char *) *container) + (type_size * i);
+            if (is_equal(ptr, value, type_size) == 0) {
+                cnt++;
+            }
         }
-    } }
+    }
     return cnt;
 }
 
@@ -411,12 +431,15 @@ OPENCSTL_FUNC size_type64 __cstl_vector_count_if(void **container, CSTL_COND con
 
 
     size_type64 cnt = 0;
-    { int i; for (i = 0; i < length; i++) {
-        void *ptr = ((char *) *container) + (type_size * i);
-        if (cond(ptr)) {
-            cnt++;
+    {
+        int i;
+        for (i = 0; i < length; i++) {
+            void *ptr = ((char *) *container) + (type_size * i);
+            if (cond(ptr)) {
+                cnt++;
+            }
         }
-    } }
+    }
     return cnt;
 }
 
@@ -448,8 +471,7 @@ OPENCSTL_FUNC void *__cstl_vector_lower_bound(void **container, void *value, CST
 
         if (compare(Mptr, value) < 0) {
             L = M + 1;
-        }
-        else {
+        } else {
             R = M;
         }
     }
@@ -484,8 +506,7 @@ OPENCSTL_FUNC void *__cstl_vector_upper_bound(void **container, void *value, CST
 
         if (compare(value, Mptr) < 0) {
             R = M;
-        }
-        else {
+        } else {
             L = M + 1;
         }
     }

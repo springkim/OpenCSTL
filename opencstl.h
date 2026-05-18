@@ -7,6 +7,7 @@
 #include <string.h>
 #if defined(__cplusplus)
 extern "C" {
+
 #endif
 #ifndef HG_B3857317B6F909AAF025A5EE1CA7602C70A9E539A3A0FBCF3FB0BD10FDD835B7_H
 #define HG_B3857317B6F909AAF025A5EE1CA7602C70A9E539A3A0FBCF3FB0BD10FDD835B7_H
@@ -295,13 +296,19 @@ static void cpu_pin(void) {
 #  endif
 #endif
 typedef int (*CSTL_COMPARE)(const void *, const void *);
+
 typedef int (*CSTL_COMPARE_BYTES)(const void *, const void *, size_t);
+
 typedef int (*CSTL_EQUALS_FN)(const void *, const void *, size_t);
+
 typedef bool (*CSTL_COND)(const void *);
+
 typedef int size_type;
 typedef long long size_type64;
 typedef size_type64 cstl_ptr;
+
 typedef size_type64 (*cstl_hash)(void *key, size_type64 capacity, size_type64 key_size);
+
 typedef int int32_x;
 typedef long long int64_x;
 typedef unsigned int uint32_x;
@@ -419,6 +426,7 @@ int __clogging(const char *color, const char *format, ...) {
     va_end(args);
     return ret;
 }
+
 static int _logging_error(const char *format, ...) {
     va_list args;
     int ret;
@@ -427,6 +435,7 @@ static int _logging_error(const char *format, ...) {
     va_end(args);
     return ret;
 }
+
 static int _logging_debug(const char *format, ...) {
 #if defined(OCSTL_DEBUG)
     va_list args;
@@ -439,6 +448,7 @@ static int _logging_debug(const char *format, ...) {
     return 0;
 #endif
 }
+
 static int _logging_warning(const char *format, ...) {
     va_list args;
     int ret;
@@ -447,6 +457,7 @@ static int _logging_warning(const char *format, ...) {
     va_end(args);
     return ret;
 }
+
 static int _logging_info(const char *format, ...) {
     va_list args;
     int ret;
@@ -455,6 +466,7 @@ static int _logging_info(const char *format, ...) {
     va_end(args);
     return ret;
 }
+
 static int _logging_critical(const char *format, ...) {
     va_list args;
     int ret;
@@ -463,6 +475,7 @@ static int _logging_critical(const char *format, ...) {
     va_end(args);
     return ret;
 }
+
 static int _logging_fatal(const char *format, ...) {
     va_list args;
     int ret;
@@ -471,7 +484,9 @@ static int _logging_fatal(const char *format, ...) {
     va_end(args);
     return ret;
 }
+
 typedef int (*logging_fn)(const char *format, ...);
+
 typedef struct LOGGING {
     logging_fn debug;
     logging_fn info;
@@ -480,6 +495,7 @@ typedef struct LOGGING {
     logging_fn critical;
     logging_fn fatal;
 } LOGGING;
+
 static const LOGGING logging = {
     _logging_debug,
     _logging_info,
@@ -550,7 +566,7 @@ static int opencstl_init(void) {
 }
 #if defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_EMBARCADERO)
 # pragma section(".CRT$XCU", read)
-__declspec(allocate(".CRT$XCU")) static int (* volatile __p)(void) = opencstl_init;
+__declspec(allocate(".CRT$XCU")) static int (* volatile __p)(void)= opencstl_init;
 # pragma data_seg()
 #endif
 #if defined(OCSTL_CC_POCC) || defined(OCSTL_CC_TCC)
@@ -563,52 +579,52 @@ int main() {
 #endif
 #endif
 #ifdef OPENCSTL_TRACER
-typedef void( * free_fn)(void * ptr);
-typedef void * ( * malloc_fn)(size_t sz);
-typedef void * ( * realloc_fn)(void * ptr, size_t new_size);
-typedef void * ( * calloc_fn)(size_t cnt, size_t sz);
+typedef void (*free_fn)(void *ptr);
+typedef void * (*malloc_fn)(size_t sz);
+typedef void * (*realloc_fn)(void *ptr, size_t new_size);
+typedef void * (*calloc_fn)(size_t cnt, size_t sz);
 static free_fn ofree = free;
 static malloc_fn omalloc = malloc;
 static realloc_fn orealloc = realloc;
 static calloc_fn ocalloc = calloc;
-static void zfree(void * ptr) {
-  zremove(ptr);
-  ofree(ptr);
-}
-static void * _zcalloc(size_type64 cnt, size_type64 sz, char * file,
-  const char * func, int line) {
-  void * ptr = ocalloc(cnt, sz);
-  if (ptr) {
-    zinsert(ptr, file, func, line);
-  }
-  return ptr;
-}
-static void * _zmalloc(size_type64 sz, char * file,
-  const char * func, int line) {
-  void * ptr = omalloc(sz);
-  if (ptr) {
-    zinsert(ptr, file, func, line);
-  }
-  return ptr;
-}
-static void * _zrealloc(void * ptr, size_type64 new_size, char * file,
-  const char * func, int line) {
-  if (ptr == NULL) {
-    return _zmalloc(new_size, file, func, line);
-  }
-  if (new_size == 0) {
-    zfree(ptr);
-    return NULL;
-  }
-  void * new_ptr = orealloc(ptr, new_size);
-  if (new_ptr == NULL) {
-    return NULL;
-  }
-  if (new_ptr != ptr) {
+static void zfree(void *ptr) {
     zremove(ptr);
-    zinsert(new_ptr, file, func, line);
-  }
-  return new_ptr;
+    ofree(ptr);
+}
+static void *_zcalloc(size_type64 cnt, size_type64 sz, char *file,
+                      const char *func, int line) {
+    void *ptr = ocalloc(cnt, sz);
+    if (ptr) {
+        zinsert(ptr, file, func, line);
+    }
+    return ptr;
+}
+static void *_zmalloc(size_type64 sz, char *file,
+                      const char *func, int line) {
+    void *ptr = omalloc(sz);
+    if (ptr) {
+        zinsert(ptr, file, func, line);
+    }
+    return ptr;
+}
+static void *_zrealloc(void *ptr, size_type64 new_size, char *file,
+                       const char *func, int line) {
+    if (ptr == NULL) {
+        return _zmalloc(new_size, file, func, line);
+    }
+    if (new_size == 0) {
+        zfree(ptr);
+        return NULL;
+    }
+    void *new_ptr = orealloc(ptr, new_size);
+    if (new_ptr == NULL) {
+        return NULL;
+    }
+    if (new_ptr != ptr) {
+        zremove(ptr);
+        zinsert(new_ptr, file, func, line);
+    }
+    return new_ptr;
 }
 #define free(ptr) zfree(ptr)
 #define calloc(cnt, sz) _zcalloc(cnt, sz, __FILE__, __func__, __LINE__)
@@ -948,31 +964,38 @@ void *__dso_handle = (void *) 0;
 typedef uintptr_t u64;
 #define VEB_EMPTY   (~(u64)0)
 #define HM_INIT_CAP 16
+
 typedef struct {
     u64 key;
     void *val;
     int used;
 } HMEntry;
+
 typedef struct {
     HMEntry *e;
     size_type64 cap, size;
 } HashMap;
+
 static u64 hm_hash(u64 k) {
     k = (k ^ (k >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
     k = (k ^ (k >> 27)) * UINT64_C(0x94d049bb133111eb);
     return k ^ (k >> 31);
 }
+
 static HashMap *hm_new(void) {
     HashMap *h = (HashMap *) calloc(1, sizeof(HashMap));
     h->cap = HM_INIT_CAP;
     h->e = (HMEntry *) calloc(h->cap, sizeof(HMEntry));
     return h;
 }
+
 static void hm_free(HashMap *h) {
     free(h->e);
     free(h);
 }
+
 static void hm_set(HashMap *h, u64 key, void *val);
+
 static void hm_grow(HashMap *h) {
     size_type64 oc = h->cap;
     HMEntry *oe = h->e;
@@ -984,6 +1007,7 @@ static void hm_grow(HashMap *h) {
         if (oe[i].used) { hm_set(h, oe[i].key, oe[i].val); }
     free(oe);
 }
+
 static void hm_set(HashMap *h, u64 k, void *v) {
     if (h->size * 2 >= h->cap) { hm_grow(h); }
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
@@ -992,6 +1016,7 @@ static void hm_set(HashMap *h, u64 k, void *v) {
     if (!h->e[i].used) { h->size++; }
     h->e[i] = (HMEntry){k, v, 1};
 }
+
 static void *hm_get(const HashMap *h, u64 k) {
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used) {
@@ -1000,6 +1025,7 @@ static void *hm_get(const HashMap *h, u64 k) {
     }
     return NULL;
 }
+
 static void hm_del(HashMap *h, u64 k) {
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used && h->e[i].key != k)
@@ -1016,6 +1042,7 @@ static void hm_del(HashMap *h, u64 k) {
         j = (j + 1) % h->cap;
     }
 }
+
 typedef struct VEB {
     int bits;
     u64 min;
@@ -1023,11 +1050,13 @@ typedef struct VEB {
     struct VEB *sum;
     HashMap *cls;
 } VEB;
+
 static int lo_b(int b) { return b / 2; }
 static int hi_b(int b) { return b - b / 2; }
 static u64 vhi(u64 x, int b) { return x >> lo_b(b); }
 static u64 vlo(u64 x, int b) { return x & (((u64) 1 << lo_b(b)) - 1); }
 static u64 vidx(u64 h, u64 l, int b) { return (h << lo_b(b)) | l; }
+
 static VEB *veb_new(int bits) {
     VEB *v = (VEB *) calloc(1, sizeof(VEB));
     v->bits = bits;
@@ -1036,13 +1065,16 @@ static VEB *veb_new(int bits) {
     if (bits > 1) { v->cls = hm_new(); }
     return v;
 }
+
 static void veb_free(VEB *v);
+
 static void cls_free_all(HashMap *hm) {
     size_type64 i = 0;
     for (i = 0; i < hm->cap; i++)
         if (hm->e[i].used) { veb_free((VEB *) hm->e[i].val); }
     hm_free(hm);
 }
+
 static void veb_free(VEB *v) {
     if (!v) { return; }
     if (v->bits > 1) {
@@ -1051,8 +1083,10 @@ static void veb_free(VEB *v) {
     }
     free(v);
 }
+
 static int veb_empty(const VEB *v) { return v->min == VEB_EMPTY; }
 static VEB *cls_get(VEB *v, u64 h) { return (VEB *) hm_get(v->cls, h); }
+
 static VEB *cls_or_new(VEB *v, u64 h) {
     VEB *c = (VEB *) hm_get(v->cls, h);
     if (!c) {
@@ -1061,10 +1095,12 @@ static VEB *cls_or_new(VEB *v, u64 h) {
     }
     return c;
 }
+
 static VEB *sum_or_new(VEB *v) {
     if (!v->sum) { v->sum = veb_new(hi_b(v->bits)); }
     return v->sum;
 }
+
 static void veb_ins(VEB *v, u64 x) {
     if (veb_empty(v)) {
         v->min = v->max = x;
@@ -1085,6 +1121,7 @@ static void veb_ins(VEB *v, u64 x) {
     veb_ins(c, l);
     if (x > v->max) { v->max = x; }
 }
+
 static void veb_del(VEB *v, u64 x) {
     if (v->min == v->max) {
         v->min = v->max = VEB_EMPTY;
@@ -1112,8 +1149,7 @@ static void veb_del(VEB *v, u64 x) {
         veb_free(c);
         if (v->sum) { veb_del(v->sum, h); }
         if (x == v->max) {
-            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; }
-            else {
+            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; } else {
                 u64 lh = v->sum->max;
                 VEB *lc = cls_get(v, lh);
                 v->max = vidx(lh, lc->max, v->bits);
@@ -1123,6 +1159,7 @@ static void veb_del(VEB *v, u64 x) {
         v->max = vidx(h, c->max, v->bits);
     }
 }
+
 static u64 veb_pred(VEB *v, u64 x) {
     if (veb_empty(v) || x <= v->min) { return VEB_EMPTY; }
     if (x > v->max) { return v->max; }
@@ -1137,12 +1174,14 @@ static u64 veb_pred(VEB *v, u64 x) {
     VEB *pc = cls_get(v, ph);
     return pc ? vidx(ph, pc->max, v->bits) : VEB_EMPTY;
 }
+
 static u64 veb_floor(VEB *v, u64 x) {
     if (veb_empty(v) || x < v->min) { return VEB_EMPTY; }
     if (x >= v->max) { return v->max; }
     if (x == v->min) { return v->min; }
     return veb_pred(v, x + 1);
 }
+
 typedef enum CONTAINER_TYPE {
     CT_VECTOR,
     CT_LIST,
@@ -1158,6 +1197,7 @@ typedef enum CONTAINER_TYPE {
     CT_CSV,
     CT_BITSET,
 } CONTAINER_TYPE;
+
 typedef struct {
     void *a;
     void *b;
@@ -1165,35 +1205,42 @@ typedef struct {
     size_type64 type_size;
     char *type_name;
 } Interval;
+
 typedef struct {
     VEB *veb;
     HashMap *data;
 } IntervalVEB;
+
 typedef struct {
     void *p1, *p2;
     char *tombstone;
     int type_size;
     bool used;
 } HashtableManager;
+
 typedef struct {
     VEB *veb;
     HashMap *data;
 } HTMVEB;
+
 typedef struct {
     unsigned char *p1;
     unsigned char *p2;
     int type_size;
 } GInterval;
+
 typedef struct {
     VEB *veb;
     HashMap *data;
 } GIntervalVEB;
+
 HTMVEB *htm_new(void) {
     HTMVEB *iv = (HTMVEB *) calloc(1, sizeof(HTMVEB));
     iv->veb = veb_new(64);
     iv->data = hm_new();
     return iv;
 }
+
 void htm_free(HTMVEB *iv) {
     size_type64 i = 0;
     for (i = 0; i < iv->data->cap; i++)
@@ -1204,6 +1251,7 @@ void htm_free(HTMVEB *iv) {
     veb_free(iv->veb);
     free(iv);
 }
+
 void htm_insert(HTMVEB *iv, void *a, void *b, char *tombstone, int type_size) {
     u64 k = (u64) (uintptr_t) a;
     HashtableManager *it = (HashtableManager *) hm_get(iv->data, k);
@@ -1218,6 +1266,7 @@ void htm_insert(HTMVEB *iv, void *a, void *b, char *tombstone, int type_size) {
     it->used = true;
     it->type_size = type_size;
 }
+
 void htm_erase(HTMVEB *iv, void *a) {
     u64 k = (u64) (uintptr_t) a;
     HashtableManager *it = (HashtableManager *) hm_get(iv->data, k);
@@ -1226,6 +1275,7 @@ void htm_erase(HTMVEB *iv, void *a) {
     hm_del(iv->data, k);
     veb_del(iv->veb, k);
 }
+
 HashtableManager *htm_find(HTMVEB *iv, void *x) {
     u64 key = (u64) (uintptr_t) x;
     u64 start = veb_floor(iv->veb, key);
@@ -1234,12 +1284,14 @@ HashtableManager *htm_find(HTMVEB *iv, void *x) {
     if (!it) { return NULL; }
     return ((uintptr_t) x <= (uintptr_t) it->p2) ? it : NULL;
 }
+
 IntervalVEB *iveb_new(void) {
     IntervalVEB *iv = (IntervalVEB *) calloc(1, sizeof(IntervalVEB));
     iv->veb = veb_new(64);
     iv->data = hm_new();
     return iv;
 }
+
 void iveb_free(IntervalVEB *iv) {
     size_type64 i = 0;
     for (i = 0; i < iv->data->cap; i++)
@@ -1250,6 +1302,7 @@ void iveb_free(IntervalVEB *iv) {
     veb_free(iv->veb);
     free(iv);
 }
+
 void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_type64 type_size, char *type_name) {
     u64 k = (u64) (uintptr_t) a;
     Interval *it = (Interval *) hm_get(iv->data, k);
@@ -1264,6 +1317,7 @@ void iveb_insert(IntervalVEB *iv, void *a, void *b, CONTAINER_TYPE ctype, size_t
     it->type_size = type_size;
     it->type_name = type_name;
 }
+
 void iveb_erase(IntervalVEB *iv, void *a) {
     u64 k = (u64) (uintptr_t) a;
     Interval *it = (Interval *) hm_get(iv->data, k);
@@ -1272,6 +1326,7 @@ void iveb_erase(IntervalVEB *iv, void *a) {
     hm_del(iv->data, k);
     veb_del(iv->veb, k);
 }
+
 Interval *iveb_find(IntervalVEB *iv, void *x) {
     if (iv == NULL) { return NULL; }
     u64 key = (u64) (uintptr_t) x;
@@ -1297,11 +1352,14 @@ unsigned char OCSTL_DBLOCK[___OCSTL_1MB] = {0};
 #define _DBLOCK_MIN_SHIFT    4
 #define _DBLOCK_MAX_SHIFT    20
 #define _DBLOCK_NUM_BUCKETS  (_DBLOCK_MAX_SHIFT - _DBLOCK_MIN_SHIFT + 1)
+
 typedef struct _OCSTLDBlockNode {
     struct _OCSTLDBlockNode *next;
 } _OCSTLDBlockNode;
+
 static size_type64 _ocstl_dblock_bump = 0;
 static _OCSTLDBlockNode *_ocstl_dblock_freelist[_DBLOCK_NUM_BUCKETS] = {NULL};
+
 static int _ocstl_dblock_bucket(size_type64 sz) {
     int sh = _DBLOCK_MIN_SHIFT;
     size_type64 s = (size_type64) 1 << sh;
@@ -1311,6 +1369,7 @@ static int _ocstl_dblock_bucket(size_type64 sz) {
     }
     return sh - _DBLOCK_MIN_SHIFT;
 }
+
 static void *_ocstl_dblock_alloc(size_type64 sz) {
     int b = _ocstl_dblock_bucket(sz);
     size_type64 real = (size_type64) 1 << (b + _DBLOCK_MIN_SHIFT);
@@ -1326,6 +1385,7 @@ static void *_ocstl_dblock_alloc(size_type64 sz) {
     memset(p, 0, real);
     return p;
 }
+
 static void _ocstl_dblock_free(void *p, size_type64 sz) {
     if (!p) { return; }
     int b = _ocstl_dblock_bucket(sz);
@@ -1333,17 +1393,21 @@ static void _ocstl_dblock_free(void *p, size_type64 sz) {
     n->next = _ocstl_dblock_freelist[b];
     _ocstl_dblock_freelist[b] = n;
 }
+
 static void giveb_hm_set(HashMap *h, u64 key, void *val);
+
 static HashMap *giveb_hm_new(void) {
     HashMap *h = (HashMap *) _ocstl_dblock_alloc(sizeof(HashMap));
     h->cap = HM_INIT_CAP;
     h->e = (HMEntry *) _ocstl_dblock_alloc(h->cap * sizeof(HMEntry));
     return h;
 }
+
 static void giveb_hm_free(HashMap *h) {
     _ocstl_dblock_free(h->e, h->cap * sizeof(HMEntry));
     _ocstl_dblock_free(h, sizeof(HashMap));
 }
+
 static void giveb_hm_grow(HashMap *h) {
     size_type64 oc = h->cap;
     HMEntry *oe = h->e;
@@ -1355,6 +1419,7 @@ static void giveb_hm_grow(HashMap *h) {
         if (oe[i].used) { giveb_hm_set(h, oe[i].key, oe[i].val); }
     _ocstl_dblock_free(oe, oc * sizeof(HMEntry));
 }
+
 static void giveb_hm_set(HashMap *h, u64 k, void *v) {
     if (h->size * 2 >= h->cap) { giveb_hm_grow(h); }
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
@@ -1363,6 +1428,7 @@ static void giveb_hm_set(HashMap *h, u64 k, void *v) {
     if (!h->e[i].used) { h->size++; }
     h->e[i] = (HMEntry){k, v, 1};
 }
+
 static void giveb_hm_del(HashMap *h, u64 k) {
     size_type64 i = (size_type64) (hm_hash(k) % h->cap);
     while (h->e[i].used && h->e[i].key != k)
@@ -1379,6 +1445,7 @@ static void giveb_hm_del(HashMap *h, u64 k) {
         j = (j + 1) % h->cap;
     }
 }
+
 static VEB *giveb_veb_new(int bits) {
     VEB *v = (VEB *) _ocstl_dblock_alloc(sizeof(VEB));
     v->bits = bits;
@@ -1387,12 +1454,18 @@ static VEB *giveb_veb_new(int bits) {
     if (bits > 1) { v->cls = giveb_hm_new(); }
     return v;
 }
+
 static void giveb_veb_free(VEB *v);
+
 static void giveb_cls_free_all(HashMap *hm) {
-    { size_type64 i; for (i = 0; i < hm->cap; i++)
-        if (hm->e[i].used) { giveb_veb_free((VEB *) hm->e[i].val); } }
+    {
+        size_type64 i;
+        for (i = 0; i < hm->cap; i++)
+            if (hm->e[i].used) { giveb_veb_free((VEB *) hm->e[i].val); }
+    }
     giveb_hm_free(hm);
 }
+
 static void giveb_veb_free(VEB *v) {
     if (!v) { return; }
     if (v->bits > 1) {
@@ -1401,6 +1474,7 @@ static void giveb_veb_free(VEB *v) {
     }
     _ocstl_dblock_free(v, sizeof(VEB));
 }
+
 static VEB *giveb_cls_or_new(VEB *v, u64 h) {
     VEB *c = (VEB *) hm_get(v->cls, h);
     if (!c) {
@@ -1409,10 +1483,12 @@ static VEB *giveb_cls_or_new(VEB *v, u64 h) {
     }
     return c;
 }
+
 static VEB *giveb_sum_or_new(VEB *v) {
     if (!v->sum) { v->sum = giveb_veb_new(hi_b(v->bits)); }
     return v->sum;
 }
+
 static void giveb_veb_ins(VEB *v, u64 x) {
     if (veb_empty(v)) {
         v->min = v->max = x;
@@ -1433,6 +1509,7 @@ static void giveb_veb_ins(VEB *v, u64 x) {
     giveb_veb_ins(c, l);
     if (x > v->max) { v->max = x; }
 }
+
 static void giveb_veb_del(VEB *v, u64 x) {
     if (v->min == v->max) {
         v->min = v->max = VEB_EMPTY;
@@ -1460,8 +1537,7 @@ static void giveb_veb_del(VEB *v, u64 x) {
         giveb_veb_free(c);
         if (v->sum) { giveb_veb_del(v->sum, h); }
         if (x == v->max) {
-            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; }
-            else {
+            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; } else {
                 u64 lh = v->sum->max;
                 VEB *lc = cls_get(v, lh);
                 v->max = vidx(lh, lc->max, v->bits);
@@ -1471,21 +1547,27 @@ static void giveb_veb_del(VEB *v, u64 x) {
         v->max = vidx(h, c->max, v->bits);
     }
 }
+
 GIntervalVEB *giveb_new(void) {
     GIntervalVEB *iv = (GIntervalVEB *) _ocstl_dblock_alloc(sizeof(GIntervalVEB));
     iv->veb = giveb_veb_new(64);
     iv->data = giveb_hm_new();
     return iv;
 }
+
 void giveb_free(GIntervalVEB *iv) {
-    { size_type64 i; for (i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used) {
-            _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval));
-        } }
+    {
+        size_type64 i;
+        for (i = 0; i < iv->data->cap; i++)
+            if (iv->data->e[i].used) {
+                _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval));
+            }
+    }
     giveb_hm_free(iv->data);
     giveb_veb_free(iv->veb);
     _ocstl_dblock_free(iv, sizeof(GIntervalVEB));
 }
+
 void giveb_insert(GIntervalVEB *iv, void *a, void *b, int type_size) {
     u64 k = (u64) (uintptr_t) a;
     GInterval *it = (GInterval *) hm_get(iv->data, k);
@@ -1498,6 +1580,7 @@ void giveb_insert(GIntervalVEB *iv, void *a, void *b, int type_size) {
     it->p2 = (unsigned char *) b;
     it->type_size = type_size;
 }
+
 void giveb_erase(GIntervalVEB *iv, void *a) {
     u64 key = (u64) (uintptr_t) a;
     u64 start = veb_floor(iv->veb, key);
@@ -1509,6 +1592,7 @@ void giveb_erase(GIntervalVEB *iv, void *a) {
     giveb_hm_del(iv->data, start);
     giveb_veb_del(iv->veb, start);
 }
+
 GInterval *giveb_find(GIntervalVEB *iv, void *x) {
     if (iv == NULL) { return NULL; }
     u64 key = (u64) (uintptr_t) x;
@@ -1518,6 +1602,7 @@ GInterval *giveb_find(GIntervalVEB *iv, void *x) {
     if (!it) { return NULL; }
     return ((uintptr_t) x <= (uintptr_t) it->p2) ? it : NULL;
 }
+
 static u64 veb_succ(VEB *v, u64 x) {
     if (veb_empty(v) || x >= v->max) { return VEB_EMPTY; }
     if (x < v->min) { return v->min; }
@@ -1536,6 +1621,7 @@ static u64 veb_succ(VEB *v, u64 x) {
     if (!nc) { return VEB_EMPTY; }
     return vidx(nh, nc->min, v->bits);
 }
+
 void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
     if (!iv || sz == 0) { return NULL; }
     void *block_start = (void *) OCSTL_GBLOCK;
@@ -1583,15 +1669,19 @@ void *giveb_alloc(GIntervalVEB *iv, size_type64 sz, size_type64 type_size) {
     }
     return NULL;
 }
+
 static GIntervalVEB *giveb = NULL;
 static IntervalVEB *iveb = NULL;
 static HTMVEB *htm = NULL;
+
 void __opencstl_giveb_destroy(void) {
     giveb_free(giveb);
 }
+
 void __cstl_htm_destroy(void) {
     htm_free(htm);
 }
+
 void __opencstl_iveb_destroy(void) {
     iveb_free(iveb);
 }
@@ -1619,6 +1709,7 @@ static void *_galloc(size_type64 sz, size_type64 type_size) {
     }
     return p;
 }
+
 static void _gfree(void *p) {
     giveb_erase(giveb, p);
 }
@@ -1627,6 +1718,7 @@ static void _gfree(void *p) {
 #define HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
 #include <assert.h>
 #define verify(EXPR) do { if(!(EXPR)) ocstl_verify(#EXPR,__FILE__,__LINE__); } while(0)
+
 static int ocstl_verify(char *expression, char *file, int line) {
     logging.error("Verification failed: %s, file %s, line %d",
                   expression, file, line);
@@ -1634,7 +1726,9 @@ static int ocstl_verify(char *expression, char *file, int line) {
     fflush(stderr);
     abort();
 }
+
 #define fault(STR) do{ocstl_fault((STR),__FILE__,__LINE__);}while(0)
+
 static void ocstl_fault(char *str, char *file, int line) {
     logging.error("Fault: %s, file %s, line %d", str, file, line);
     fflush(stdout);
@@ -2684,54 +2778,69 @@ static CSTL_COMPARE _memcmp_funcs[513] = {
 #endif
 typedef const void *CVP;
 #define _SAFE_COMPARE(TYPE,X,Y)  (*(TYPE *) (X) > *(TYPE *) (Y)) - (*(TYPE *) (X) < *(TYPE *) (Y))
+
 static int less_int32(CVP a, CVP b) {
     return _SAFE_COMPARE(int, a, b);
 }
+
 static int less_uint32(CVP a, CVP b) {
     return _SAFE_COMPARE(unsigned int, a, b);
 }
+
 static int less_int64(CVP a, CVP b) {
     return _SAFE_COMPARE(long long, a, b);
 }
+
 static int less_uint64(CVP a, CVP b) {
     return _SAFE_COMPARE(unsigned long long, a, b);
 }
+
 static int less_float(CVP a, CVP b) {
     return (*(float *) a > *(float *) b) - (*(float *) a < *(float *) b);
 }
+
 static int less_double(CVP a, CVP b) {
     return (*(double *) a > *(double *) b) - (*(double *) a < *(double *) b);
 }
+
 static int less_string(CVP a, CVP b) {
     return strcmp(*(char **) a, *(char **) b);
 }
+
 static int greater_int32(CVP a, CVP b) {
     return less_int32(b, a);
 }
+
 static int greater_uint32(CVP a, CVP b) {
     return less_uint32(b, a);
 }
+
 static int greater_int64(CVP a, CVP b) {
     return less_int64(b, a);
 }
+
 static int greater_uint64(CVP a, CVP b) {
     return less_uint64(b, a);
 }
+
 static int greater_float(CVP a, CVP b) {
     return less_float(b, a);
 }
+
 static int greater_double(CVP a, CVP b) {
     return less_double(b, a);
 }
+
 static int greater_string(CVP a, CVP b) {
     return less_string(b, a);
 }
+
 static CSTL_COMPARE CSTL_LESS(const char *type_str) {
     while (*type_str == ' ') type_str++;
     const char *end = type_str + strlen(type_str);
     while (end > type_str && *(end - 1) == ' ') end--;
     char buf[256];
-    size_type64 len = (end > type_str) ? (size_type64)(end - type_str) : 0;
+    size_type64 len = (end > type_str) ? (size_type64) (end - type_str) : 0;
     if (len >= sizeof(buf)) { return NULL; }
     memcpy(buf, type_str, len);
     buf[len] = '\0';
@@ -2745,12 +2854,13 @@ static CSTL_COMPARE CSTL_LESS(const char *type_str) {
     if (strcmp(buf, "char *") == 0) { return less_string; }
     return NULL;
 }
+
 static CSTL_COMPARE CSTL_GREATER(const char *type_str) {
     while (*type_str == ' ') type_str++;
     const char *end = type_str + strlen(type_str);
     while (end > type_str && *(end - 1) == ' ') end--;
     char buf[256];
-    size_type64 len = (end > type_str) ? (size_type64)(end - type_str) : 0;
+    size_type64 len = (end > type_str) ? (size_type64) (end - type_str) : 0;
     if (len >= sizeof(buf)) { return NULL; }
     memcpy(buf, type_str, len);
     buf[len] = '\0';
@@ -2764,33 +2874,38 @@ static CSTL_COMPARE CSTL_GREATER(const char *type_str) {
     if (strcmp(buf, "char *") == 0) { return greater_string; }
     return NULL;
 }
+
 #define LESS(TYPE)    ((void*)CSTL_LESS(#TYPE))
 #define GREATER(TYPE) ((void*)CSTL_GREATER(#TYPE))
 #define CSTL_FLOAT_EPS   1e-6f
 #define CSTL_DOUBLE_EPS  1e-9
+
 static int _cstl_equals_float(CVP a, CVP b, size_t dummy) {
     float a1 = *(float *) a;
     float b1 = *(float *) b;
     float diff = a1 - b1;
-    if (diff < 0) {diff = -diff; }
+    if (diff < 0) { diff = -diff; }
     return diff < CSTL_FLOAT_EPS;
 }
+
 static int _cstl_equals_double(CVP a, CVP b, size_t dummy) {
     double a1 = *(double *) a;
     double b1 = *(double *) b;
     double diff = a1 - b1;
-    if (diff < 0) {diff = -diff; }
+    if (diff < 0) { diff = -diff; }
     return diff < CSTL_DOUBLE_EPS;
 }
+
 static int _cstl_equals_str(CVP a, CVP b, size_t dummy) {
     return strcmp(*(char **) a, *(char **) b) == 0;
 }
+
 static CSTL_COMPARE_BYTES CSTL_EQUALS(const char *type_str) {
     while (*type_str == ' ') type_str++;
     const char *end = type_str + strlen(type_str);
     while (end > type_str && *(end - 1) == ' ') end--;
     char buf[256];
-    size_type64 len = (end > type_str) ? (size_type64)(end - type_str) : 0;
+    size_type64 len = (end > type_str) ? (size_type64) (end - type_str) : 0;
     if (len >= sizeof(buf)) { return NULL; }
     memcpy(buf, type_str, len);
     buf[len] = '\0';
@@ -2807,6 +2922,7 @@ OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
     }
     return 0;
 }
+
 OPENCSTL_FUNC size_type64 __opencstl_container_type(void **container, ptrdiff_t *distance) {
     *distance = 0;
     if (iveb == NULL) { return 0; }
@@ -2817,6 +2933,7 @@ OPENCSTL_FUNC size_type64 __opencstl_container_type(void **container, ptrdiff_t 
     }
     return *(_opencstl_ll_ua *) ((char *) *container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + *distance);
 }
+
 #define cstl_deque(TYPE) (TYPE*)__cstl_deque(sizeof(TYPE),#TYPE)
 OPENCSTL_FUNC void *__cstl_deque(size_type64 type_size, char *type) {
     size_type64 header_sz = sizeof(size_type64) * OPENCSTL_HEADER;
@@ -2845,6 +2962,7 @@ OPENCSTL_FUNC void *__cstl_deque(size_type64 type_size, char *type) {
     }
     return ptr;
 }
+
 OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_type64 n, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -2881,6 +2999,7 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_type64 n, void *va
         }
     }
 }
+
 OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -2915,6 +3034,7 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
     memcpy((char *) *container + type_size * length, value, type_size);
     (*(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance))++;
 }
+
 OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -2950,12 +3070,14 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     OPENCSTL_NIDX(container, -1) = distance + type_size - 1;
     *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance + type_size) += 1;
 }
+
 OPENCSTL_FUNC void __cstl_deque_pop_back(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     verify(length > 0);
     *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance) -= 1;
 }
+
 OPENCSTL_FUNC void __cstl_deque_pop_front(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -2965,6 +3087,7 @@ OPENCSTL_FUNC void __cstl_deque_pop_front(void **container) {
     OPENCSTL_NIDX(container, -1) = distance - type_size - 1;
     *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance - type_size) -= 1;
 }
+
 OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -3001,6 +3124,7 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n
     }
     *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance) += n;
 }
+
 OPENCSTL_FUNC void __cstl_deque_erase(void **container, void *begin, void *end) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -3009,14 +3133,17 @@ OPENCSTL_FUNC void __cstl_deque_erase(void **container, void *begin, void *end) 
     memmove(*(char **) begin, *(char **) end, (char *) *container + (length + 1) * type_size - *(char **) end);
     *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance) -= pos;
 }
+
 OPENCSTL_FUNC size_type __cstl_deque_size(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     return (size_type) (*(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance));
 }
+
 OPENCSTL_FUNC size_type __cstl_deque_capacity(void **container) {
     size_type64 capacity = OPENCSTL_NIDX(container, -3);
     return (size_type) capacity;
 }
+
 OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_type64 n, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -3059,36 +3186,43 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_type64 n, void *va
         }
     }
 }
+
 OPENCSTL_FUNC void *__cstl_deque_begin(void **container) {
     return *container;
 }
+
 OPENCSTL_FUNC void *__cstl_deque_end(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     return (char *) *container + length * type_size;
 }
+
 OPENCSTL_FUNC void *__cstl_deque_rbegin(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     return (char *) *container + (length - 1) * type_size;
 }
+
 OPENCSTL_FUNC void *__cstl_deque_rend(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     return (char *) *container - type_size;
 }
+
 OPENCSTL_FUNC void __cstl_deque_clear(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance) = 0;
 }
+
 OPENCSTL_FUNC void __cstl_deque_free(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     iveb_erase(iveb, (char *) *container + distance);
     free((char *) *container - (header_sz - distance));
 }
+
 OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -3112,9 +3246,11 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
     }
     return NULL;
 }
+
 OPENCSTL_FUNC size_type __cstl_deque_max_size(void **container) {
     return INT_MAX;
 }
+
 OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 header_sz = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_HSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -3140,6 +3276,7 @@ OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
                 (char *) *container + (type_size * new_capacity),
                 CT_DEQUE, type_size, type);
 }
+
 OPENCSTL_FUNC void __cstl_deque_reverse(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -3165,6 +3302,7 @@ OPENCSTL_FUNC void __cstl_deque_reverse(void **container) {
         free(tmp);
     }
 }
+
 OPENCSTL_FUNC size_type64 __cstl_deque_count(void **container, void *value) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -3191,6 +3329,7 @@ OPENCSTL_FUNC size_type64 __cstl_deque_count(void **container, void *value) {
     }
     return cnt;
 }
+
 OPENCSTL_FUNC size_type64 __cstl_deque_count_if(void **container, CSTL_COND cond) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -3207,6 +3346,7 @@ OPENCSTL_FUNC size_type64 __cstl_deque_count_if(void **container, CSTL_COND cond
     }
     return cnt;
 }
+
 OPENCSTL_FUNC void *__cstl_deque_lower_bound(void **container, void *value, CSTL_COMPARE compare) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -3234,6 +3374,7 @@ OPENCSTL_FUNC void *__cstl_deque_lower_bound(void **container, void *value, CSTL
     if (L >= length) { return NULL; }
     return ((char *) *container) + (type_size * L);
 }
+
 OPENCSTL_FUNC void *__cstl_deque_upper_bound(void **container, void *value, CSTL_COMPARE compare) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
@@ -3270,6 +3411,7 @@ OPENCSTL_FUNC void *__cstl_deque_upper_bound(void **container, void *value, CSTL
 #include <string.h>
 #include <stdint.h>
 #define SWAP_STACK_BUF_SIZE 256
+
 static void swap(void *a, void *b, size_type64 sz) {
     unsigned char stack_buf[SWAP_STACK_BUF_SIZE];
     unsigned char *tmp;
@@ -3295,6 +3437,7 @@ static void swap(void *a, void *b, size_type64 sz) {
 #endif
 #ifndef HG_6851F11BA5132E124F4F2633B594CC2AE6340950A32E371CA41C0A3D9A476F60_H
 #define HG_6851F11BA5132E124F4F2633B594CC2AE6340950A32E371CA41C0A3D9A476F60_H
+
 static unsigned int fast_sqrt(unsigned int x) {
     unsigned int res = 0;
     unsigned int bit = 1u << 30;
@@ -3310,6 +3453,7 @@ static unsigned int fast_sqrt(unsigned int x) {
     }
     return res;
 }
+
 static int get_new_capacity(int _capacity) {
     if (_capacity < 2) { return 2; }
     enum {
@@ -3353,6 +3497,7 @@ OPENCSTL_FUNC void *__cstl_vector(size_type64 type_size, char *type) {
     }
     return ptr;
 }
+
 OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_type64 n, void *value) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -3379,12 +3524,16 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_type64 n, void *v
     if (value == NULL) {
         memset(*container, 0, type_size * n);
     } else {
-        { size_type64 i; for (i = 0; i < n; i++) {
-            memcpy((char *) *container + type_size * (i), value, type_size);
-        } }
+        {
+            size_type64 i;
+            for (i = 0; i < n; i++) {
+                memcpy((char *) *container + type_size * (i), value, type_size);
+            }
+        }
     }
     OPENCSTL_NIDX(container, -1) = n;
 }
+
 OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -3400,8 +3549,13 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     }
 #endif
     if (length == capacity) {
-        iveb_erase(iveb, *container);
-        size_type64 new_capaciy = get_new_capacity((int)capacity);
+        bool init = false;
+        if (iveb == NULL) {
+            init = true;
+        } else {
+            iveb_erase(iveb, *container);
+        }
+        size_type64 new_capaciy = get_new_capacity((int) capacity);
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             fault("Reallocation failed at vector push_back");
@@ -3413,18 +3567,22 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     memcpy((char *) *container + type_size * length, value, type_size);
     OPENCSTL_NIDX(container, -1)++;
 }
+
 OPENCSTL_FUNC void __cstl_vector_pop_back(void **container) {
     if (OPENCSTL_NIDX(container, -1) <= 0) {
         fault("No elements in cstl_vector");
     }
     OPENCSTL_NIDX(container, -1)--;
 }
+
 OPENCSTL_FUNC size_type __cstl_vector_size(void **container) {
     return (size_type) OPENCSTL_NIDX(container, -1);
 }
+
 OPENCSTL_FUNC size_type __cstl_vector_capacity(void **container) {
     return (size_type) OPENCSTL_NIDX(container, -2);
 }
+
 OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type64 N, void *value) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -3442,7 +3600,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type6
 #endif
     if (length + N >= capacity) {
         iveb_erase(iveb, *container);
-        size_type64 new_capaciy = get_new_capacity((int)(capacity + N));
+        size_type64 new_capaciy = get_new_capacity((int) (capacity + N));
         void *b = realloc((char *) *container - header_sz, header_sz + new_capaciy * type_size);
         if (b == NULL) {
             fault("Reallocation failed at vector insert");
@@ -3453,11 +3611,15 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type6
     }
     memmove((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
             (length - pos) * type_size);
-    { size_type64 i; for (i = 0; i < N; i++) {
-        memcpy((char *) *container + type_size * (pos + i), value, type_size);
-    } }
+    {
+        size_type64 i;
+        for (i = 0; i < N; i++) {
+            memcpy((char *) *container + type_size * (pos + i), value, type_size);
+        }
+    }
     OPENCSTL_NIDX(container, -1) += N;
 }
+
 OPENCSTL_FUNC void __cstl_vector_erase(void **container, void *iter_begin, void *iter_end) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
@@ -3467,23 +3629,28 @@ OPENCSTL_FUNC void __cstl_vector_erase(void **container, void *iter_begin, void 
             (length - pos_end) * type_size);
     OPENCSTL_NIDX(container, -1) -= (pos_end - pos_begin);
 }
+
 OPENCSTL_FUNC void *__cstl_vector_begin(void **container) {
     return (void *) *container;
 }
+
 OPENCSTL_FUNC void *__cstl_vector_end(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
     return (void *) ((char *) *container + (type_size * length));
 }
+
 OPENCSTL_FUNC void *__cstl_vector_rbegin(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
     return (void *) ((char *) *container + (type_size * (length - 1)));
 }
+
 OPENCSTL_FUNC void *__cstl_vector_rend(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     return (void *) ((char *) *container - (type_size));
 }
+
 OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_type64 n, void *value) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -3512,13 +3679,17 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_type64 n, void *v
         if (value == NULL) {
             memset((char *) *container + type_size * length, 0, type_size * (n - length));
         } else {
-            { size_type64 i; for (i = length; i < n; i++) {
-                memcpy((char *) *container + type_size * (i), value, type_size);
-            } }
+            {
+                size_type64 i;
+                for (i = length; i < n; i++) {
+                    memcpy((char *) *container + type_size * (i), value, type_size);
+                }
+            }
         }
     }
     OPENCSTL_NIDX(container, -1) = n;
 }
+
 OPENCSTL_FUNC void *__cstl_vector_find(void **container, void *iter_begin, void *value) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
@@ -3531,22 +3702,28 @@ OPENCSTL_FUNC void *__cstl_vector_find(void **container, void *iter_begin, void 
         value = &valuef;
     }
 #endif
-    { size_type64 i; for (i = pos; i < length; i++) {
-        if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
-            return (char *) *container + type_size * (i);
+    {
+        size_type64 i;
+        for (i = pos; i < length; i++) {
+            if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
+                return (char *) *container + type_size * (i);
+            }
         }
-    } }
+    }
     return NULL;
 }
+
 OPENCSTL_FUNC void __cstl_vector_clear(void **container) {
     OPENCSTL_NIDX(container, -1) = 0;
 }
+
 OPENCSTL_FUNC void __cstl_vector_free(void **container) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     iveb_erase(iveb, *container);
     free((char *) (*container) - header_sz);
     *container = NULL;
 }
+
 OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_type64 n) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -3563,15 +3740,19 @@ OPENCSTL_FUNC void __cstl_vector_reserve(void **container, size_type64 n) {
         iveb_insert(iveb, *container, (char *) (*container) + (type_size * n), CT_VECTOR, type_size, type);
     }
 }
+
 OPENCSTL_FUNC void *__cstl_vector_next(void *it, size_type64 type_size) {
     return (char *) it + type_size;
 }
+
 OPENCSTL_FUNC void *__cstl_vector_prev(void *it, size_type64 type_size) {
     return (char *) it - type_size;
 }
+
 OPENCSTL_FUNC size_type __cstl_vector_max_size(void **container) {
     return INT_MAX;
 }
+
 OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -3591,6 +3772,7 @@ OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
     OPENCSTL_NIDX(container, -2) = new_capacity;
     iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capacity), CT_VECTOR, type_size, type);
 }
+
 OPENCSTL_FUNC void __cstl_vector_reverse(void **container) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -3598,13 +3780,14 @@ OPENCSTL_FUNC void __cstl_vector_reverse(void **container) {
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
     int idx = 0;
-    int idx_r = (int)length - 1;
+    int idx_r = (int) length - 1;
     while (idx < idx_r) {
         swap((char *) *container + type_size * (idx), (char *) *container + type_size * (idx_r), type_size);
         idx++;
         idx_r--;
     }
 }
+
 OPENCSTL_FUNC size_type64 __cstl_vector_count(void **container, void *value) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -3621,14 +3804,18 @@ OPENCSTL_FUNC size_type64 __cstl_vector_count(void **container, void *value) {
 #endif
     CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
     size_type64 cnt = 0;
-    { int i; for (i = 0; i < length; i++) {
-        void *ptr = ((char *) *container) + (type_size * i);
-        if (is_equal(ptr, value, type_size) == 0) {
-            cnt++;
+    {
+        int i;
+        for (i = 0; i < length; i++) {
+            void *ptr = ((char *) *container) + (type_size * i);
+            if (is_equal(ptr, value, type_size) == 0) {
+                cnt++;
+            }
         }
-    } }
+    }
     return cnt;
 }
+
 OPENCSTL_FUNC size_type64 __cstl_vector_count_if(void **container, CSTL_COND cond) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -3636,14 +3823,18 @@ OPENCSTL_FUNC size_type64 __cstl_vector_count_if(void **container, CSTL_COND con
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
     size_type64 cnt = 0;
-    { int i; for (i = 0; i < length; i++) {
-        void *ptr = ((char *) *container) + (type_size * i);
-        if (cond(ptr)) {
-            cnt++;
+    {
+        int i;
+        for (i = 0; i < length; i++) {
+            void *ptr = ((char *) *container) + (type_size * i);
+            if (cond(ptr)) {
+                cnt++;
+            }
         }
-    } }
+    }
     return cnt;
 }
+
 OPENCSTL_FUNC void *__cstl_vector_lower_bound(void **container, void *value, CSTL_COMPARE compare) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -3666,14 +3857,14 @@ OPENCSTL_FUNC void *__cstl_vector_lower_bound(void **container, void *value, CST
         void *Mptr = ((char *) *container) + (type_size * M);
         if (compare(Mptr, value) < 0) {
             L = M + 1;
-        }
-        else {
+        } else {
             R = M;
         }
     }
     if (L >= length) { return NULL; }
     return ((char *) *container) + (type_size * L);
 }
+
 OPENCSTL_FUNC void *__cstl_vector_upper_bound(void **container, void *value, CSTL_COMPARE compare) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -3696,8 +3887,7 @@ OPENCSTL_FUNC void *__cstl_vector_upper_bound(void **container, void *value, CST
         void *Mptr = ((char *) *container) + (type_size * M);
         if (compare(value, Mptr) < 0) {
             R = M;
-        }
-        else {
+        } else {
             L = M + 1;
         }
     }
@@ -3737,6 +3927,7 @@ OPENCSTL_FUNC void *__cstl_list(size_type64 type_size, char *type) {
     }
     return ptr;
 }
+
 OPENCSTL_FUNC void *__cstl_list_node(size_type64 type_size) {
     size_type64 header_sz = sizeof(void *) * NIDX_LIST_NODE_SIZE;
     size_type64 node_sz = type_size + header_sz;
@@ -3745,6 +3936,7 @@ OPENCSTL_FUNC void *__cstl_list_node(size_type64 type_size) {
     OPENCSTL_NIDX(node, -3) = OPENCSTL_LIST;
     return ptr;
 }
+
 OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, int ntail, int nhead) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail));
@@ -3770,27 +3962,31 @@ OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, in
     }
     OPENCSTL_NIDX(container, -1)++;
 }
+
 OPENCSTL_FUNC void __cstl_list_pop_back_front(void **container, int ntail, int nhead) {
     void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail));
     void **head = (void **) &OPENCSTL_NIDX(container, nhead);
     verify(*head != NULL && *tail != NULL);
     if (*head == *tail) {
-        free((void*)&OPENCSTL_NIDX(tail, -3));
+        free((void *) &OPENCSTL_NIDX(tail, -3));
         *head = *tail = 0;
     } else {
         *tail = (void *) OPENCSTL_NIDX(tail, -(nhead + 2));
         void *fb = (void *) OPENCSTL_NIDX(tail, -(ntail + 2));
-        free((void*)&OPENCSTL_NIDX(&fb, -3));
+        free((void *) &OPENCSTL_NIDX(&fb, -3));
         OPENCSTL_NIDX(tail, -(ntail + 2)) = 0;
     }
     OPENCSTL_NIDX(container, -1)--;
 }
+
 OPENCSTL_FUNC void *__cstl_list_next_prev(void *it, int n) {
     return (void *) OPENCSTL_NIDX(&it, n);
 }
+
 OPENCSTL_FUNC size_type __cstl_list_size(void **container) {
     return (size_type) OPENCSTL_NIDX(container, -1);
 }
+
 OPENCSTL_FUNC void __cstl_list_resize(void **container, size_type64 n, void *value) {
     size_type64 length = OPENCSTL_NIDX(container, -1);
     if (n < length) {
@@ -3806,6 +4002,7 @@ OPENCSTL_FUNC void __cstl_list_resize(void **container, size_type64 n, void *val
     }
     OPENCSTL_NIDX(container, -1) = n;
 }
+
 OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_type64 N, void *value) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
@@ -3821,13 +4018,16 @@ OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_type64
     void *nhead = __cstl_list_node(type_size);
     memcpy(nhead, value, type_size);
     void *ntail = nhead;
-    { size_type64 i; for (i = 1; i < N; i++) {
-        void *n = __cstl_list_node(type_size);
-        memcpy(n, value, type_size);
-        OPENCSTL_NIDX(&n, -2) = (size_type64) ntail;
-        OPENCSTL_NIDX(&ntail, -1) = (size_type64) n;
-        ntail = n;
-    } }
+    {
+        size_type64 i;
+        for (i = 1; i < N; i++) {
+            void *n = __cstl_list_node(type_size);
+            memcpy(n, value, type_size);
+            OPENCSTL_NIDX(&n, -2) = (size_type64) ntail;
+            OPENCSTL_NIDX(&ntail, -1) = (size_type64) n;
+            ntail = n;
+        }
+    }
     OPENCSTL_NIDX(&ntail, -1) = (size_type64) *iter;
     if (*head == NULL && *tail == NULL) {
         *head = nhead;
@@ -3848,6 +4048,7 @@ OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_type64
     }
     OPENCSTL_NIDX(container, -1) += N;
 }
+
 OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void **iter_end) {
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
@@ -3866,7 +4067,7 @@ OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void *
     void *it = *iter_begin;
     while (it != *iter_end) {
         void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        free((void*)&OPENCSTL_NIDX(&it, -3));
+        free((void *) &OPENCSTL_NIDX(&it, -3));
         OPENCSTL_NIDX(container, -1)--;
         it = tmp;
     }
@@ -3874,34 +4075,40 @@ OPENCSTL_FUNC void __cstl_list_erase(void **container, void **iter_begin, void *
         *tail = 0;
     }
 }
+
 OPENCSTL_FUNC void *__cstl_list_begin(void **container) {
     return (void *) OPENCSTL_NIDX(container, 0);
 }
+
 OPENCSTL_FUNC void *__cstl_list_end_rend(void **container) {
     (void) container;
     return NULL;
 }
+
 OPENCSTL_FUNC void *__cstl_list_rbegin(void **container) {
     return (void *) OPENCSTL_NIDX(container, -2);
 }
+
 OPENCSTL_FUNC void __cstl_list_clear(void **container) {
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
     void *it = *head;
     while (it != NULL) {
         void *tmp = (void *) OPENCSTL_NIDX(&it, -1);
-        free((void*)&OPENCSTL_NIDX(&it, -3));
+        free((void *) &OPENCSTL_NIDX(&it, -3));
         it = tmp;
     }
     *head = *tail = NULL;
     OPENCSTL_NIDX(container, -1) = 0;
 }
+
 OPENCSTL_FUNC void __cstl_list_free(void **container) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     __cstl_list_clear(container);
     free((char *) (*container) - header_sz);
     *container = NULL;
 }
+
 OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *value) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
 #if !defined(__linux__) && !defined(__APPLE__)
@@ -3921,6 +4128,7 @@ OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *
     }
     return NULL;
 }
+
 OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, const void *)) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -3935,65 +4143,70 @@ OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, 
     if (*head == NULL || *tail == NULL || length < 2) {
         return;
     }
-    { size_type64 width; for (width = 1; width < length; width <<= 1) {
-        void *curr = *head;
-        void *new_head = NULL;
-        void *new_tail = NULL;
-        while (curr != NULL) {
-            void *left = curr;
-            void *right = NULL;
-            void *next_run = NULL;
-            size_type64 left_count = 0;
-            size_type64 right_count = 0;
-            for (; curr != NULL && left_count < width; ++left_count) {
-                curr = (void *) OPENCSTL_NIDX(&curr, -1);
-            }
-            right = curr;
-            for (; curr != NULL && right_count < width; ++right_count) {
-                curr = (void *) OPENCSTL_NIDX(&curr, -1);
-            }
-            next_run = curr;
-            while (left_count > 0 || right_count > 0) {
-                void *pick = NULL;
-                if (left_count == 0) {
-                    pick = right;
-                    right = (void *) OPENCSTL_NIDX(&right, -1);
-                    --right_count;
-                } else if (right_count == 0 || right == NULL) {
-                    pick = left;
-                    left = (void *) OPENCSTL_NIDX(&left, -1);
-                    --left_count;
-                } else if (cmp(left, right) <= 0) {
-                    pick = left;
-                    left = (void *) OPENCSTL_NIDX(&left, -1);
-                    --left_count;
-                } else {
-                    pick = right;
-                    right = (void *) OPENCSTL_NIDX(&right, -1);
-                    --right_count;
+    {
+        size_type64 width;
+        for (width = 1; width < length; width <<= 1) {
+            void *curr = *head;
+            void *new_head = NULL;
+            void *new_tail = NULL;
+            while (curr != NULL) {
+                void *left = curr;
+                void *right = NULL;
+                void *next_run = NULL;
+                size_type64 left_count = 0;
+                size_type64 right_count = 0;
+                for (; curr != NULL && left_count < width; ++left_count) {
+                    curr = (void *) OPENCSTL_NIDX(&curr, -1);
                 }
-                if (new_tail == NULL) {
-                    new_head = pick;
-                    OPENCSTL_NIDX(&pick, -2) = 0;
-                } else {
-                    OPENCSTL_NIDX(&new_tail, -1) = (size_type64) pick;
-                    OPENCSTL_NIDX(&pick, -2) = (size_type64) new_tail;
+                right = curr;
+                for (; curr != NULL && right_count < width; ++right_count) {
+                    curr = (void *) OPENCSTL_NIDX(&curr, -1);
                 }
-                new_tail = pick;
+                next_run = curr;
+                while (left_count > 0 || right_count > 0) {
+                    void *pick = NULL;
+                    if (left_count == 0) {
+                        pick = right;
+                        right = (void *) OPENCSTL_NIDX(&right, -1);
+                        --right_count;
+                    } else if (right_count == 0 || right == NULL) {
+                        pick = left;
+                        left = (void *) OPENCSTL_NIDX(&left, -1);
+                        --left_count;
+                    } else if (cmp(left, right) <= 0) {
+                        pick = left;
+                        left = (void *) OPENCSTL_NIDX(&left, -1);
+                        --left_count;
+                    } else {
+                        pick = right;
+                        right = (void *) OPENCSTL_NIDX(&right, -1);
+                        --right_count;
+                    }
+                    if (new_tail == NULL) {
+                        new_head = pick;
+                        OPENCSTL_NIDX(&pick, -2) = 0;
+                    } else {
+                        OPENCSTL_NIDX(&new_tail, -1) = (size_type64) pick;
+                        OPENCSTL_NIDX(&pick, -2) = (size_type64) new_tail;
+                    }
+                    new_tail = pick;
+                }
+                if (new_tail != NULL) {
+                    OPENCSTL_NIDX(&new_tail, -1) = 0;
+                }
+                curr = next_run;
             }
-            if (new_tail != NULL) {
-                OPENCSTL_NIDX(&new_tail, -1) = 0;
-            }
-            curr = next_run;
+            *head = new_head;
+            *tail = new_tail;
         }
-        *head = new_head;
-        *tail = new_tail;
-    } }
+    }
 }
+
 typedef struct {
     void *low;
     void *high;
 } __cstl_qsort_range;
+
 OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_type64 n) {
     unsigned char buf[128];
     unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) calloc(n, 1);
@@ -4005,6 +4218,7 @@ OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_type64 n) {
         free(tmp);
     }
 }
+
 OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
     void *slow = low;
     void *fast = low;
@@ -4016,6 +4230,7 @@ OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
     }
     return slow;
 }
+
 OPENCSTL_FUNC void __cstl_list_median_of_three(void *low, void *high, size_type64 type_size,
                                                int (*cmp)(const void *, const void *)) {
     void *mid = __cstl_list_mid_node(low, high);
@@ -4025,6 +4240,7 @@ OPENCSTL_FUNC void __cstl_list_median_of_three(void *low, void *high, size_type6
     if (cmp(mid, high) > 0) { __cstl_list_swap_data(mid, high, type_size); }
     __cstl_list_swap_data(mid, high, type_size);
 }
+
 OPENCSTL_FUNC void *__cstl_list_partition(void *low, void *high, size_type64 type_size,
                                           int (*cmp)(const void *, const void *)) {
     void *i = NULL;
@@ -4044,6 +4260,7 @@ OPENCSTL_FUNC void *__cstl_list_partition(void *low, void *high, size_type64 typ
     }
     return i;
 }
+
 OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, const void *)) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -4136,9 +4353,11 @@ OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, 
     }
     free(stack);
 }
+
 OPENCSTL_FUNC size_type __cstl_list_max_size(void **container) {
     return INT_MAX;
 }
+
 OPENCSTL_FUNC void __cstl_list_reverse(void **container) {
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
@@ -4169,12 +4388,14 @@ OPENCSTL_FUNC void __cstl_list_reverse(void **container) {
 #define COLOR(N)	_(N, -5)
 #define CSTL_ARENA_CHUNK_SIZE 256
 typedef struct cstl_arena_chunk cstl_arena_chunk;
+
 struct cstl_arena_chunk {
     cstl_arena_chunk *next;
     size_type64 used;
     size_type64 capacity;
     size_type64 node_size;
 };
+
 OPENCSTL_FUNC cstl_arena_chunk *__cstl_arena_new_chunk(size_type64 node_size, size_type64 capacity) {
     cstl_arena_chunk *chunk = (cstl_arena_chunk *) calloc(
         sizeof(cstl_arena_chunk) + node_size * capacity, 1
@@ -4185,6 +4406,7 @@ OPENCSTL_FUNC cstl_arena_chunk *__cstl_arena_new_chunk(size_type64 node_size, si
     chunk->node_size = node_size;
     return chunk;
 }
+
 OPENCSTL_FUNC void *__cstl_arena_alloc(cstl_arena_chunk **arena, void **freelist, size_type64 node_size) {
     if (*freelist != NULL) {
         void *reused = *freelist;
@@ -4202,10 +4424,12 @@ OPENCSTL_FUNC void *__cstl_arena_alloc(cstl_arena_chunk **arena, void **freelist
     (*arena)->used++;
     return ptr;
 }
+
 OPENCSTL_FUNC void __cstl_arena_dealloc(void **freelist, void *raw_ptr) {
     *(void **) raw_ptr = *freelist;
     *freelist = raw_ptr;
 }
+
 OPENCSTL_FUNC void __cstl_arena_free_all(cstl_arena_chunk **arena, void **freelist) {
     cstl_arena_chunk *c = *arena;
     while (c != NULL) {
@@ -4216,6 +4440,7 @@ OPENCSTL_FUNC void __cstl_arena_free_all(cstl_arena_chunk **arena, void **freeli
     *arena = NULL;
     *freelist = NULL;
 }
+
 SELECT_ANY char nil_buffer[sizeof(void *) * NIDX_TREE_NODE_SIZE] = {0};
 SELECT_ANY void *nil = NULL;
 OPENCSTL_FUNC void *__cstl_tree_node(size_type64 type_size, size_type64 node_type) {
@@ -4226,6 +4451,7 @@ OPENCSTL_FUNC void *__cstl_tree_node(size_type64 type_size, size_type64 node_typ
     COLOR(ptr) = BLACK;
     return ptr;
 }
+
 OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_type64 type_size, size_type64 node_type) {
     size_type64 raw_node_sz = type_size + sizeof(void *) * NIDX_TREE_NODE_SIZE;
     raw_node_sz = (raw_node_sz + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
@@ -4237,6 +4463,7 @@ OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_type64 type_s
     COLOR(ptr) = BLACK;
     return ptr;
 }
+
 #define _CSTL_SET_EXPAND(x) x
 #define cstl_set         _cstl_set
 #define _cstl_set(...)	    _CSTL_SET_EXPAND(_CSTL_SET_DISPATCH(__VA_ARGS__, NULL, NULL))
@@ -4263,6 +4490,7 @@ OPENCSTL_FUNC void *__cstl_set(size_type64 key_size, char *type_key, void *compa
     OPENCSTL_NIDX(container, 0) = (size_type64) nil;
     return ptr;
 }
+
 #define _CSTL_MAP_EXPAND(x) x
 #define cstl_map         _cstl_map
 #define _cstl_map(...)	_CSTL_MAP_EXPAND(_CSTL_MAP_DISPATCH(__VA_ARGS__, NULL, NULL))
@@ -4290,6 +4518,7 @@ OPENCSTL_FUNC void *__cstl_map(size_type64 key_size, size_type64 value_size, cha
     OPENCSTL_NIDX(container, 0) = (size_type64) nil;
     return ptr;
 }
+
 OPENCSTL_FUNC void __cstl_tree_left_rotate(void **container, void *x) {
     void ***root = (void ***) *container;
     void *y = (void *) _(x, R);
@@ -4308,6 +4537,7 @@ OPENCSTL_FUNC void __cstl_tree_left_rotate(void **container, void *x) {
     _(y, L) = (size_type64) x;
     _(x, P) = (size_type64) y;
 }
+
 OPENCSTL_FUNC void __cstl_tree_right_rotate(void **container, void *x) {
     void ***root = (void ***) *container;
     void *y = (void *) _(x, L);
@@ -4326,6 +4556,7 @@ OPENCSTL_FUNC void __cstl_tree_right_rotate(void **container, void *x) {
     _(y, R) = (size_type64) x;
     _(x, P) = (size_type64) y;
 }
+
 OPENCSTL_FUNC void __cstl_tree_insert_fixup(void **container, void *z) {
     while (COLOR(_(z, P)) == RED) {
         if ((void *) _(z, P) == (void *) _(_(_(z, P), P), L)) {
@@ -4365,6 +4596,7 @@ OPENCSTL_FUNC void __cstl_tree_insert_fixup(void **container, void *z) {
     void ***root = (void ***) *container;
     COLOR(*root) = BLACK;
 }
+
 OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) {
     size_type64 container_type = OPENCSTL_NIDX(container, NIDX_CTYPE);
     size_type64 key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -4411,6 +4643,7 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
     __cstl_tree_insert_fixup(container, n);
     OPENCSTL_NIDX(container, -1) = (OPENCSTL_NIDX(container, -1)) + 1;
 }
+
 OPENCSTL_FUNC void __cstl_tree_transplant(void **container, void *u, void *v) {
     void ***root = (void ***) *container;
     if ((void *) _(u, P) == nil) {
@@ -4422,18 +4655,21 @@ OPENCSTL_FUNC void __cstl_tree_transplant(void **container, void *u, void *v) {
     }
     _(v, P) = _(u, P);
 }
+
 OPENCSTL_FUNC void *__cstl_tree_toleft(void *n) {
     while ((void *) _(n, L) != nil) {
         n = (void *) _(n, L);
     }
     return n;
 }
+
 OPENCSTL_FUNC void *__cstl_tree_toright(void *n) {
     while ((void *) _(n, R) != nil) {
         n = (void *) _(n, R);
     }
     return n;
 }
+
 OPENCSTL_FUNC void __cstl_tree_erase_fixup(void **container, void *x) {
     void ***root = (void ***) *container;
     while (x != *root && COLOR(x) == BLACK) {
@@ -4472,8 +4708,9 @@ OPENCSTL_FUNC void __cstl_tree_erase_fixup(void **container, void *x) {
     }
     COLOR(x) = BLACK;
 }
+
 OPENCSTL_FUNC void __cstl_tree_erase(void **container, void **iter) {
-    if (iter == NULL) {return; }
+    if (iter == NULL) { return; }
     void *z = iter;
     void *y = z;
     void *x = NULL;
@@ -4505,10 +4742,11 @@ OPENCSTL_FUNC void __cstl_tree_erase(void **container, void **iter) {
     }
     {
         void **freelist = (void **) &OPENCSTL_NIDX(container, -6);
-        __cstl_arena_dealloc(freelist, (void*)&OPENCSTL_NIDX(&iter, -5));
+        __cstl_arena_dealloc(freelist, (void *) &OPENCSTL_NIDX(&iter, -5));
         OPENCSTL_NIDX(container, -1) = (OPENCSTL_NIDX(container, -1)) - 1;
     }
 }
+
 OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
     size_type64 key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 value_size = OPENCSTL_NIDX(container, -4);
@@ -4535,18 +4773,22 @@ OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
     }
     return NULL;
 }
+
 OPENCSTL_FUNC void *__cstl_tree_begin(void **container) {
     void ***root = (void ***) *container;
     return *root != nil ? __cstl_tree_toleft(*root) : nil;
 }
+
 OPENCSTL_FUNC void *__cstl_tree_rbegin(void **container) {
     void ***root = (void ***) *container;
     return *root != nil ? __cstl_tree_toright(*root) : nil;
 }
+
 OPENCSTL_FUNC void *__cstl_tree_end_rend(void **container) {
     (void) container;
     return nil;
 }
+
 OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
     cstl_arena_chunk **arena = (cstl_arena_chunk **) &OPENCSTL_NIDX(container, -7);
     void **freelist = (void **) &OPENCSTL_NIDX(container, -6);
@@ -4555,12 +4797,14 @@ OPENCSTL_FUNC void __cstl_tree_clear(void **container) {
     OPENCSTL_NIDX(container, -1) = 0;
     *root = (void **) nil;
 }
+
 OPENCSTL_FUNC void __cstl_tree_free(void **container) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     __cstl_tree_clear(container);
     free((char *) (*container) - header_sz);
     *container = NULL;
 }
+
 OPENCSTL_FUNC void *__cstl_tree_next_prev(void *it, int r, int l, void *(todeep)(void *)) {
     if ((void *) _(it, r) != nil) {
         it = todeep((void *) _(it, r));
@@ -4576,6 +4820,7 @@ OPENCSTL_FUNC void *__cstl_tree_next_prev(void *it, int r, int l, void *(todeep)
     }
     return it;
 }
+
 OPENCSTL_FUNC size_type __cstl_tree_size(void **container) {
     size_type64 length = OPENCSTL_NIDX(container, -1);
     return (size_type) length;
@@ -4635,6 +4880,7 @@ OPENCSTL_FUNC void *__cstl_queue(size_type64 type_size, char *type) {
     OPENCSTL_NIDX(container, -1) = -type_size - 1;
     return ptr;
 }
+
 #define _CSTL_PQ_EXPAND(x) x
 #define cstl_priority_queue(...)	_CSTL_PQ_EXPAND(_CSTL_PQ_DISPATCH(__VA_ARGS__, NULL, NULL))
 #define _CSTL_PQ_DISPATCH(TYPE, COMP, ...) (TYPE*)__cstl_priority_queue(sizeof(TYPE),#TYPE,(void*)(COMP))
@@ -4652,6 +4898,7 @@ OPENCSTL_FUNC void *__cstl_priority_queue(size_type64 type_size, char *type, voi
     OPENCSTL_NIDX(container, -1) = 0;
     return ptr;
 }
+
 OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
     __cstl_vector_push_back(container, value);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -4664,12 +4911,13 @@ OPENCSTL_FUNC void __cstl_priority_queue_push(void **container, void *value) {
         void *c = ((char *) *container) + type_size * idx;
         void *p = ((char *) *container) + type_size * HEAP_PARENT(idx);
         int r = compare ? compare(tmp, p) : memcmp(tmp, p, type_size);
-        if (r <= 0) {break; }
+        if (r <= 0) { break; }
         memcpy(c, p, type_size);
         idx = HEAP_PARENT(idx);
     }
     memcpy(((char *) *container) + type_size * idx, tmp, type_size);
 }
+
 OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
     verify(OPENCSTL_NIDX(container, -1) > 0);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -4700,7 +4948,7 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
         if (R < length && r > 0) {
             C = R;
         }
-        if (C == idx) {break; }
+        if (C == idx) { break; }
         memcpy(((char *) *container) + type_size * idx, ((char *) *container) + type_size * C, type_size);
         idx = C;
     } while (1);
@@ -4740,6 +4988,7 @@ static inline size_type64 __ht_next_pow2(size_type64 n) {
     while (p < n) p <<= 1;
     return p;
 }
+
 OPENCSTL_ALWAYS_INLINE bool __ht_key_eq(const void *a, const void *b, size_type64 ks) {
     switch (ks) {
         case 1: return *(const uint8_t *) a == *(const uint8_t *) b;
@@ -4749,6 +4998,7 @@ OPENCSTL_ALWAYS_INLINE bool __ht_key_eq(const void *a, const void *b, size_type6
         default: return memcmp(a, b, ks) == 0;
     }
 }
+
 #define OPENCSTL_XXH_ROTL32(x, r) (((x) << (r)) | ((x) >> (32 - (r))))
 #define OPENCSTL_XXH_ROTL64(x, r) (((x) << (r)) | ((x) >> (64 - (r))))
 #define OPENCSTL_XXH32_P2 2246822519U
@@ -4767,6 +5017,7 @@ OPENCSTL_FUNC size_type64 _cstl_hash32(void *_key) {
     h ^= h >> 16;
     return (size_type64) h;
 }
+
 OPENCSTL_FUNC size_type64 _cstl_hash64(void *_key) {
     unsigned long long x = *(unsigned long long *) _key;
     x ^= x >> 33;
@@ -4776,6 +5027,7 @@ OPENCSTL_FUNC size_type64 _cstl_hash64(void *_key) {
     x ^= x >> 32;
     return (size_type64) x;
 }
+
 OPENCSTL_FUNC size_type64 _cstl_hash(void *_key, size_type64 len) {
     const unsigned char *p = (const unsigned char *) _key;
     const unsigned char *end = p + len;
@@ -4851,6 +5103,7 @@ OPENCSTL_FUNC size_type64 _cstl_hash(void *_key, size_type64 len) {
     h64 ^= h64 >> 32;
     return (size_type64) h64;
 }
+
 OPENCSTL_ALWAYS_INLINE uint64_t __ht_mum(uint64_t a, uint64_t b) {
 #if defined(__SIZEOF_INT128__)
     __uint128_t r = (__uint128_t) a * b;
@@ -4865,6 +5118,7 @@ OPENCSTL_ALWAYS_INLINE uint64_t __ht_mum(uint64_t a, uint64_t b) {
     return ha * hb ^ ((ha * lb + hb * la) >> 32) ^ (la * lb >> 32);
 #endif
 }
+
 OPENCSTL_ALWAYS_INLINE size_type64 hash_mixer(void *key, size_type64 n) {
     static const uint64_t s0 = 0xa0761d6478bd642fULL;
     static const uint64_t s1 = 0xe7037ed1a0b428dbULL;
@@ -4880,15 +5134,19 @@ OPENCSTL_ALWAYS_INLINE size_type64 hash_mixer(void *key, size_type64 n) {
     }
     return (size_type64) _cstl_hash(key, n);
 }
+
 OPENCSTL_ALWAYS_INLINE uint8_t __ht_ctrl(size_type64 h) {
     return (uint8_t) ((h >> 56) | 0x80u);
 }
+
 #define __HASHTABLE_DEFAULT_SIZE__ HT_MIN_CAP
+
 static uint8_t *__ht_alloc_ctrl(size_type64 cap) {
     uint8_t *m = (uint8_t *) calloc(cap, 1);
     verify(m!=NULL);
     return m;
 }
+
 static void __ht_reinsert(
     void *base, uint8_t *ctrl, size_type64 cap_mask,
     const void *key, const void *value,
@@ -4903,6 +5161,7 @@ static void __ht_reinsert(
         memcpy((char *) base + idx * type_size + key_size, value, value_size);
     }
 }
+
 static void __ht_do_rehash(
     void **container, size_type64 header_sz,
     size_type64 key_size, size_type64 value_size, size_type64 type_size,
@@ -4915,15 +5174,18 @@ static void __ht_do_rehash(
     uint8_t *new_ctrl = __ht_alloc_ctrl(new_cap);
     void *nb = (char *) new_raw + header_sz;
     size_type64 new_mask = new_cap - 1;
-    { size_type64 i; for (i = 0; i < old_cap; i++) {
-        if (old_ctrl[i] != HT_CTRL_EMPTY) {
-            const void *ok = (const char *) *container + i * type_size;
-            const void *ov = value_size > 0 ? (const char *) ok + key_size : NULL;
-            size_type64 h = hash_mixer((void *) ok, key_size);
-            __ht_reinsert(nb, new_ctrl, new_mask, ok, ov,
-                          key_size, value_size, type_size, h);
+    {
+        size_type64 i;
+        for (i = 0; i < old_cap; i++) {
+            if (old_ctrl[i] != HT_CTRL_EMPTY) {
+                const void *ok = (const char *) *container + i * type_size;
+                const void *ov = value_size > 0 ? (const char *) ok + key_size : NULL;
+                size_type64 h = hash_mixer((void *) ok, key_size);
+                __ht_reinsert(nb, new_ctrl, new_mask, ok, ov,
+                              key_size, value_size, type_size, h);
+            }
         }
-    } }
+    }
     void *old_ptr = *container;
     free((char *) *container - header_sz);
     free(old_ctrl);
@@ -4935,6 +5197,7 @@ static void __ht_do_rehash(
                (char *) *container + type_size * new_cap,
                (char *) new_ctrl, (int) type_size);
 }
+
 OPENCSTL_FUNC
 void __cstl_hashtable_insert(void **container, void *key, void *value) {
     size_type64 key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -4985,6 +5248,7 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
     }
     OPENCSTL_NIDX(container, -1) = length + 1;
 }
+
 OPENCSTL_FUNC
 void __cstl_hashtable_erase(void **container, void *key) {
     size_type64 key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -5028,6 +5292,7 @@ void __cstl_hashtable_erase(void **container, void *key) {
     ctrl[hole] = HT_CTRL_EMPTY;
     OPENCSTL_NIDX(container, -1)--;
 }
+
 OPENCSTL_FUNC
 void *__cstl_hashtable_find(void **container, void *key) {
     size_type64 key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -5056,6 +5321,7 @@ void *__cstl_hashtable_find(void **container, void *key) {
         idx = (idx + 1) & cap_mask;
     }
 }
+
 OPENCSTL_FUNC
 void __cstl_hashtable_clear(void **container) {
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
@@ -5063,45 +5329,59 @@ void __cstl_hashtable_clear(void **container) {
     memset(ctrl, 0, cap_mask + 1);
     OPENCSTL_NIDX(container, -1) = 0;
 }
+
 OPENCSTL_FUNC
 void *__cstl_hashtable_begin(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-    { size_type64 i; for (i = 0; i <= cap_mask; i++)
-        if (ctrl[i] != HT_CTRL_EMPTY) {
-            return (char *) *container + i * type_size;
-        } }
+    {
+        size_type64 i;
+        for (i = 0; i <= cap_mask; i++)
+            if (ctrl[i] != HT_CTRL_EMPTY) {
+                return (char *) *container + i * type_size;
+            }
+    }
     return NULL;
 }
+
 OPENCSTL_FUNC
 void *__cstl_hashtable_end(void **container) { return NULL; }
+
 OPENCSTL_FUNC
 void *__cstl_hashtable_rbegin(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-    { int i; for (i = (int) cap_mask; i >= 0; i--)
-        if (ctrl[i] != HT_CTRL_EMPTY) {
-            return (char *) *container + i * type_size;
-        } }
+    {
+        int i;
+        for (i = (int) cap_mask; i >= 0; i--)
+            if (ctrl[i] != HT_CTRL_EMPTY) {
+                return (char *) *container + i * type_size;
+            }
+    }
     return NULL;
 }
+
 OPENCSTL_FUNC
 void *__cstl_hashtable_rend(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     return (char *) *container - type_size;
 }
+
 OPENCSTL_FUNC
 void *__cstl_hashtable_empty(void **container) {
     return __cstl_hashtable_rend(container);
 }
+
 OPENCSTL_FUNC size_type __cstl_hashtable_size(void **container) {
     return (size_type) OPENCSTL_NIDX(container, -1);
 }
+
 OPENCSTL_FUNC size_type __cstl_hashtable_capacity(void **container) {
     return (size_type) OPENCSTL_NIDX(container, -7) + 1;
 }
+
 OPENCSTL_FUNC
 void *__cstl_hashtable_next_prev(void *it, int n) {
     HashtableManager *chtm = htm_find(htm, it);
@@ -5119,16 +5399,20 @@ void *__cstl_hashtable_next_prev(void *it, int n) {
     if (n == -2) {
         size_type64 pos = ((char *) it - (char *) chtm->p1) / ts;
         if (pos == 0) { return (char *) chtm->p1 - ts; }
-        { size_type64 i; for (i = pos - 1; ; i--) {
-            if (ctrl[i] != HT_CTRL_EMPTY) {
-                return (char *) chtm->p1 + i * ts;
+        {
+            size_type64 i;
+            for (i = pos - 1; ; i--) {
+                if (ctrl[i] != HT_CTRL_EMPTY) {
+                    return (char *) chtm->p1 + i * ts;
+                }
+                if (i == 0) { break; }
             }
-            if (i == 0) { break; }
-        } }
+        }
         return (char *) chtm->p1 - ts;
     }
     return NULL;
 }
+
 OPENCSTL_FUNC
 void __cstl_hashtable_free(void **container) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
@@ -5139,6 +5423,7 @@ void __cstl_hashtable_free(void **container) {
     free((char *) (*container) - header_sz);
     *container = NULL;
 }
+
 OPENCSTL_FUNC
 void __cstl_hashtable_reserve(void **container, size_type64 n) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
@@ -5159,15 +5444,18 @@ void __cstl_hashtable_reserve(void **container, size_type64 n) {
     uint8_t *new_ctrl = __ht_alloc_ctrl(new_cap);
     void *nb = (char *) new_raw + header_sz;
     size_type64 new_mask = new_cap - 1;
-    { size_type64 i; for (i = 0; i <= cap_mask_old; i++) {
-        if (old_ctrl[i] != HT_CTRL_EMPTY) {
-            const void *ok = (const char *) *container + i * type_size;
-            const void *ov = value_size > 0 ? (const char *) ok + key_size : NULL;
-            size_type64 h = hash_mixer((void *) ok, key_size);
-            __ht_reinsert(nb, new_ctrl, new_mask, ok, ov,
-                          key_size, value_size, type_size, h);
+    {
+        size_type64 i;
+        for (i = 0; i <= cap_mask_old; i++) {
+            if (old_ctrl[i] != HT_CTRL_EMPTY) {
+                const void *ok = (const char *) *container + i * type_size;
+                const void *ov = value_size > 0 ? (const char *) ok + key_size : NULL;
+                size_type64 h = hash_mixer((void *) ok, key_size);
+                __ht_reinsert(nb, new_ctrl, new_mask, ok, ov,
+                              key_size, value_size, type_size, h);
+            }
         }
-    } }
+    }
     void *old_ptr = *container;
     free((char *) *container - header_sz);
     free(old_ctrl);
@@ -5179,6 +5467,7 @@ void __cstl_hashtable_reserve(void **container, size_type64 n) {
                (char *) *container + type_size * new_cap,
                (char *) new_ctrl, (int) type_size);
 }
+
 #define _CSTL_USET_EXPAND(x) x
 #define cstl_unordered_set _cstl_unordered_set
 #define _cstl_unordered_set(...) _CSTL_USET_EXPAND(_CSTL_USET_DISPATCH(__VA_ARGS__, NULL, NULL))
@@ -5213,6 +5502,7 @@ void *__cstl_unordered_set(size_type64 key_size, const char *type_key, void *has
     }
     return ptr;
 }
+
 #define _CSTL_UMAP_EXPAND(x) x
 #define cstl_unordered_map(...) _CSTL_UMAP_EXPAND(_CSTL_UMAP_DISPATCH(__VA_ARGS__, NULL, NULL))
 #define _cstl_unordered_map(...) _CSTL_UMAP_EXPAND(_CSTL_UMAP_DISPATCH(__VA_ARGS__, NULL, NULL))
@@ -5274,32 +5564,40 @@ OPENCSTL_FUNC void *__cstl_array(size_type64 type_size, char *type, size_type64 
     OPENCSTL_NIDX(container, -1) = _count;
     return ptr;
 }
+
 OPENCSTL_FUNC size_type __cstl_array_size(void **container) {
     return (size_type) OPENCSTL_NIDX(container, -1);
 }
+
 OPENCSTL_FUNC size_type __cstl_array_capacity(void **container) {
     return (size_type) OPENCSTL_NIDX(container, -2);
 }
+
 OPENCSTL_FUNC size_type __cstl_array_max_size(void **container) {
     return (size_type) OPENCSTL_NIDX(container, -2);
 }
+
 OPENCSTL_FUNC void *__cstl_array_begin(void **container) {
     return (void *) *container;
 }
+
 OPENCSTL_FUNC void *__cstl_array_end(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
     return (void *) ((char *) *container + (type_size * length));
 }
+
 OPENCSTL_FUNC void *__cstl_array_rbegin(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
     return (void *) ((char *) *container + (type_size * (length - 1)));
 }
+
 OPENCSTL_FUNC void *__cstl_array_rend(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     return (void *) ((char *) *container - (type_size));
 }
+
 OPENCSTL_FUNC void *__cstl_array_find(void **container, void *iter_begin, void *value) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
@@ -5312,13 +5610,17 @@ OPENCSTL_FUNC void *__cstl_array_find(void **container, void *iter_begin, void *
         value = &valuef;
     }
 #endif
-    { size_type64 i; for (i = pos; i < length; i++) {
-        if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
-            return (char *) *container + type_size * (i);
+    {
+        size_type64 i;
+        for (i = pos; i < length; i++) {
+            if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
+                return (char *) *container + type_size * (i);
+            }
         }
-    } }
+    }
     return NULL;
 }
+
 OPENCSTL_FUNC void __cstl_array_free(void **container) {
 #ifdef OPENCSTL_TRACER
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
@@ -5327,12 +5629,15 @@ OPENCSTL_FUNC void __cstl_array_free(void **container) {
     gfree(*container);
 #endif
 }
+
 OPENCSTL_FUNC void *__cstl_array_next(void *it, size_type64 type_size) {
     return (char *) it + type_size;
 }
+
 OPENCSTL_FUNC void *__cstl_array_prev(void *it, size_type64 type_size) {
     return (char *) it - type_size;
 }
+
 OPENCSTL_FUNC void __cstl_array_reverse(void **container) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -5347,6 +5652,7 @@ OPENCSTL_FUNC void __cstl_array_reverse(void **container) {
         idx_r--;
     }
 }
+
 OPENCSTL_FUNC size_type64 __cstl_array_count(void **container, void *value) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -5363,14 +5669,18 @@ OPENCSTL_FUNC size_type64 __cstl_array_count(void **container, void *value) {
 #endif
     CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
     size_type64 cnt = 0;
-    { int i; for (i = 0; i < length; i++) {
-        void *ptr = ((char *) *container) + (type_size * i);
-        if (is_equal(ptr, value, type_size) == 0) {
-            cnt++;
+    {
+        int i;
+        for (i = 0; i < length; i++) {
+            void *ptr = ((char *) *container) + (type_size * i);
+            if (is_equal(ptr, value, type_size) == 0) {
+                cnt++;
+            }
         }
-    } }
+    }
     return cnt;
 }
+
 OPENCSTL_FUNC size_type64 __cstl_array_count_if(void **container, CSTL_COND cond) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -5378,14 +5688,18 @@ OPENCSTL_FUNC size_type64 __cstl_array_count_if(void **container, CSTL_COND cond
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
     size_type64 cnt = 0;
-    { int i; for (i = 0; i < length; i++) {
-        void *ptr = ((char *) *container) + (type_size * i);
-        if (cond(ptr)) {
-            cnt++;
+    {
+        int i;
+        for (i = 0; i < length; i++) {
+            void *ptr = ((char *) *container) + (type_size * i);
+            if (cond(ptr)) {
+                cnt++;
+            }
         }
-    } }
+    }
     return cnt;
 }
+
 OPENCSTL_FUNC void *__cstl_array_lower_bound(void **container, void *value, CSTL_COMPARE compare) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -5408,14 +5722,14 @@ OPENCSTL_FUNC void *__cstl_array_lower_bound(void **container, void *value, CSTL
         void *Mptr = ((char *) *container) + (type_size * M);
         if (compare(Mptr, value) < 0) {
             L = M + 1;
-        }
-        else {
+        } else {
             R = M;
         }
     }
     if (L >= length) { return NULL; }
     return ((char *) *container) + (type_size * L);
 }
+
 OPENCSTL_FUNC void *__cstl_array_upper_bound(void **container, void *value, CSTL_COMPARE compare) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -5438,8 +5752,7 @@ OPENCSTL_FUNC void *__cstl_array_upper_bound(void **container, void *value, CSTL
         void *Mptr = ((char *) *container) + (type_size * M);
         if (compare(value, Mptr) < 0) {
             R = M;
-        }
-        else {
+        } else {
             L = M + 1;
         }
     }
@@ -5460,14 +5773,18 @@ OPENCSTL_FUNC bool __is_hashtable_iter(void *it) {
     }
     return htm_find(htm, it) != NULL;
 #else
-    { size_type64 i; for (i = 0; i < htm_length; i++) {
-        if (htm[i].p1 <= it && it < htm[i].p2) {
-            return true;
+    {
+        size_type64 i;
+        for (i = 0; i < htm_length; i++) {
+            if (htm[i].p1 <= it && it < htm[i].p2) {
+                return true;
+            }
         }
-    } }
+    }
     return false;
 #endif
 }
+
 OPENCSTL_FUNC void *_cstl_next(void *it) {
     if (__is_hashtable_iter(it)) {
         return __cstl_hashtable_next_prev(it, -1);
@@ -5505,6 +5822,7 @@ OPENCSTL_FUNC void *_cstl_next(void *it) {
     }
     return NULL;
 }
+
 OPENCSTL_FUNC void *_cstl_prev(void *it) {
     if (__is_hashtable_iter(it)) {
         return __cstl_hashtable_next_prev(it, -2);
@@ -5541,6 +5859,7 @@ OPENCSTL_FUNC void *_cstl_prev(void *it) {
     }
     return NULL;
 }
+
 OPENCSTL_FUNC void *_cstl_begin(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -5581,6 +5900,7 @@ OPENCSTL_FUNC void *_cstl_begin(void *container) {
     }
     return NULL;
 }
+
 OPENCSTL_FUNC void *_cstl_rbegin(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -5621,6 +5941,7 @@ OPENCSTL_FUNC void *_cstl_rbegin(void *container) {
     }
     return NULL;
 }
+
 OPENCSTL_FUNC void *_cstl_end(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -5661,6 +5982,7 @@ OPENCSTL_FUNC void *_cstl_end(void *container) {
     }
     return NULL;
 }
+
 OPENCSTL_FUNC void *_cstl_rend(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -5706,6 +6028,7 @@ bool is_even(const void *it) {
     int val = *(int *) it;
     return val % 2 == 0;
 }
+
 #define fill(_First, _Last, _Value) _cstl_fill(_First, _Last, &(__typeof__(_Value)){_Value}, sizeof(_Value))
 OPENCSTL_FUNC void _cstl_fill(void *_begin, void *_end, void *_value, size_type64 _value_size) {
     void *it = _begin;
@@ -5714,6 +6037,7 @@ OPENCSTL_FUNC void _cstl_fill(void *_begin, void *_end, void *_value, size_type6
         it = cstl_next(it);
     }
 }
+
 OPENCSTL_FUNC size_type64 _cstl_count(void *container, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -5748,6 +6072,7 @@ OPENCSTL_FUNC size_type64 _cstl_count(void *container, ...) {
     __cstl_va_end(vl);
     return cnt;
 }
+
 static size_type64 count(void *C, ...) {
     va_list args;
     va_start(args, C);
@@ -5755,6 +6080,7 @@ static size_type64 count(void *C, ...) {
     va_end(args);
     return result;
 }
+
 OPENCSTL_FUNC size_type64 _cstl_count_if(void *container, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -5794,6 +6120,7 @@ OPENCSTL_FUNC size_type64 _cstl_count_if(void *container, ...) {
     __cstl_va_end(vl);
     return cnt;
 }
+
 OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -5822,9 +6149,9 @@ OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
             } else {
                 if (argc == 1) {
                     size_type64 type_size = OPENCSTL_NIDX((void**)container, NIDX_TSIZE);
-                    param2 = (void*)_memcmp_funcs[type_size];
+                    param2 = (void *) _memcmp_funcs[type_size];
                 }
-                ret = __cstl_vector_lower_bound((void **) container, param1, (CSTL_COMPARE)param2);
+                ret = __cstl_vector_lower_bound((void **) container, param1, (CSTL_COMPARE) param2);
             }
         }
         break;
@@ -5835,9 +6162,9 @@ OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
                 if (argc == 1) {
                     ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
                     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-                    param2 = (void*)_memcmp_funcs[type_size];
+                    param2 = (void *) _memcmp_funcs[type_size];
                 }
-                ret = __cstl_deque_lower_bound((void **) container, param1, (CSTL_COMPARE)param2);
+                ret = __cstl_deque_lower_bound((void **) container, param1, (CSTL_COMPARE) param2);
             }
         }
         break;
@@ -5847,6 +6174,7 @@ OPENCSTL_FUNC void *_cstl_lower_bound(void *container, int argc, ...) {
     __cstl_va_end(vl);
     return ret;
 }
+
 OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -5875,9 +6203,9 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
             } else {
                 if (argc == 1) {
                     size_type64 type_size = OPENCSTL_NIDX((void**)container, NIDX_TSIZE);
-                    param2 = (void*)_memcmp_funcs[type_size];
+                    param2 = (void *) _memcmp_funcs[type_size];
                 }
-                ret = __cstl_vector_upper_bound((void **) container, param1,(CSTL_COMPARE) param2);
+                ret = __cstl_vector_upper_bound((void **) container, param1, (CSTL_COMPARE) param2);
             }
         }
         break;
@@ -5888,9 +6216,9 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
                 if (argc == 1) {
                     ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
                     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
-                    param2 = (void*)_memcmp_funcs[type_size];
+                    param2 = (void *) _memcmp_funcs[type_size];
                 }
-                ret = __cstl_deque_upper_bound((void **) container, param1, (CSTL_COMPARE)param2);
+                ret = __cstl_deque_upper_bound((void **) container, param1, (CSTL_COMPARE) param2);
             }
         }
         break;
@@ -5932,13 +6260,17 @@ OPENCSTL_FUNC void ocstl_minmax_container_type_check(void *container) {
             fault("max_element/min_element: unsupported container type");
     }
 }
+
 static int ocstl_max_cmp(const CSTL_COMPARE cmp, const void *a, const void *b) {
     return cmp(a, b);
 }
+
 static int ocstl_min_cmp(const CSTL_COMPARE cmp, const void *a, const void *b) {
     return cmp(b, a);
 }
+
 typedef int (*OCSTL_MM_CMP)(const CSTL_COMPARE, const void *, const void *);
+
 OPENCSTL_FUNC void *ocstl_min_max_element(void *container, ...) {
     ocstl_minmax_container_type_check(container);
     va_list vl;
@@ -5960,7 +6292,7 @@ OPENCSTL_FUNC void *ocstl_min_max_element(void *container, ...) {
     }
     if (cmp == NULL) {
         Interval *tm = iveb_find(iveb, _begin);
-        cmp = (CSTL_COMPARE)LESS(tm->type_name);
+        cmp = (CSTL_COMPARE) LESS(tm->type_name);
         if (cmp == NULL) {
             cmp = _memcmp_funcs[tm->type_size];
         }
@@ -5986,10 +6318,12 @@ OPENCSTL_FUNC void *ocstl_min_max_element(void *container, ...) {
 #define MT64_MATRIX_A   0xB5026F5AA96619E9ULL
 #define MT64_UPPER_MASK 0xFFFFFFFF80000000ULL
 #define MT64_LOWER_MASK 0x7FFFFFFFULL
+
 typedef struct {
     uint64_t mt[MT64_N];
     int index;
 } __mt19937_64_t;
+
 __mt19937_64_t __rng64 = {
     {
         1776098118,
@@ -6308,20 +6642,29 @@ __mt19937_64_t __rng64 = {
     MT64_N
 };
 __mt19937_64_t __uuid64 = {0};
+
 static void __mt19937_64_uuid_seed(uint64_t seed) {
     __uuid64.mt[0] = seed;
-    { int i; for (i = 1; i < MT64_N; i++) {
-        __uuid64.mt[i] = 6364136223846793005ULL * (__uuid64.mt[i - 1] ^ (__uuid64.mt[i - 1] >> 62)) + (uint64_t) i;
-    } }
+    {
+        int i;
+        for (i = 1; i < MT64_N; i++) {
+            __uuid64.mt[i] = 6364136223846793005ULL * (__uuid64.mt[i - 1] ^ (__uuid64.mt[i - 1] >> 62)) + (uint64_t) i;
+        }
+    }
     __uuid64.index = MT64_N;
 }
+
 static void __mt19937_64_seed(uint64_t seed) {
     __rng64.mt[0] = seed;
-    { int i; for (i = 1; i < MT64_N; i++) {
-        __rng64.mt[i] = 6364136223846793005ULL * (__rng64.mt[i - 1] ^ (__rng64.mt[i - 1] >> 62)) + (uint64_t) i;
-    } }
+    {
+        int i;
+        for (i = 1; i < MT64_N; i++) {
+            __rng64.mt[i] = 6364136223846793005ULL * (__rng64.mt[i - 1] ^ (__rng64.mt[i - 1] >> 62)) + (uint64_t) i;
+        }
+    }
     __rng64.index = MT64_N;
 }
+
 static inline uint64_t __mt19937_64_next() {
     uint64_t y;
     if (__rng64.index >= MT64_N) {
@@ -6347,13 +6690,16 @@ static inline uint64_t __mt19937_64_next() {
     y ^= (y >> 43);
     return y;
 }
+
 static double __mt19937_random(void) {
     return (double) (__mt19937_64_next() >> 11) * (1.0 / 9007199254740992.0);
 }
+
 static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
     uint64_t range = (uint64_t) (hi - lo) + 1ULL;
     return lo + (int64_t) (__mt19937_64_next() % range);
 }
+
 char *__mt19937_uuid(void) {
     __mt19937_64_uuid_seed(time(NULL));
     static char buf[37];
@@ -6381,23 +6727,32 @@ char *__mt19937_uuid(void) {
     buf[36] = '\0';
     return buf;
 }
+
 OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
-    { size_type64 i; for (i = length - 1; i > 0; i--) {
-        size_type64 rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
-    } }
+    {
+        size_type64 i;
+        for (i = length - 1; i > 0; i--) {
+            size_type64 rng_idx = __mt19937_64_next() % (i + 1);
+            swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
+        }
+    }
 }
+
 OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
-    { size_type64 i; for (i = length - 1; i > 0; i--) {
-        size_type64 rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
-    } }
+    {
+        size_type64 i;
+        for (i = length - 1; i > 0; i--) {
+            size_type64 rng_idx = __mt19937_64_next() % (i + 1);
+            swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
+        }
+    }
 }
+
 OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
@@ -6405,21 +6760,31 @@ OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
     if (length <= 1) { return; }
     void *ptr = malloc(type_size * length);
     void *it = *head;
-    { size_type i; for (i = 0; i < length; i++) {
-        memcpy((char *) ptr + (i * type_size), it, type_size);
-        it = __cstl_list_next_prev(it, -1);
-    } }
-    { size_type i; for (i = length - 1; i > 0; i--) {
-        size_type rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *) ptr + i * type_size, (char *) ptr + rng_idx * type_size, type_size);
-    } }
+    {
+        size_type i;
+        for (i = 0; i < length; i++) {
+            memcpy((char *) ptr + (i * type_size), it, type_size);
+            it = __cstl_list_next_prev(it, -1);
+        }
+    }
+    {
+        size_type i;
+        for (i = length - 1; i > 0; i--) {
+            size_type rng_idx = __mt19937_64_next() % (i + 1);
+            swap((char *) ptr + i * type_size, (char *) ptr + rng_idx * type_size, type_size);
+        }
+    }
     it = *head;
-    { size_type i; for (i = 0; i < length; i++) {
-        memcpy(it, (char *) ptr + (i * type_size), type_size);
-        it = __cstl_list_next_prev(it, -1);
-    } }
+    {
+        size_type i;
+        for (i = 0; i < length; i++) {
+            memcpy(it, (char *) ptr + (i * type_size), type_size);
+            it = __cstl_list_next_prev(it, -1);
+        }
+    }
     free(ptr);
 }
+
 void __mt19937_shuffle(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) &container)) {
@@ -6445,11 +6810,17 @@ void __mt19937_shuffle(void *container) {
             break;
     }
 }
+
 typedef void (*seed_fn)(uint64_t);
+
 typedef double (*random_fn)(void);
+
 typedef int64_t (*randint_fn)(int64_t, int64_t);
+
 typedef char *(*uuid_fn)(void);
+
 typedef void (*shuffle_fn)(void *);
+
 typedef struct {
     random_fn random;
     randint_fn randint;
@@ -6457,6 +6828,7 @@ typedef struct {
     uuid_fn uuid;
     shuffle_fn shuffle;
 } RANDOM;
+
 RANDOM mt19937 = {
     __mt19937_random,
     __mt19937_randint,
@@ -6533,6 +6905,7 @@ static double ttime(void) {
 #elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
 #include <sys/time.h>
 #include <time.h>
+
 static double ttime(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -6552,42 +6925,54 @@ static double ttime(void) {
 #define _OPENCSTL_CSTL_FILE_H
 #include <stdio.h>
 #include <wchar.h>
+
 typedef struct FPM {
     FILE *fp;
     char *filepath;
 } FPM;
+
 static FPM fpm[1024] = {0};
 static int fpm_size = 0;
+
 void fpm_append(FILE *fp, char *filepath) {
     verify(fpm_size < 1024);
     fpm[fpm_size].fp = fp;
     fpm[fpm_size].filepath = filepath;
     fpm_size++;
 }
+
 void fpm_erase(FILE *fp) {
     int idx = -1;
-    { int i; for (i = 0; i < fpm_size; i++) {
-        if (fpm[i].fp == fp) {
-            idx = i;
-            break;
+    {
+        int i;
+        for (i = 0; i < fpm_size; i++) {
+            if (fpm[i].fp == fp) {
+                idx = i;
+                break;
+            }
         }
-    } }
+    }
     verify(idx != -1);
     memcpy(fpm + idx, fpm + idx + 1, fpm_size - idx - 1);
     fpm_size--;
 }
+
 char *fpm_get(FILE *fp) {
     int idx = -1;
-    { int i; for (i = 0; i < fpm_size; i++) {
-        if (fpm[i].fp == fp) {
-            idx = i;
-            break;
+    {
+        int i;
+        for (i = 0; i < fpm_size; i++) {
+            if (fpm[i].fp == fp) {
+                idx = i;
+                break;
+            }
         }
-    } }
+    }
     verify(idx != -1);
     return fpm[idx].filepath;
 }
-FILE *__cstl_fopen( char *filename, const char *mode) {
+
+FILE *__cstl_fopen(char *filename, const char *mode) {
     FILE *fp = NULL;
 #if defined(__TINYC__)
     fp = fopen(filename, mode);
@@ -6600,10 +6985,12 @@ FILE *__cstl_fopen( char *filename, const char *mode) {
     fpm_append(fp, filename);
     return fp;
 }
+
 void __cstl_fclose(FILE *fp) {
     fpm_erase(fp);
     fclose(fp);
 }
+
 char *__cstl_get_line(FILE *fp) {
     long start = ftell(fp);
     if (start < 0) { return NULL; }
@@ -6619,17 +7006,21 @@ char *__cstl_get_line(FILE *fp) {
     if (fseek(fp, start, SEEK_SET) != 0) { return NULL; }
     char *buf = (char *) calloc(len + 1, sizeof(char));
     if (!buf) { return NULL; }
-    { size_type64 i; for (i = 0; i < len; i++) {
-        int ch = fgetc(fp);
-        if (ch == EOF) {
-            free(buf);
-            return NULL;
+    {
+        size_type64 i;
+        for (i = 0; i < len; i++) {
+            int ch = fgetc(fp);
+            if (ch == EOF) {
+                free(buf);
+                return NULL;
+            }
+            buf[i] = (char) ch;
         }
-        buf[i] = (char) ch;
-    } }
+    }
     (void) fgetc(fp);
     return buf;
 }
+
 char *__cstl_fread_all(FILE *fp) {
     fseek(fp, 0, SEEK_END);
     size_type64 total_size = ftell(fp);
@@ -6638,6 +7029,7 @@ char *__cstl_fread_all(FILE *fp) {
     fread(buf, 1, total_size, fp);
     return buf;
 }
+
 FILE *__cstl_fwrite_all(FILE *fp, const char *buf) {
     char *filepath = fpm_get(fp);
     __cstl_fclose(fp);
@@ -6648,12 +7040,19 @@ FILE *__cstl_fwrite_all(FILE *fp, const char *buf) {
     fwrite(buf, 1, len, new_fp);
     return new_fp;
 }
-typedef FILE *(*cstl_fopen_fn)( char *filename, const char *mode);
+
+typedef FILE *(*cstl_fopen_fn)(char *filename, const char *mode);
+
 typedef void (*cstl_fclose_fn)(FILE *fp);
+
 typedef char *(*cstl_getline_fn)(FILE *fp);
+
 typedef char *(*cstl_fread_all_fn)(FILE *fp);
+
 typedef char *(*cstl_readall_fn)(FILE *fp, size_type64 *outsize);
+
 typedef FILE * (*cstl_fwrite_all_fn)(FILE *fp, const char *buf);
+
 typedef struct FSTREAM {
     cstl_fopen_fn open;
     cstl_fclose_fn close;
@@ -6661,6 +7060,7 @@ typedef struct FSTREAM {
     cstl_fread_all_fn read;
     cstl_fwrite_all_fn write;
 } FSTREAM;
+
 FSTREAM file = {
     __cstl_fopen,
     __cstl_fclose,
@@ -6697,6 +7097,7 @@ static bool __cstl_is_sep(char c) {
     return c == '/';
 #endif
 }
+
 static bool __cstl_exists(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     DWORD attrs = GetFileAttributesA(path);
@@ -6706,6 +7107,7 @@ static bool __cstl_exists(char *path) {
     return stat(path, &st) == 0;
 #endif
 }
+
 static char *__cstl_join(char *path1, char *path2) {
     if (!path1) { path1 = ""; }
     if (!path2) { path2 = ""; }
@@ -6739,30 +7141,41 @@ static char *__cstl_join(char *path1, char *path2) {
     ret[pos + l2] = '\0';
     return ret;
 }
+
 static char *__cstl_basename(char *path) {
     size_type64 len = strlen(path);
     size_type64 start = 0;
-    { size_type64 i; for (i = 0; i < len; i++) {
-        if (__cstl_is_sep(path[i])) { start = i + 1; }
-    } }
+    {
+        size_type64 i;
+        for (i = 0; i < len; i++) {
+            if (__cstl_is_sep(path[i])) { start = i + 1; }
+        }
+    }
     size_type64 base_len = len - start;
     char *ret = (char *) malloc(base_len + 1);
     memcpy(ret, path + start, base_len);
     ret[base_len] = '\0';
     return ret;
 }
+
 static char **__cstl_splitext(char *path) {
     size_type64 len = strlen(path);
     size_type64 base_start = 0;
-    { size_type64 i; for (i = 0; i < len; i++) {
-        if (__cstl_is_sep(path[i])) { base_start = i + 1; }
-    } }
+    {
+        size_type64 i;
+        for (i = 0; i < len; i++) {
+            if (__cstl_is_sep(path[i])) { base_start = i + 1; }
+        }
+    }
     size_type64 nonleading = base_start;
     while (nonleading < len && path[nonleading] == '.') nonleading++;
     size_type64 dot_pos = (size_type64) -1;
-    { size_type64 i; for (i = nonleading; i < len; i++) {
-        if (path[i] == '.') { dot_pos = i; }
-    } }
+    {
+        size_type64 i;
+        for (i = nonleading; i < len; i++) {
+            if (path[i] == '.') { dot_pos = i; }
+        }
+    }
     size_type64 root_len = (dot_pos == (size_type64) -1) ? len : dot_pos;
     size_type64 ext_len = (dot_pos == (size_type64) -1) ? 0 : (len - dot_pos);
     size_type64 total = 2 * sizeof(char *) + root_len + 1 + ext_len + 1;
@@ -6776,6 +7189,7 @@ static char **__cstl_splitext(char *path) {
     ret[1] = buf + root_len + 1;
     return ret;
 }
+
 static size_type64 __cstl_getsize(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     WIN32_FILE_ATTRIBUTE_DATA attr;
@@ -6790,23 +7204,27 @@ static size_type64 __cstl_getsize(char *path) {
     return (size_type64) st.st_size;
 #endif
 }
+
 static void __cstl_makedirs(char *path) {
     size_type64 len = strlen(path);
     if (len == 0) { return; }
     char *tmp = (char *) malloc(len + 1);
     memcpy(tmp, path, len + 1);
-    { size_type64 i; for (i = 1; i < len; i++) {
-        if (__cstl_is_sep(tmp[i])) {
-            char save = tmp[i];
-            tmp[i] = '\0';
+    {
+        size_type64 i;
+        for (i = 1; i < len; i++) {
+            if (__cstl_is_sep(tmp[i])) {
+                char save = tmp[i];
+                tmp[i] = '\0';
 #if defined(OCSTL_OS_WINDOWS)
-            CreateDirectoryA(tmp, NULL);
+                CreateDirectoryA(tmp, NULL);
 #else
-            mkdir(tmp, 0755);
+                mkdir(tmp, 0755);
 #endif
-            tmp[i] = save;
+                tmp[i] = save;
+            }
         }
-    } }
+    }
 #if defined(OCSTL_OS_WINDOWS)
     CreateDirectoryA(tmp, NULL);
 #else
@@ -6814,6 +7232,7 @@ static void __cstl_makedirs(char *path) {
 #endif
     free(tmp);
 }
+
 static void __cstl_remove(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     DeleteFileA(path);
@@ -6821,15 +7240,20 @@ static void __cstl_remove(char *path) {
     unlink(path);
 #endif
 }
+
 static void __cstl_rename(char *oldpath, char *newpath) {
     rename(oldpath, newpath);
 }
+
 static char *__cstl_dirname(char *path) {
     size_type64 len = strlen(path);
     size_type64 last_sep = (size_type64) -1;
-    { size_type64 i; for (i = 0; i < len; i++) {
-        if (__cstl_is_sep(path[i])) { last_sep = i; }
-    } }
+    {
+        size_type64 i;
+        for (i = 0; i < len; i++) {
+            if (__cstl_is_sep(path[i])) { last_sep = i; }
+        }
+    }
     if (last_sep == (size_type64) -1) {
         char *ret = (char *) malloc(1);
         ret[0] = '\0';
@@ -6847,6 +7271,7 @@ static char *__cstl_dirname(char *path) {
     ret[dir_len] = '\0';
     return ret;
 }
+
 static char *__cstl_abspath(char *path) {
     if (!path) { path = ""; }
 #if defined(OCSTL_OS_WINDOWS)
@@ -6883,6 +7308,7 @@ static char *__cstl_abspath(char *path) {
     return __cstl_join(cwd, path);
 #endif
 }
+
 static bool __cstl_is_dir(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     DWORD a = GetFileAttributesA(path);
@@ -6893,6 +7319,7 @@ static bool __cstl_is_dir(char *path) {
     return S_ISDIR(st.st_mode);
 #endif
 }
+
 static bool __cstl_is_file(char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     DWORD a = GetFileAttributesA(path);
@@ -6903,18 +7330,31 @@ static bool __cstl_is_file(char *path) {
     return S_ISREG(st.st_mode);
 #endif
 }
+
 typedef bool (*cstl_exists_fn)(char *path);
+
 typedef char *(*cstl_join_fn)(char *path1, char *path2);
+
 typedef char *(*cstl_basename_fn)(char *path);
+
 typedef char **(*cstl_splitext_fn)(char *path);
+
 typedef size_type64 (*cstl_getsize_fn)(char *path);
+
 typedef void (*cstl_makedirs_fn)(char *path);
+
 typedef void (*cstl_remove_fn)(char *path);
+
 typedef void (*cstl_rename_fn)(char *oldpath, char *newpath);
+
 typedef char *(*cstl_dirname_fn)(char *path);
+
 typedef char *(*cstl_abspath_fn)(char *path);
+
 typedef bool (*cstl_is_dir_fn)(char *path);
+
 typedef bool (*cstl_is_file_fn)(char *path);
+
 typedef struct {
     cstl_exists_fn exists;
     cstl_join_fn join;
@@ -6929,6 +7369,7 @@ typedef struct {
     cstl_is_dir_fn is_dir;
     cstl_is_file_fn is_file;
 } FileSystem;
+
 static FileSystem fs = {
     __cstl_exists,
     __cstl_join,
@@ -6956,29 +7397,33 @@ static FileSystem fs = {
 #define _OPENCSTL_ISORT_H
 #include <stdlib.h>
 #include <string.h>
+
 static void isort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
     char *arr = (char *) base;
     char sbuf[1024];
     char *tmp = (width <= sizeof(sbuf)) ? sbuf : (char *) malloc(width);
-    { size_type64 i; for (i = 1; i < number; i++) {
-        memcpy(tmp, arr + i * width, width);
-        size_type64 lo = 0, hi = i;
-        while (lo < hi) {
-            size_type64 mid = lo + ((hi - lo) >> 1);
-            if (compare(tmp, arr + mid * width) < 0) { hi = mid; }
-            else { lo = mid + 1; }
+    {
+        size_type64 i;
+        for (i = 1; i < number; i++) {
+            memcpy(tmp, arr + i * width, width);
+            size_type64 lo = 0, hi = i;
+            while (lo < hi) {
+                size_type64 mid = lo + ((hi - lo) >> 1);
+                if (compare(tmp, arr + mid * width) < 0) { hi = mid; } else { lo = mid + 1; }
+            }
+            if (lo < i) {
+                memmove(arr + (lo + 1) * width, arr + lo * width, (i - lo) * width);
+                memcpy(arr + lo * width, tmp, width);
+            }
         }
-        if (lo < i) {
-            memmove(arr + (lo + 1) * width, arr + lo * width, (i - lo) * width);
-            memcpy(arr + lo * width, tmp, width);
-        }
-    } }
+    }
     if (tmp != sbuf) {
         free(tmp);
     }
 }
 #endif
 #define MSORT_ISORT_THRESH 32
+
 static void msort_merge(char *arr, size_type64 len1, size_type64 len2, size_type64 sz,
                         CSTL_COMPARE cmp, char *buf) {
     if (cmp(arr + (len1 - 1) * sz, arr + len1 * sz) <= 0) { return; }
@@ -7018,25 +7463,35 @@ static void msort_merge(char *arr, size_type64 len1, size_type64 len2, size_type
         }
     }
 }
+
 static void msort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
     if (number < 2) { return; }
     char *arr = (char *) base;
     size_type64 sz = width;
-    { size_type64 i; for (i = 0; i < number; i += MSORT_ISORT_THRESH) {
-        size_type64 blk = number - i;
-        if (blk > MSORT_ISORT_THRESH) { blk = MSORT_ISORT_THRESH; }
-        isort(arr + i * sz, blk, sz, compare);
-    } }
+    {
+        size_type64 i;
+        for (i = 0; i < number; i += MSORT_ISORT_THRESH) {
+            size_type64 blk = number - i;
+            if (blk > MSORT_ISORT_THRESH) { blk = MSORT_ISORT_THRESH; }
+            isort(arr + i * sz, blk, sz, compare);
+        }
+    }
     char *buf = (char *) calloc(((number + 1) / 2), sz);
     if (!buf) { return; }
-    { size_type64 mb; for (mb = MSORT_ISORT_THRESH; mb < number; mb *= 2) {
-        { size_type64 i; for (i = 0; i + mb < number; i += 2 * mb) {
-            size_type64 len1 = mb;
-            size_type64 len2 = number - i - mb;
-            if (len2 > mb) { len2 = mb; }
-            msort_merge(arr + i * sz, len1, len2, sz, compare, buf);
-        } }
-    } }
+    {
+        size_type64 mb;
+        for (mb = MSORT_ISORT_THRESH; mb < number; mb *= 2) {
+            {
+                size_type64 i;
+                for (i = 0; i + mb < number; i += 2 * mb) {
+                    size_type64 len1 = mb;
+                    size_type64 len2 = number - i - mb;
+                    if (len2 > mb) { len2 = mb; }
+                    msort_merge(arr + i * sz, len1, len2, sz, compare, buf);
+                }
+            }
+        }
+    }
     free(buf);
 }
 #endif
@@ -7047,10 +7502,12 @@ static void msort(void *base, size_type64 number, size_type64 width, CSTL_COMPAR
 #define TS_MIN_MERGE   32
 #define TS_MIN_GALLOP   7
 #define TS_MAX_STACK   85
+
 struct ts_run {
     size_type64 base;
     size_type64 len;
 };
+
 static inline size_type64 ts_minrun(size_type64 n) {
     size_type64 r = 0;
     while (n >= TS_MIN_MERGE) {
@@ -7059,29 +7516,33 @@ static inline size_type64 ts_minrun(size_type64 n) {
     }
     return n + r;
 }
+
 static void ts_binsort(char *arr, size_type64 lo, size_type64 hi, size_type64 start,
                        size_type64 sz, CSTL_COMPARE cmp) {
     char sbuf[1024];
     char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
-    { size_type64 i; for (i = start; i < hi; i++) {
-        memcpy(tmp, arr + i * sz, sz);
-        size_type64 left = lo, right = i;
-        while (left < right) {
-            size_type64 mid = left + ((right - left) >> 1);
-            if (cmp(tmp, arr + mid * sz) < 0) { right = mid; }
-            else { left = mid + 1; }
+    {
+        size_type64 i;
+        for (i = start; i < hi; i++) {
+            memcpy(tmp, arr + i * sz, sz);
+            size_type64 left = lo, right = i;
+            while (left < right) {
+                size_type64 mid = left + ((right - left) >> 1);
+                if (cmp(tmp, arr + mid * sz) < 0) { right = mid; } else { left = mid + 1; }
+            }
+            if (left < i) {
+                memmove(arr + (left + 1) * sz, arr + left * sz, (i - left) * sz);
+                memcpy(arr + left * sz, tmp, sz);
+            }
         }
-        if (left < i) {
-            memmove(arr + (left + 1) * sz, arr + left * sz, (i - left) * sz);
-            memcpy(arr + left * sz, tmp, sz);
-        }
-    } }
+    }
     if (tmp != sbuf) {
         free(tmp);
     }
 }
+
 static size_type64 ts_count_run(char *arr, size_type64 lo, size_type64 hi,
-                           size_type64 sz, CSTL_COMPARE cmp) {
+                                size_type64 sz, CSTL_COMPARE cmp) {
     if (hi - lo < 2) { return hi - lo; }
     size_type64 run_hi = lo + 1;
     if (cmp(arr + run_hi * sz, arr + lo * sz) < 0) {
@@ -7110,8 +7571,9 @@ static size_type64 ts_count_run(char *arr, size_type64 lo, size_type64 hi,
     }
     return run_hi - lo;
 }
+
 static size_type64 ts_gallop_right(const char *key, const char *a, size_type64 n,
-                              size_type64 sz, CSTL_COMPARE cmp) {
+                                   size_type64 sz, CSTL_COMPARE cmp) {
     if (n == 0 || cmp(key, a) < 0) { return 0; }
     size_type64 last = 0, ofs = 1;
     while (ofs < n && cmp(key, a + ofs * sz) >= 0) {
@@ -7122,13 +7584,13 @@ static size_type64 ts_gallop_right(const char *key, const char *a, size_type64 n
     size_type64 lo = last + 1, hi = ofs;
     while (lo < hi) {
         size_type64 m = lo + ((hi - lo) >> 1);
-        if (cmp(key, a + m * sz) >= 0) { lo = m + 1; }
-        else { hi = m; }
+        if (cmp(key, a + m * sz) >= 0) { lo = m + 1; } else { hi = m; }
     }
     return lo;
 }
+
 static size_type64 ts_gallop_left(const char *key, const char *a, size_type64 n,
-                             size_type64 sz, CSTL_COMPARE cmp) {
+                                  size_type64 sz, CSTL_COMPARE cmp) {
     if (n == 0 || cmp(key, a) <= 0) { return 0; }
     size_type64 last = 0, ofs = 1;
     while (ofs < n && cmp(key, a + ofs * sz) > 0) {
@@ -7139,11 +7601,11 @@ static size_type64 ts_gallop_left(const char *key, const char *a, size_type64 n,
     size_type64 lo = last + 1, hi = ofs;
     while (lo < hi) {
         size_type64 m = lo + ((hi - lo) >> 1);
-        if (cmp(key, a + m * sz) > 0) { lo = m + 1; }
-        else { hi = m; }
+        if (cmp(key, a + m * sz) > 0) { lo = m + 1; } else { hi = m; }
     }
     return lo;
 }
+
 static void ts_merge_lo(char *base, size_type64 len1, size_type64 len2,
                         size_type64 sz, CSTL_COMPARE cmp, char *buf) {
     memcpy(buf, base, len1 * sz);
@@ -7202,6 +7664,7 @@ tail_lo:
         memcpy(d, c1, (size_type64) (e1 - c1));
     }
 }
+
 static void ts_merge_hi(char *base, size_type64 len1, size_type64 len2,
                         size_type64 sz, CSTL_COMPARE cmp, char *buf) {
     memcpy(buf, base + len1 * sz, len2 * sz);
@@ -7221,6 +7684,7 @@ static void ts_merge_hi(char *base, size_type64 len1, size_type64 len2,
         memcpy(base, buf, j * sz);
     }
 }
+
 static inline void ts_do_merge(char *arr, size_type64 base1, size_type64 len1,
                                size_type64 len2, size_type64 sz, CSTL_COMPARE cmp,
                                char *buf) {
@@ -7228,11 +7692,11 @@ static inline void ts_do_merge(char *arr, size_type64 base1, size_type64 len1,
     if (cmp(arr + (mid - 1) * sz, arr + mid * sz) <= 0) { return; }
     if (len1 <= len2) {
         ts_merge_lo(arr + base1 * sz, len1, len2, sz, cmp, buf);
-    }
-    else {
+    } else {
         ts_merge_hi(arr + base1 * sz, len1, len2, sz, cmp, buf);
     }
 }
+
 static void ts_merge_collapse(char *arr, struct ts_run *stk, size_type64 *sp,
                               size_type64 sz, CSTL_COMPARE cmp, char *buf) {
     while (*sp > 1) {
@@ -7248,11 +7712,15 @@ static void ts_merge_collapse(char *arr, struct ts_run *stk, size_type64 *sp,
         ts_do_merge(arr, stk[n].base, stk[n].len, stk[n + 1].len,
                     sz, cmp, buf);
         stk[n].len += stk[n + 1].len;
-        { size_type64 i; for (i = n + 1; i + 1 < *sp; i++)
-            stk[i] = stk[i + 1]; }
+        {
+            size_type64 i;
+            for (i = n + 1; i + 1 < *sp; i++)
+                stk[i] = stk[i + 1];
+        }
         (*sp)--;
     }
 }
+
 static void ts_merge_force(char *arr, struct ts_run *stk, size_type64 *sp,
                            size_type64 sz, CSTL_COMPARE cmp, char *buf) {
     while (*sp > 1) {
@@ -7261,11 +7729,15 @@ static void ts_merge_force(char *arr, struct ts_run *stk, size_type64 *sp,
         ts_do_merge(arr, stk[n].base, stk[n].len, stk[n + 1].len,
                     sz, cmp, buf);
         stk[n].len += stk[n + 1].len;
-        { size_type64 i; for (i = n + 1; i + 1 < *sp; i++)
-            stk[i] = stk[i + 1]; }
+        {
+            size_type64 i;
+            for (i = n + 1; i + 1 < *sp; i++)
+                stk[i] = stk[i + 1];
+        }
         (*sp)--;
     }
 }
+
 static void tsort(void *base, const size_type64 number, const size_type64 width, CSTL_COMPARE cmp) {
     if (number < 2) { return; }
     char *arr = (char *) base;
@@ -7319,7 +7791,7 @@ static void tsort(void *base, const size_type64 number, const size_type64 width,
 #define PDQ_LIKELY(x)   __builtin_expect(!!(x), 1)
 #define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
 #endif
-static  void pdq__swap(unsigned char *a, unsigned char *b, size_type64 n) {
+static void pdq__swap(unsigned char *a, unsigned char *b, size_type64 n) {
     if (PDQ_LIKELY(n == 8)) {
         uint64_t t;
         memcpy(&t, a, 8);
@@ -7332,14 +7804,19 @@ static  void pdq__swap(unsigned char *a, unsigned char *b, size_type64 n) {
         memcpy(b, &t, 4);
     } else {
         unsigned char t;
-        { size_type64 i; for (i = 0; i < n; ++i) {
-            t = a[i];
-            a[i] = b[i];
-            b[i] = t;
-        } }
+        {
+            size_type64 i;
+            for (i = 0; i < n; ++i) {
+                t = a[i];
+                a[i] = b[i];
+                b[i] = t;
+            }
+        }
     }
 }
+
 #define PDQ_ELEM(base, i) ((base) + (i) * sz)
+
 static inline size_type64 pdq_log2(size_type64 n) {
     size_type64 r = 0;
     while (n > 1) {
@@ -7348,57 +7825,73 @@ static inline size_type64 pdq_log2(size_type64 n) {
     }
     return r;
 }
+
 static void pdq_isort(unsigned char *base, size_type64 n, size_type64 sz,
                       int (*cmp)(const void *, const void *), unsigned char *tmp) {
     if (n < 2) { return; }
-    { size_type64 i; for (i = 1; i < n; ++i)
-        if (cmp(PDQ_ELEM(base, i), base) < 0) {
-            pdq__swap(PDQ_ELEM(base, i), base, sz); }
+    {
+        size_type64 i;
+        for (i = 1; i < n; ++i)
+            if (cmp(PDQ_ELEM(base, i), base) < 0) {
+                pdq__swap(PDQ_ELEM(base, i), base, sz);
+            }
+    }
+    {
+        size_type64 i;
+        for (i = 2; i < n; ++i) {
+            unsigned char *c = PDQ_ELEM(base, i);
+            if (cmp(c - sz, c) <= 0) { continue; }
+            memcpy(tmp, c, sz);
+            unsigned char *j = c;
+            do {
+                memcpy(j, j - sz, sz);
+                j -= sz;
+            } while (cmp(j - sz, tmp) > 0);
+            memcpy(j, tmp, sz);
         }
-    { size_type64 i; for (i = 2; i < n; ++i) {
-        unsigned char *c = PDQ_ELEM(base, i);
-        if (cmp(c - sz, c) <= 0) { continue; }
-        memcpy(tmp, c, sz);
-        unsigned char *j = c;
-        do {
-            memcpy(j, j - sz, sz);
-            j -= sz;
-        } while (cmp(j - sz, tmp) > 0);
-        memcpy(j, tmp, sz);
-    } }
+    }
 }
+
 static void pdq_isort_unguard(unsigned char *base, size_type64 n, size_type64 sz,
                               int (*cmp)(const void *, const void *), unsigned char *tmp) {
-    { size_type64 i; for (i = 1; i < n; ++i) {
-        unsigned char *c = PDQ_ELEM(base, i);
-        if (cmp(c - sz, c) <= 0) { continue; }
-        memcpy(tmp, c, sz);
-        unsigned char *j = c;
-        do {
-            memcpy(j, j - sz, sz);
-            j -= sz;
-        } while (j > base && cmp(j - sz, tmp) > 0);
-        memcpy(j, tmp, sz);
-    } }
+    {
+        size_type64 i;
+        for (i = 1; i < n; ++i) {
+            unsigned char *c = PDQ_ELEM(base, i);
+            if (cmp(c - sz, c) <= 0) { continue; }
+            memcpy(tmp, c, sz);
+            unsigned char *j = c;
+            do {
+                memcpy(j, j - sz, sz);
+                j -= sz;
+            } while (j > base && cmp(j - sz, tmp) > 0);
+            memcpy(j, tmp, sz);
+        }
+    }
 }
+
 static int pdq_partial_isort(unsigned char *base, size_type64 n, size_type64 sz,
                              int (*cmp)(const void *, const void *), unsigned char *tmp) {
     if (n < 2) { return 1; }
     size_type64 cnt = 0;
-    { size_type64 i; for (i = 1; i < n; ++i) {
-        unsigned char *c = PDQ_ELEM(base, i);
-        if (cmp(c - sz, c) <= 0) { continue; }
-        memcpy(tmp, c, sz);
-        unsigned char *j = c;
-        do {
-            memcpy(j, j - sz, sz);
-            j -= sz;
-            if (++cnt > PDQ_PARTIAL_LIMIT) { return 0; }
-        } while (j > base && cmp(j - sz, tmp) > 0);
-        memcpy(j, tmp, sz);
-    } }
+    {
+        size_type64 i;
+        for (i = 1; i < n; ++i) {
+            unsigned char *c = PDQ_ELEM(base, i);
+            if (cmp(c - sz, c) <= 0) { continue; }
+            memcpy(tmp, c, sz);
+            unsigned char *j = c;
+            do {
+                memcpy(j, j - sz, sz);
+                j -= sz;
+                if (++cnt > PDQ_PARTIAL_LIMIT) { return 0; }
+            } while (j > base && cmp(j - sz, tmp) > 0);
+            memcpy(j, tmp, sz);
+        }
+    }
     return 1;
 }
+
 static inline int pdq_s2(unsigned char *base, size_type64 a, size_type64 b,
                          size_type64 sz, int (*cmp)(const void *, const void *)) {
     if (cmp(PDQ_ELEM(base, b), PDQ_ELEM(base, a)) < 0) {
@@ -7407,6 +7900,7 @@ static inline int pdq_s2(unsigned char *base, size_type64 a, size_type64 b,
     }
     return 0;
 }
+
 static inline int pdq_s3(unsigned char *base, size_type64 a, size_type64 b, size_type64 c,
                          size_type64 sz, int (*cmp)(const void *, const void *)) {
     int s = pdq_s2(base, a, b, sz, cmp);
@@ -7414,6 +7908,7 @@ static inline int pdq_s3(unsigned char *base, size_type64 a, size_type64 b, size
     s += pdq_s2(base, a, b, sz, cmp);
     return s;
 }
+
 static int pdq_pick_pivot(unsigned char *base, size_type64 n, size_type64 sz,
                           int (*cmp)(const void *, const void *)) {
     size_type64 mid = n >> 1;
@@ -7430,6 +7925,7 @@ static int pdq_pick_pivot(unsigned char *base, size_type64 n, size_type64 sz,
     pdq__swap(base, PDQ_ELEM(base, mid), sz);
     return sw;
 }
+
 static void pdq_sift(unsigned char *base, size_type64 root, size_type64 n,
                      size_type64 sz, int (*cmp)(const void *, const void *)) {
     for (;;) {
@@ -7445,14 +7941,22 @@ static void pdq_sift(unsigned char *base, size_type64 root, size_type64 n,
         root = mx;
     }
 }
+
 static void pdq_heap(unsigned char *base, size_type64 n, size_type64 sz, int (*cmp)(const void *, const void *)) {
     if (n < 2) { return; }
-    { size_type64 i; for (i = n / 2; i-- > 0; ) pdq_sift(base, i, n, sz, cmp); }
-    { size_type64 e; for (e = n; e-- > 1; ) {
-        pdq__swap(base, PDQ_ELEM(base, e), sz);
-        pdq_sift(base, 0, e, sz, cmp);
-    } }
+    {
+        size_type64 i;
+        for (i = n / 2; i-- > 0;) pdq_sift(base, i, n, sz, cmp);
+    }
+    {
+        size_type64 e;
+        for (e = n; e-- > 1;) {
+            pdq__swap(base, PDQ_ELEM(base, e), sz);
+            pdq_sift(base, 0, e, sz, cmp);
+        }
+    }
 }
+
 static inline uint64_t pdq_rng(uint64_t *s) {
     uint64_t x = *s;
     x ^= x << 13;
@@ -7460,6 +7964,7 @@ static inline uint64_t pdq_rng(uint64_t *s) {
     x ^= x << 17;
     return (*s = x);
 }
+
 static void pdq_break(unsigned char *base, size_type64 n, size_type64 sz, uint64_t *rs) {
     if (n < 8) { return; }
     size_type64 h = n >> 1, q = n >> 2;
@@ -7467,9 +7972,10 @@ static void pdq_break(unsigned char *base, size_type64 n, size_type64 sz, uint64
     pdq__swap(PDQ_ELEM(base, h), PDQ_ELEM(base, q + pdq_rng(rs) % (h?h:1)), sz);
     pdq__swap(PDQ_ELEM(base, q + h), PDQ_ELEM(base, q + pdq_rng(rs) % (h?h:1)), sz);
 }
+
 static inline size_type64 pdq_part_r(unsigned char *base, size_type64 n, size_type64 sz,
-                                int (*cmp)(const void *, const void *), unsigned char *piv,
-                                int *ap) {
+                                     int (*cmp)(const void *, const void *), unsigned char *piv,
+                                     int *ap) {
     unsigned char *lo = base + sz;
     unsigned char *hi = base + (n - 1) * sz;
     while (lo <= hi && cmp(lo, piv) < 0) lo += sz;
@@ -7490,8 +7996,9 @@ static inline size_type64 pdq_part_r(unsigned char *base, size_type64 n, size_ty
     *ap = was_partitioned;
     return (size_type64) (pp - base) / sz;
 }
+
 static inline size_type64 pdq_part_l(unsigned char *base, size_type64 n, size_type64 sz,
-                                int (*cmp)(const void *, const void *), unsigned char *piv) {
+                                     int (*cmp)(const void *, const void *), unsigned char *piv) {
     memcpy(piv, base, sz);
     unsigned char *lo = base + sz;
     unsigned char *hi = base + (n - 1) * sz;
@@ -7510,6 +8017,7 @@ static inline size_type64 pdq_part_l(unsigned char *base, size_type64 n, size_ty
     memcpy(hi, piv, sz);
     return (size_type64) (hi - base) / sz;
 }
+
 static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE cmp) {
     if (!base || !cmp || width == 0 || number < 2) { return; }
     const size_type64 sz = width;
@@ -7545,8 +8053,7 @@ static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMP
         if (n <= PDQ_ISORT_THRESH) {
             if (leftmost) {
                 pdq_isort(base, n, sz, cmp, tmp);
-            }
-            else {
+            } else {
                 pdq_isort_unguard(base, n, sz, cmp, tmp);
             }
             continue;
@@ -7618,6 +8125,7 @@ static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMP
 #include<string.h>
 #ifdef __cplusplus
 extern "C" {
+
 #endif
 #if defined(OCSTL_OS_WINDOWS)
 #include<windows.h>
@@ -7639,7 +8147,9 @@ typedef DWORD pthread_key_t;
 typedef struct _pthread_cleanup_stack {
 #define _PTHREAD_CLEANUP_STACK_MAX 128
     HANDLE thread;
+
     void (*routine[_PTHREAD_CLEANUP_STACK_MAX])(void *);
+
     void *arg[_PTHREAD_CLEANUP_STACK_MAX];
     size_type64 index;
     struct _pthread_cleanup_stack *next;
@@ -7665,8 +8175,8 @@ static void pthread_exit(void *value_ptr) {
         _pthread_cleanup_stack *tmp = *head;
         int b = (*head)->thread == thread;
         if (b) { *head = (*head)->next; }
-        if (*head) {head = &(*head)->next; }
-        if (b) {rts = tmp; }
+        if (*head) { head = &(*head)->next; }
+        if (b) { rts = tmp; }
     }
     if (rts) {
         while (rts->index--) {
@@ -7817,6 +8327,7 @@ struct ps_args {
     CSTL_COMPARE cmp;
     int depth;
 };
+
 static void ps_merge(char *base, char *buf, size_type64 n1, size_type64 n2,
                      size_type64 sz, CSTL_COMPARE cmp) {
     char *l = base;
@@ -7842,6 +8353,7 @@ static void ps_merge(char *base, char *buf, size_type64 n1, size_type64 n2,
     }
     memcpy(base, buf, (n1 + n2) * sz);
 }
+
 static void *ps_run(void *p) {
     struct ps_args *a = (struct ps_args *) p;
     if (a->n < 2) { return NULL; }
@@ -7865,6 +8377,7 @@ static void *ps_run(void *p) {
     ps_merge(a->base, a->buf, mid, a->n - mid, a->sz, a->cmp);
     return NULL;
 }
+
 static void pmsort(void *base, const size_type64 number, const size_type64 width, CSTL_COMPARE cmp) {
     if (number < 2) { return; }
     if (number <= PS_SEQ_CUTOFF) {
@@ -7888,61 +8401,61 @@ static void pmsort(void *base, const size_type64 number, const size_type64 width
 #ifndef HG_D7646DD772B09DF3EE2DCC0297DBFB1B7FD25970A91191BCE38ED4816C2801D7_H
 #define HG_D7646DD772B09DF3EE2DCC0297DBFB1B7FD25970A91191BCE38ED4816C2801D7_H
 #if defined(OCSTL_OS_MACOS)
-    #if     defined(OCSTL_CC_CLANG)
-        #define     cstl_best_stable_sort msort
-        #define     cstl_unstable_sort pdqsort
-    #elif   defined(OCSTL_CC_GCC)
-        #define     cstl_best_stable_sort tsort
-        #define     cstl_unstable_sort pdqsort
-    #elif   defined(OCSTL_CC_TCC)
-        #define     cstl_best_stable_sort tsort
-        #define     cstl_unstable_sort qsort
-    #else
-        #define cstl_best_stable_sort msort
-         #define cstl_unstable_sort qsort
-    #endif
-#endif
-#if defined(OCSTL_OS_LINUX)
-    #if  defined(OCSTL_CC_CLANG)
-        #define cstl_best_stable_sort msort
-        #define cstl_unstable_sort pdqsort
-    #elif  defined(OCSTL_CC_GCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif  defined(OCSTL_CC_TCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort qsort
-    #elif defined(OCSTL_CC_NVCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #else
-        #define cstl_best_stable_sort msort
-        #define cstl_unstable_sort qsort
-    #endif
-#endif
-#if defined(OCSTL_OS_WINDOWS)
-    #if defined(OCSTL_CC_CLANG)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_GCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_TCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_MSVC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_NVCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_POCC)
-        #define cstl_best_stable_sort msort
-        #define cstl_unstable_sort qsort
-    #else
+#if     defined(OCSTL_CC_CLANG)
+#define     cstl_best_stable_sort msort
+#define     cstl_unstable_sort pdqsort
+#elif   defined(OCSTL_CC_GCC)
+#define     cstl_best_stable_sort tsort
+#define     cstl_unstable_sort pdqsort
+#elif   defined(OCSTL_CC_TCC)
+#define     cstl_best_stable_sort tsort
+#define     cstl_unstable_sort qsort
+#else
 #define cstl_best_stable_sort msort
 #define cstl_unstable_sort qsort
-    #endif
+#endif
+#endif
+#if defined(OCSTL_OS_LINUX)
+#if  defined(OCSTL_CC_CLANG)
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort pdqsort
+#elif  defined(OCSTL_CC_GCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif  defined(OCSTL_CC_TCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort qsort
+#elif defined(OCSTL_CC_NVCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#else
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort qsort
+#endif
+#endif
+#if defined(OCSTL_OS_WINDOWS)
+#if defined(OCSTL_CC_CLANG)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_GCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_TCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_MSVC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_NVCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_POCC)
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort qsort
+#else
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort qsort
+#endif
 #endif
 #endif
 #ifndef OPENCSTL_RSORT_H
@@ -7951,6 +8464,7 @@ static void pmsort(void *base, const size_type64 number, const size_type64 width
 #include <stddef.h>
 #include <stdint.h>
 #include <limits.h>
+
 static void rsort32(int32_t *__base, size_type64 n) {
     if (__base == NULL || n <= 1) {
         return;
@@ -7988,6 +8502,7 @@ static void rsort32(int32_t *__base, size_type64 n) {
     }
     free(tmp);
 }
+
 static void rsort64(int64_t *__base, size_type64 n) {
     if (__base == NULL || n <= 1) {
         return;
@@ -8025,6 +8540,7 @@ static void rsort64(int64_t *__base, size_type64 n) {
     }
     free(tmp);
 }
+
 #define RSORT_STATIC_TYPECHECK(base) \
     ((void)sizeof(char[(sizeof(*(base)) == 4 || sizeof(*(base)) == 8) ? 1 : -1]))
 #define rsort(base, n)                                                     \
@@ -8101,6 +8617,7 @@ OPENCSTL_FUNC void _cstl_sort(void *container, void *_cmp) {
         break;
     }
 }
+
 #define _CSTL_STABLE_SORT_EXPAND(x) x
 #define _cstl_stable_sort_func(...) _CSTL_STABLE_SORT_EXPAND(_CSTL_STABLE_SORT_DISPATCH(__VA_ARGS__, NULL, NULL))
 #define _CSTL_STABLE_SORT_DISPATCH(CONTAINER, FUNC, ...) _cstl_stable_sort(CONTAINER, (void*)(FUNC))
@@ -8228,12 +8745,15 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 fault("Compare function is NULL");
                 return 0;
             }
-            { size_type64 i; for (i = 1; i < length; i++) {
-                if (cmp((char *) container + (i - 1) * type_size,
-                        (char *) container + i * type_size) > 0) {
-                    return 0;
+            {
+                size_type64 i;
+                for (i = 1; i < length; i++) {
+                    if (cmp((char *) container + (i - 1) * type_size,
+                            (char *) container + i * type_size) > 0) {
+                        return 0;
+                    }
                 }
-            } }
+            }
             return 1;
         }
         break;
@@ -8285,12 +8805,15 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 return 0;
                 return 0;
             }
-            { size_type64 i; for (i = 1; i < length; i++) {
-                if (cmp((char *) container + (i - 1) * type_size,
-                        (char *) container + i * type_size) > 0) {
-                    return 0;
+            {
+                size_type64 i;
+                for (i = 1; i < length; i++) {
+                    if (cmp((char *) container + (i - 1) * type_size,
+                            (char *) container + i * type_size) > 0) {
+                        return 0;
+                    }
                 }
-            } }
+            }
             return 1;
         }
         break;
@@ -8307,10 +8830,12 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
 #endif
 #if !defined(HG_3282159A01880257F6A4E53AEC354ACB6F7CF5BC34243136D0AE684B74FB1426_H)
 #define HG_3282159A01880257F6A4E53AEC354ACB6F7CF5BC34243136D0AE684B74FB1426_H
+
 static char *opencstl_version(void) {
     static char *OPENCSTL_VERSION = "v1.3.4";
     return OPENCSTL_VERSION;
 }
+
 static char *opencstl_env(void) {
     static char __opencstl_env_str[512] = {0};
     snprintf(__opencstl_env_str, sizeof(__opencstl_env_str),
@@ -8320,6 +8845,7 @@ static char *opencstl_env(void) {
 #endif
 #if !defined(HG_9DA4009D62E5E7D106F7626FEFBC314CAB0144090E5B2F58B01682E31C54BC1A_H)
 #define HG_9DA4009D62E5E7D106F7626FEFBC314CAB0144090E5B2F58B01682E31C54BC1A_H
+
 static inline int __popcnt_sw(int v) {
     v = (v & 0x55555555) + ((v >> 1) & 0x55555555);
     v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
@@ -8328,6 +8854,7 @@ static inline int __popcnt_sw(int v) {
     v = (v & 0x0000ffff) + ((v >> 16) & 0x0000ffff);
     return v;
 }
+
 static inline int __popcnt64_sw(long long v) {
     v = (v & 0x5555555555555555LL) + ((v >> 1) & 0x5555555555555555LL);
     v = (v & 0x3333333333333333LL) + ((v >> 2) & 0x3333333333333333LL);
@@ -8362,16 +8889,20 @@ static inline int __popcnt64_sw(long long v) {
 #endif
 #endif
 #define __BASE_SIZE 8
+
 static inline size_type __cstl_bitset_capacity(size_type size) {
     size_type cap = (size + 7) / 8;
     return cap < __BASE_SIZE ? __BASE_SIZE : cap;
 }
+
 typedef struct {
     size_type nbits;
     ubyte_x *bits;
     char *str;
 } BITSET;
+
 #define new_bitset(N) __cstl_bitset(N)
+
 static BITSET __cstl_bitset(size_type n) {
     size_type cap = __cstl_bitset_capacity(n);
     BITSET b;
@@ -8389,13 +8920,21 @@ static BITSET __cstl_bitset(size_type n) {
     }
     return b;
 }
+
 typedef void (*bitset_fn1)(BITSET b);
+
 typedef void (*bitset_fn2)(BITSET b, size_type idx, bool val);
+
 typedef size_type (*bitset_fn3)(BITSET b);
+
 typedef bool (*bitset_fn4)(BITSET b);
+
 typedef void (*bitset_fn5)(BITSET b, size_type idx);
+
 typedef bool (*bitset_fn6)(BITSET b, size_type idx);
+
 typedef char * (*bitset_fn7)(BITSET b);
+
 static void __cstl_bitset_set(BITSET b) {
     size_type cap = __cstl_bitset_capacity(b.nbits);
     memset(b.bits, 0xFF, cap);
@@ -8404,10 +8943,12 @@ static void __cstl_bitset_set(BITSET b) {
         b.bits[b.nbits / 8] &= (ubyte_x) ((1 << rem) - 1);
     }
 }
+
 static void __cstl_bitset_reset(BITSET b) {
     size_type cap = __cstl_bitset_capacity(b.nbits);
     memset(b.bits, 0, cap);
 }
+
 static void __cstl_bitset_set_at(BITSET b, size_type idx, bool val) {
     size_type byte_idx = idx / 8;
     size_type bit_idx = idx % 8;
@@ -8417,6 +8958,7 @@ static void __cstl_bitset_set_at(BITSET b, size_type idx, bool val) {
         b.bits[byte_idx] &= (ubyte_x) ~(1 << bit_idx);
     }
 }
+
 static size_type __cstl_bitset_count(BITSET b) {
     size_type cap = __cstl_bitset_capacity(b.nbits);
     size_type64 count = 0;
@@ -8436,6 +8978,7 @@ static size_type __cstl_bitset_count(BITSET b) {
     }
     return (size_type) count;
 }
+
 static bool __cstl_bitset_all(BITSET b) {
     if (b.nbits == 0) { return true; }
     size_type full_bytes = b.nbits / 8;
@@ -8452,6 +8995,7 @@ static bool __cstl_bitset_all(BITSET b) {
     }
     return true;
 }
+
 static bool __cstl_bitset_any(BITSET b) {
     if (b.nbits == 0) { return false; }
     size_type full_bytes = b.nbits / 8;
@@ -8468,9 +9012,11 @@ static bool __cstl_bitset_any(BITSET b) {
     }
     return false;
 }
+
 static bool __cstl_bitset_none(BITSET b) {
     return !__cstl_bitset_any(b);
 }
+
 static void __cstl_bitset_flip(BITSET b) {
     size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
@@ -8485,19 +9031,23 @@ static void __cstl_bitset_flip(BITSET b) {
         b.bits[full_bytes] ^= mask;
     }
 }
+
 static void __cstl_bitset_flip_at(BITSET b, size_type idx) {
     size_type byte_idx = idx / 8;
     size_type bit_idx = idx % 8;
     b.bits[byte_idx] ^= (ubyte_x) (1 << bit_idx);
 }
+
 static size_type __cstl_bitset_nbits(BITSET b) {
     return b.nbits;
 }
+
 static bool __cstl_bitset_test(BITSET b, size_type idx) {
     size_type byte_idx = idx / 8;
     size_type bit_idx = idx % 8;
     return (b.bits[byte_idx] >> bit_idx) & 1;
 }
+
 static char *__cstl_bitset_to_string(BITSET b) {
     {
         size_type i;
@@ -8509,11 +9059,13 @@ static char *__cstl_bitset_to_string(BITSET b) {
     b.str[b.nbits] = '\0';
     return b.str;
 }
+
 static void __cstl_bitset_free(BITSET b) {
     iveb_erase(iveb, b.bits);
     free(b.bits);
     free(b.str);
 }
+
 typedef struct {
     bitset_fn1 set;
     bitset_fn1 reset;
@@ -8528,6 +9080,7 @@ typedef struct {
     bitset_fn6 test;
     bitset_fn7 to_string;
 } __BITSET;
+
 static __BITSET bitset = {
     __cstl_bitset_set,
     __cstl_bitset_reset,
@@ -8549,12 +9102,14 @@ static __BITSET bitset = {
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
+
 static char *__cstl_string_substr(char *src, int pos, int len) {
     verify(strlen(src) >= pos + len);
     char *ret = (char *) calloc(len + 1, sizeof(char));
     memcpy(ret, src + pos, len);
     return ret;
 }
+
 static char **__cstl_string_split(const char *src, const char *sep, int *n) {
     int len = (int) strlen(src);
     int sep_len = (int) strlen(sep);
@@ -8586,10 +9141,11 @@ static char **__cstl_string_split(const char *src, const char *sep, int *n) {
     *n = count;
     return ret;
 }
+
 static char *__cstl_string_replace(char *src, char *from, char *to) {
-    int len = (int)strlen(src);
-    int from_len = (int)strlen(from);
-    int to_len = (int)strlen(to);
+    int len = (int) strlen(src);
+    int from_len = (int) strlen(from);
+    int to_len = (int) strlen(to);
     int count = 0;
     char *p = src;
     while ((p = strstr(p, from)) != NULL) {
@@ -8611,6 +9167,7 @@ static char *__cstl_string_replace(char *src, char *from, char *to) {
     *dst = '\0';
     return ret;
 }
+
 static char *__cstl_string_ltrim(const char *src) {
     const char *p = src;
     while (*p && isspace((unsigned char) *p)) p++;
@@ -8619,6 +9176,7 @@ static char *__cstl_string_ltrim(const char *src) {
     memcpy(ret, p, len + 1);
     return ret;
 }
+
 static char *__cstl_string_rtrim(const char *src) {
     size_type64 len = strlen(src);
     while (len > 0 && isspace((unsigned char) src[len - 1])) len--;
@@ -8627,6 +9185,7 @@ static char *__cstl_string_rtrim(const char *src) {
     ret[len] = '\0';
     return ret;
 }
+
 static char *__cstl_string_trim(const char *src) {
     const char *begin = src;
     while (*begin && isspace((unsigned char) *begin)) begin++;
@@ -8638,30 +9197,41 @@ static char *__cstl_string_trim(const char *src) {
     ret[len] = '\0';
     return ret;
 }
+
 static char *__cstl_string_to_upper(const char *src) {
     size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
-    { size_type64 i; for (i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]); }
+    {
+        size_type64 i;
+        for (i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
+    }
     ret[len] = '\0';
     return ret;
 }
+
 static char *__cstl_string_to_lower(const char *src) {
     size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
-    { size_type64 i; for (i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]); }
+    {
+        size_type64 i;
+        for (i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
+    }
     ret[len] = '\0';
     return ret;
 }
+
 static bool __cstl_string_starts_with(const char *src, const char *prefix) {
     size_type64 plen = strlen(prefix);
     return strncmp(src, prefix, plen) == 0;
 }
+
 static bool __cstl_string_ends_with(const char *src, const char *suffix) {
     size_type64 slen = strlen(src);
     size_type64 flen = strlen(suffix);
     if (flen > slen) { return false; }
     return memcmp(src + slen - flen, suffix, flen) == 0;
 }
+
 static int __cstl_string_count(const char *src, const char *sub) {
     int count = 0;
     size_type64 sub_len = strlen(sub);
@@ -8673,6 +9243,7 @@ static int __cstl_string_count(const char *src, const char *sub) {
     }
     return count;
 }
+
 static char *__cstl_string_join(char **parts, int n, const char *delim) {
     if (n <= 0) {
         char *empty = (char *) malloc(1);
@@ -8681,22 +9252,29 @@ static char *__cstl_string_join(char **parts, int n, const char *delim) {
     }
     size_type64 dlen = strlen(delim);
     size_type64 total = 0;
-    { int i; for (i = 0; i < n; i++) total += strlen(parts[i]); }
+    {
+        int i;
+        for (i = 0; i < n; i++) total += strlen(parts[i]);
+    }
     total += dlen * (n - 1) + 1;
     char *ret = (char *) malloc(total);
     char *dst = ret;
-    { int i; for (i = 0; i < n; i++) {
-        if (i > 0) {
-            memcpy(dst, delim, dlen);
-            dst += dlen;
+    {
+        int i;
+        for (i = 0; i < n; i++) {
+            if (i > 0) {
+                memcpy(dst, delim, dlen);
+                dst += dlen;
+            }
+            size_type64 len = strlen(parts[i]);
+            memcpy(dst, parts[i], len);
+            dst += len;
         }
-        size_type64 len = strlen(parts[i]);
-        memcpy(dst, parts[i], len);
-        dst += len;
-    } }
+    }
     *dst = '\0';
     return ret;
 }
+
 static char *__cstl_string_concat(const char *a, const char *b) {
     size_type64 alen = strlen(a);
     size_type64 blen = strlen(b);
@@ -8705,37 +9283,58 @@ static char *__cstl_string_concat(const char *a, const char *b) {
     memcpy(ret + alen, b, blen + 1);
     return ret;
 }
+
 static char *__cstl_string_reverse(const char *src) {
     size_type64 len = strlen(src);
     char *ret = (char *) malloc(len + 1);
-    { size_type64 i; for (i = 0; i < len; i++) ret[i] = src[len - 1 - i]; }
+    {
+        size_type64 i;
+        for (i = 0; i < len; i++) ret[i] = src[len - 1 - i];
+    }
     ret[len] = '\0';
     return ret;
 }
+
 static bool __cstl_string_is_digit(const char *src) {
     if (!*src) { return false; }
-    { const char * p; for (p = src; *p; p++)
-        if (!isdigit((unsigned char) *p)) { return false; } }
+    {
+        const char *p;
+        for (p = src; *p; p++)
+            if (!isdigit((unsigned char) *p)) { return false; }
+    }
     return true;
 }
+
 static bool __cstl_string_is_alpha(const char *src) {
     if (!*src) { return false; }
-    { const char * p; for (p = src; *p; p++)
-        if (!isalpha((unsigned char) *p)) { return false; } }
+    {
+        const char *p;
+        for (p = src; *p; p++)
+            if (!isalpha((unsigned char) *p)) { return false; }
+    }
     return true;
 }
+
 static bool __cstl_string_is_alnum(const char *src) {
     if (!*src) { return false; }
-    { const char * p; for (p = src; *p; p++)
-        if (!isalnum((unsigned char) *p)) { return false; } }
+    {
+        const char *p;
+        for (p = src; *p; p++)
+            if (!isalnum((unsigned char) *p)) { return false; }
+    }
     return true;
 }
+
 static bool __cstl_string_is_space(const char *src) {
     if (!*src) { return false; }
-    { const char * p; for (p = src; *p; p++)
-        if (!isspace((unsigned char) *p)) { return false; } }
+    {
+        const char *p;
+        for (p = src; *p; p++)
+            if (!isspace((unsigned char) *p)) { return false; }
+    }
     return true;
 }
+
 static int *__cstl_string_kmp(char *src, char *pattern, int *count) {
     if (count != NULL) { *count = 0; }
     if (src == NULL || pattern == NULL || count == NULL) {
@@ -8810,16 +9409,27 @@ static int *__cstl_string_kmp(char *src, char *pattern, int *count) {
     int *result = (int *) realloc(matches, sizeof(int) * match_count);
     return (result != NULL) ? result : matches;
 }
+
 typedef char *(*string_substr_fn)(char *, int, int);
+
 typedef char **(*string_split_fn)(const char *, const char *, int *);
+
 typedef char *(*string_replace_fn)(char *, char *, char *);
+
 typedef char *(*string_unary_fn)(const char *);
+
 typedef bool (*string_match_fn)(const char *, const char *);
+
 typedef int (*string_count_fn)(const char *, const char *);
+
 typedef char *(*string_join_fn)(char **, int, const char *);
+
 typedef char *(*string_concat_fn)(const char *, const char *);
+
 typedef bool (*string_pred_fn)(const char *);
+
 typedef int * (*string_kmp_fn)(char *src, char *pattern, int *count);
+
 typedef struct {
     string_substr_fn substr;
     string_split_fn split;
@@ -8841,6 +9451,7 @@ typedef struct {
     string_pred_fn is_space;
     string_kmp_fn kmp;
 } __STRING;
+
 static __STRING string = {
     __cstl_string_substr,
     __cstl_string_split,
@@ -8885,6 +9496,7 @@ static bool __cstl_glob_is_sep(char c) {
     return c == '/';
 #endif
 }
+
 static bool __cstl_glob_exists_(const char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     return GetFileAttributesA(path) != INVALID_FILE_ATTRIBUTES;
@@ -8893,6 +9505,7 @@ static bool __cstl_glob_exists_(const char *path) {
     return stat(path, &st) == 0;
 #endif
 }
+
 static bool __cstl_glob_isdir_(const char *path) {
 #if defined(OCSTL_OS_WINDOWS)
     DWORD a = GetFileAttributesA(path);
@@ -8903,6 +9516,7 @@ static bool __cstl_glob_isdir_(const char *path) {
     return S_ISDIR(st.st_mode);
 #endif
 }
+
 static char *__cstl_glob_join_(const char *a, const char *b) {
     size_type64 la = strlen(a), lb = strlen(b);
     bool need_sep = la > 0 && !__cstl_glob_is_sep(a[la - 1]);
@@ -8916,6 +9530,7 @@ static char *__cstl_glob_join_(const char *a, const char *b) {
     r[pos + lb] = '\0';
     return r;
 }
+
 static char **__cstl_glob_listdir_(const char *path, int *n_out) {
     int cap = 16, cnt = 0;
     char **names = (char **) malloc(cap * sizeof(char *));
@@ -8964,6 +9579,7 @@ static char **__cstl_glob_listdir_(const char *path, int *n_out) {
     *n_out = cnt;
     return names;
 }
+
 static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
     while (*pat) {
         if (*pat == '*') {
@@ -9014,12 +9630,14 @@ static bool __cstl_glob_fnmatch_(const char *pat, const char *name) {
     }
     return !*name;
 }
+
 static bool __cstl_glob_has_magic_(const char *s) {
     for (; *s; s++) {
         if (*s == '*' || *s == '?' || *s == '[') { return true; }
     }
     return false;
 }
+
 static void __cstl_glob_parse_(const char *pat,
                                char **base_out, char ***segs_out, int *n_out) {
     size_type64 plen = strlen(pat);
@@ -9066,32 +9684,37 @@ static void __cstl_glob_parse_(const char *pat,
     int cap = 8, n = 0;
     char **segs = (char **) malloc(cap * sizeof(char *));
     const char *start = rest;
-    { const char * p; for (p = rest; ; p++) {
-        if (__cstl_glob_is_sep(*p) || *p == '\0') {
-            size_type64 sl = (size_type64) (p - start);
-            if (sl > 0) {
-                if (n >= cap) {
-                    cap *= 2;
-                    segs = (char **) realloc(segs, cap * sizeof(char *));
+    {
+        const char *p;
+        for (p = rest; ; p++) {
+            if (__cstl_glob_is_sep(*p) || *p == '\0') {
+                size_type64 sl = (size_type64) (p - start);
+                if (sl > 0) {
+                    if (n >= cap) {
+                        cap *= 2;
+                        segs = (char **) realloc(segs, cap * sizeof(char *));
+                    }
+                    segs[n] = (char *) malloc(sl + 1);
+                    memcpy(segs[n], start, sl);
+                    segs[n][sl] = '\0';
+                    n++;
                 }
-                segs[n] = (char *) malloc(sl + 1);
-                memcpy(segs[n], start, sl);
-                segs[n][sl] = '\0';
-                n++;
+                if (*p == '\0') { break; }
+                start = p + 1;
             }
-            if (*p == '\0') { break; }
-            start = p + 1;
         }
-    } }
+    }
     *base_out = base;
     *segs_out = segs;
     *n_out = n;
 }
+
 typedef struct {
     char **items;
     int cnt;
     int cap;
 } __cstl_glob_result_;
+
 static void __cstl_glob_push_(__cstl_glob_result_ *r, const char *s) {
     if (r->cnt + 1 >= r->cap) {
         r->cap = r->cap ? r->cap * 2 : 16;
@@ -9102,6 +9725,7 @@ static void __cstl_glob_push_(__cstl_glob_result_ *r, const char *s) {
     memcpy(r->items[r->cnt], s, l + 1);
     r->cnt++;
 }
+
 static void __cstl_glob_walk_(const char *base,
                               char **segs, int i, int n,
                               bool recursive,
@@ -9115,16 +9739,19 @@ static void __cstl_glob_walk_(const char *base,
         __cstl_glob_walk_(base, segs, i + 1, n, recursive, out);
         int dn;
         char **dnames = __cstl_glob_listdir_(base, &dn);
-        { int k; for (k = 0; k < dn; k++) {
-            if (dnames[k][0] != '.') {
-                char *sub = __cstl_glob_join_(base, dnames[k]);
-                if (__cstl_glob_isdir_(sub)) {
-                    __cstl_glob_walk_(sub, segs, i, n, recursive, out);
+        {
+            int k;
+            for (k = 0; k < dn; k++) {
+                if (dnames[k][0] != '.') {
+                    char *sub = __cstl_glob_join_(base, dnames[k]);
+                    if (__cstl_glob_isdir_(sub)) {
+                        __cstl_glob_walk_(sub, segs, i, n, recursive, out);
+                    }
+                    free(sub);
                 }
-                free(sub);
+                free(dnames[k]);
             }
-            free(dnames[k]);
-        } }
+        }
         free(dnames);
         return;
     }
@@ -9142,24 +9769,28 @@ static void __cstl_glob_walk_(const char *base,
     int dn;
     char **dnames = __cstl_glob_listdir_(base, &dn);
     bool pat_starts_dot = (seg[0] == '.');
-    { int k; for (k = 0; k < dn; k++) {
-        if (dnames[k][0] == '.' && !pat_starts_dot) {
-            free(dnames[k]);
-            continue;
-        }
-        if (__cstl_glob_fnmatch_(seg, dnames[k])) {
-            char *full = __cstl_glob_join_(base, dnames[k]);
-            if (is_last) {
-                __cstl_glob_push_(out, full);
-            } else if (__cstl_glob_isdir_(full)) {
-                __cstl_glob_walk_(full, segs, i + 1, n, recursive, out);
+    {
+        int k;
+        for (k = 0; k < dn; k++) {
+            if (dnames[k][0] == '.' && !pat_starts_dot) {
+                free(dnames[k]);
+                continue;
             }
-            free(full);
+            if (__cstl_glob_fnmatch_(seg, dnames[k])) {
+                char *full = __cstl_glob_join_(base, dnames[k]);
+                if (is_last) {
+                    __cstl_glob_push_(out, full);
+                } else if (__cstl_glob_isdir_(full)) {
+                    __cstl_glob_walk_(full, segs, i + 1, n, recursive, out);
+                }
+                free(full);
+            }
+            free(dnames[k]);
         }
-        free(dnames[k]);
-    } }
+    }
     free(dnames);
 }
+
 static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
     char *base;
     char **segs;
@@ -9167,7 +9798,10 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
     __cstl_glob_parse_(pattern, &base, &segs, &n_segs);
     __cstl_glob_result_ r = {0};
     __cstl_glob_walk_(base, segs, 0, n_segs, recursive, &r);
-    { int i; for (i = 0; i < n_segs; i++) free(segs[i]); }
+    {
+        int i;
+        for (i = 0; i < n_segs; i++) free(segs[i]);
+    }
     free(segs);
     free(base);
     if (!r.items) {
@@ -9176,16 +9810,22 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
         r.items = (char **) realloc(r.items, (r.cnt + 1) * sizeof(char *));
     }
     r.items[r.cnt] = NULL;
-    { int i; for (i = 0; i < r.cnt; i++) {
-        char *s = r.items[i];
-        { char * p; for (p = s; *p; p++) {
-            if (*p == '\\') { *p = '/'; }
-        } }
-        if (s[0] == '.' && s[1] == '/') {
-            size_type64 l = strlen(s);
-            memmove(s, s + 2, l - 1);
+    {
+        int i;
+        for (i = 0; i < r.cnt; i++) {
+            char *s = r.items[i];
+            {
+                char *p;
+                for (p = s; *p; p++) {
+                    if (*p == '\\') { *p = '/'; }
+                }
+            }
+            if (s[0] == '.' && s[1] == '/') {
+                size_type64 l = strlen(s);
+                memmove(s, s + 2, l - 1);
+            }
         }
-    } }
+    }
     bool iveb_init = false;
     if (iveb == NULL) {
         iveb = iveb_new();
@@ -9197,12 +9837,17 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
     }
     return r.items;
 }
+
 static void __glob_free(char **results) {
     if (!results) { return; }
-    { char ** p; for (p = results; *p; p++) free(*p); }
-    iveb_erase(iveb,results);
+    {
+        char **p;
+        for (p = results; *p; p++) free(*p);
+    }
+    iveb_erase(iveb, results);
     free(results);
 }
+
 #define __CSTL_GLOB_PICK(_1, _2, NAME, ...) NAME
 #define __CSTL_GLOB_1(p)    __cstl_glob_impl_((p), false)
 #define __CSTL_GLOB_2(p, r) __cstl_glob_impl_((p), (r))
@@ -9216,15 +9861,15 @@ static void __glob_free(char **results) {
 #include <string.h>
 #include <stdarg.h>
 #if defined(OCSTL_OS_WINDOWS)
-    #include <windows.h>
+#include <windows.h>
 #endif
 static void MsgBoxCLI(const char *format, ...) {
 #if defined(OCSTL_CC_MSVC)
     SetConsoleOutputCP(CP_UTF8);
 #else
-    #ifdef OCSTL_OS_WINDOWS
-        SetConsoleOutputCP(65001);
-    #endif
+#ifdef OCSTL_OS_WINDOWS
+    SetConsoleOutputCP(65001);
+#endif
     setvbuf(stdout, NULL, _IONBF, 0);
 #endif
     int width = 80;
@@ -9242,7 +9887,10 @@ static void MsgBoxCLI(const char *format, ...) {
     const char *hline = "\xE2\x94\x83";
     int inner = width - 2;
     fputs(tl, stdout);
-    { int i; for (i = 0; i < inner; i++) fputs(vline, stdout); }
+    {
+        int i;
+        for (i = 0; i < inner; i++) fputs(vline, stdout);
+    }
     fputs(tr, stdout);
     putchar('\n');
     const char *line_start = buf;
@@ -9255,9 +9903,15 @@ static void MsgBoxCLI(const char *format, ...) {
             if (lpadding < 0) { lpadding = 0; }
             if (rpadding < 0) { rpadding = 0; }
             fputs(hline, stdout);
-            { int i; for (i = 0; i < lpadding; i++) putchar(' '); }
+            {
+                int i;
+                for (i = 0; i < lpadding; i++) putchar(' ');
+            }
             fwrite(line_start, 1, (size_type64) len, stdout);
-            { int i; for (i = 0; i < rpadding; i++) putchar(' '); }
+            {
+                int i;
+                for (i = 0; i < rpadding; i++) putchar(' ');
+            }
             fputs(hline, stdout);
             putchar('\n');
             if (*p == '\0') { break; }
@@ -9266,7 +9920,10 @@ static void MsgBoxCLI(const char *format, ...) {
         p++;
     }
     fputs(bl, stdout);
-    { int i; for (i = 0; i < inner; i++) fputs(vline, stdout); }
+    {
+        int i;
+        for (i = 0; i < inner; i++) fputs(vline, stdout);
+    }
     fputs(br, stdout);
     putchar('\n');
 }
@@ -9277,15 +9934,15 @@ static void MsgBoxCLI(const char *format, ...) {
 static char *_MsgTitle(void) {
     static char buf[1024] = {0};
 #if defined(OCSTL_CC_GCC)
-    sprintf(buf, "%s", "GNU gcc Runtime Library");
+sprintf(buf, "%s", "GNU gcc Runtime Library");
 #elif defined(OCSTL_CC_MSVC)
-    sprintf_s(buf, sizeof(buf), "%s", "Microsoft Visual C Runtime Library");
+sprintf_s(buf, sizeof(buf), "%s", "Microsoft Visual C Runtime Library");
 #elif defined(OCSTL_CC_CLANG)
-    sprintf(buf, "%s", "LLVM clang Runtime Library");
+sprintf(buf, "%s", "LLVM clang Runtime Library");
 #elif defined(OCSTL_CC_TCC)
-    sprintf(buf, "%s", "TCC Runtime Library");
+sprintf(buf, "%s", "TCC Runtime Library");
 #endif
-    return buf;
+return buf;
 }
 typedef int (WINAPI *PFN_MessageBoxExA)(HWND, LPCSTR, LPCSTR, UINT, WORD);
 static void MsgBoxGUI(const char *format, ...) {
@@ -9296,43 +9953,43 @@ static void MsgBoxGUI(const char *format, ...) {
     vsnprintf(userMsg, sizeof(userMsg), format, args);
     va_end(args);;
 #ifdef OCSTL_OS_WINDOWS
-    int r = 0;
+int r = 0;
 #ifdef OCSTL_CC_TCC
-    HMODULE h = LoadLibraryA("user32.dll");
-    PFN_MessageBoxExA pMessageBoxExA = h
-                                           ? (PFN_MessageBoxExA) GetProcAddress(h, "MessageBoxExA")
-                                           : NULL;
+HMODULE h = LoadLibraryA("user32.dll");
+PFN_MessageBoxExA pMessageBoxExA = h
+                                       ? (PFN_MessageBoxExA) GetProcAddress(h, "MessageBoxExA")
+                                       : NULL;
 #else
-    HMODULE h = NULL;
-    PFN_MessageBoxExA pMessageBoxExA = MessageBoxExA;
+HMODULE h = NULL;
+PFN_MessageBoxExA pMessageBoxExA = MessageBoxExA;
 #endif
-    char path[OCSTL_MAX_PATH];
-    GetModuleFileNameA(NULL, path, sizeof(path));
-    char buf[2048];
-    snprintf(buf, sizeof(buf),
+char path[OCSTL_MAX_PATH];
+GetModuleFileNameA(NULL, path, sizeof(path));
+char buf[2048];
+snprintf(buf, sizeof(buf),
              "Runtime Error!\n\n"
              "Program: %s\n\n"
              "MsgBoxGUI() has been called\n\n"
              "%s\n\n"
              "(Press Retry to debug the application)",
-             path, userMsg);
+         path, userMsg);
     if (pMessageBoxExA) {
-        r = pMessageBoxExA(
-            NULL,
-            buf,
-            _MsgTitle(),
-            MB_ABORTRETRYIGNORE | MB_ICONERROR | MB_DEFBUTTON3 | MB_TASKMODAL,
-            0
-        );
-    }
+    r = pMessageBoxExA(
+        NULL,
+        buf,
+        _MsgTitle(),
+        MB_ABORTRETRYIGNORE | MB_ICONERROR | MB_DEFBUTTON3 | MB_TASKMODAL,
+        0
+    );
+}
     if (h) { FreeLibrary(h); }
     switch (r) {
-        case IDABORT: ExitProcess(3);
-            break;
-        case IDRETRY: DebugBreak();
-            break;
-        case IDIGNORE: break;
-    }
+case IDABORT: ExitProcess(3);
+    break;
+case IDRETRY: DebugBreak();
+    break;
+case IDIGNORE: break;
+}
 #endif
 }
 #elif defined(OCSTL_OS_LINUX)
@@ -9348,6 +10005,7 @@ static void MsgBoxGUI(const char *format, ...) {
 #include <stdio.h>
 #include <fcntl.h>
 #include <signal.h>
+
 struct lang_labels {
     const char *prefix;
     const char *abort_s;
@@ -9355,6 +10013,7 @@ struct lang_labels {
     const char *ignore_s;
     const char *title_s;
 };
+
 static const struct lang_labels kLangs[] = {
     {"ko", "중단", "다시 시도", "무시", "런타임 라이브러리"},
     {"ja", "中止", "再試行", "無視", "ランタイム ライブラリ"},
@@ -9368,30 +10027,37 @@ static const struct lang_labels kLangs[] = {
     {"en", "Abort", "Retry", "Ignore", "Runtime Library"},
     {NULL, NULL, NULL, NULL, NULL}
 };
+
 static const struct lang_labels *detect_lang(void) {
     const char *lang = getenv("LC_ALL");
     if (!lang || !*lang) { lang = getenv("LC_MESSAGES"); }
     if (!lang || !*lang) { lang = getenv("LANG"); }
     if (!lang || !*lang) { lang = "en"; }
-    { int i; for (i = 0; kLangs[i].prefix; i++) {
-        size_type64 n = strlen(kLangs[i].prefix);
-        if (strncmp(lang, kLangs[i].prefix, n) == 0 &&
-            (lang[n] == '\0' || lang[n] == '_' || lang[n] == '.')) {
-            return &kLangs[i];
+    {
+        int i;
+        for (i = 0; kLangs[i].prefix; i++) {
+            size_type64 n = strlen(kLangs[i].prefix);
+            if (strncmp(lang, kLangs[i].prefix, n) == 0 &&
+                (lang[n] == '\0' || lang[n] == '_' || lang[n] == '.')) {
+                return &kLangs[i];
+            }
         }
-    } }
+    }
     int last = 0;
     while (kLangs[last + 1].prefix) last++;
     return &kLangs[last];
 }
+
 #define IDABORT   3
 #define IDRETRY   4
 #define IDIGNORE  5
+
 static void get_exe_path(char *out, size_type64 n) {
     ssize_t r = readlink("/proc/self/exe", out, n - 1);
     if (r < 0) { r = 0; }
     out[r] = '\0';
 }
+
 static int zenity_abort_retry_ignore(const char *title, const char *body) {
     int pipefd[2];
     if (pipe(pipefd) < 0) { return IDABORT; }
@@ -9444,6 +10110,7 @@ static int zenity_abort_retry_ignore(const char *title, const char *body) {
     if (strcmp(out, L->retry_s) == 0) { return IDRETRY; }
     return IDABORT;
 }
+
 static void MsgBoxGUI(const char *format, ...) {
     char userMsg[1024];
     va_list args;
@@ -9466,11 +10133,11 @@ static void MsgBoxGUI(const char *format, ...) {
             _exit(3);
         case IDRETRY: fprintf(stderr, "retry\n");
 #if defined(OCSTL_CC_TCC) || defined(OCSTL_CC_COMPCERT)
-raise(SIGTRAP);
+            raise(SIGTRAP);
 #else
-__builtin_trap();
+            __builtin_trap();
 #endif
-break;
+            break;
         case IDIGNORE: fprintf(stderr, "ignore\n");
             break;
     }
@@ -9511,11 +10178,17 @@ char *strtok_s(char *str, char *delimiters, char **last) {
 #endif
 typedef struct JSON_TOKEN JSON_TOKEN;
 JSON_TOKEN *__g_last_token = NULL;
+
 int as_int();
+
 char *as_string();
+
 bool as_bool();
+
 double as_double();
+
 bool is_null();
+
 struct JSON_TOKEN {
     char *p;
     char *q;
@@ -9523,18 +10196,26 @@ struct JSON_TOKEN {
     char *str_buf;
     struct JSON_TOKEN *children;
     struct JSON_TOKEN *next;
+
     int (*as_int)();
+
     bool (*as_bool)();
+
     char * (*as_string)();
+
     double (*as_double)();
+
     bool (*is_null)();
 };
+
 typedef struct JSON_TOKEN JSON;
+
 int __as_int() {
     JSON_TOKEN *p = __g_last_token;
     if (!p || !p->p) { return 0; }
     return (int) strtol(p->p, NULL, 10);
 }
+
 char *__as_string() {
     JSON_TOKEN *p = __g_last_token;
     if (!p || !p->p || !p->q) { return NULL; }
@@ -9552,57 +10233,66 @@ char *__as_string() {
     char *out = (char *) malloc(cap);
     if (!out) { return NULL; }
     char *dst = out;
-    { char * s; for (s = start; s < end; s++) {
-        if (*s != '\\' || s + 1 >= end) {
-            *dst++ = *s;
-            continue;
-        }
-        s++;
-        switch (*s) {
-            case 'n': *dst++ = '\n';
-                break;
-            case 't': *dst++ = '\t';
-                break;
-            case 'r': *dst++ = '\r';
-                break;
-            case 'b': *dst++ = '\b';
-                break;
-            case 'f': *dst++ = '\f';
-                break;
-            case '"': *dst++ = '"';
-                break;
-            case '\\': *dst++ = '\\';
-                break;
-            case '/': *dst++ = '/';
-                break;
-            default: *dst++ = '\\';
+    {
+        char *s;
+        for (s = start; s < end; s++) {
+            if (*s != '\\' || s + 1 >= end) {
                 *dst++ = *s;
-                break;
+                continue;
+            }
+            s++;
+            switch (*s) {
+                case 'n': *dst++ = '\n';
+                    break;
+                case 't': *dst++ = '\t';
+                    break;
+                case 'r': *dst++ = '\r';
+                    break;
+                case 'b': *dst++ = '\b';
+                    break;
+                case 'f': *dst++ = '\f';
+                    break;
+                case '"': *dst++ = '"';
+                    break;
+                case '\\': *dst++ = '\\';
+                    break;
+                case '/': *dst++ = '/';
+                    break;
+                default: *dst++ = '\\';
+                    *dst++ = *s;
+                    break;
+            }
         }
-    } }
+    }
     *dst = '\0';
     p->str_buf = out;
     return out;
 }
+
 bool __as_bool() {
     JSON_TOKEN *p = __g_last_token;
     if (!p || !p->p) { return false; }
     return *(p->p) == 't';
 }
+
 double __as_double() {
     JSON_TOKEN *p = __g_last_token;
     if (!p || !p->p) { return 0.0; }
     return strtod(p->p, NULL);
 }
+
 bool __is_null() {
     JSON_TOKEN *p = __g_last_token;
     return p && p->p && *(p->p) == 'n';
 }
+
 static char *__parse_value(char *s, JSON_TOKEN *node);
+
 static char *__skip_ws(char *s) {
     while (*s && isspace((unsigned char) *s)) s++;
     return s;
 }
+
 static char *__parse_string(char *s, JSON_TOKEN *node) {
     node->p = s;
     s++;
@@ -9613,6 +10303,7 @@ static char *__parse_string(char *s, JSON_TOKEN *node) {
     node->q = s;
     return (*s == '"') ? s + 1 : s;
 }
+
 static char *__parse_number(char *s, JSON_TOKEN *node) {
     node->p = s;
     if (*s == '-' || *s == '+') { s++; }
@@ -9623,12 +10314,14 @@ static char *__parse_number(char *s, JSON_TOKEN *node) {
     node->q = s - 1;
     return s;
 }
+
 static char *__parse_literal(char *s, JSON_TOKEN *node) {
     node->p = s;
     while (*s && isalpha((unsigned char) *s)) s++;
     node->q = s - 1;
     return s;
 }
+
 static char *parse_array(char *s, JSON_TOKEN *node) {
     node->p = s;
     s++;
@@ -9655,6 +10348,7 @@ static char *parse_array(char *s, JSON_TOKEN *node) {
     node->q = s;
     return s;
 }
+
 static char *__parse_object(char *s, JSON_TOKEN *node) {
     node->p = s;
     s++;
@@ -9688,8 +10382,7 @@ static char *__parse_object(char *s, JSON_TOKEN *node) {
         *tail = child;
         tail = &child->next;
         s = __skip_ws(s);
-        if (*s == ',') { s++; }
-        else if (*s == '}') {
+        if (*s == ',') { s++; } else if (*s == '}') {
             node->q = s;
             return s + 1;
         } else { break; }
@@ -9697,6 +10390,7 @@ static char *__parse_object(char *s, JSON_TOKEN *node) {
     node->q = s;
     return s;
 }
+
 static char *__parse_value(char *s, JSON_TOKEN *node) {
     s = __skip_ws(s);
     if (*s == '{') { return __parse_object(s, node); }
@@ -9706,6 +10400,7 @@ static char *__parse_value(char *s, JSON_TOKEN *node) {
     if (isalpha((unsigned char) *s)) { return __parse_literal(s, node); }
     return s;
 }
+
 JSON_TOKEN *__parse(char *json_str) {
     JSON_TOKEN *root = (JSON_TOKEN *) calloc(1, sizeof(JSON_TOKEN));
     memset(root, 0, sizeof(JSON_TOKEN));
@@ -9721,6 +10416,7 @@ JSON_TOKEN *__parse(char *json_str) {
     }
     return root;
 }
+
 JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
     if (!root || !keys) { return NULL; }
     char buf[1024];
@@ -9738,15 +10434,21 @@ JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
         if (cur->p && *(cur->p) == '[') {
             int idx = atoi(tok);
             JSON_TOKEN *c = cur->children;
-            { int i; for (i = 0; c && i < idx; i++) c = c->next; }
+            {
+                int i;
+                for (i = 0; c && i < idx; i++) c = c->next;
+            }
             found = c;
         } else {
-            { JSON_TOKEN * c; for (c = cur->children; c; c = c->next) {
-                if (strcmp(c->key, tok) == 0) {
-                    found = c;
-                    break;
+            {
+                JSON_TOKEN *c;
+                for (c = cur->children; c; c = c->next) {
+                    if (strcmp(c->key, tok) == 0) {
+                        found = c;
+                        break;
+                    }
                 }
-            } }
+            }
         }
         if (!found) { return NULL; }
         cur = found;
@@ -9760,6 +10462,7 @@ JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
     cur->is_null = __is_null;
     return cur;
 }
+
 static void __free_subtree(JSON_TOKEN *node) {
     if (!node) { return; }
     JSON_TOKEN *c = node->children;
@@ -9771,6 +10474,7 @@ static void __free_subtree(JSON_TOKEN *node) {
     free(node->str_buf);
     free(node);
 }
+
 void __free_json(JSON *root) {
     if (!root) { return; }
     iveb_erase(iveb, root);
@@ -9786,22 +10490,33 @@ void __free_json(JSON *root) {
     root->p = root->q = NULL;
     free(root);
 }
+
 static void __dumps(JSON_TOKEN *node, int depth) {
     if (!node || !node->p || !node->q) { return; }
-    { int i; for (i = 0; i < depth; i++) printf("  "); }
+    {
+        int i;
+        for (i = 0; i < depth; i++) printf("  ");
+    }
     int len = (int) (node->q - node->p + 1);
-    if (node->key[0]) { printf("\"%s\": [%.*s]\n", node->key, len, node->p); }
-    else { printf("[%.*s]\n", len, node->p); }
-    { JSON_TOKEN * c; for (c = node->children; c; c = c->next) __dumps(c, depth + 1); }
+    if (node->key[0]) { printf("\"%s\": [%.*s]\n", node->key, len, node->p); } else { printf("[%.*s]\n", len, node->p); }
+    {
+        JSON_TOKEN *c;
+        for (c = node->children; c; c = c->next) __dumps(c, depth + 1);
+    }
 }
+
 static void _dumps(JSON *root) {
     __dumps(root, 0);
 }
+
 typedef struct JSON_CLASS {
     JSON_TOKEN * (*parse)(char *json_str);
+
     JSON_TOKEN * (*get)(JSON_TOKEN *root, char *keys);
+
     void (*dumps)(JSON *root);
 } JSON_CLASS;
+
 JSON_CLASS json = {__parse, __get, _dumps};
 #endif
 #ifndef OPENCSTL_CSV_H
@@ -9809,12 +10524,14 @@ JSON_CLASS json = {__parse, __get, _dumps};
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+
 typedef struct {
     char ***table;
     char **header;
     int rows;
     int cols;
 } CSV;
+
 static const char *csv__next_field(const char *p, const char *end,
                                    char *dst, size_t *out_len, int *eol) {
     size_t len = 0;
@@ -9861,6 +10578,7 @@ static const char *csv__next_field(const char *p, const char *end,
     } else if (*p == ',') { p++; }
     return p;
 }
+
 static CSV __parse_csv(char *csv_path, bool is_header) {
     CSV ret;
     ret.table = NULL;
@@ -9907,10 +10625,13 @@ static CSV __parse_csv(char *csv_path, bool is_header) {
         if (ncols > max_cols) { max_cols = ncols; }
     }
 done_pass1:;
-    { int i; for (i = 0; i < total_rows; i++)
-        if (row_cols[i] < max_cols) {
-            str_bytes += (size_t) (max_cols - row_cols[i]);
-        } }
+    {
+        int i;
+        for (i = 0; i < total_rows; i++)
+            if (row_cols[i] < max_cols) {
+                str_bytes += (size_t) (max_cols - row_cols[i]);
+            }
+    }
     int data_rows = is_header
                         ? (total_rows > 0 ? total_rows - 1 : 0)
                         : total_rows;
@@ -9923,8 +10644,11 @@ done_pass1:;
     char **cells = (char **) (mem + off1);
     char **hdr = is_header ? (char **) (mem + off1 + off2) : NULL;
     char *sdata = mem + off1 + off2 + off3;
-    { int i; for (i = 0; i < data_rows; i++)
-        table[i] = cells + i * max_cols; }
+    {
+        int i;
+        for (i = 0; i < data_rows; i++)
+            table[i] = cells + i * max_cols;
+    }
     p = buf;
     char *sp = sdata;
     if (is_header && total_rows > 0) {
@@ -9942,20 +10666,23 @@ done_pass1:;
         }
     }
     int start = is_header ? 1 : 0;
-    { int i; for (i = start; i < total_rows; i++) {
-        int di = i - start, j = 0, eol = 0;
-        while (!eol && j < row_cols[i]) {
-            size_t flen;
-            table[di][j] = sp;
-            p = csv__next_field(p, end, sp, &flen, &eol);
-            sp += flen + 1;
-            j++;
+    {
+        int i;
+        for (i = start; i < total_rows; i++) {
+            int di = i - start, j = 0, eol = 0;
+            while (!eol && j < row_cols[i]) {
+                size_t flen;
+                table[di][j] = sp;
+                p = csv__next_field(p, end, sp, &flen, &eol);
+                sp += flen + 1;
+                j++;
+            }
+            for (; j < max_cols; j++) {
+                table[di][j] = sp;
+                *sp++ = '\0';
+            }
         }
-        for (; j < max_cols; j++) {
-            table[di][j] = sp;
-            *sp++ = '\0';
-        }
-    } }
+    }
     free(row_cols);
     free(buf);
     ret.table = table;
@@ -9973,6 +10700,7 @@ done_pass1:;
     }
     return ret;
 }
+
 void __free_csv(CSV *csv) {
     iveb_erase(iveb, csv->table);
     free(csv->table);
@@ -9981,9 +10709,11 @@ void __free_csv(CSV *csv) {
     csv->rows = 0;
     csv->cols = 0;
 }
+
 typedef struct CSV_CLASS {
     CSV (*parse)(char *csv_path,bool is_header);
 } CSV_CLASS;
+
 CSV_CLASS csv = {
     __parse_csv
 };
@@ -10000,9 +10730,14 @@ CSV_CLASS csv = {
 #define UNORDERED_MAP(TYPE)     TYPE*
 #if defined(USE_CSTL_FUNC)
 #define pop_back        cstl_pop_back
-#define __cstl_as_elem(c, v) ((typeof(*(c))){ (v) })
-#define push_back(c, val) \
-__cstl_vector_push_back((void **)&(c), &__cstl_as_elem(c, val))
+#define push_back(C,_1)    \
+{_CSTL_TYPEOF(&(C)) __0=&(C); \
+_CSTL_TYPEOF(*(C)) __1=(_1); \
+_cstl_push_back(__0, &__1);}
+#define _cstl_push_back_1(C,_1)    \
+{_CSTL_TYPEOF(&(C)) __0=&(C); \
+_CSTL_TYPEOF(*(C)) __1=(_1); \
+_cstl_push_back(__0, &__1);}
 #define push_front      cstl_push_front
 #define pop_front       cstl_pop_front
 #define push            cstl_push
@@ -10093,6 +10828,7 @@ OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     }
     __cstl_va_end(vl);
 }
+
 OPENCSTL_FUNC void _cstl_push(void *container, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -10124,6 +10860,7 @@ OPENCSTL_FUNC void _cstl_push(void *container, ...) {
     }
     __cstl_va_end(vl);
 }
+
 OPENCSTL_FUNC void _cstl_push_back(void *container, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -10158,6 +10895,7 @@ OPENCSTL_FUNC void _cstl_push_back(void *container, ...) {
     }
     __cstl_va_end(vl);
 }
+
 OPENCSTL_FUNC void _cstl_push_front(void *container, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -10188,6 +10926,7 @@ OPENCSTL_FUNC void _cstl_push_front(void *container, ...) {
     }
     __cstl_va_end(vl);
 }
+
 OPENCSTL_FUNC void _cstl_pop(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -10213,6 +10952,7 @@ OPENCSTL_FUNC void _cstl_pop(void *container) {
             break;
     }
 }
+
 OPENCSTL_FUNC void _cstl_pop_back(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -10236,6 +10976,7 @@ OPENCSTL_FUNC void _cstl_pop_back(void *container) {
         break;
     }
 }
+
 OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -10273,6 +11014,7 @@ OPENCSTL_FUNC size_type _cstl_max_size(void *container) {
     }
     return sz;
 }
+
 OPENCSTL_FUNC void _cstl_pop_front(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -10292,6 +11034,7 @@ OPENCSTL_FUNC void _cstl_pop_front(void *container) {
         break;
     }
 }
+
 OPENCSTL_FUNC size_type _cstl_size(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -10334,6 +11077,7 @@ OPENCSTL_FUNC size_type _cstl_size(void *container) {
     }
     return sz;
 }
+
 OPENCSTL_FUNC size_type _cstl_capacity(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -10369,6 +11113,7 @@ OPENCSTL_FUNC size_type _cstl_capacity(void *container) {
     }
     return sz;
 }
+
 OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -10433,6 +11178,7 @@ OPENCSTL_FUNC void _cstl_insert(void *container, int argc, ...) {
     }
     __cstl_va_end(vl);
 }
+
 OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -10490,6 +11236,7 @@ OPENCSTL_FUNC void _cstl_erase(void *container, int argc, ...) {
     }
     __cstl_va_end(vl);
 }
+
 OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -10529,6 +11276,7 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
     }
     __cstl_va_end(vl);
 }
+
 OPENCSTL_FUNC void _cstl_clear(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -10568,6 +11316,7 @@ OPENCSTL_FUNC void _cstl_clear(void *container) {
         break;
     }
 }
+
 OPENCSTL_FUNC bool _cstl_empty(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -10613,6 +11362,7 @@ OPENCSTL_FUNC bool _cstl_empty(void *container) {
     }
     return sz ? false : true;
 }
+
 OPENCSTL_FUNC void _cstl_free(void *container, size_t container_size) {
     void **tmp = (void **) container;
     if (iveb != NULL) {
@@ -10684,6 +11434,7 @@ OPENCSTL_FUNC void _cstl_free(void *container, size_t container_size) {
 _BYE_:
     return;
 }
+
 OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     va_list vl;
     void *va_ptr = NULL;
@@ -10738,6 +11489,7 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     __cstl_va_end(vl);
     return NULL;
 }
+
 OPENCSTL_FUNC void _cstl_shrink_to_fit(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -10761,6 +11513,7 @@ OPENCSTL_FUNC void _cstl_shrink_to_fit(void *container) {
         break;
     }
 }
+
 OPENCSTL_FUNC void _cstl_reverse(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -10792,6 +11545,7 @@ OPENCSTL_FUNC void _cstl_reverse(void *container) {
         break;
     }
 }
+
 static void reverse(void *container) {
     _cstl_reverse((void **) &container);
 }
