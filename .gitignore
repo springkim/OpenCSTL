@@ -338,7 +338,6 @@ words.txt
 convert.py
 a.out
 tmp/
-.github/
 
 words.txt
 words_random.txt

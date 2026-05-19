@@ -1,0 +1,148 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Linux: GCC, Clang, TCC
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - { name: gcc-11,   cc: gcc-11,   pkg: gcc-11 }
+          - { name: gcc-12,   cc: gcc-12,   pkg: gcc-12 }
+          - { name: gcc-13,   cc: gcc-13,   pkg: gcc-13 }
+          - { name: clang-15, cc: clang-15, pkg: clang-15 }
+          - { name: clang-16, cc: clang-16, pkg: clang-16 }
+          - { name: tcc,      cc: tcc,      pkg: tcc }
+        std: [c99, c11, c17]
+        exclude:
+          # TCC는 사실상 C99까지만
+          - compiler: { name: tcc, cc: tcc, pkg: tcc }
+            std: c17
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ${{ matrix.compiler.name }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.compiler.pkg }}
+      - name: Build & Test
+        env:
+          CC: ${{ matrix.compiler.cc }}
+          CFLAGS: -std=${{ matrix.std }} -Wall -Wextra -Wpedantic
+        run: |
+          $CC --version
+          cmake -B build -DCMAKE_C_COMPILER=$CC -DCMAKE_C_FLAGS="$CFLAGS"
+          cmake --build build -j
+          ctest --test-dir build --output-on-failure
+
+  # macOS: Apple Clang, Homebrew GCC
+  macos:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - { name: apple-clang, cc: clang,  install: "" }
+          - { name: gcc-13,      cc: gcc-13, install: "brew install gcc@13" }
+          - { name: gcc-14,      cc: gcc-14, install: "brew install gcc@14" }
+        std: [c99, c11, c17]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ${{ matrix.compiler.name }}
+        run: ${{ matrix.compiler.install }}
+        if: matrix.compiler.install != ''
+      - name: Build & Test
+        env:
+          CC: ${{ matrix.compiler.cc }}
+          CFLAGS: -std=${{ matrix.std }} -Wall -Wextra -Wpedantic
+        run: |
+          $CC --version
+          cmake -B build -DCMAKE_C_COMPILER=$CC
+          cmake --build build -j
+          ctest --test-dir build --output-on-failure
+
+  # Windows: MSVC, Clang-CL, MinGW
+  windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - { name: msvc,     generator: "Visual Studio 17 2022", arch: x64 }
+          - { name: clang-cl, generator: "Visual Studio 17 2022", arch: x64, toolset: "ClangCL" }
+          - { name: mingw,    generator: "MinGW Makefiles" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: matrix.toolchain.name == 'msvc' || matrix.toolchain.name == 'clang-cl'
+      - name: Setup MinGW
+        if: matrix.toolchain.name == 'mingw'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake
+      - name: Configure & Build (MSVC/Clang-CL)
+        if: matrix.toolchain.name != 'mingw'
+        run: |
+          cmake -B build -G "${{ matrix.toolchain.generator }}" `
+                -A ${{ matrix.toolchain.arch }} `
+                ${{ matrix.toolchain.toolset && format('-T {0}', matrix.toolchain.toolset) || '' }}
+          cmake --build build --config Release
+          ctest --test-dir build -C Release --output-on-failure
+      - name: Configure & Build (MinGW)
+        if: matrix.toolchain.name == 'mingw'
+        shell: msys2 {0}
+        run: |
+          cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j
+          ctest --test-dir build --output-on-failure
+
+  # zig cc — 크로스 컴파일러로서 모든 플랫폼에서
+  zig:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        std: [c99, c11, c17]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v1
+        with:
+          version: 0.13.0
+      - name: Build with zig cc
+        shell: bash
+        env:
+          CC: "zig cc"
+          CFLAGS: -std=${{ matrix.std }} -Wall -Wextra
+        run: |
+          zig version
+          cmake -B build -DCMAKE_C_COMPILER_WORKS=1 \
+                -DCMAKE_C_COMPILER="zig;cc" \
+                -DCMAKE_C_FLAGS="$CFLAGS"
+          cmake --build build -j
+          ctest --test-dir build --output-on-failure
+
+  # NVCC — 컴파일만 (GitHub 러너에 GPU 없음)
+  nvcc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Jimver/cuda-toolkit@v0.2.16
+        with:
+          cuda: '12.4.0'
+          method: 'network'
+          sub-packages: '["nvcc"]'
+      - name: Compile-only check
+        run: |
+          nvcc --version
+          # OpenCSTL 헤더가 nvcc에서 파싱되는지 검증
+          nvcc -x cu -c tests/smoke.c -o smoke.o \
+               -Xcompiler -Wall \
+               --expt-relaxed-constexpr
