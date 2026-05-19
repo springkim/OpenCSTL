@@ -34,8 +34,8 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#ifndef OPENCSTL_ITERATOR_H
-#define OPENCSTL_ITERATOR_H
+#ifndef HG_7F5986C378540CA8CD2590982AD74446E84DD2B7FD0E3FE93C9D03D11660F878_H
+#define HG_7F5986C378540CA8CD2590982AD74446E84DD2B7FD0E3FE93C9D03D11660F878_H
 #include "hashtable.h"
 #include "error.h"
 #include "vector.h"
@@ -309,4 +309,4 @@ OPENCSTL_FUNC void *_cstl_rend(void *container) {
 
 
 
-#endif //OPENCSTL_ITERATOR_H
+#endif

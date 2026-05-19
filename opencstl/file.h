@@ -34,8 +34,8 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#if !defined(_OPENCSTL_CSTL_FILE_H)
-#define _OPENCSTL_CSTL_FILE_H
+#if !defined(HG_2C70D3E09E9D3722DE728E957D5DD63847F2A1F71D28F51D7AB3823D54DAFF6F_H)
+#define HG_2C70D3E09E9D3722DE728E957D5DD63847F2A1F71D28F51D7AB3823D54DAFF6F_H
 #include <stdio.h>
 #include <wchar.h>
 
@@ -193,4 +193,4 @@ FSTREAM file = {
 };
 
 
-#endif //_OPENCSTL_CSTL_FILE_H
+#endif

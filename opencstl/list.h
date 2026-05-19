@@ -35,8 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#if !defined(_OPENCSTL_LIST_H)
-#define _OPENCSTL_LIST_H
+#if !defined(HG_5156027AD67B4229552AAACCEBBEBDC8AAC97A5894150589FA4F1E3FCD89942C_H)
+#define HG_5156027AD67B4229552AAACCEBBEBDC8AAC97A5894150589FA4F1E3FCD89942C_H
 #include"error.h"
 #include"zalloc.h"
 

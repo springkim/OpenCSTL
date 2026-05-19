@@ -35,8 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#if !defined(OPENCSTL_MEMCMPS_H)
-#define OPENCSTL_MEMCMPS_H
+#if !defined(HG_FC9C87CEAA6FFEFB90E9220ED52907FE5EEEE20500F02674C60809CAEAAD045C_H)
+#define HG_FC9C87CEAA6FFEFB90E9220ED52907FE5EEEE20500F02674C60809CAEAAD045C_H
 #include <string.h>
 #include "types.h"
 static int _memcmp1(const void *a, const void *b) { return memcmp(a, b, 1); }
@@ -1066,4 +1066,4 @@ static CSTL_COMPARE _memcmp_funcs[513] = {
     _memcmp511,
     _memcmp512,
 };
-#endif //OPENCSTL_MEMCMPS_H
+#endif

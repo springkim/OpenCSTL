@@ -36,8 +36,8 @@
 //
 
 
-#ifndef OPENCSTL_GLOB_H
-#define OPENCSTL_GLOB_H
+#ifndef HG_AC6062309C17CD725890D1B78EF6F09561456F1066C029CE4AAF94CE871259EE_H
+#define HG_AC6062309C17CD725890D1B78EF6F09561456F1066C029CE4AAF94CE871259EE_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -443,4 +443,4 @@ static void __glob_free(char **results) {
 #define __CSTL_GLOB_2(p, r) __cstl_glob_impl_((p), (r))
 #define glob(...) __CSTL_GLOB_PICK(__VA_ARGS__, __CSTL_GLOB_2, __CSTL_GLOB_1)(__VA_ARGS__)
 
-#endif // OPENCSTL_GLOB_H
+#endif

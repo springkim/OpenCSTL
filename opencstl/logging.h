@@ -35,8 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#if !defined(_OPENCSTL_LOGGING_H)
-#define _OPENCSTL_LOGGING_H
+#if !defined(HG_DA016F9EB7D8F6970C150189E2C1CB8B14A9E3498F8CC2778D3946451B216288_H)
+#define HG_DA016F9EB7D8F6970C150189E2C1CB8B14A9E3498F8CC2778D3946451B216288_H
 
 #include <stdio.h>
 #include <stdarg.h>

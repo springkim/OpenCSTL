@@ -34,8 +34,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#if !defined(_OPENCSTL_DEQUE_H)
-#define _OPENCSTL_DEQUE_H
+#if !defined(HG_73F4FA37E60B39AB0C28FAC20457F568158A2244CAD9716CD345A204758D3859_H)
+#define HG_73F4FA37E60B39AB0C28FAC20457F568158A2244CAD9716CD345A204758D3859_H
 
 #include "zalloc.h"
 #include "van_emde_boas_tree.h"
@@ -594,4 +594,4 @@ OPENCSTL_FUNC void *__cstl_deque_upper_bound(void **container, void *value, CSTL
     if (L >= length) { return NULL; }
     return ((char *) *container) + (type_size * L);
 }
-#endif // if !defined(_OPENCSTL_DEQUE_H)
+#endif

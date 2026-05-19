@@ -34,8 +34,8 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#ifndef OPENCSTL_FILESYSTEM_H
-#define OPENCSTL_FILESYSTEM_H
+#ifndef HG_A43C398F3B524100DCA158A8009103CD98528C688D3D10824ADFDF6FAA0A1D6D_H
+#define HG_A43C398F3B524100DCA158A8009103CD98528C688D3D10824ADFDF6FAA0A1D6D_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -337,4 +337,4 @@ static FileSystem fs = {
     __cstl_is_dir,
     __cstl_is_file,
 };
-#endif // OPENCSTL_FILESYSTEM_H
+#endif

@@ -35,8 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#if !defined(_OPENCSTL_MSORT_H)
-#define _OPENCSTL_MSORT_H
+#if !defined(HG_DA46D48B7EE244BF57528FE23A9E591C1FCC07507158224C750893D3051E52D8_H)
+#define HG_DA46D48B7EE244BF57528FE23A9E591C1FCC07507158224C750893D3051E52D8_H
 #include <stdlib.h>
 #include <string.h>
 #include "isort.h"

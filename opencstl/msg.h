@@ -35,8 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 
-#if !defined(OPENCSTL_MSG_H)
-#define OPENCSTL_MSG_H
+#if !defined(HG_AD1B7930B8549864E51DA8FF1C5D26525EEB5C73ACB3858E1AC9C3F3A0CB3EE4_H)
+#define HG_AD1B7930B8549864E51DA8FF1C5D26525EEB5C73ACB3858E1AC9C3F3A0CB3EE4_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
@@ -374,4 +374,4 @@ break;
 
 
 #endif
-#endif //OPENCSTL_MSG_H
+#endif

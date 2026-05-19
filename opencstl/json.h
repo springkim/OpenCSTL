@@ -34,8 +34,8 @@
 // or tort (including negligence or otherwise) arising in any way out of
 // the use of this software, even if advised of the possibility of such damage.
 //
-#ifndef OPENCSTL_JSON_H
-#define OPENCSTL_JSON_H
+#ifndef HG_BA1D7CFEDCAF73B4EE337AA26D58F9704700E29E6AE45448AC246375C7F694F1_H
+#define HG_BA1D7CFEDCAF73B4EE337AA26D58F9704700E29E6AE45448AC246375C7F694F1_H
 //#define _CRT_SECURE_NO_WARNINGS
 #include<stdio.h>
 #include<stdlib.h>

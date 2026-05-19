@@ -46,19 +46,21 @@ static void isort(void *base, size_type64 number, size_type64 width, CSTL_COMPAR
     char *arr = (char *) base;
     char sbuf[1024];
     char *tmp = (width <= sizeof(sbuf)) ? sbuf : (char *) malloc(width);
-    { size_type64 i; for (i = 1; i < number; i++) {
-        memcpy(tmp, arr + i * width, width);
-        size_type64 lo = 0, hi = i;
-        while (lo < hi) {
-            size_type64 mid = lo + ((hi - lo) >> 1);
-            if (compare(tmp, arr + mid * width) < 0) { hi = mid; }
-            else { lo = mid + 1; }
+    {
+        size_type64 i;
+        for (i = 1; i < number; i++) {
+            memcpy(tmp, arr + i * width, width);
+            size_type64 lo = 0, hi = i;
+            while (lo < hi) {
+                size_type64 mid = lo + ((hi - lo) >> 1);
+                if (compare(tmp, arr + mid * width) < 0) { hi = mid; } else { lo = mid + 1; }
+            }
+            if (lo < i) {
+                memmove(arr + (lo + 1) * width, arr + lo * width, (i - lo) * width);
+                memcpy(arr + lo * width, tmp, width);
+            }
         }
-        if (lo < i) {
-            memmove(arr + (lo + 1) * width, arr + lo * width, (i - lo) * width);
-            memcpy(arr + lo * width, tmp, width);
-        }
-    } }
+    }
     if (tmp != sbuf) {
         free(tmp);
     }
