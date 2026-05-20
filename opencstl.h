@@ -207,7 +207,7 @@ static void cpu_pin(void) {
     thread_policy_set(
         mach_thread_self(),
         THREAD_AFFINITY_POLICY,
-        (thread_policy_t) & affinity,
+        (thread_policy_t) &affinity,
         THREAD_AFFINITY_POLICY_COUNT
     );
     mach_timebase_info_data_t tb;
@@ -221,7 +221,7 @@ static void cpu_pin(void) {
     thread_policy_set(
         mach_thread_self(),
         THREAD_TIME_CONSTRAINT_POLICY,
-        (thread_policy_t) & rt,
+        (thread_policy_t) &rt,
         THREAD_TIME_CONSTRAINT_POLICY_COUNT
     );
 #undef NS_TO_MACH
@@ -515,9 +515,11 @@ typedef struct ZMem {
     char *func;
     int line;
 } ZMEM;
+
 ZMEM zmem[8192] = {0};
 size_type64 zalloc_size = 0;
 size_type64 zalloc_count = 0;
+
 static void zinsert(void *ptr, char *file, const char *func, int line) {
     zmem[zalloc_size].ptr = ptr;
     zmem[zalloc_size].file = file;
@@ -526,6 +528,7 @@ static void zinsert(void *ptr, char *file, const char *func, int line) {
     zalloc_size++;
     zalloc_count++;
 }
+
 static void zremove(void *ptr) {
     size_type64 i = 0;
     for (i = 0; i < zalloc_size; i++) {
@@ -581,17 +584,23 @@ int main() {
 #endif
 #ifdef OPENCSTL_TRACER
 typedef void (*free_fn)(void *ptr);
+
 typedef void * (*malloc_fn)(size_t sz);
+
 typedef void * (*realloc_fn)(void *ptr, size_t new_size);
+
 typedef void * (*calloc_fn)(size_t cnt, size_t sz);
+
 static free_fn ofree = free;
 static malloc_fn omalloc = malloc;
 static realloc_fn orealloc = realloc;
 static calloc_fn ocalloc = calloc;
+
 static void zfree(void *ptr) {
     zremove(ptr);
     ofree(ptr);
 }
+
 static void *_zcalloc(size_type64 cnt, size_type64 sz, char *file,
                       const char *func, int line) {
     void *ptr = ocalloc(cnt, sz);
@@ -600,6 +609,7 @@ static void *_zcalloc(size_type64 cnt, size_type64 sz, char *file,
     }
     return ptr;
 }
+
 static void *_zmalloc(size_type64 sz, char *file,
                       const char *func, int line) {
     void *ptr = omalloc(sz);
@@ -608,6 +618,7 @@ static void *_zmalloc(size_type64 sz, char *file,
     }
     return ptr;
 }
+
 static void *_zrealloc(void *ptr, size_type64 new_size, char *file,
                        const char *func, int line) {
     if (ptr == NULL) {
@@ -627,6 +638,7 @@ static void *_zrealloc(void *ptr, size_type64 new_size, char *file,
     }
     return new_ptr;
 }
+
 #define free(ptr) zfree(ptr)
 #define calloc(cnt, sz) _zcalloc(cnt, sz, __FILE__, __func__, __LINE__)
 #define malloc(sz) _zmalloc(sz, __FILE__, __func__, __LINE__)
@@ -1458,8 +1470,7 @@ static VEB *giveb_veb_new(int bits) {
 
 static void giveb_veb_free(VEB *v);
 
-static void giveb_cls_free_all(HashMap *hm) {
-    {
+static void giveb_cls_free_all(HashMap *hm) { {
         size_type64 i;
         for (i = 0; i < hm->cap; i++)
             if (hm->e[i].used) { giveb_veb_free((VEB *) hm->e[i].val); }
@@ -1556,8 +1567,7 @@ GIntervalVEB *giveb_new(void) {
     return iv;
 }
 
-void giveb_free(GIntervalVEB *iv) {
-    {
+void giveb_free(GIntervalVEB *iv) { {
         size_type64 i;
         for (i = 0; i < iv->data->cap; i++)
             if (iv->data->e[i].used) {
@@ -3116,8 +3126,7 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n
                     (char *) b + alloc_sz, CT_DEQUE, type_size, type);
     }
     memcpy((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
-           (length - pos) * type_size);
-    {
+           (length - pos) * type_size); {
         size_type64 i;
         for (i = 0; i < n; i++) {
             memcpy((char *) *container + (pos + i) * type_size, value, type_size);
@@ -3236,8 +3245,7 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
         value = &valuef;
     }
 #endif
-    size_type64 pos = (*(char **) iter_begin - *(char **) container) / type_size;
-    {
+    size_type64 pos = (*(char **) iter_begin - *(char **) container) / type_size; {
         size_type64 i;
         for (i = pos; i < length; i++) {
             if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
@@ -3290,8 +3298,7 @@ OPENCSTL_FUNC void __cstl_deque_reverse(void **container) {
                              ? stackbuf
                              : (unsigned char *) calloc(type_size, 1);
     verify(tmp != NULL);
-    char *base = (char *) *container;
-    {
+    char *base = (char *) *container; {
         size_type64 i, j;
         for (i = 0, j = length - 1; i < j; i++, j--) {
             memcpy(tmp, base + i * type_size, type_size);
@@ -3318,8 +3325,7 @@ OPENCSTL_FUNC size_type64 __cstl_deque_count(void **container, void *value) {
     }
 #endif
     CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
-    size_type64 cnt = 0;
-    {
+    size_type64 cnt = 0; {
         size_type64 i;
         for (i = 0; i < length; i++) {
             void *ptr = (char *) *container + (type_size * i);
@@ -3335,8 +3341,7 @@ OPENCSTL_FUNC size_type64 __cstl_deque_count_if(void **container, CSTL_COND cond
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 cnt = 0;
-    {
+    size_type64 cnt = 0; {
         size_type64 i;
         for (i = 0; i < length; i++) {
             void *ptr = (char *) *container + (type_size * i);
@@ -3611,8 +3616,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type6
         iveb_insert(iveb, *container, (char *) (*container) + (type_size * new_capaciy), CT_VECTOR, type_size, type);
     }
     memmove((char *) *container + type_size * (pos + N), (char *) *container + type_size * pos,
-            (length - pos) * type_size);
-    {
+            (length - pos) * type_size); {
         size_type64 i;
         for (i = 0; i < N; i++) {
             memcpy((char *) *container + type_size * (pos + i), value, type_size);
@@ -3804,8 +3808,7 @@ OPENCSTL_FUNC size_type64 __cstl_vector_count(void **container, void *value) {
     }
 #endif
     CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
-    size_type64 cnt = 0;
-    {
+    size_type64 cnt = 0; {
         int i;
         for (i = 0; i < length; i++) {
             void *ptr = ((char *) *container) + (type_size * i);
@@ -3823,8 +3826,7 @@ OPENCSTL_FUNC size_type64 __cstl_vector_count_if(void **container, CSTL_COND con
     size_type64 length = OPENCSTL_NIDX(container, -1);
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_type64 cnt = 0;
-    {
+    size_type64 cnt = 0; {
         int i;
         for (i = 0; i < length; i++) {
             void *ptr = ((char *) *container) + (type_size * i);
@@ -4018,8 +4020,7 @@ OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_type64
 #endif
     void *nhead = __cstl_list_node(type_size);
     memcpy(nhead, value, type_size);
-    void *ntail = nhead;
-    {
+    void *ntail = nhead; {
         size_type64 i;
         for (i = 1; i < N; i++) {
             void *n = __cstl_list_node(type_size);
@@ -4143,8 +4144,7 @@ OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, 
     verify(cmp != NULL);
     if (*head == NULL || *tail == NULL || length < 2) {
         return;
-    }
-    {
+    } {
         size_type64 width;
         for (width = 1; width < length; width <<= 1) {
             void *curr = *head;
@@ -4740,8 +4740,7 @@ OPENCSTL_FUNC void __cstl_tree_erase(void **container, void **iter) {
     }
     if (y_original_color == (size_type64) BLACK) {
         __cstl_tree_erase_fixup(container, x);
-    }
-    {
+    } {
         void **freelist = (void **) &OPENCSTL_NIDX(container, -6);
         __cstl_arena_dealloc(freelist, (void *) &OPENCSTL_NIDX(&iter, -5));
         OPENCSTL_NIDX(container, -1) = (OPENCSTL_NIDX(container, -1)) - 1;
@@ -5174,8 +5173,7 @@ static void __ht_do_rehash(
     memcpy(new_raw, (char *) *container - header_sz, header_sz);
     uint8_t *new_ctrl = __ht_alloc_ctrl(new_cap);
     void *nb = (char *) new_raw + header_sz;
-    size_type64 new_mask = new_cap - 1;
-    {
+    size_type64 new_mask = new_cap - 1; {
         size_type64 i;
         for (i = 0; i < old_cap; i++) {
             if (old_ctrl[i] != HT_CTRL_EMPTY) {
@@ -5335,8 +5333,7 @@ OPENCSTL_FUNC
 void *__cstl_hashtable_begin(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
-    uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-    {
+    uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6); {
         size_type64 i;
         for (i = 0; i <= cap_mask; i++)
             if (ctrl[i] != HT_CTRL_EMPTY) {
@@ -5353,8 +5350,7 @@ OPENCSTL_FUNC
 void *__cstl_hashtable_rbegin(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE) + OPENCSTL_NIDX(container, -4);
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
-    uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-    {
+    uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6); {
         int i;
         for (i = (int) cap_mask; i >= 0; i--)
             if (ctrl[i] != HT_CTRL_EMPTY) {
@@ -5399,8 +5395,7 @@ void *__cstl_hashtable_next_prev(void *it, int n) {
     }
     if (n == -2) {
         size_type64 pos = ((char *) it - (char *) chtm->p1) / ts;
-        if (pos == 0) { return (char *) chtm->p1 - ts; }
-        {
+        if (pos == 0) { return (char *) chtm->p1 - ts; } {
             size_type64 i;
             for (i = pos - 1; ; i--) {
                 if (ctrl[i] != HT_CTRL_EMPTY) {
@@ -5444,8 +5439,7 @@ void __cstl_hashtable_reserve(void **container, size_type64 n) {
     memcpy(new_raw, (char *) *container - header_sz, header_sz);
     uint8_t *new_ctrl = __ht_alloc_ctrl(new_cap);
     void *nb = (char *) new_raw + header_sz;
-    size_type64 new_mask = new_cap - 1;
-    {
+    size_type64 new_mask = new_cap - 1; {
         size_type64 i;
         for (i = 0; i <= cap_mask_old; i++) {
             if (old_ctrl[i] != HT_CTRL_EMPTY) {
@@ -5669,8 +5663,7 @@ OPENCSTL_FUNC size_type64 __cstl_array_count(void **container, void *value) {
     }
 #endif
     CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
-    size_type64 cnt = 0;
-    {
+    size_type64 cnt = 0; {
         int i;
         for (i = 0; i < length; i++) {
             void *ptr = ((char *) *container) + (type_size * i);
@@ -5688,8 +5681,7 @@ OPENCSTL_FUNC size_type64 __cstl_array_count_if(void **container, CSTL_COND cond
     size_type64 length = OPENCSTL_NIDX(container, -1);
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-    size_type64 cnt = 0;
-    {
+    size_type64 cnt = 0; {
         int i;
         for (i = 0; i < length; i++) {
             void *ptr = ((char *) *container) + (type_size * i);
@@ -6645,8 +6637,7 @@ __mt19937_64_t __rng64 = {
 __mt19937_64_t __uuid64 = {0};
 
 static void __mt19937_64_uuid_seed(uint64_t seed) {
-    __uuid64.mt[0] = seed;
-    {
+    __uuid64.mt[0] = seed; {
         int i;
         for (i = 1; i < MT64_N; i++) {
             __uuid64.mt[i] = 6364136223846793005ULL * (__uuid64.mt[i - 1] ^ (__uuid64.mt[i - 1] >> 62)) + (uint64_t) i;
@@ -6656,8 +6647,7 @@ static void __mt19937_64_uuid_seed(uint64_t seed) {
 }
 
 static void __mt19937_64_seed(uint64_t seed) {
-    __rng64.mt[0] = seed;
-    {
+    __rng64.mt[0] = seed; {
         int i;
         for (i = 1; i < MT64_N; i++) {
             __rng64.mt[i] = 6364136223846793005ULL * (__rng64.mt[i - 1] ^ (__rng64.mt[i - 1] >> 62)) + (uint64_t) i;
@@ -6731,8 +6721,7 @@ char *__mt19937_uuid(void) {
 
 OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-    size_type64 length = OPENCSTL_NIDX(container, -1);
-    {
+    size_type64 length = OPENCSTL_NIDX(container, -1); {
         size_type64 i;
         for (i = length - 1; i > 0; i--) {
             size_type64 rng_idx = __mt19937_64_next() % (i + 1);
@@ -6744,8 +6733,7 @@ OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
 OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
-    {
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance); {
         size_type64 i;
         for (i = length - 1; i > 0; i--) {
             size_type64 rng_idx = __mt19937_64_next() % (i + 1);
@@ -6760,23 +6748,20 @@ OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
     size_type length = (size_type) OPENCSTL_NIDX(container, -1);
     if (length <= 1) { return; }
     void *ptr = malloc(type_size * length);
-    void *it = *head;
-    {
+    void *it = *head; {
         size_type i;
         for (i = 0; i < length; i++) {
             memcpy((char *) ptr + (i * type_size), it, type_size);
             it = __cstl_list_next_prev(it, -1);
         }
-    }
-    {
+    } {
         size_type i;
         for (i = length - 1; i > 0; i--) {
             size_type rng_idx = __mt19937_64_next() % (i + 1);
             swap((char *) ptr + i * type_size, (char *) ptr + rng_idx * type_size, type_size);
         }
     }
-    it = *head;
-    {
+    it = *head; {
         size_type i;
         for (i = 0; i < length; i++) {
             memcpy(it, (char *) ptr + (i * type_size), type_size);
@@ -6943,8 +6928,7 @@ void fpm_append(FILE *fp, char *filepath) {
 }
 
 void fpm_erase(FILE *fp) {
-    int idx = -1;
-    {
+    int idx = -1; {
         int i;
         for (i = 0; i < fpm_size; i++) {
             if (fpm[i].fp == fp) {
@@ -6959,8 +6943,7 @@ void fpm_erase(FILE *fp) {
 }
 
 char *fpm_get(FILE *fp) {
-    int idx = -1;
-    {
+    int idx = -1; {
         int i;
         for (i = 0; i < fpm_size; i++) {
             if (fpm[i].fp == fp) {
@@ -7006,8 +6989,7 @@ char *__cstl_get_line(FILE *fp) {
     if (!found_any && len == 0) { return NULL; }
     if (fseek(fp, start, SEEK_SET) != 0) { return NULL; }
     char *buf = (char *) calloc(len + 1, sizeof(char));
-    if (!buf) { return NULL; }
-    {
+    if (!buf) { return NULL; } {
         size_type64 i;
         for (i = 0; i < len; i++) {
             int ch = fgetc(fp);
@@ -7145,8 +7127,7 @@ static char *__cstl_join(char *path1, char *path2) {
 
 static char *__cstl_basename(char *path) {
     size_type64 len = strlen(path);
-    size_type64 start = 0;
-    {
+    size_type64 start = 0; {
         size_type64 i;
         for (i = 0; i < len; i++) {
             if (__cstl_is_sep(path[i])) { start = i + 1; }
@@ -7161,8 +7142,7 @@ static char *__cstl_basename(char *path) {
 
 static char **__cstl_splitext(char *path) {
     size_type64 len = strlen(path);
-    size_type64 base_start = 0;
-    {
+    size_type64 base_start = 0; {
         size_type64 i;
         for (i = 0; i < len; i++) {
             if (__cstl_is_sep(path[i])) { base_start = i + 1; }
@@ -7170,8 +7150,7 @@ static char **__cstl_splitext(char *path) {
     }
     size_type64 nonleading = base_start;
     while (nonleading < len && path[nonleading] == '.') nonleading++;
-    size_type64 dot_pos = (size_type64) -1;
-    {
+    size_type64 dot_pos = (size_type64) -1; {
         size_type64 i;
         for (i = nonleading; i < len; i++) {
             if (path[i] == '.') { dot_pos = i; }
@@ -7210,8 +7189,7 @@ static void __cstl_makedirs(char *path) {
     size_type64 len = strlen(path);
     if (len == 0) { return; }
     char *tmp = (char *) malloc(len + 1);
-    memcpy(tmp, path, len + 1);
-    {
+    memcpy(tmp, path, len + 1); {
         size_type64 i;
         for (i = 1; i < len; i++) {
             if (__cstl_is_sep(tmp[i])) {
@@ -7248,8 +7226,7 @@ static void __cstl_rename(char *oldpath, char *newpath) {
 
 static char *__cstl_dirname(char *path) {
     size_type64 len = strlen(path);
-    size_type64 last_sep = (size_type64) -1;
-    {
+    size_type64 last_sep = (size_type64) -1; {
         size_type64 i;
         for (i = 0; i < len; i++) {
             if (__cstl_is_sep(path[i])) { last_sep = i; }
@@ -7402,8 +7379,7 @@ static FileSystem fs = {
 static void isort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
     char *arr = (char *) base;
     char sbuf[1024];
-    char *tmp = (width <= sizeof(sbuf)) ? sbuf : (char *) malloc(width);
-    {
+    char *tmp = (width <= sizeof(sbuf)) ? sbuf : (char *) malloc(width); {
         size_type64 i;
         for (i = 1; i < number; i++) {
             memcpy(tmp, arr + i * width, width);
@@ -7468,8 +7444,7 @@ static void msort_merge(char *arr, size_type64 len1, size_type64 len2, size_type
 static void msort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
     if (number < 2) { return; }
     char *arr = (char *) base;
-    size_type64 sz = width;
-    {
+    size_type64 sz = width; {
         size_type64 i;
         for (i = 0; i < number; i += MSORT_ISORT_THRESH) {
             size_type64 blk = number - i;
@@ -7478,8 +7453,7 @@ static void msort(void *base, size_type64 number, size_type64 width, CSTL_COMPAR
         }
     }
     char *buf = (char *) calloc(((number + 1) / 2), sz);
-    if (!buf) { return; }
-    {
+    if (!buf) { return; } {
         size_type64 mb;
         for (mb = MSORT_ISORT_THRESH; mb < number; mb *= 2) {
             {
@@ -7521,8 +7495,7 @@ static inline size_type64 ts_minrun(size_type64 n) {
 static void ts_binsort(char *arr, size_type64 lo, size_type64 hi, size_type64 start,
                        size_type64 sz, CSTL_COMPARE cmp) {
     char sbuf[1024];
-    char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz);
-    {
+    char *tmp = (sz <= sizeof(sbuf)) ? sbuf : (char *) malloc(sz); {
         size_type64 i;
         for (i = start; i < hi; i++) {
             memcpy(tmp, arr + i * sz, sz);
@@ -7712,8 +7685,7 @@ static void ts_merge_collapse(char *arr, struct ts_run *stk, size_type64 *sp,
         if (!need_merge) { break; }
         ts_do_merge(arr, stk[n].base, stk[n].len, stk[n + 1].len,
                     sz, cmp, buf);
-        stk[n].len += stk[n + 1].len;
-        {
+        stk[n].len += stk[n + 1].len; {
             size_type64 i;
             for (i = n + 1; i + 1 < *sp; i++)
                 stk[i] = stk[i + 1];
@@ -7729,8 +7701,7 @@ static void ts_merge_force(char *arr, struct ts_run *stk, size_type64 *sp,
         if (n > 0 && stk[n - 1].len < stk[n + 1].len) { n--; }
         ts_do_merge(arr, stk[n].base, stk[n].len, stk[n + 1].len,
                     sz, cmp, buf);
-        stk[n].len += stk[n + 1].len;
-        {
+        stk[n].len += stk[n + 1].len; {
             size_type64 i;
             for (i = n + 1; i + 1 < *sp; i++)
                 stk[i] = stk[i + 1];
@@ -7804,8 +7775,7 @@ static void pdq__swap(unsigned char *a, unsigned char *b, size_type64 n) {
         memcpy(a, b, 4);
         memcpy(b, &t, 4);
     } else {
-        unsigned char t;
-        {
+        unsigned char t; {
             size_type64 i;
             for (i = 0; i < n; ++i) {
                 t = a[i];
@@ -7829,15 +7799,13 @@ static inline size_type64 pdq_log2(size_type64 n) {
 
 static void pdq_isort(unsigned char *base, size_type64 n, size_type64 sz,
                       int (*cmp)(const void *, const void *), unsigned char *tmp) {
-    if (n < 2) { return; }
-    {
+    if (n < 2) { return; } {
         size_type64 i;
         for (i = 1; i < n; ++i)
             if (cmp(PDQ_ELEM(base, i), base) < 0) {
                 pdq__swap(PDQ_ELEM(base, i), base, sz);
             }
-    }
-    {
+    } {
         size_type64 i;
         for (i = 2; i < n; ++i) {
             unsigned char *c = PDQ_ELEM(base, i);
@@ -7874,8 +7842,7 @@ static void pdq_isort_unguard(unsigned char *base, size_type64 n, size_type64 sz
 static int pdq_partial_isort(unsigned char *base, size_type64 n, size_type64 sz,
                              int (*cmp)(const void *, const void *), unsigned char *tmp) {
     if (n < 2) { return 1; }
-    size_type64 cnt = 0;
-    {
+    size_type64 cnt = 0; {
         size_type64 i;
         for (i = 1; i < n; ++i) {
             unsigned char *c = PDQ_ELEM(base, i);
@@ -7944,12 +7911,10 @@ static void pdq_sift(unsigned char *base, size_type64 root, size_type64 n,
 }
 
 static void pdq_heap(unsigned char *base, size_type64 n, size_type64 sz, int (*cmp)(const void *, const void *)) {
-    if (n < 2) { return; }
-    {
+    if (n < 2) { return; } {
         size_type64 i;
         for (i = n / 2; i-- > 0;) pdq_sift(base, i, n, sz, cmp);
-    }
-    {
+    } {
         size_type64 e;
         for (e = n; e-- > 1;) {
             pdq__swap(base, PDQ_ELEM(base, e), sz);
@@ -8474,8 +8439,7 @@ static void rsort32(int32_t *__base, size_type64 n) {
     int32_t *tmp = (int32_t *) malloc(n * sizeof(int32_t));
     if (tmp == NULL) {
         return;
-    }
-    {
+    } {
         size_type64 count[256];
         size_type64 pass, i;
         uint32_t sign_mask = (uint32_t) 1u << (sizeof(int32_t) * CHAR_BIT - 1);
@@ -8512,8 +8476,7 @@ static void rsort64(int64_t *__base, size_type64 n) {
     int64_t *tmp = (int64_t *) malloc(n * sizeof(int64_t));
     if (tmp == NULL) {
         return;
-    }
-    {
+    } {
         size_type64 count[256];
         size_type64 pass, i;
         uint64_t sign_mask = (uint64_t) 1ULL << (sizeof(int64_t) * CHAR_BIT - 1);
@@ -8746,8 +8709,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
             if (cmp == NULL) {
                 fault("Compare function is NULL");
                 return 0;
-            }
-            {
+            } {
                 size_type64 i;
                 for (i = 1; i < length; i++) {
                     if (cmp((char *) container + (i - 1) * type_size,
@@ -8806,8 +8768,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
                 return 0;
                 return 0;
                 return 0;
-            }
-            {
+            } {
                 size_type64 i;
                 for (i = 1; i < length; i++) {
                     if (cmp((char *) container + (i - 1) * type_size,
@@ -8984,8 +8945,7 @@ static size_type __cstl_bitset_count(BITSET b) {
 static bool __cstl_bitset_all(BITSET b) {
     if (b.nbits == 0) { return true; }
     size_type full_bytes = b.nbits / 8;
-    size_type rem = b.nbits % 8;
-    {
+    size_type rem = b.nbits % 8; {
         size_type i;
         for (i = 0; i < full_bytes; i++) {
             if (b.bits[i] != 0xFF) { return false; }
@@ -9001,8 +8961,7 @@ static bool __cstl_bitset_all(BITSET b) {
 static bool __cstl_bitset_any(BITSET b) {
     if (b.nbits == 0) { return false; }
     size_type full_bytes = b.nbits / 8;
-    size_type rem = b.nbits % 8;
-    {
+    size_type rem = b.nbits % 8; {
         size_type i;
         for (i = 0; i < full_bytes; i++) {
             if (b.bits[i] != 0) { return true; }
@@ -9021,8 +8980,7 @@ static bool __cstl_bitset_none(BITSET b) {
 
 static void __cstl_bitset_flip(BITSET b) {
     size_type full_bytes = b.nbits / 8;
-    size_type rem = b.nbits % 8;
-    {
+    size_type rem = b.nbits % 8; {
         size_type i;
         for (i = 0; i < full_bytes; i++) {
             b.bits[i] = ~b.bits[i];
@@ -9050,8 +9008,7 @@ static bool __cstl_bitset_test(BITSET b, size_type idx) {
     return (b.bits[byte_idx] >> bit_idx) & 1;
 }
 
-static char *__cstl_bitset_to_string(BITSET b) {
-    {
+static char *__cstl_bitset_to_string(BITSET b) { {
         size_type i;
         for (i = 0; i < b.nbits; i++) {
             size_type bit_pos = b.nbits - 1 - i;
@@ -9202,8 +9159,7 @@ static char *__cstl_string_trim(const char *src) {
 
 static char *__cstl_string_to_upper(const char *src) {
     size_type64 len = strlen(src);
-    char *ret = (char *) malloc(len + 1);
-    {
+    char *ret = (char *) malloc(len + 1); {
         size_type64 i;
         for (i = 0; i < len; i++) ret[i] = (char) toupper((unsigned char) src[i]);
     }
@@ -9213,8 +9169,7 @@ static char *__cstl_string_to_upper(const char *src) {
 
 static char *__cstl_string_to_lower(const char *src) {
     size_type64 len = strlen(src);
-    char *ret = (char *) malloc(len + 1);
-    {
+    char *ret = (char *) malloc(len + 1); {
         size_type64 i;
         for (i = 0; i < len; i++) ret[i] = (char) tolower((unsigned char) src[i]);
     }
@@ -9253,15 +9208,13 @@ static char *__cstl_string_join(char **parts, int n, const char *delim) {
         return empty;
     }
     size_type64 dlen = strlen(delim);
-    size_type64 total = 0;
-    {
+    size_type64 total = 0; {
         int i;
         for (i = 0; i < n; i++) total += strlen(parts[i]);
     }
     total += dlen * (n - 1) + 1;
     char *ret = (char *) malloc(total);
-    char *dst = ret;
-    {
+    char *dst = ret; {
         int i;
         for (i = 0; i < n; i++) {
             if (i > 0) {
@@ -9288,8 +9241,7 @@ static char *__cstl_string_concat(const char *a, const char *b) {
 
 static char *__cstl_string_reverse(const char *src) {
     size_type64 len = strlen(src);
-    char *ret = (char *) malloc(len + 1);
-    {
+    char *ret = (char *) malloc(len + 1); {
         size_type64 i;
         for (i = 0; i < len; i++) ret[i] = src[len - 1 - i];
     }
@@ -9298,8 +9250,7 @@ static char *__cstl_string_reverse(const char *src) {
 }
 
 static bool __cstl_string_is_digit(const char *src) {
-    if (!*src) { return false; }
-    {
+    if (!*src) { return false; } {
         const char *p;
         for (p = src; *p; p++)
             if (!isdigit((unsigned char) *p)) { return false; }
@@ -9308,8 +9259,7 @@ static bool __cstl_string_is_digit(const char *src) {
 }
 
 static bool __cstl_string_is_alpha(const char *src) {
-    if (!*src) { return false; }
-    {
+    if (!*src) { return false; } {
         const char *p;
         for (p = src; *p; p++)
             if (!isalpha((unsigned char) *p)) { return false; }
@@ -9318,8 +9268,7 @@ static bool __cstl_string_is_alpha(const char *src) {
 }
 
 static bool __cstl_string_is_alnum(const char *src) {
-    if (!*src) { return false; }
-    {
+    if (!*src) { return false; } {
         const char *p;
         for (p = src; *p; p++)
             if (!isalnum((unsigned char) *p)) { return false; }
@@ -9328,8 +9277,7 @@ static bool __cstl_string_is_alnum(const char *src) {
 }
 
 static bool __cstl_string_is_space(const char *src) {
-    if (!*src) { return false; }
-    {
+    if (!*src) { return false; } {
         const char *p;
         for (p = src; *p; p++)
             if (!isspace((unsigned char) *p)) { return false; }
@@ -9685,8 +9633,7 @@ static void __cstl_glob_parse_(const char *pat,
 #endif
     int cap = 8, n = 0;
     char **segs = (char **) malloc(cap * sizeof(char *));
-    const char *start = rest;
-    {
+    const char *start = rest; {
         const char *p;
         for (p = rest; ; p++) {
             if (__cstl_glob_is_sep(*p) || *p == '\0') {
@@ -9740,8 +9687,7 @@ static void __cstl_glob_walk_(const char *base,
     if (recursive && strcmp(seg, "**") == 0) {
         __cstl_glob_walk_(base, segs, i + 1, n, recursive, out);
         int dn;
-        char **dnames = __cstl_glob_listdir_(base, &dn);
-        {
+        char **dnames = __cstl_glob_listdir_(base, &dn); {
             int k;
             for (k = 0; k < dn; k++) {
                 if (dnames[k][0] != '.') {
@@ -9770,8 +9716,7 @@ static void __cstl_glob_walk_(const char *base,
     }
     int dn;
     char **dnames = __cstl_glob_listdir_(base, &dn);
-    bool pat_starts_dot = (seg[0] == '.');
-    {
+    bool pat_starts_dot = (seg[0] == '.'); {
         int k;
         for (k = 0; k < dn; k++) {
             if (dnames[k][0] == '.' && !pat_starts_dot) {
@@ -9799,10 +9744,10 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
     int n_segs;
     __cstl_glob_parse_(pattern, &base, &segs, &n_segs);
     __cstl_glob_result_ r = {0};
-    __cstl_glob_walk_(base, segs, 0, n_segs, recursive, &r);
-    {
+    __cstl_glob_walk_(base, segs, 0, n_segs, recursive, &r); {
         int i;
-        for (i = 0; i < n_segs; i++) free(segs[i]);
+        for (i = 0; i < n_segs; i++)
+            free(segs[i]);
     }
     free(segs);
     free(base);
@@ -9811,12 +9756,10 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
     } else if (r.cnt + 1 > r.cap) {
         r.items = (char **) realloc(r.items, (r.cnt + 1) * sizeof(char *));
     }
-    r.items[r.cnt] = NULL;
-    {
+    r.items[r.cnt] = NULL; {
         int i;
         for (i = 0; i < r.cnt; i++) {
-            char *s = r.items[i];
-            {
+            char *s = r.items[i]; {
                 char *p;
                 for (p = s; *p; p++) {
                     if (*p == '\\') { *p = '/'; }
@@ -9841,10 +9784,10 @@ static char **__cstl_glob_impl_(const char *pattern, bool recursive) {
 }
 
 static void __glob_free(char **results) {
-    if (!results) { return; }
-    {
+    if (!results) { return; } {
         char **p;
-        for (p = results; *p; p++) free(*p);
+        for (p = results; *p; p++)
+            free(*p);
     }
     iveb_erase(iveb, results);
     free(results);
@@ -9888,8 +9831,7 @@ static void MsgBoxCLI(const char *format, ...) {
     const char *vline = "\xE2\x94\x81";
     const char *hline = "\xE2\x94\x83";
     int inner = width - 2;
-    fputs(tl, stdout);
-    {
+    fputs(tl, stdout); {
         int i;
         for (i = 0; i < inner; i++) fputs(vline, stdout);
     }
@@ -9904,13 +9846,11 @@ static void MsgBoxCLI(const char *format, ...) {
             int rpadding = inner - len - lpadding;
             if (lpadding < 0) { lpadding = 0; }
             if (rpadding < 0) { rpadding = 0; }
-            fputs(hline, stdout);
-            {
+            fputs(hline, stdout); {
                 int i;
                 for (i = 0; i < lpadding; i++) putchar(' ');
             }
-            fwrite(line_start, 1, (size_type64) len, stdout);
-            {
+            fwrite(line_start, 1, (size_type64) len, stdout); {
                 int i;
                 for (i = 0; i < rpadding; i++) putchar(' ');
             }
@@ -9921,8 +9861,7 @@ static void MsgBoxCLI(const char *format, ...) {
         }
         p++;
     }
-    fputs(bl, stdout);
-    {
+    fputs(bl, stdout); {
         int i;
         for (i = 0; i < inner; i++) fputs(vline, stdout);
     }
@@ -10234,8 +10173,7 @@ char *__as_string() {
     size_type64 cap = (size_type64) (end - start) + 1;
     char *out = (char *) malloc(cap);
     if (!out) { return NULL; }
-    char *dst = out;
-    {
+    char *dst = out; {
         char *s;
         for (s = start; s < end; s++) {
             if (*s != '\\' || s + 1 >= end) {
@@ -10422,7 +10360,10 @@ JSON_TOKEN *__parse(char *json_str) {
 JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
     if (!root || !keys) { return NULL; }
     char buf[1024];
-#if defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_CLANG)
+#if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_CLANG)
+    strncpy(buf, keys, sizeof(buf) - 1);
+    buf[sizeof(buf) - 1] = '\0';
+#elif defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_CLANG)
     strncpy_s(buf, sizeof(buf), keys, _TRUNCATE);
 #else
     strncpy(buf, keys, sizeof(buf) - 1);
@@ -10435,8 +10376,7 @@ JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
         JSON_TOKEN *found = NULL;
         if (cur->p && *(cur->p) == '[') {
             int idx = atoi(tok);
-            JSON_TOKEN *c = cur->children;
-            {
+            JSON_TOKEN *c = cur->children; {
                 int i;
                 for (i = 0; c && i < idx; i++) c = c->next;
             }
@@ -10494,14 +10434,12 @@ void __free_json(JSON *root) {
 }
 
 static void __dumps(JSON_TOKEN *node, int depth) {
-    if (!node || !node->p || !node->q) { return; }
-    {
+    if (!node || !node->p || !node->q) { return; } {
         int i;
         for (i = 0; i < depth; i++) printf("  ");
     }
     int len = (int) (node->q - node->p + 1);
-    if (node->key[0]) { printf("\"%s\": [%.*s]\n", node->key, len, node->p); } else { printf("[%.*s]\n", len, node->p); }
-    {
+    if (node->key[0]) { printf("\"%s\": [%.*s]\n", node->key, len, node->p); } else { printf("[%.*s]\n", len, node->p); } {
         JSON_TOKEN *c;
         for (c = node->children; c; c = c->next) __dumps(c, depth + 1);
     }
@@ -10626,8 +10564,7 @@ static CSV __parse_csv(char *csv_path, bool is_header) {
         row_cols[total_rows++] = ncols;
         if (ncols > max_cols) { max_cols = ncols; }
     }
-done_pass1:;
-    {
+done_pass1:; {
         int i;
         for (i = 0; i < total_rows; i++)
             if (row_cols[i] < max_cols) {
@@ -10645,8 +10582,7 @@ done_pass1:;
     char ***table = (char ***) mem;
     char **cells = (char **) (mem + off1);
     char **hdr = is_header ? (char **) (mem + off1 + off2) : NULL;
-    char *sdata = mem + off1 + off2 + off3;
-    {
+    char *sdata = mem + off1 + off2 + off3; {
         int i;
         for (i = 0; i < data_rows; i++)
             table[i] = cells + i * max_cols;
@@ -10667,8 +10603,7 @@ done_pass1:;
             *sp++ = '\0';
         }
     }
-    int start = is_header ? 1 : 0;
-    {
+    int start = is_header ? 1 : 0; {
         int i;
         for (i = start; i < total_rows; i++) {
             int di = i - start, j = 0, eol = 0;
