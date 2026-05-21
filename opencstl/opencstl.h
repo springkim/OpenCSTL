@@ -87,7 +87,7 @@ extern "C" {
 #pragma GCC diagnostic ignored "-Wnonnull"
 #pragma GCC diagnostic ignored "-Wcast-function-type"
 #pragma GCC diagnostic ignored "-Wformat="
-#pragma GCC diagnostic ignored "-Wnonnull"
+#pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
 
 #include "zalloc.h"

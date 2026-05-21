@@ -39,6 +39,9 @@
 #if !defined(HG_E68C84B2551466CAD9CC203A4EAD4DF4B495442F0528FF84F6471E6C53DF3A88_H)
 #define HG_E68C84B2551466CAD9CC203A4EAD4DF4B495442F0528FF84F6471E6C53DF3A88_H
 
+#if defined(__cplusplus)
+#define OCSTL_CPP
+#endif
 
 #if defined(_WIN32) || defined(_WIN64)
 #define OPENCSTL_OS_WINDOWS
@@ -178,6 +181,7 @@ typedef long long _opencstl_ll_ua;
 #define cstl_rend(container)	    _cstl_rend(&(container))
 
 
+
 #define cstl_clear(container)	    _cstl_clear(&(container))
 #define cstl_empty(container)	    _cstl_empty(&(container))
 #define cstl_free(container)	    _cstl_free(&(container), sizeof(container))
@@ -255,8 +259,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #endif
 
 
-#if defined(_WIN32) || defined(_WIN64)
-
+#if defined(OCSTL_OS_WINDOWS)
 
 #define cstl_push(container,...)	_cstl_push(&(container),__VA_ARGS__)
 #define cstl_push_back(container,...)	_cstl_push_back(&(container),__VA_ARGS__)
@@ -281,7 +284,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define cstl_max_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 1LL, NULL)
 #define cstl_min_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 0LL, NULL)
 
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MAC)
 
 // _CSTL_TYPEOF is now defined unconditionally above the platform branch.
 
@@ -392,7 +395,6 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define _cstl_push_10(C,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    {_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(1?(_1):(_1)) __1=(_1);_CSTL_TYPEOF(1?(_2):(_2)) __2=(_2);_CSTL_TYPEOF(1?(_3):(_3)) __3=(_3);_CSTL_TYPEOF(1?(_4):(_4)) __4=(_4);_CSTL_TYPEOF(1?(_5):(_5)) __5=(_5);_CSTL_TYPEOF(1?(_6):(_6)) __6=(_6);_CSTL_TYPEOF(1?(_7):(_7)) __7=(_7);_CSTL_TYPEOF(1?(_8):(_8)) __8=(_8);_CSTL_TYPEOF(1?(_9):(_9)) __9=(_9);_CSTL_TYPEOF(1?(_10):(_10)) __10=(_10);_cstl_push( __0,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}
 
 
-
 #define cstl_max_size(container) _cstl_max_size(&container)
 #define cstl_shrink_to_fit(container) _cstl_shrink_to_fit(&(container))
 #define cstl_reverse(container) _cstl_reverse(&(container))
@@ -445,6 +447,3 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define _cstl_upper_bound_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(1?(_1):(_1)) __1=(_1);_CSTL_TYPEOF(1?(_2):(_2)) __2=(_2);_CSTL_TYPEOF(1?(_3):(_3)) __3=(_3);_CSTL_TYPEOF(1?(_4):(_4)) __4=(_4);_CSTL_TYPEOF(1?(_5):(_5)) __5=(_5);_CSTL_TYPEOF(1?(_6):(_6)) __6=(_6);_CSTL_TYPEOF(1?(_7):(_7)) __7=(_7);_CSTL_TYPEOF(1?(_8):(_8)) __8=(_8);_CSTL_TYPEOF(1?(_9):(_9)) __9=(_9);_CSTL_TYPEOF(1?(_10):(_10)) __10=(_10);_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
 
 #endif
-
-
-
