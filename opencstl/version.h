@@ -38,7 +38,7 @@
 #define HG_3282159A01880257F6A4E53AEC354ACB6F7CF5BC34243136D0AE684B74FB1426_H
 #include "crossplatform.h"
 
-static char *OPENCSTL_VERSION = "v1.4.1";
+static char *OPENCSTL_VERSION = "v1.4.2";
 
 static char *opencstl_version(void) {
     return OPENCSTL_VERSION;

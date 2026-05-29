@@ -187,7 +187,6 @@ typedef long long _opencstl_ll_ua;
 #define cstl_rend(container)	    _cstl_rend(&(container))
 
 
-
 #define cstl_clear(container)	    _cstl_clear(&(container))
 #define cstl_empty(container)	    _cstl_empty(&(container))
 #define cstl_free(container)	    _cstl_free(&(container), sizeof(container))
@@ -287,8 +286,8 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define cstl_lower_bound(container,...)	_cstl_lower_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 #define cstl_upper_bound(container,...)	_cstl_upper_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 
-#define cstl_max_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 1LL, NULL)
-#define cstl_min_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 0LL, NULL)
+#define cstl_max_element(C, ...) ocstl_min_max_element(&(C), 1LL, ##__VA_ARGS__, NULL)
+#define cstl_min_element(C, ...) ocstl_min_max_element(&(C), 0LL, ##__VA_ARGS__, NULL)
 
 #elif defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS)
 

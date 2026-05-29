@@ -9,8 +9,32 @@ typedef long long DTYPE;
 COMPARE(DTYPE);
 
 typedef int (*CMPFUNC)(const void *, const void *);
+#if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
+#include <dlfcn.h>
 
+typedef void (*MSORT_FUNC)(
+    void *base,
+    size_t number,
+    size_t width,
+    int (*compare)(const void *, const void *)
+);
+
+MSORT_FUNC msort_v2;
+
+#endif
 int sort_test() {
+#if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
+    void *handle = dlopen("./msort.dylib", RTLD_NOW);
+
+    if (!handle) {
+        fprintf(stderr, "dlopen failed: %s\n", dlerror());
+        return 1;
+    }
+
+    dlerror();
+
+    msort_v2 = (MSORT_FUNC) dlsym(handle, "msort");
+#endif
     CMPFUNC compare = cmp;
 
     DTYPE N = 1000000;
@@ -52,7 +76,11 @@ int sort_test() {
                 break;
             case 1: {
                 t_beg = ttime();
+#if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
+                msort_v2(target, N, sizeof(DTYPE), compare);
+#else
                 msort(target, N, sizeof(DTYPE), compare);
+#endif
                 t_end = ttime();
                 m_diff += t_end - t_beg;
             };
@@ -108,6 +136,11 @@ int sort_test() {
 
     free(target);
     destroy(arr);
+
+
+#if defined(OCSTL_OS_MACOS) && defined(OCSTL_CC_TCC)
+    dlclose(handle);
+#endif
     return 0;
 }
 

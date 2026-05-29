@@ -74,6 +74,18 @@ OPENCSTL_FUNC void *__cstl_array(size_type64 type_size, char *type, size_type64 
     OPENCSTL_NIDX(container, -3) = 0; //
     OPENCSTL_NIDX(container, -2) = _count; //capacity
     OPENCSTL_NIDX(container, -1) = _count; //length
+
+    // Register in the interval tree so algorithms (max/min_element, generic
+    // iterator step, etc.) can look up the type info for this container.
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, ptr, (char *) ptr + (type_size * _count), CT_VECTOR, type_size, type);
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return ptr;
 }
 
@@ -127,15 +139,19 @@ OPENCSTL_FUNC void *__cstl_array_find(void **container, void *iter_begin, void *
         value = &valuef;
     }
 #endif
-    { size_type64 i; for (i = pos; i < length; i++) {
-        if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
-            return (char *) *container + type_size * (i);
+    {
+        size_type64 i;
+        for (i = pos; i < length; i++) {
+            if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
+                return (char *) *container + type_size * (i);
+            }
         }
-    } }
+    }
     return NULL;
 }
 
 OPENCSTL_FUNC void __cstl_array_free(void **container) {
+    iveb_erase(iveb, *container);
 #ifdef OPENCSTL_TRACER
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     gfree((char *) (*container) - header_sz);
@@ -193,12 +209,15 @@ OPENCSTL_FUNC size_type64 __cstl_array_count(void **container, void *value) {
 #endif
     CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
     size_type64 cnt = 0;
-    { int i; for (i = 0; i < length; i++) {
-        void *ptr = ((char *) *container) + (type_size * i);
-        if (is_equal(ptr, value, type_size) == 0) {
-            cnt++;
+    {
+        int i;
+        for (i = 0; i < length; i++) {
+            void *ptr = ((char *) *container) + (type_size * i);
+            if (is_equal(ptr, value, type_size) == 0) {
+                cnt++;
+            }
         }
-    } }
+    }
     return cnt;
 }
 
@@ -211,12 +230,15 @@ OPENCSTL_FUNC size_type64 __cstl_array_count_if(void **container, CSTL_COND cond
 
 
     size_type64 cnt = 0;
-    { int i; for (i = 0; i < length; i++) {
-        void *ptr = ((char *) *container) + (type_size * i);
-        if (cond(ptr)) {
-            cnt++;
+    {
+        int i;
+        for (i = 0; i < length; i++) {
+            void *ptr = ((char *) *container) + (type_size * i);
+            if (cond(ptr)) {
+                cnt++;
+            }
         }
-    } }
+    }
     return cnt;
 }
 
@@ -248,8 +270,7 @@ OPENCSTL_FUNC void *__cstl_array_lower_bound(void **container, void *value, CSTL
 
         if (compare(Mptr, value) < 0) {
             L = M + 1;
-        }
-        else {
+        } else {
             R = M;
         }
     }
@@ -284,8 +305,7 @@ OPENCSTL_FUNC void *__cstl_array_upper_bound(void **container, void *value, CSTL
 
         if (compare(value, Mptr) < 0) {
             R = M;
-        }
-        else {
+        } else {
             L = M + 1;
         }
     }

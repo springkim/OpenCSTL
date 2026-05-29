@@ -41,65 +41,55 @@
 
 
 #ifdef OPENCSTL_TRACER
-typedef void( * free_fn)(void * ptr);
 
-typedef void * ( * malloc_fn)(size_t sz);
 
-typedef void * ( * realloc_fn)(void * ptr, size_t new_size);
-
-typedef void * ( * calloc_fn)(size_t cnt, size_t sz);
-
-static free_fn ofree = free;
-static malloc_fn omalloc = malloc;
-static realloc_fn orealloc = realloc;
-static calloc_fn ocalloc = calloc;
-
-static void zfree(void * ptr) {
-  zremove(ptr);
-  ofree(ptr);
-}
-
-static void * _zcalloc(size_type64 cnt, size_type64 sz, char * file,
-  const char * func, int line) {
-  void * ptr = ocalloc(cnt, sz);
-  if (ptr) {
-    zinsert(ptr, file, func, line);
-  }
-  return ptr;
-}
-
-static void * _zmalloc(size_type64 sz, char * file,
-  const char * func, int line) {
-  void * ptr = omalloc(sz);
-  if (ptr) {
-    zinsert(ptr, file, func, line);
-  }
-  return ptr;
-}
-
-static void * _zrealloc(void * ptr, size_type64 new_size, char * file,
-  const char * func, int line) {
-  if (ptr == NULL) {
-    return _zmalloc(new_size, file, func, line);
-  }
-
-  if (new_size == 0) {
-    zfree(ptr);
-    return NULL;
-  }
-
-  void * new_ptr = orealloc(ptr, new_size);
-  if (new_ptr == NULL) {
-    return NULL;
-  }
-
-  if (new_ptr != ptr) {
+static void zfree(void *ptr) {
     zremove(ptr);
-    zinsert(new_ptr, file, func, line);
-  }
-
-  return new_ptr;
+    ofree(ptr);
 }
+
+static void *_zcalloc(size_type64 cnt, size_type64 sz, char *file,
+                      const char *func, int line) {
+    void *ptr = ocalloc(cnt, sz);
+    if (ptr) {
+        zinsert(ptr, file, func, line);
+    }
+    return ptr;
+}
+
+static void *_zmalloc(size_type64 sz, char *file,
+                      const char *func, int line) {
+    void *ptr = omalloc(sz);
+    if (ptr) {
+        zinsert(ptr, file, func, line);
+    }
+    return ptr;
+}
+
+static void *_zrealloc(void *ptr, size_type64 new_size, char *file,
+                       const char *func, int line) {
+    if (ptr == NULL) {
+        return _zmalloc(new_size, file, func, line);
+    }
+
+    if (new_size == 0) {
+        zfree(ptr);
+        return NULL;
+    }
+
+    void *new_ptr = orealloc(ptr, new_size);
+    if (new_ptr == NULL) {
+        return NULL;
+    }
+
+    if (new_ptr != ptr) {
+        zremove(ptr);
+        zinsert(new_ptr, file, func, line);
+    }
+
+    return new_ptr;
+}
+
 
 #define free(ptr) zfree(ptr)
 #define calloc(cnt, sz) _zcalloc(cnt, sz, __FILE__, __func__, __LINE__)

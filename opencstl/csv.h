@@ -84,21 +84,22 @@ static CSV __parse_csv(char *csv_path, bool is_header) {
     // ── 파일 전체를 한 번에 읽기 ─────────────────────────────────────────
     FILE *f = file.open(csv_path, "rb");
     if (!f) { return ret; }
-    fseek(f, 0, SEEK_END);
+    if (fseek(f, 0, SEEK_END) != 0) { file.close(f); return ret; }
     long fsz = ftell(f);
     rewind(f);
-    verify(fsz > 0);
-
-
-
+    // ftell failure (non-seekable input like a pipe) or empty file → empty CSV.
+    if (fsz <= 0) { file.close(f); return ret; }
 
     char *buf = (char *) malloc((size_t) fsz);
     verify(buf!=NULL);
 
-    fread(buf, 1, (size_t) fsz, f);
+    // Use the actual byte count from fread; a short read (I/O error, EINTR,
+    // truncated file) would otherwise leave the tail of buf uninitialised
+    // and the parser would walk into garbage.
+    size_t got = fread(buf, 1, (size_t) fsz, f);
     file.close(f);
 
-    const char *end = buf + fsz;
+    const char *end = buf + got;
 
     // ── Pass 1: 행 수 / 열 수 / 문자열 바이트 합산 ──────────────────────
     int total_rows = 0;

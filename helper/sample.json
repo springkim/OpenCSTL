@@ -1,6 +1,6 @@
 {
-  "title": "sample.json",
   "2": 8,
+  "title": "sample.json",
   "arrays": [
     1,
     2,
@@ -33,5 +33,37 @@
       "four",
       "five"
     ]
-  }
+  },
+  "data": [
+    {
+      "supercategory": "furniture",
+      "id": 70,
+      "name": "toilet"
+    },
+    {
+      "supercategory": "electronic",
+      "id": 72,
+      "name": "tv"
+    },
+    {
+      "supercategory": "electronic",
+      "id": 73,
+      "name": "laptop"
+    },
+    {
+      "supercategory": "electronic",
+      "id": 74,
+      "name": "mouse"
+    },
+    {
+      "supercategory": "electronic",
+      "id": 75,
+      "name": "remote"
+    },
+    {
+      "supercategory": "electronic",
+      "id": 76,
+      "name": "keyboard"
+    }
+  ]
 }

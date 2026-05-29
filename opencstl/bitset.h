@@ -147,13 +147,14 @@ typedef char * (*bitset_fn7)(BITSET b);
 // ██████╦╝██║░░░██║░░░██████╔╝███████╗░░░██║░░░█████╗██║██║░╚═╝░██║██║░░░░░███████╗
 // ╚═════╝░╚═╝░░░╚═╝░░░╚═════╝░╚══════╝░░░╚═╝░░░╚════╝╚═╝╚═╝░░░░░╚═╝╚═╝░░░░░╚══════╝
 static void __cstl_bitset_set(BITSET b) {
-    // 모든 비트를 1로 설정
-    size_type cap = __cstl_bitset_capacity(b.nbits);
-    memset(b.bits, 0xFF, cap);
-    // _size 이후의 여분 비트를 0으로 클리어
+    // Set bits [0, nbits) to 1. Storage is padded to >= 8 bytes, so writing
+    // the full allocation would leak 1s into padding that count()/the byte
+    // scan in nearby code would later observe as set.
+    size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
+    memset(b.bits, 0xFF, full_bytes);
     if (rem != 0) {
-        b.bits[b.nbits / 8] &= (ubyte_x) ((1 << rem) - 1);
+        b.bits[full_bytes] = (ubyte_x) ((1 << rem) - 1);
     }
 }
 

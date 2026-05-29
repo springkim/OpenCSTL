@@ -45,6 +45,21 @@
 #include "types.h"
 #include "logging.h"
 
+#ifdef OPENCSTL_TRACER
+typedef void (*free_fn)(void *ptr);
+
+typedef void * (*malloc_fn)(size_t sz);
+
+typedef void * (*realloc_fn)(void *ptr, size_t new_size);
+
+typedef void * (*calloc_fn)(size_t cnt, size_t sz);
+
+static free_fn ofree = free;
+static malloc_fn omalloc = malloc;
+static realloc_fn orealloc = realloc;
+static calloc_fn ocalloc = calloc;
+#endif
+
 #define _1MB (1024*1024)
 #define _512KB (1024*512)
 
@@ -56,17 +71,37 @@ typedef struct ZMem {
     int line;
 } ZMEM;
 
-ZMEM zmem[8192] = {0};
+#define OCSTL_ZMEM_SIZE 8192
+// ZMEM zmem[OCSTL_ZMEM_SIZE] = {0};
+
+ZMEM *zmem = NULL;
+size_type64 zmem_size = 0;
+size_type64 zmem_capacity = 0;
+
 size_type64 zalloc_size = 0;
 size_type64 zalloc_count = 0;
 
 static void zinsert(void *ptr, char *file, const char *func, int line) {
+    if (zmem_size == zmem_capacity) {
+        zmem_capacity = zmem_capacity ? zmem_capacity + OCSTL_ZMEM_SIZE : OCSTL_ZMEM_SIZE;
+        if (zmem == NULL) {
+            zmem = (ZMEM *) ocalloc(zmem_capacity, sizeof(ZMEM));
+        } else {
+            zmem = (ZMEM *) orealloc(zmem, zmem_capacity * sizeof(ZMEM));
+        }
+        if (!zmem) {
+            logging.fatal("zmem alloc failed");
+            return;
+        }
+    }
+
     zmem[zalloc_size].ptr = ptr;
     zmem[zalloc_size].file = file;
     zmem[zalloc_size].func = (char *) func;
     zmem[zalloc_size].line = line;
     zalloc_size++;
     zalloc_count++;
+    zmem_size++;
 }
 
 static void zremove(void *ptr) {
@@ -75,6 +110,7 @@ static void zremove(void *ptr) {
         if (zmem[i].ptr == ptr) {
             memmove(zmem + i, zmem + i + 1, (zalloc_size - i - 1) * sizeof(ZMEM));
             zalloc_size--;
+            zmem_size--;
             zmem[zalloc_size].ptr = NULL;
             zmem[zalloc_size].file = NULL;
             zmem[zalloc_size].func = NULL;
@@ -97,6 +133,10 @@ static void opencstl_exit(void) {
             logging.debug("%p: %s, %s, %d", zmem[i].ptr, zmem[i].file, zmem[i].func, zmem[i].line);
         }
     }
+    if (zmem != NULL) {
+        ofree(zmem);
+        zmem = NULL;
+    }
     logging.debug("OpenCSTL tracer end");
     logging.debug("zalloc count: %d", zalloc_count);
 }
@@ -117,7 +157,7 @@ static int opencstl_init(void) {
 }
 #if defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_EMBARCADERO)
 # pragma section(".CRT$XCU", read)
-__declspec(allocate(".CRT$XCU")) static int (* volatile __p)(void) = opencstl_init;
+__declspec(allocate(".CRT$XCU")) static int (* volatile __p)(void)= opencstl_init;
 # pragma data_seg()
 #endif
 

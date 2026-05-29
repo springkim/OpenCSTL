@@ -326,7 +326,9 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
     void *p = nil;
     while (*root != nil) {
         p = *root;
-        int r = compare ? compare(*root, n) : memcmp(*root, n, type_size);
+        // Compare only the key portion. type_size = key + value bytes; using it
+        // would mis-treat two equal-key/different-value inserts as distinct.
+        int r = compare ? compare(*root, n) : memcmp(*root, n, key_size);
         if (r == 0) {
             return;
         } else if (r > 0) {
@@ -482,7 +484,8 @@ OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
     CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -2);
     void ***root = (void ***) *container;
     while (*root != nil) {
-        int r = compare ? compare(*root, key) : memcmp(*root, key, type_size);
+        // Compare only the key portion (see __cstl_tree_insert).
+        int r = compare ? compare(*root, key) : memcmp(*root, key, key_size);
         if (r == 0) {
             return *root;
         } else if (r > 0) {

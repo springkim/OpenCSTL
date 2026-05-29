@@ -733,6 +733,29 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
 }
 
 
+OPENCSTL_FUNC void _cstl_reserve(void *container, size_type64 n) {
+    size_type64 container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_VECTOR:
+            __cstl_vector_reserve((void **) container, n);
+            break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP:
+            __cstl_hashtable_reserve((void **) container, n);
+            break;
+        default:
+            fault("reserve: unsupported container type");
+            break;
+    }
+}
+
+
 OPENCSTL_FUNC void _cstl_clear(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -917,7 +940,8 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     }
     switch (container_type) {
         case OPENCSTL_ARRAY: {
-            if (argc == 1) { return __cstl_array_find((void **) container, (void **) container, param2); } else { return __cstl_array_find((void **) container, param1, param2); }
+            // argc==1: only the key was passed → it's param1, not param2.
+            if (argc == 1) { return __cstl_array_find((void **) container, container, param1); } else { return __cstl_array_find((void **) container, param1, param2); }
         }
         break;
         case OPENCSTL_VECTOR: {

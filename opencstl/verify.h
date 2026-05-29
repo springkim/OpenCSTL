@@ -38,6 +38,7 @@
 #ifndef HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
 #define HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
 #include <assert.h>
+#include <stdio.h>
 #include "logging.h"
 
 #define verify(EXPR) do { if(!(EXPR)) ocstl_verify(#EXPR,__FILE__,__LINE__); } while(0)
@@ -56,6 +57,6 @@ static void ocstl_fault(char *str, char *file, int line) {
     logging.error("Fault: %s, file %s, line %d", str, file, line);
     fflush(stdout);
     fflush(stderr);
-    exit(-1);
+    exit(EXIT_FAILURE);
 }
 #endif

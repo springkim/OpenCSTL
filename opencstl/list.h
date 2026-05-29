@@ -114,7 +114,7 @@ OPENCSTL_FUNC void __cstl_list_pop_back_front(void **container, int ntail, int n
     void **head = (void **) &OPENCSTL_NIDX(container, nhead); //0  , -1
     verify(*head != NULL && *tail != NULL);
     if (*head == *tail) {
-        free((void*)&OPENCSTL_NIDX(tail, -3)); //fix
+        free((void*)&OPENCSTL_NIDX(tail, -3));
         *head = *tail = 0;
     } else {
         *tail = (void *) OPENCSTL_NIDX(tail, -(nhead + 2));
@@ -169,13 +169,16 @@ OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_type64
     void *nhead = __cstl_list_node(type_size);
     memcpy(nhead, value, type_size);
     void *ntail = nhead;
-    { size_type64 i; for (i = 1; i < N; i++) {
-        void *n = __cstl_list_node(type_size);
-        memcpy(n, value, type_size);
-        OPENCSTL_NIDX(&n, -2) = (size_type64) ntail; //n->prev=tail
-        OPENCSTL_NIDX(&ntail, -1) = (size_type64) n; //tail->next=n;
-        ntail = n;
-    } }
+    {
+        size_type64 i;
+        for (i = 1; i < N; i++) {
+            void *n = __cstl_list_node(type_size);
+            memcpy(n, value, type_size);
+            OPENCSTL_NIDX(&n, -2) = (size_type64) ntail; //n->prev=tail
+            OPENCSTL_NIDX(&ntail, -1) = (size_type64) n; //tail->next=n;
+            ntail = n;
+        }
+    }
     OPENCSTL_NIDX(&ntail, -1) = (size_type64) *iter; //n->next=iter
     if (*head == NULL && *tail == NULL) {
         *head = nhead;
@@ -308,73 +311,76 @@ OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, 
         return;
     }
 
-    { size_type64 width; for (width = 1; width < length; width <<= 1) {
-        void *curr = *head;
-        void *new_head = NULL;
-        void *new_tail = NULL;
+    {
+        size_type64 width;
+        for (width = 1; width < length; width <<= 1) {
+            void *curr = *head;
+            void *new_head = NULL;
+            void *new_tail = NULL;
 
-        while (curr != NULL) {
-            void *left = curr;
-            void *right = NULL;
-            void *next_run = NULL;
+            while (curr != NULL) {
+                void *left = curr;
+                void *right = NULL;
+                void *next_run = NULL;
 
-            size_type64 left_count = 0;
-            size_type64 right_count = 0;
+                size_type64 left_count = 0;
+                size_type64 right_count = 0;
 
-            for (; curr != NULL && left_count < width; ++left_count) {
-                curr = (void *) OPENCSTL_NIDX(&curr, -1);
-            }
-
-            right = curr;
-
-            for (; curr != NULL && right_count < width; ++right_count) {
-                curr = (void *) OPENCSTL_NIDX(&curr, -1);
-            }
-
-
-            next_run = curr;
-
-            while (left_count > 0 || right_count > 0) {
-                void *pick = NULL;
-
-                if (left_count == 0) {
-                    pick = right;
-                    right = (void *) OPENCSTL_NIDX(&right, -1);
-                    --right_count;
-                } else if (right_count == 0 || right == NULL) {
-                    pick = left;
-                    left = (void *) OPENCSTL_NIDX(&left, -1);
-                    --left_count;
-                } else if (cmp(left, right) <= 0) {
-                    pick = left;
-                    left = (void *) OPENCSTL_NIDX(&left, -1);
-                    --left_count;
-                } else {
-                    pick = right;
-                    right = (void *) OPENCSTL_NIDX(&right, -1);
-                    --right_count;
+                for (; curr != NULL && left_count < width; ++left_count) {
+                    curr = (void *) OPENCSTL_NIDX(&curr, -1);
                 }
 
-                if (new_tail == NULL) {
-                    new_head = pick;
-                    OPENCSTL_NIDX(&pick, -2) = 0;
-                } else {
-                    OPENCSTL_NIDX(&new_tail, -1) = (size_type64) pick;
-                    OPENCSTL_NIDX(&pick, -2) = (size_type64) new_tail;
+                right = curr;
+
+                for (; curr != NULL && right_count < width; ++right_count) {
+                    curr = (void *) OPENCSTL_NIDX(&curr, -1);
                 }
-                new_tail = pick;
+
+
+                next_run = curr;
+
+                while (left_count > 0 || right_count > 0) {
+                    void *pick = NULL;
+
+                    if (left_count == 0) {
+                        pick = right;
+                        right = (void *) OPENCSTL_NIDX(&right, -1);
+                        --right_count;
+                    } else if (right_count == 0 || right == NULL) {
+                        pick = left;
+                        left = (void *) OPENCSTL_NIDX(&left, -1);
+                        --left_count;
+                    } else if (cmp(left, right) <= 0) {
+                        pick = left;
+                        left = (void *) OPENCSTL_NIDX(&left, -1);
+                        --left_count;
+                    } else {
+                        pick = right;
+                        right = (void *) OPENCSTL_NIDX(&right, -1);
+                        --right_count;
+                    }
+
+                    if (new_tail == NULL) {
+                        new_head = pick;
+                        OPENCSTL_NIDX(&pick, -2) = 0;
+                    } else {
+                        OPENCSTL_NIDX(&new_tail, -1) = (size_type64) pick;
+                        OPENCSTL_NIDX(&pick, -2) = (size_type64) new_tail;
+                    }
+                    new_tail = pick;
+                }
+
+                if (new_tail != NULL) {
+                    OPENCSTL_NIDX(&new_tail, -1) = 0;
+                }
+
+                curr = next_run;
             }
 
-            if (new_tail != NULL) {
-                OPENCSTL_NIDX(&new_tail, -1) = 0;
-            }
-
-            curr = next_run;
+            *head = new_head;
+            *tail = new_tail;
         }
-
-        *head = new_head;
-        *tail = new_tail;
-    } }
+    }
 }
 
 // ██╗░░░░░██╗░██████╗████████╗░░░░░░░░██████╗░██╗░░░██╗██╗░█████╗░██╗░░██╗░░░░░░░░██████╗░█████╗░██████╗░████████╗
@@ -389,6 +395,7 @@ typedef struct {
 } __cstl_qsort_range;
 
 OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_type64 n) {
+    if (a == b || n == 0) { return; }
     unsigned char buf[128];
     unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) calloc(n, 1);
     verify(tmp != NULL);

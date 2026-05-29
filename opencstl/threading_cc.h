@@ -119,6 +119,7 @@ static int cpu_count(void) {
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <mach/thread_policy.h>
+#include <pthread/qos.h>
 #endif
 
 static void cpu_pin(void) {
@@ -131,33 +132,36 @@ static void cpu_pin(void) {
     syscall(SYS_sched_setaffinity, 0, sizeof(cpuset), &cpuset);
 
 #elif defined(OCSTL_OS_MACOS)
-    thread_affinity_policy_data_t affinity = {1};
-    thread_policy_set(
-        mach_thread_self(),
-        THREAD_AFFINITY_POLICY,
-        (thread_policy_t) & affinity,
-        THREAD_AFFINITY_POLICY_COUNT
-    );
 
-    mach_timebase_info_data_t tb;
-    mach_timebase_info(&tb);
+    pthread_set_qos_class_self_np(QOS_CLASS_USER_INITIATED, 0);
 
-#define NS_TO_MACH(ns) ((uint64_t)(ns) * tb.denom / tb.numer)
-
-    thread_time_constraint_policy_data_t rt;
-    rt.period = 0;
-    rt.computation = NS_TO_MACH(500000000);
-    rt.constraint = NS_TO_MACH(500000000);
-    rt.preemptible = 0;
-
-    thread_policy_set(
-        mach_thread_self(),
-        THREAD_TIME_CONSTRAINT_POLICY,
-        (thread_policy_t) & rt,
-        THREAD_TIME_CONSTRAINT_POLICY_COUNT
-    );
-
-#undef NS_TO_MACH
+//     thread_affinity_policy_data_t affinity = {1};
+//     thread_policy_set(
+//         mach_thread_self(),
+//         THREAD_AFFINITY_POLICY,
+//         (thread_policy_t) & affinity,
+//         THREAD_AFFINITY_POLICY_COUNT
+//     );
+//
+//     mach_timebase_info_data_t tb;
+//     mach_timebase_info(&tb);
+//
+// #define NS_TO_MACH(ns) ((uint64_t)(ns) * tb.denom / tb.numer)
+//
+//     thread_time_constraint_policy_data_t rt;
+//     rt.period = 0;
+//     rt.computation = NS_TO_MACH(500000000);
+//     rt.constraint = NS_TO_MACH(500000000);
+//     rt.preemptible = 0;
+//
+//     thread_policy_set(
+//         mach_thread_self(),
+//         THREAD_TIME_CONSTRAINT_POLICY,
+//         (thread_policy_t) & rt,
+//         THREAD_TIME_CONSTRAINT_POLICY_COUNT
+//     );
+//
+// #undef NS_TO_MACH
 #endif
 }
 #endif

@@ -1,18 +1,18 @@
 cmake_minimum_required(VERSION 3.10)
 
-if(CMAKE_C_COMPILER MATCHES "tcc")
+if (CMAKE_C_COMPILER MATCHES "tcc")
     set(CMAKE_C_COMPILER_WORKS 1)
     set(CMAKE_OSX_ARCHITECTURES "")
     set(CMAKE_OSX_SYSROOT "")
-endif()
+endif ()
 
 project(OpenCSTL C)
 
-if(CMAKE_C_COMPILER MATCHES "tcc")
+if (CMAKE_C_COMPILER MATCHES "tcc")
     set(CMAKE_C_LINK_FLAGS "")
     set(CMAKE_EXE_LINKER_FLAGS "")
     set(CMAKE_SHARED_LINKER_FLAGS "")
-endif()
+endif ()
 
 set(CMAKE_C_STANDARD 11)
 #set(CMAKE_CXX_STANDARD 17)
@@ -32,11 +32,6 @@ else ()
 endif ()
 
 
-add_executable(test_glob test_gmp.c)
-if (MSVC)
-    target_compile_options(test_glob PRIVATE /utf-8)
-
-endif ()
 
 add_executable(bench_sort bench_sort.c)
 
@@ -59,6 +54,7 @@ add_executable(test_fstream test_fstream.c)
 add_executable(test_logging test_logging.c)
 add_executable(test_string test_string.c)
 add_executable(test_gmp test_gmp.c)
+add_executable(test_random test_random.c)
 add_executable(cenv cenv.c)
 #if (MSVC)
 #    target_compile_options(test_gmp PRIVATE /W3 /utf-8 /std:c11)
@@ -130,12 +126,23 @@ endif ()
 # ------------------------------------------------------------------
 enable_testing()
 
-add_executable(test_deque_algorithm
-        tests/test_deque_algorithm.c
-        tests/unity/unity.c
-)
-target_include_directories(test_deque_algorithm PRIVATE ${CMAKE_SOURCE_DIR} tests/unity)
-if (MSVC)
-    target_compile_options(test_deque_algorithm PRIVATE /utf-8)
-endif ()
-add_test(NAME test_deque_algorithm COMMAND test_deque_algorithm)
+foreach (_t IN ITEMS
+        test_deque_algorithm
+        test_array
+        test_vector
+        test_list
+        test_set
+        test_map
+        test_unordered_set
+        test_unordered_map
+        test_bitset)
+    add_executable(${_t}
+            tests/${_t}.c
+            tests/unity/unity.c)
+    target_include_directories(${_t} PRIVATE ${CMAKE_SOURCE_DIR} tests/unity)
+    target_compile_definitions(${_t} PRIVATE UNITY_INCLUDE_DOUBLE)
+    if (MSVC)
+        target_compile_options(${_t} PRIVATE /utf-8)
+    endif ()
+    add_test(NAME ${_t} COMMAND ${_t})
+endforeach ()

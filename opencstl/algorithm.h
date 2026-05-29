@@ -283,9 +283,12 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #endif
 
+// `is_max` is placed first so the trailing NULL serves as the default cmp
+// when the caller omits it: max_element(q) -> (..., 1LL, NULL).
+// With a user cmp: max_element(q, my_cmp) -> (..., 1LL, my_cmp, NULL).
 #ifndef OPENCSTL_USE_PREFIX
-#define max_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 1LL, NULL)
-#define min_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 0LL, NULL)
+#define max_element(C, ...) ocstl_min_max_element(&(C), 1LL, ##__VA_ARGS__, NULL)
+#define min_element(C, ...) ocstl_min_max_element(&(C), 0LL, ##__VA_ARGS__, NULL)
 #endif
 
 OPENCSTL_FUNC void ocstl_minmax_container_type_check(void *container) {
@@ -328,11 +331,11 @@ OPENCSTL_FUNC void *ocstl_min_max_element(void *container, ...) {
     void *va_ptr = NULL;
     __cstl_va_start(vl, container, va_ptr);
 #if CSTL_USE_VAARG
-    CSTL_COMPARE cmp = (CSTL_COMPARE) __cstl_va_arg_next(vl);
     size_type64 is_max = (size_type64) __cstl_va_arg_next(vl);
+    CSTL_COMPARE cmp = (CSTL_COMPARE) __cstl_va_arg_next(vl);
 #else
-    CSTL_COMPARE cmp = *(CSTL_COMPARE *) __cstl_va_arg(va_ptr);
-    size_type64 is_max = *(size_type64 *) __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
+    size_type64 is_max = *(size_type64 *) __cstl_va_arg(va_ptr);
+    CSTL_COMPARE cmp = *(CSTL_COMPARE *) __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
 #endif
     __cstl_va_end(vl);
     OCSTL_MM_CMP wrp_cmp = is_max ? ocstl_max_cmp : ocstl_min_cmp;

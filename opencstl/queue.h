@@ -103,6 +103,10 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
     CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -3);
+    if (length == 1) {
+        OPENCSTL_NIDX(container, -1) = 0;
+        return;
+    }
     memcpy(*container, ((char *) *container) + type_size * (length - 1), type_size);
     OPENCSTL_NIDX(container, -1)--;
     length--;

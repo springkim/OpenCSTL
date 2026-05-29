@@ -556,7 +556,7 @@ void cstl_unordered_set_test02(void) {
     {
         int i;
         for (i = 0; i < 500000; ++i) {
-            insert(v, mt19937.randint(0,10000000));
+            insert(v, mt19937.randint(0, 10000000));
         }
     }
     double t_end = ttime();

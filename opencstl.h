@@ -192,6 +192,7 @@ static int cpu_count(void) {
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <mach/thread_policy.h>
+#include <pthread/qos.h>
 #endif
 static void cpu_pin(void) {
 #if defined(OCSTL_OS_WINDOWS)
@@ -201,28 +202,7 @@ static void cpu_pin(void) {
     cpuset |= 1UL << 0;
     syscall(SYS_sched_setaffinity, 0, sizeof(cpuset), &cpuset);
 #elif defined(OCSTL_OS_MACOS)
-    thread_affinity_policy_data_t affinity = {1};
-    thread_policy_set(
-        mach_thread_self(),
-        THREAD_AFFINITY_POLICY,
-        (thread_policy_t) & affinity,
-        THREAD_AFFINITY_POLICY_COUNT
-    );
-    mach_timebase_info_data_t tb;
-    mach_timebase_info(&tb);
-#define NS_TO_MACH(ns) ((uint64_t)(ns) * tb.denom / tb.numer)
-    thread_time_constraint_policy_data_t rt;
-    rt.period = 0;
-    rt.computation = NS_TO_MACH(500000000);
-    rt.constraint = NS_TO_MACH(500000000);
-    rt.preemptible = 0;
-    thread_policy_set(
-        mach_thread_self(),
-        THREAD_TIME_CONSTRAINT_POLICY,
-        (thread_policy_t) & rt,
-        THREAD_TIME_CONSTRAINT_POLICY_COUNT
-    );
-#undef NS_TO_MACH
+    pthread_set_qos_class_self_np(QOS_CLASS_USER_INITIATED, 0);
 #endif
 }
 #endif
@@ -282,9 +262,6 @@ static void cpu_pin(void) {
 #include<stdarg.h>
 #include<stdint.h>
 #include<limits.h>
-#ifndef INX_MAX
-#define INT_MAX 21474836472147483647
-#endif
 #include<stddef.h>
 #include<stdbool.h>
 #include<assert.h>
@@ -310,7 +287,6 @@ typedef long long int64_x;
 typedef unsigned int uint32_x;
 typedef unsigned long long uint64_x;
 typedef unsigned char ubyte_x;
-typedef wchar_t wchar;
 #define OCSTL_MAX_PATH 260
 #endif
 #if !defined(HG_DA016F9EB7D8F6970C150189E2C1CB8B14A9E3498F8CC2778D3946451B216288_H)
@@ -518,6 +494,16 @@ static const LOGGING logging = {
     _logging_fatal,
 };
 #endif
+#ifdef OPENCSTL_TRACER
+typedef void (*free_fn)(void *ptr);
+typedef void * (*malloc_fn)(size_t sz);
+typedef void * (*realloc_fn)(void *ptr, size_t new_size);
+typedef void * (*calloc_fn)(size_t cnt, size_t sz);
+static free_fn ofree = free;
+static malloc_fn omalloc = malloc;
+static realloc_fn orealloc = realloc;
+static calloc_fn ocalloc = calloc;
+#endif
 #define _1MB (1024*1024)
 #define _512KB (1024*512)
 #ifdef OPENCSTL_TRACER
@@ -527,16 +513,32 @@ typedef struct ZMem {
     char *func;
     int line;
 } ZMEM;
-ZMEM zmem[8192] = {0};
+#define OCSTL_ZMEM_SIZE 8192
+ZMEM *zmem = NULL;
+size_type64 zmem_size = 0;
+size_type64 zmem_capacity = 0;
 size_type64 zalloc_size = 0;
 size_type64 zalloc_count = 0;
 static void zinsert(void *ptr, char *file, const char *func, int line) {
+    if (zmem_size == zmem_capacity) {
+        zmem_capacity = zmem_capacity ? zmem_capacity + OCSTL_ZMEM_SIZE : OCSTL_ZMEM_SIZE;
+        if (zmem == NULL) {
+            zmem = (ZMEM *) ocalloc(zmem_capacity, sizeof(ZMEM));
+        } else {
+            zmem = (ZMEM *) orealloc(zmem, zmem_capacity * sizeof(ZMEM));
+        }
+        if (!zmem) {
+            logging.fatal("zmem alloc failed");
+            return;
+        }
+    }
     zmem[zalloc_size].ptr = ptr;
     zmem[zalloc_size].file = file;
     zmem[zalloc_size].func = (char *) func;
     zmem[zalloc_size].line = line;
     zalloc_size++;
     zalloc_count++;
+    zmem_size++;
 }
 static void zremove(void *ptr) {
     size_type64 i = 0;
@@ -544,6 +546,7 @@ static void zremove(void *ptr) {
         if (zmem[i].ptr == ptr) {
             memmove(zmem + i, zmem + i + 1, (zalloc_size - i - 1) * sizeof(ZMEM));
             zalloc_size--;
+            zmem_size--;
             zmem[zalloc_size].ptr = NULL;
             zmem[zalloc_size].file = NULL;
             zmem[zalloc_size].func = NULL;
@@ -562,6 +565,10 @@ static void opencstl_exit(void) {
             logging.debug("%p: %s, %s, %d", zmem[i].ptr, zmem[i].file, zmem[i].func, zmem[i].line);
         }
     }
+    if (zmem != NULL) {
+        ofree(zmem);
+        zmem = NULL;
+    }
     logging.debug("OpenCSTL tracer end");
     logging.debug("zalloc count: %d", zalloc_count);
 }
@@ -579,7 +586,7 @@ static int opencstl_init(void) {
 }
 #if defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_EMBARCADERO)
 # pragma section(".CRT$XCU", read)
-__declspec(allocate(".CRT$XCU")) static int (* volatile __p)(void) = opencstl_init;
+__declspec(allocate(".CRT$XCU")) static int (* volatile __p)(void)= opencstl_init;
 # pragma data_seg()
 #endif
 #if defined(OCSTL_CC_POCC) || defined(OCSTL_CC_TCC)
@@ -592,52 +599,44 @@ int main() {
 #endif
 #endif
 #ifdef OPENCSTL_TRACER
-typedef void( * free_fn)(void * ptr);
-typedef void * ( * malloc_fn)(size_t sz);
-typedef void * ( * realloc_fn)(void * ptr, size_t new_size);
-typedef void * ( * calloc_fn)(size_t cnt, size_t sz);
-static free_fn ofree = free;
-static malloc_fn omalloc = malloc;
-static realloc_fn orealloc = realloc;
-static calloc_fn ocalloc = calloc;
-static void zfree(void * ptr) {
-  zremove(ptr);
-  ofree(ptr);
-}
-static void * _zcalloc(size_type64 cnt, size_type64 sz, char * file,
-  const char * func, int line) {
-  void * ptr = ocalloc(cnt, sz);
-  if (ptr) {
-    zinsert(ptr, file, func, line);
-  }
-  return ptr;
-}
-static void * _zmalloc(size_type64 sz, char * file,
-  const char * func, int line) {
-  void * ptr = omalloc(sz);
-  if (ptr) {
-    zinsert(ptr, file, func, line);
-  }
-  return ptr;
-}
-static void * _zrealloc(void * ptr, size_type64 new_size, char * file,
-  const char * func, int line) {
-  if (ptr == NULL) {
-    return _zmalloc(new_size, file, func, line);
-  }
-  if (new_size == 0) {
-    zfree(ptr);
-    return NULL;
-  }
-  void * new_ptr = orealloc(ptr, new_size);
-  if (new_ptr == NULL) {
-    return NULL;
-  }
-  if (new_ptr != ptr) {
+static void zfree(void *ptr) {
     zremove(ptr);
-    zinsert(new_ptr, file, func, line);
-  }
-  return new_ptr;
+    ofree(ptr);
+}
+static void *_zcalloc(size_type64 cnt, size_type64 sz, char *file,
+                      const char *func, int line) {
+    void *ptr = ocalloc(cnt, sz);
+    if (ptr) {
+        zinsert(ptr, file, func, line);
+    }
+    return ptr;
+}
+static void *_zmalloc(size_type64 sz, char *file,
+                      const char *func, int line) {
+    void *ptr = omalloc(sz);
+    if (ptr) {
+        zinsert(ptr, file, func, line);
+    }
+    return ptr;
+}
+static void *_zrealloc(void *ptr, size_type64 new_size, char *file,
+                       const char *func, int line) {
+    if (ptr == NULL) {
+        return _zmalloc(new_size, file, func, line);
+    }
+    if (new_size == 0) {
+        zfree(ptr);
+        return NULL;
+    }
+    void *new_ptr = orealloc(ptr, new_size);
+    if (new_ptr == NULL) {
+        return NULL;
+    }
+    if (new_ptr != ptr) {
+        zremove(ptr);
+        zinsert(new_ptr, file, func, line);
+    }
+    return new_ptr;
 }
 #define free(ptr) zfree(ptr)
 #define calloc(cnt, sz) _zcalloc(cnt, sz, __FILE__, __func__, __LINE__)
@@ -681,6 +680,8 @@ static void * _zrealloc(void * ptr, size_type64 new_size, char * file,
 #define OPENCSTL_UNORDERED_SET	8
 #define OPENCSTL_UNORDERED_MAP	9
 #define OPENCSTL_ARRAY          10
+#define INTEGER32_MAX 0x7fffffff
+#define OCSTL_CHAR_BIT 8
 #if defined(OPENCSTL_OS_WINDOWS)
 #include<Windows.h>
 #endif
@@ -807,8 +808,8 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define cstl_count_if(container,...)	_cstl_count_if(&(container),__VA_ARGS__)
 #define cstl_lower_bound(container,...)	_cstl_lower_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
 #define cstl_upper_bound(container,...)	_cstl_upper_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_max_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 1LL, NULL)
-#define cstl_min_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 0LL, NULL)
+#define cstl_max_element(C, ...) ocstl_min_max_element(&(C), 1LL, ##__VA_ARGS__, NULL)
+#define cstl_min_element(C, ...) ocstl_min_max_element(&(C), 0LL, ##__VA_ARGS__, NULL)
 #elif defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS)
 #define cstl_push_back(C,...) _linux_cstl_push_back(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
 #define _linux_cstl_push_back(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_back ## _ ## N
@@ -1658,6 +1659,7 @@ static void _gfree(void *p) {
 #ifndef HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
 #define HG_6B1F7EDF66E6D2C92A4EFD18CB205EA16A815669C1D9599BE2E85A8464CB5179_H
 #include <assert.h>
+#include <stdio.h>
 #define verify(EXPR) do { if(!(EXPR)) ocstl_verify(#EXPR,__FILE__,__LINE__); } while(0)
 static int ocstl_verify(char *expression, char *file, int line) {
     logging.error("Verification failed: %s, file %s, line %d",
@@ -1671,7 +1673,7 @@ static void ocstl_fault(char *str, char *file, int line) {
     logging.error("Fault: %s, file %s, line %d", str, file, line);
     fflush(stdout);
     fflush(stderr);
-    exit(-1);
+    exit(EXIT_FAILURE);
 }
 #endif
 #ifdef _MSC_VER
@@ -3023,8 +3025,8 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n
         iveb_insert(iveb, (char *) *container + distance,
                     (char *) b + alloc_sz, CT_DEQUE, type_size, type);
     }
-    memcpy((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
-           (length - pos) * type_size);
+    memmove((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
+            (length - pos) * type_size);
     {
         size_type64 i;
         for (i = 0; i < n; i++) {
@@ -3145,7 +3147,7 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
     return NULL;
 }
 OPENCSTL_FUNC size_type __cstl_deque_max_size(void **container) {
-    return INT_MAX;
+    return INTEGER32_MAX;
 }
 OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
@@ -3619,7 +3621,7 @@ OPENCSTL_FUNC void *__cstl_vector_prev(void *it, size_type64 type_size) {
     return (char *) it - type_size;
 }
 OPENCSTL_FUNC size_type __cstl_vector_max_size(void **container) {
-    return INT_MAX;
+    return INTEGER32_MAX;
 }
 OPENCSTL_FUNC void __cstl_vector_shrink_to_fit(void **container) {
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
@@ -3874,13 +3876,16 @@ OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_type64
     void *nhead = __cstl_list_node(type_size);
     memcpy(nhead, value, type_size);
     void *ntail = nhead;
-    { size_type64 i; for (i = 1; i < N; i++) {
-        void *n = __cstl_list_node(type_size);
-        memcpy(n, value, type_size);
-        OPENCSTL_NIDX(&n, -2) = (size_type64) ntail;
-        OPENCSTL_NIDX(&ntail, -1) = (size_type64) n;
-        ntail = n;
-    } }
+    {
+        size_type64 i;
+        for (i = 1; i < N; i++) {
+            void *n = __cstl_list_node(type_size);
+            memcpy(n, value, type_size);
+            OPENCSTL_NIDX(&n, -2) = (size_type64) ntail;
+            OPENCSTL_NIDX(&ntail, -1) = (size_type64) n;
+            ntail = n;
+        }
+    }
     OPENCSTL_NIDX(&ntail, -1) = (size_type64) *iter;
     if (*head == NULL && *tail == NULL) {
         *head = nhead;
@@ -3988,66 +3993,70 @@ OPENCSTL_FUNC void __cstl_list_msort(void **container, int (*cmp)(const void *, 
     if (*head == NULL || *tail == NULL || length < 2) {
         return;
     }
-    { size_type64 width; for (width = 1; width < length; width <<= 1) {
-        void *curr = *head;
-        void *new_head = NULL;
-        void *new_tail = NULL;
-        while (curr != NULL) {
-            void *left = curr;
-            void *right = NULL;
-            void *next_run = NULL;
-            size_type64 left_count = 0;
-            size_type64 right_count = 0;
-            for (; curr != NULL && left_count < width; ++left_count) {
-                curr = (void *) OPENCSTL_NIDX(&curr, -1);
-            }
-            right = curr;
-            for (; curr != NULL && right_count < width; ++right_count) {
-                curr = (void *) OPENCSTL_NIDX(&curr, -1);
-            }
-            next_run = curr;
-            while (left_count > 0 || right_count > 0) {
-                void *pick = NULL;
-                if (left_count == 0) {
-                    pick = right;
-                    right = (void *) OPENCSTL_NIDX(&right, -1);
-                    --right_count;
-                } else if (right_count == 0 || right == NULL) {
-                    pick = left;
-                    left = (void *) OPENCSTL_NIDX(&left, -1);
-                    --left_count;
-                } else if (cmp(left, right) <= 0) {
-                    pick = left;
-                    left = (void *) OPENCSTL_NIDX(&left, -1);
-                    --left_count;
-                } else {
-                    pick = right;
-                    right = (void *) OPENCSTL_NIDX(&right, -1);
-                    --right_count;
+    {
+        size_type64 width;
+        for (width = 1; width < length; width <<= 1) {
+            void *curr = *head;
+            void *new_head = NULL;
+            void *new_tail = NULL;
+            while (curr != NULL) {
+                void *left = curr;
+                void *right = NULL;
+                void *next_run = NULL;
+                size_type64 left_count = 0;
+                size_type64 right_count = 0;
+                for (; curr != NULL && left_count < width; ++left_count) {
+                    curr = (void *) OPENCSTL_NIDX(&curr, -1);
                 }
-                if (new_tail == NULL) {
-                    new_head = pick;
-                    OPENCSTL_NIDX(&pick, -2) = 0;
-                } else {
-                    OPENCSTL_NIDX(&new_tail, -1) = (size_type64) pick;
-                    OPENCSTL_NIDX(&pick, -2) = (size_type64) new_tail;
+                right = curr;
+                for (; curr != NULL && right_count < width; ++right_count) {
+                    curr = (void *) OPENCSTL_NIDX(&curr, -1);
                 }
-                new_tail = pick;
+                next_run = curr;
+                while (left_count > 0 || right_count > 0) {
+                    void *pick = NULL;
+                    if (left_count == 0) {
+                        pick = right;
+                        right = (void *) OPENCSTL_NIDX(&right, -1);
+                        --right_count;
+                    } else if (right_count == 0 || right == NULL) {
+                        pick = left;
+                        left = (void *) OPENCSTL_NIDX(&left, -1);
+                        --left_count;
+                    } else if (cmp(left, right) <= 0) {
+                        pick = left;
+                        left = (void *) OPENCSTL_NIDX(&left, -1);
+                        --left_count;
+                    } else {
+                        pick = right;
+                        right = (void *) OPENCSTL_NIDX(&right, -1);
+                        --right_count;
+                    }
+                    if (new_tail == NULL) {
+                        new_head = pick;
+                        OPENCSTL_NIDX(&pick, -2) = 0;
+                    } else {
+                        OPENCSTL_NIDX(&new_tail, -1) = (size_type64) pick;
+                        OPENCSTL_NIDX(&pick, -2) = (size_type64) new_tail;
+                    }
+                    new_tail = pick;
+                }
+                if (new_tail != NULL) {
+                    OPENCSTL_NIDX(&new_tail, -1) = 0;
+                }
+                curr = next_run;
             }
-            if (new_tail != NULL) {
-                OPENCSTL_NIDX(&new_tail, -1) = 0;
-            }
-            curr = next_run;
+            *head = new_head;
+            *tail = new_tail;
         }
-        *head = new_head;
-        *tail = new_tail;
-    } }
+    }
 }
 typedef struct {
     void *low;
     void *high;
 } __cstl_qsort_range;
 OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_type64 n) {
+    if (a == b || n == 0) { return; }
     unsigned char buf[128];
     unsigned char *tmp = (n <= sizeof(buf)) ? buf : (unsigned char *) calloc(n, 1);
     verify(tmp != NULL);
@@ -4190,7 +4199,7 @@ OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, 
     free(stack);
 }
 OPENCSTL_FUNC size_type __cstl_list_max_size(void **container) {
-    return INT_MAX;
+    return INTEGER32_MAX;
 }
 OPENCSTL_FUNC void __cstl_list_reverse(void **container) {
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
@@ -4447,7 +4456,7 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
     void *p = nil;
     while (*root != nil) {
         p = *root;
-        int r = compare ? compare(*root, n) : memcmp(*root, n, type_size);
+        int r = compare ? compare(*root, n) : memcmp(*root, n, key_size);
         if (r == 0) {
             return;
         } else if (r > 0) {
@@ -4577,7 +4586,7 @@ OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
     CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -2);
     void ***root = (void ***) *container;
     while (*root != nil) {
-        int r = compare ? compare(*root, key) : memcmp(*root, key, type_size);
+        int r = compare ? compare(*root, key) : memcmp(*root, key, key_size);
         if (r == 0) {
             return *root;
         } else if (r > 0) {
@@ -4728,6 +4737,10 @@ OPENCSTL_FUNC void __cstl_priority_queue_pop(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
     CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -3);
+    if (length == 1) {
+        OPENCSTL_NIDX(container, -1) = 0;
+        return;
+    }
     memcpy(*container, ((char *) *container) + type_size * (length - 1), type_size);
     OPENCSTL_NIDX(container, -1)--;
     length--;
@@ -5325,6 +5338,15 @@ OPENCSTL_FUNC void *__cstl_array(size_type64 type_size, char *type, size_type64 
     OPENCSTL_NIDX(container, -3) = 0;
     OPENCSTL_NIDX(container, -2) = _count;
     OPENCSTL_NIDX(container, -1) = _count;
+    bool iveb_init = false;
+    if (iveb == NULL) {
+        iveb = iveb_new();
+        iveb_init = true;
+    }
+    iveb_insert(iveb, ptr, (char *) ptr + (type_size * _count), CT_VECTOR, type_size, type);
+    if (iveb_init) {
+        atexit(__opencstl_iveb_destroy);
+    }
     return ptr;
 }
 OPENCSTL_FUNC size_type __cstl_array_size(void **container) {
@@ -5365,14 +5387,18 @@ OPENCSTL_FUNC void *__cstl_array_find(void **container, void *iter_begin, void *
         value = &valuef;
     }
 #endif
-    { size_type64 i; for (i = pos; i < length; i++) {
-        if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
-            return (char *) *container + type_size * (i);
+    {
+        size_type64 i;
+        for (i = pos; i < length; i++) {
+            if (memcmp((char *) *container + type_size * (i), value, type_size) == 0) {
+                return (char *) *container + type_size * (i);
+            }
         }
-    } }
+    }
     return NULL;
 }
 OPENCSTL_FUNC void __cstl_array_free(void **container) {
+    iveb_erase(iveb, *container);
 #ifdef OPENCSTL_TRACER
     size_type64 header_sz = OPENCSTL_NIDX(container, NIDX_HSIZE);
     gfree((char *) (*container) - header_sz);
@@ -5416,12 +5442,15 @@ OPENCSTL_FUNC size_type64 __cstl_array_count(void **container, void *value) {
 #endif
     CSTL_EQUALS_FN is_equal = CSTL_EQUALS(type);
     size_type64 cnt = 0;
-    { int i; for (i = 0; i < length; i++) {
-        void *ptr = ((char *) *container) + (type_size * i);
-        if (is_equal(ptr, value, type_size) == 0) {
-            cnt++;
+    {
+        int i;
+        for (i = 0; i < length; i++) {
+            void *ptr = ((char *) *container) + (type_size * i);
+            if (is_equal(ptr, value, type_size) == 0) {
+                cnt++;
+            }
         }
-    } }
+    }
     return cnt;
 }
 OPENCSTL_FUNC size_type64 __cstl_array_count_if(void **container, CSTL_COND cond) {
@@ -5431,12 +5460,15 @@ OPENCSTL_FUNC size_type64 __cstl_array_count_if(void **container, CSTL_COND cond
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
     size_type64 cnt = 0;
-    { int i; for (i = 0; i < length; i++) {
-        void *ptr = ((char *) *container) + (type_size * i);
-        if (cond(ptr)) {
-            cnt++;
+    {
+        int i;
+        for (i = 0; i < length; i++) {
+            void *ptr = ((char *) *container) + (type_size * i);
+            if (cond(ptr)) {
+                cnt++;
+            }
         }
-    } }
+    }
     return cnt;
 }
 OPENCSTL_FUNC void *__cstl_array_lower_bound(void **container, void *value, CSTL_COMPARE compare) {
@@ -5461,8 +5493,7 @@ OPENCSTL_FUNC void *__cstl_array_lower_bound(void **container, void *value, CSTL
         void *Mptr = ((char *) *container) + (type_size * M);
         if (compare(Mptr, value) < 0) {
             L = M + 1;
-        }
-        else {
+        } else {
             R = M;
         }
     }
@@ -5491,8 +5522,7 @@ OPENCSTL_FUNC void *__cstl_array_upper_bound(void **container, void *value, CSTL
         void *Mptr = ((char *) *container) + (type_size * M);
         if (compare(value, Mptr) < 0) {
             R = M;
-        }
-        else {
+        } else {
             L = M + 1;
         }
     }
@@ -5960,8 +5990,8 @@ OPENCSTL_FUNC void *_cstl_upper_bound(void *container, int argc, ...) {
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #endif
 #ifndef OPENCSTL_USE_PREFIX
-#define max_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 1LL, NULL)
-#define min_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 0LL, NULL)
+#define max_element(C, ...) ocstl_min_max_element(&(C), 1LL, ##__VA_ARGS__, NULL)
+#define min_element(C, ...) ocstl_min_max_element(&(C), 0LL, ##__VA_ARGS__, NULL)
 #endif
 OPENCSTL_FUNC void ocstl_minmax_container_type_check(void *container) {
     size_type64 container_type;
@@ -5998,11 +6028,11 @@ OPENCSTL_FUNC void *ocstl_min_max_element(void *container, ...) {
     void *va_ptr = NULL;
     __cstl_va_start(vl, container, va_ptr);
 #if CSTL_USE_VAARG
-    CSTL_COMPARE cmp = (CSTL_COMPARE) __cstl_va_arg_next(vl);
     size_type64 is_max = (size_type64) __cstl_va_arg_next(vl);
+    CSTL_COMPARE cmp = (CSTL_COMPARE) __cstl_va_arg_next(vl);
 #else
-    CSTL_COMPARE cmp = *(CSTL_COMPARE *) __cstl_va_arg(va_ptr);
-    size_type64 is_max = *(size_type64 *) __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
+    size_type64 is_max = *(size_type64 *) __cstl_va_arg(va_ptr);
+    CSTL_COMPARE cmp = *(CSTL_COMPARE *) __cstl_va_arg((char *) va_ptr + sizeof(void *) * 1);
 #endif
     __cstl_va_end(vl);
     OCSTL_MM_CMP wrp_cmp = is_max ? ocstl_max_cmp : ocstl_min_cmp;
@@ -6039,340 +6069,86 @@ OPENCSTL_FUNC void *ocstl_min_max_element(void *container, ...) {
 #define MT64_MATRIX_A   0xB5026F5AA96619E9ULL
 #define MT64_UPPER_MASK 0xFFFFFFFF80000000ULL
 #define MT64_LOWER_MASK 0x7FFFFFFFULL
+#if defined(__TINYC__)
+#  define OCSTL_THREAD_LOCAL
+#  warning "mt19937: TCC lacks working TLS support; mt19937 will not be thread-safe"
+#elif defined(_MSC_VER)
+#  define OCSTL_THREAD_LOCAL __declspec(thread)
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_THREADS__)
+#  define OCSTL_THREAD_LOCAL _Thread_local
+#elif defined(__GNUC__) || defined(__clang__)
+#  define OCSTL_THREAD_LOCAL __thread
+#else
+#  define OCSTL_THREAD_LOCAL
+#  warning "mt19937: no thread-local storage support detected; not thread-safe"
+#endif
+uint64_t random_device(void);
 typedef struct {
     uint64_t mt[MT64_N];
     int index;
 } __mt19937_64_t;
-__mt19937_64_t __rng64 = {
+OCSTL_THREAD_LOCAL __mt19937_64_t __rng64 = {
     {
-        1776098118,
-        4095968591,
-        2489032677,
-        2495002180,
-        1521698085,
-        3468952409,
-        1098923224,
-        2876365311,
-        3875427246,
-        2303920453,
-        3481655941,
-        3656246169,
-        3488737099,
-        1911217468,
-        3072370164,
-        54539853,
-        2100673779,
-        3365782472,
-        3678642746,
-        3156232773,
-        423872610,
-        384980604,
-        14136892,
-        1456753616,
-        237535746,
-        3636975731,
-        2024840138,
-        2028378269,
-        1647654370,
-        3507099562,
-        2984247251,
-        2709726729,
-        4136871816,
-        2050550537,
-        819447735,
-        3874448673,
-        1342874910,
-        2832492440,
-        2016583134,
-        124576301,
-        1384715537,
-        3530629926,
-        671516421,
-        2761930297,
-        648433457,
-        1017100791,
-        1981299097,
-        3101820692,
-        2950834868,
-        1756679637,
-        584964515,
-        4081098669,
-        1775854538,
-        3437182948,
-        1020220836,
-        341993995,
-        3408141005,
-        2904582044,
-        94705709,
-        1395954468,
-        2723919850,
-        4100156421,
-        4019124044,
-        1842129442,
-        4079666746,
-        3677560224,
-        3999536271,
-        2893025081,
-        4228019062,
-        3210991107,
-        1390517408,
-        662431847,
-        1090909027,
-        1852368304,
-        1200827841,
-        521259154,
-        2855284515,
-        202287130,
-        1068495373,
-        2234023621,
-        3282764785,
-        323567790,
-        3148296635,
-        391185413,
-        3058708111,
-        3342934558,
-        3443548783,
-        2861981824,
-        2794386527,
-        142350258,
-        2955638948,
-        3162968156,
-        3760718351,
-        3871919616,
-        1645458827,
-        1497555060,
-        3613359691,
-        458681097,
-        2981316388,
-        713218878,
-        3450818032,
-        1431683567,
-        1600366697,
-        1714270684,
-        1544611227,
-        941048232,
-        2087772914,
-        907867291,
-        4128335230,
-        2840844480,
-        1774507957,
-        2264249920,
-        1258670090,
-        1947410483,
-        2037348156,
-        3228252038,
-        1761066031,
-        2293032587,
-        4078238904,
-        3236442710,
-        2705458281,
-        2303876801,
-        1926326119,
-        3998075151,
-        2811251186,
-        930843956,
-        1144233212,
-        3332349131,
-        97732309,
-        3849002316,
-        2915293496,
-        2810737890,
-        1149413950,
-        1535291243,
-        3360025429,
-        3421309515,
-        3433858864,
-        1712656768,
-        2497877002,
-        28081018,
-        1500134564,
-        1291223784,
-        2088311216,
-        678941823,
-        4050017251,
-        804407025,
-        3248654108,
-        3933873068,
-        4007401725,
-        2277599457,
-        1076301181,
-        2622448272,
-        3748282735,
-        1821610946,
-        817739489,
-        2234696578,
-        1210669987,
-        2701425175,
-        2214421026,
-        486743705,
-        761055154,
-        2043636369,
-        1639492383,
-        2540008982,
-        892906626,
-        3301593260,
-        2463924540,
-        2304834400,
-        2865483490,
-        4019518352,
-        3388450644,
-        2519700470,
-        2378632848,
-        3859218429,
-        41583399,
-        3551979613,
-        455310134,
-        1784672860,
-        2439363685,
-        1129068494,
-        1190855146,
-        1219423658,
-        1519984024,
-        2292587420,
-        457621073,
-        26485539,
-        44862599,
-        4036930934,
-        1752500768,
-        500049802,
-        3842075558,
-        3846522605,
-        1330514793,
-        296294288,
-        1509560985,
-        3534138747,
-        871597155,
-        3371132114,
-        3468519555,
-        3117276577,
-        771937135,
-        879279391,
-        1934008381,
-        1167355102,
-        3585722021,
-        2714912251,
-        1754911891,
-        726519327,
-        1643748675,
-        3770213438,
-        3328598245,
-        2760155758,
-        2639634685,
-        2778091809,
-        1699423094,
-        659540027,
-        2343729207,
-        2118446589,
-        74406227,
-        218555160,
-        30856212,
-        1167930465,
-        3467170840,
-        4084379716,
-        2016327892,
-        1786161279,
-        1516085301,
-        1338537268,
-        530933512,
-        3684209364,
-        2513271217,
-        1475130583,
-        4151669683,
-        1501144793,
-        1340046562,
-        2965836453,
-        1148330311,
-        417665896,
-        2097316195,
-        2645187881,
-        1399929080,
-        2659323017,
-        1490103303,
-        363804462,
-        3465020727,
-        3639391603,
-        1334768429,
-        2136970163,
-        58803944,
-        2115603995,
-        1159651724,
-        3891861745,
-        3070456198,
-        142601912,
-        3549937283,
-        1064205062,
-        1475451662,
-        1811199306,
-        3691353348,
-        2849091044,
-        3302207000,
-        4132176068,
-        989617620,
-        51194066,
-        717904882,
-        4168333670,
-        2453975333,
-        2041085414,
-        4005969440,
-        3758836276,
-        3903149919,
-        4189289922,
-        548363216,
-        973394894,
-        1839689710,
-        1896955670,
-        1636598469,
-        1933293750,
-        3097838145,
-        3857376222,
-        2039165214,
-        2629174834,
-        4288046775,
-        3240581823,
-        1710208853,
-        337962299,
-        3788182518,
-        2090635011,
-        1721836154,
-        2416252352,
-        3422851855,
-        2488421740,
-        1397862477,
-        1477292673,
-        1997234387,
-        2430055230,
-        2579580596,
-        1704015956,
-        2216497525,
-        2313035196,
-        610434450,
-        4230676740,
-        1885612770,
-        3439405078,
-        2028271374,
-        3388301479,
-        3283245152,
-        3050416026,
-        2302106739,
-        2730938597,
-        1762153169,
-        3610328820
+        0x69DD1B46, 0xF423854F, 0x945B9FE5, 0x94B6B644, 0x5AB34525, 0xCEC40359, 0x41803CD8, 0xAB71D9FF,
+        0xE6FE53AE, 0x89530945, 0xCF85DA85, 0xD9EDE399, 0xCFF1E74B, 0x71EADD3C, 0xB720A5F4, 0x0340364D,
+        0x7D35BCF3, 0xC89DC3C8, 0xDB43A23A, 0xBC204A45, 0x1943C862, 0x16F2567C, 0x00D7B63C, 0x56D44BD0,
+        0x0E288202, 0xD8C7D873, 0x78B09BCA, 0x78E6989D, 0x623535E2, 0xD10A17AA, 0xB1DFFFD3, 0xA1832609,
+        0xF693A788, 0x7A38EB09, 0x30D7C7B7, 0xE6EF6521, 0x500AA51E, 0xA8D46798, 0x78329DDE, 0x076CE22D,
+        0x52891511, 0xD2712326, 0x28068705, 0xA49FB639, 0x26A64F31, 0x3C9FB9F7, 0x76183999, 0xB8E20714,
+        0xAFE22AB4, 0x68B4CDD5, 0x22DDD9A3, 0xF3409FAD, 0x69D963CA, 0xCCDF3FE4, 0x3CCF55A4, 0x14626A0B,
+        0xCB241ACD, 0xAD20679C, 0x05A5182D, 0x53349324, 0xA25BB7EA, 0xF4636C05, 0xEF8EF74C, 0x6DCCAA22,
+        0xF32AC63A, 0xDB331DA0, 0xEE64148F, 0xAC700F39, 0xFC027376, 0xBF63D603, 0x52E19CA0, 0x277BE867,
+        0x4105F363, 0x6E68E5B0, 0x47932DC1, 0x1F11C892, 0xAA302F23, 0x0C0EA81A, 0x3FAFF20D, 0x85287EC5,
+        0xC3AB03F1, 0x134940AE, 0xBBA731BB, 0x17510405, 0xB6502E8F, 0xC741221E, 0xCD40626F, 0xAA966080,
+        0xA68EF45F, 0x087C17B2, 0xB02B78A4, 0xBC87105C, 0xE028020F, 0xE6C8CE00, 0x6213B58B, 0x5942E074,
+        0xD75F7E4B, 0x1B56EB09, 0xB1B34724, 0x2A82DB3E, 0xCDAF4DF0, 0x5555C1EF, 0x5F63A869, 0x662DB1DC,
+        0x5C10E59B, 0x381741A8, 0x7C70E2F2, 0x361CF49B, 0xF611657E, 0xA953D8C0, 0x69C4D7B5, 0x86F5B640,
+        0x4B05C80A, 0x74132033, 0x796F773C, 0xC06B3786, 0x68F7BC2F, 0x88ACE68B, 0xF314FCB8, 0xC0E83256,
+        0xA1420469, 0x89525EC1, 0x72D16767, 0xEE4DC90F, 0xA79049F2, 0x377B8D34, 0x44339CFC, 0xC69F9CCB,
+        0x05D346D5, 0xE56B1D4C, 0xADC3D938, 0xA78874E2, 0x4482AA3E, 0x5B82AF6B, 0xC845EB55, 0xCBED0A4B,
+        0xCCAC8730, 0x66151180, 0x94E2940A, 0x01AC7B7A, 0x596A3CA4, 0x4CF682E8, 0x7C7919B0, 0x2877D47F,
+        0xF1665BE3, 0x2FF246F1, 0xC1A2871C, 0xEA7A23AC, 0xEEDC18FD, 0x87C168E1, 0x40270D7D, 0x9C4F6290,
+        0xDF6A416F, 0x6C9393C2, 0x30BDB6E1, 0x8532C382, 0x48295BA3, 0xA1047A17, 0x83FD6222, 0x1D031E99,
+        0x2D5CC7B2, 0x79CF6A91, 0x61B8AB1F, 0x97657616, 0x3538AC82, 0xC4CA50AC, 0x92DC813C, 0x8960FB60,
+        0xAACBCEE2, 0xEF94FB90, 0xC9F7A754, 0x962F93F6, 0x8DC70E90, 0xE606FFFD, 0x027A8327, 0xD3B6E85D,
+        0x1B237B36, 0x6A5FF25C, 0x9165BC65, 0x434C37CE, 0x46FB01EA, 0x48AEEDAA, 0x5A991D98, 0x88A61B9C,
+        0x1B46BE51, 0x01942323, 0x02AC8C87, 0xF09EAD76, 0x68750A20, 0x1DCE278A, 0xE5016BA6, 0xE54546ED,
+        0x4F4E0B69, 0x11A91790, 0x59FA1299, 0xD2A6AD7B, 0x33F38463, 0xC8EF64D2, 0xCEBD6883, 0xB9CDDDA1,
+        0x2E02D36F, 0x3468BD1F, 0x7346A03D, 0x45946CDE, 0xD5B9C6A5, 0xA1D245FB, 0x6899D493, 0x2B4DCE1F,
+        0x61F99D43, 0xE0B8E43E, 0xC66660E5, 0xA484A26E, 0x9D55A0FD, 0xA5965121, 0x654B2376, 0x274FC83B,
+        0x8BB27837, 0x7E44EDFD, 0x046F5953, 0x0D06E318, 0x01D6D414, 0x459D3461, 0xCEA8D418, 0xF372B044,
+        0x782EB8D4, 0x6A76A87F, 0x5A5DA035, 0x4FC87534, 0x1FA56708, 0xDB9892D4, 0x95CD79B1, 0x57ECB4D7,
+        0xF77573B3, 0x5979A6D9, 0x4FDF7CE2, 0xB0C712A5, 0x44722147, 0x18E51368, 0x7D028163, 0x9DAA5D29,
+        0x537138F8, 0x9E820C89, 0x58D12C07, 0x15AF372E, 0xCE880537, 0xD8ECB573, 0x4F8EF32D, 0x7F5F93B3,
+        0x038146E8, 0x7E198E1B, 0x451EE18C, 0xE7F918F1, 0xB7037186, 0x087FEEB8, 0xD397BE83, 0x3F6E7B06,
+        0x57F19B0E, 0x6BF4B54A, 0xDC059504, 0xA9D1ADE4, 0xC4D3AE18, 0xF64C00C4, 0x3AFC5DD4, 0x030D28D2,
+        0x2ACA5BF2, 0xF873B966, 0x9244B125, 0x79A87DE6, 0xEEC63E20, 0xE00B4A34, 0xE8A5575F, 0xF9B37DC2,
+        0x20AF5BD0, 0x3A04D3CE, 0x6DA76FEE, 0x71113F16, 0x618C82C5, 0x733BB8B6, 0xB8A54241, 0xE5EAE3DE,
+        0x798B311E, 0x9CB60632, 0xFF9666B7, 0xC1275ABF, 0x65EFB755, 0x1424E53B, 0xE1CB13F6, 0x7C9C8F03,
+        0x66A1227A, 0x900515C0, 0xCC04930F, 0x94524D6C, 0x5351B04D, 0x580DB281, 0x770B60D3, 0x90D7B33E,
+        0x99C146B4, 0x65913854, 0x841D1175, 0x89DE1DBC, 0x24627D92, 0xFC2B0104, 0x70642AE2, 0xCD012816,
+        0x78E4F70E, 0xC9F560A7, 0xC3B25860, 0xB5D1A79A, 0x89375C73, 0xA2C6D0E5, 0x690852D1, 0xD7313EF4
     },
     MT64_N
 };
-__mt19937_64_t __uuid64 = {0};
+OCSTL_THREAD_LOCAL __mt19937_64_t __uuid64 = {0};
+OCSTL_THREAD_LOCAL int __uuid64_seeded = 0;
 static void __mt19937_64_uuid_seed(uint64_t seed) {
     __uuid64.mt[0] = seed;
-    { int i; for (i = 1; i < MT64_N; i++) {
-        __uuid64.mt[i] = 6364136223846793005ULL * (__uuid64.mt[i - 1] ^ (__uuid64.mt[i - 1] >> 62)) + (uint64_t) i;
-    } }
+    {
+        int i;
+        for (i = 1; i < MT64_N; i++) {
+            __uuid64.mt[i] = 6364136223846793005ULL * (__uuid64.mt[i - 1] ^ (__uuid64.mt[i - 1] >> 62)) + (uint64_t) i;
+        }
+    }
     __uuid64.index = MT64_N;
 }
 static void __mt19937_64_seed(uint64_t seed) {
     __rng64.mt[0] = seed;
-    { int i; for (i = 1; i < MT64_N; i++) {
+    int i;
+    for (i = 1; i < MT64_N; i++) {
         __rng64.mt[i] = 6364136223846793005ULL * (__rng64.mt[i - 1] ^ (__rng64.mt[i - 1] >> 62)) + (uint64_t) i;
-    } }
+    }
     __rng64.index = MT64_N;
 }
 static inline uint64_t __mt19937_64_next() {
@@ -6400,16 +6176,25 @@ static inline uint64_t __mt19937_64_next() {
     y ^= (y >> 43);
     return y;
 }
+static inline uint64_t __mt19937_64_bounded(uint64_t range) {
+    uint64_t limit = UINT64_MAX - (UINT64_MAX % range);
+    uint64_t r;
+    do { r = __mt19937_64_next(); } while (r >= limit);
+    return r % range;
+}
 static double __mt19937_random(void) {
     return (double) (__mt19937_64_next() >> 11) * (1.0 / 9007199254740992.0);
 }
 static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
-    uint64_t range = (uint64_t) (hi - lo) + 1ULL;
-    return lo + (int64_t) (__mt19937_64_next() % range);
+    uint64_t range = (uint64_t)(hi - lo) + 1ULL;
+    return lo + (int64_t) __mt19937_64_bounded(range);
 }
 char *__mt19937_uuid(void) {
-    __mt19937_64_uuid_seed(time(NULL));
-    static char buf[37];
+    if (!__uuid64_seeded) {
+        __mt19937_64_uuid_seed(random_device());
+        __uuid64_seeded = 1;
+    }
+    static OCSTL_THREAD_LOCAL char buf[37];
     static const char hex[] = "0123456789abcdef";
     uint64_t hi = __mt19937_64_next();
     uint64_t lo = __mt19937_64_next();
@@ -6437,19 +6222,25 @@ char *__mt19937_uuid(void) {
 OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
-    { size_type64 i; for (i = length - 1; i > 0; i--) {
-        size_type64 rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
-    } }
+    {
+        size_type64 i;
+        for (i = length - 1; i > 0; i--) {
+            size_type64 rng_idx = (size_type64) __mt19937_64_bounded((uint64_t)(i + 1));
+            swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
+        }
+    }
 }
 OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
-    { size_type64 i; for (i = length - 1; i > 0; i--) {
-        size_type64 rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
-    } }
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+    {
+        size_type64 i;
+        for (i = length - 1; i > 0; i--) {
+            size_type64 rng_idx = (size_type64) __mt19937_64_bounded((uint64_t)(i + 1));
+            swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
+        }
+    }
 }
 OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
@@ -6458,26 +6249,35 @@ OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
     if (length <= 1) { return; }
     void *ptr = malloc(type_size * length);
     void *it = *head;
-    { size_type i; for (i = 0; i < length; i++) {
-        memcpy((char *) ptr + (i * type_size), it, type_size);
-        it = __cstl_list_next_prev(it, -1);
-    } }
-    { size_type i; for (i = length - 1; i > 0; i--) {
-        size_type rng_idx = __mt19937_64_next() % (i + 1);
-        swap((char *) ptr + i * type_size, (char *) ptr + rng_idx * type_size, type_size);
-    } }
+    {
+        size_type i;
+        for (i = 0; i < length; i++) {
+            memcpy((char *) ptr + (i * type_size), it, type_size);
+            it = __cstl_list_next_prev(it, -1);
+        }
+    }
+    {
+        size_type i;
+        for (i = length - 1; i > 0; i--) {
+            size_type rng_idx = (size_type) __mt19937_64_bounded((uint64_t)(i + 1));
+            swap((char *) ptr + i * type_size, (char *) ptr + rng_idx * type_size, type_size);
+        }
+    }
     it = *head;
-    { size_type i; for (i = 0; i < length; i++) {
-        memcpy(it, (char *) ptr + (i * type_size), type_size);
-        it = __cstl_list_next_prev(it, -1);
-    } }
+    {
+        size_type i;
+        for (i = 0; i < length; i++) {
+            memcpy(it, (char *) ptr + (i * type_size), type_size);
+            it = __cstl_list_next_prev(it, -1);
+        }
+    }
     free(ptr);
 }
 void __mt19937_shuffle(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) &container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
     }
@@ -6500,7 +6300,7 @@ void __mt19937_shuffle(void *container) {
 }
 typedef void (*seed_fn)(uint64_t);
 typedef double (*random_fn)(void);
-typedef int64_t (*randint_fn)(int64_t, int64_t);
+typedef int64_t( *randint_fn)(int64_t, int64_t);
 typedef char *(*uuid_fn)(void);
 typedef void (*shuffle_fn)(void *);
 typedef struct {
@@ -6529,11 +6329,11 @@ BOOLEAN NTAPI RtlGenRandom(PVOID RandomBuffer, ULONG RandomBufferLength);
 #include <unistd.h>
 #include <errno.h>
 #endif
-static uint64_t random_device(void) {
+inline uint64_t random_device(void) {
     uint64_t val = 0;
 #if defined(OCSTL_CC_TCC)
     val = (uint64_t) time(NULL);
-    val ^= (uint64_t) (uintptr_t) &val;
+    val ^= (uint64_t)(uintptr_t) & val;
     val ^= val << 21;
     val ^= val >> 35;
     val ^= val << 4;
@@ -6604,7 +6404,6 @@ static double ttime(void) {
 #if !defined(HG_2C70D3E09E9D3722DE728E957D5DD63847F2A1F71D28F51D7AB3823D54DAFF6F_H)
 #define HG_2C70D3E09E9D3722DE728E957D5DD63847F2A1F71D28F51D7AB3823D54DAFF6F_H
 #include <stdio.h>
-#include <wchar.h>
 typedef struct FPM {
     FILE *fp;
     char *filepath;
@@ -6626,7 +6425,8 @@ void fpm_erase(FILE *fp) {
         }
     } }
     verify(idx != -1);
-    memcpy(fpm + idx, fpm + idx + 1, fpm_size - idx - 1);
+    memmove(fpm + idx, fpm + idx + 1,
+            (size_t) (fpm_size - idx - 1) * sizeof(fpm[0]));
     fpm_size--;
 }
 char *fpm_get(FILE *fp) {
@@ -7375,6 +7175,7 @@ static void tsort(void *base, const size_type64 number, const size_type64 width,
 #define PDQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
 #endif
 static  void pdq__swap(unsigned char *a, unsigned char *b, size_type64 n) {
+    if (a == b || n == 0) { return; }
     if (PDQ_LIKELY(n == 8)) {
         uint64_t t;
         memcpy(&t, a, 8);
@@ -8017,7 +7818,7 @@ static void rsort32(int32_t *__base, size_type64 n) {
     {
         size_type64 count[256];
         size_type64 pass, i;
-        uint32_t sign_mask = (uint32_t) 1u << (sizeof(int32_t) * CHAR_BIT - 1);
+        uint32_t sign_mask = (uint32_t) 1u << (sizeof(int32_t) * OCSTL_CHAR_BIT - 1);
         for (pass = 0; pass < sizeof(int32_t); ++pass) {
             size_type64 shift = pass * 8;
             for (i = 0; i < 256; ++i) {
@@ -8054,7 +7855,7 @@ static void rsort64(int64_t *__base, size_type64 n) {
     {
         size_type64 count[256];
         size_type64 pass, i;
-        uint64_t sign_mask = (uint64_t) 1ULL << (sizeof(int64_t) * CHAR_BIT - 1);
+        uint64_t sign_mask = (uint64_t) 1ULL << (sizeof(int64_t) * OCSTL_CHAR_BIT - 1);
         for (pass = 0; pass < sizeof(int64_t); ++pass) {
             size_type64 shift = pass * 8;
             for (i = 0; i < 256; ++i) {
@@ -8818,7 +8619,7 @@ OPENCSTL_FUNC int _cstl_is_sorted(void *container, void *_cmp) {
 #endif
 #if !defined(HG_3282159A01880257F6A4E53AEC354ACB6F7CF5BC34243136D0AE684B74FB1426_H)
 #define HG_3282159A01880257F6A4E53AEC354ACB6F7CF5BC34243136D0AE684B74FB1426_H
-static char *OPENCSTL_VERSION = "v1.4.1";
+static char *OPENCSTL_VERSION = "v1.4.2";
 static char *opencstl_version(void) {
     return OPENCSTL_VERSION;
 }
@@ -8929,11 +8730,11 @@ typedef void (*bitset_fn5)(BITSET b, size_type idx);
 typedef bool (*bitset_fn6)(BITSET b, size_type idx);
 typedef char * (*bitset_fn7)(BITSET b);
 static void __cstl_bitset_set(BITSET b) {
-    size_type cap = __cstl_bitset_capacity(b.nbits);
-    memset(b.bits, 0xFF, cap);
+    size_type full_bytes = b.nbits / 8;
     size_type rem = b.nbits % 8;
+    memset(b.bits, 0xFF, full_bytes);
     if (rem != 0) {
-        b.bits[b.nbits / 8] &= (ubyte_x) ((1 << rem) - 1);
+        b.bits[full_bytes] = (ubyte_x) ((1 << rem) - 1);
     }
 }
 static void __cstl_bitset_reset(BITSET b) {
@@ -10559,15 +10360,15 @@ static CSV __parse_csv(char *csv_path, bool is_header) {
     ret.cols = 0;
     FILE *f = file.open(csv_path, "rb");
     if (!f) { return ret; }
-    fseek(f, 0, SEEK_END);
+    if (fseek(f, 0, SEEK_END) != 0) { file.close(f); return ret; }
     long fsz = ftell(f);
     rewind(f);
-    verify(fsz > 0);
+    if (fsz <= 0) { file.close(f); return ret; }
     char *buf = (char *) malloc((size_t) fsz);
     verify(buf!=NULL);
-    fread(buf, 1, (size_t) fsz, f);
+    size_t got = fread(buf, 1, (size_t) fsz, f);
     file.close(f);
-    const char *end = buf + fsz;
+    const char *end = buf + got;
     int total_rows = 0;
     int max_cols = 0;
     size_t str_bytes = 0;
@@ -11224,6 +11025,27 @@ OPENCSTL_FUNC void _cstl_resize(void *container, int argc, ...) {
     }
     __cstl_va_end(vl);
 }
+OPENCSTL_FUNC void _cstl_reserve(void *container, size_type64 n) {
+    size_type64 container_type;
+    if (__is_deque((void **) container)) {
+        ptrdiff_t distance = OPENCSTL_NIDX(((void**)container), -1) + 1;
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_CTYPE * (ptrdiff_t) sizeof(size_type64) + distance);
+    } else {
+        container_type = OPENCSTL_NIDX(((void**)container), NIDX_CTYPE);
+    }
+    switch (container_type) {
+        case OPENCSTL_VECTOR:
+            __cstl_vector_reserve((void **) container, n);
+            break;
+        case OPENCSTL_UNORDERED_SET:
+        case OPENCSTL_UNORDERED_MAP:
+            __cstl_hashtable_reserve((void **) container, n);
+            break;
+        default:
+            fault("reserve: unsupported container type");
+            break;
+    }
+}
 OPENCSTL_FUNC void _cstl_clear(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) container)) {
@@ -11399,7 +11221,7 @@ OPENCSTL_FUNC void *_cstl_find(void *container, int argc, ...) {
     }
     switch (container_type) {
         case OPENCSTL_ARRAY: {
-            if (argc == 1) { return __cstl_array_find((void **) container, (void **) container, param2); } else { return __cstl_array_find((void **) container, param1, param2); }
+            if (argc == 1) { return __cstl_array_find((void **) container, container, param1); } else { return __cstl_array_find((void **) container, param1, param2); }
         }
         break;
         case OPENCSTL_VECTOR: {

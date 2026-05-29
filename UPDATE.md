@@ -1,6 +1,33 @@
 ## 1.4.2
 
+array의 iterator 버그 수정
 
+memmove로 대체 가능한 부분 변경
+
+mt19937 랜덤 API를 Thread-Safe하게 변경
+
+
+* TCC의 정렬함수를 clang/gcc로 빌드한 shared lib를 로드해서 테스트
+
+|ENV/SORTING|qsort|msort|tsort|pdqsort|rsort|pmsort|ipnsort|
+|-|-|-|-|-|-|-|-|
+|MacOS/GCC|632.14|538.12|539.99|409.60|144.88|133.02|411.62|
+
+|ENV/SORTING|qsort|msort|tsort|pdqsort|rsort|pmsort|ipnsort|
+|-|-|-|-|-|-|-|-|
+|MacOS/Clang|639.42|543.58|531.82|406.43|123.48|131.62|415.10|
+
+|ENV/SORTING|qsort|msort|tsort|pdqsort|rsort|pmsort|ipnsort|
+|-|-|-|-|-|-|-|-|
+|MacOS/TCC|847.36|1376.38|1392.64|1229.84|476.08|196.98|1199.94|
+
+|ENV/SORTING|qsort| msort_v2 |tsort|pdqsort|rsort|pmsort|ipnsort|
+|-|-|----------|-|-|-|-|-|
+|MacOS/TCC|856.60| 1084.99  |1416.40|1238.80|482.94|194.65|1215.42|
+
+```bash
+gcc-15 -O3 -DNDEBUG -mcpu=apple-m1 -mtune=native -flto -dynamiclib -o msort.dylib msort.c
+```
 
 ## 1.4.1
 

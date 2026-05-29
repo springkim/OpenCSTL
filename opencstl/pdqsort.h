@@ -57,6 +57,7 @@
 #endif
 
 static  void pdq__swap(unsigned char *a, unsigned char *b, size_type64 n) {
+    if (a == b || n == 0) { return; }
     if (PDQ_LIKELY(n == 8)) {
         uint64_t t;
         memcpy(&t, a, 8);

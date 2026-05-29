@@ -264,8 +264,8 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n
         iveb_insert(iveb, (char *) *container + distance,
                     (char *) b + alloc_sz, CT_DEQUE, type_size, type);
     }
-    memcpy((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
-           (length - pos) * type_size);
+    memmove((char *) *container + (pos + n) * type_size, (char *) *container + pos * type_size,
+            (length - pos) * type_size);
     {
         size_type64 i;
         for (i = 0; i < n; i++) {

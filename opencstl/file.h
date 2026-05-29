@@ -70,7 +70,8 @@ void fpm_erase(FILE *fp) {
         }
     } }
     verify(idx != -1);
-    memcpy(fpm + idx, fpm + idx + 1, fpm_size - idx - 1);
+    memmove(fpm + idx, fpm + idx + 1,
+            (size_t) (fpm_size - idx - 1) * sizeof(fpm[0]));
     fpm_size--;
 }
 
