@@ -666,6 +666,22 @@ void test04(void) {
 }
 
 
+void test05(void) {
+    char *str = "ABCDEFG";
+    int i;
+    VECTOR(char) v = new_vector(char);
+    for (i = 0; i < strlen(str); i++) {
+        push_back(v, str[i]);
+    }
+
+    for (char *it = begin(v); it != end(v); it = next(it)) {
+        printf("%c\n", *it);
+    }
+
+    destroy(v);
+}
+
+
 int main() {
     // return 0;
     // VECTOR(int) vec = new_vector(int);
@@ -705,6 +721,8 @@ int main() {
 
     int cnt = cpu_count();
     printf("cnt: %d\n", cnt);
+
+    test05();
 
 
     logging.warning(opencstl_env());

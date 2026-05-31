@@ -300,7 +300,7 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
     // char *type_value = (char *) OPENCSTL_NIDX(container, -5);
 
 
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
     size_type64 is_float_value = OPENCSTL_NIDX(container, -9);
     float keyf = 0.0F;
@@ -471,7 +471,7 @@ OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
     //char *type_key = (char *) OPENCSTL_NIDX(container, -3);
 
 
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
     float keyf = 0.0F;
     if (is_float_key) {

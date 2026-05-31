@@ -324,7 +324,7 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
     size_type64 type_size = key_size + value_size;
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
     size_type64 is_float_value = OPENCSTL_NIDX(container, -9);
     float kf = 0.f, vf = 0.f;
@@ -382,7 +382,7 @@ void __cstl_hashtable_erase(void **container, void *key) {
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     size_type64 value_size = OPENCSTL_NIDX(container, -4);
     size_type64 type_size = key_size + value_size;
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
     float kf = 0.f;
     if (is_float_key) {
@@ -434,7 +434,7 @@ void *__cstl_hashtable_find(void **container, void *key) {
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     size_type64 value_size = OPENCSTL_NIDX(container, -4);
     size_type64 type_size = key_size + value_size;
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
     float kf = 0.f;
     if (is_float_key) {

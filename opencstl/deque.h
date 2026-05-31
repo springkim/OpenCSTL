@@ -110,7 +110,7 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_type64 n, void *va
     //size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t)sizeof(size_type64) + distance);
     size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -151,7 +151,7 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
     size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
 
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -189,7 +189,7 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
 
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -245,7 +245,7 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n
     size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
 
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -305,7 +305,7 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_type64 n, void *va
     size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
 
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -390,7 +390,7 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
     //size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-3) * (ptrdiff_t)sizeof(size_type64) + distance);
     //char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-4) * (ptrdiff_t)sizeof(size_type64) + distance);
 
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -492,7 +492,7 @@ OPENCSTL_FUNC size_type64 __cstl_deque_count(void **container, void *value) {
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
 
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -537,7 +537,7 @@ OPENCSTL_FUNC void *__cstl_deque_lower_bound(void **container, void *value, CSTL
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
 
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -570,7 +570,7 @@ OPENCSTL_FUNC void *__cstl_deque_upper_bound(void **container, void *value, CSTL
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
 
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC  /* by-value path promoted float->double; narrow it back */
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {

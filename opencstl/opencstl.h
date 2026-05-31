@@ -152,8 +152,10 @@ extern "C" {
 #define pop_back        cstl_pop_back
 
 // push_back must match the platform's variadic ABI of _cstl_push_back:
-//   - Windows reads each arg's bytes directly from the va_list storage,
-//     so values must be passed by-value through __VA_ARGS__.
+//   - On Windows we delegate to cstl_push_back, which selects the right ABI
+//     per compiler in defines.h: MSVC passes values by-value and reads the
+//     bytes from the va_list storage, while GCC/Clang use the pointer-staging
+//     path (same as Linux/macOS, see CSTL_PTR_STAGING).
 //   - Linux/macOS reads via va_arg(vl, void*), so the macro stages each
 //     arg in a local and passes &local. The `1 ? (_1) : (_1)` form forces
 //     array-to-pointer decay so string literals ("123" has type char[4])
@@ -227,6 +229,30 @@ _cstl_push_back(__0, &__1);}
 
 #include "types.h"
 #include "verify.h"
+
+#if CSTL_MSVC_GENERIC
+// _cstl_carry_float: carries a `float` element through MSVC's by-value variadic
+// path without the default argument promotion corrupting it. A bare float
+// passed through `...` is promoted to `double`, so the 8-byte va_list slot holds
+// a double bit-pattern while the reader copies only sizeof(float) bytes -> a
+// garbage value. Here we deliberately accept that promoted double, narrow it
+// back to float, and return its raw 4-byte pattern as an `unsigned` (integer
+// rank, so never itself promoted). The slot then carries the float's bytes in
+// its low 4 bytes -- exactly what the reader copies out. The leading named
+// parameter only exists because C requires one before `...`; making the helper
+// variadic is also what keeps its _Generic association (see _CSTL_STAGE in
+// defines.h) constraint-valid for non-float arguments that never reach it.
+OPENCSTL_FUNC unsigned _cstl_carry_float(int _tag, ...) {
+    va_list _ap;
+    union { float f; unsigned u; } _conv;
+    va_start(_ap, _tag);
+    _conv.u = 0;
+    _conv.f = (float) va_arg(_ap, double);
+    va_end(_ap);
+    return _conv.u;
+}
+#endif
+
 OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     va_list vl;
     void *va_ptr = NULL;
