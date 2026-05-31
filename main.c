@@ -677,6 +677,8 @@ void test05(void) {
     for (char *it = begin(v); it != end(v); it = next(it)) {
         printf("%c\n", *it);
     }
+
+    destroy(v);
 }
 
 
