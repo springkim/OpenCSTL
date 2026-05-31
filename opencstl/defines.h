@@ -145,30 +145,60 @@ typedef long long _opencstl_ll_ua;
 (*(TYPE *)memcpy(&(TYPE){0}, (char *)(iter) + sizeof(*(iter)), sizeof(TYPE)))
 #endif
 
-// CSTL_USE_VAARG=0: Windows only (values passed directly on stack)
-// CSTL_USE_VAARG=1: Linux/macOS (macros pass pointers via &__1; standard va_arg is correct)
-#if defined(_WIN32) || defined(_WIN64)
-#  define CSTL_USE_VAARG 0
+// CSTL_PTR_STAGING: when 1, the dispatch macros stage each element into a
+// typed local (via _CSTL_TYPEOF) and pass its ADDRESS through the variadic
+// call, so the default argument promotions (notably float->double) never reach
+// the reader. When 0, values are passed by-value and read back from the
+// va_list storage -- which silently corrupts any type that gets promoted.
+//
+// Pointer-staging needs both a working typeof and a conforming preprocessor for
+// the arg-counting / statement-expression macros further down. Linux/macOS
+// (GCC/Clang/TCC) always qualify; on Windows, MinGW-GCC and Clang use the same
+// GNU-conforming preprocessor and __typeof__, so they qualify too. MSVC does
+// not (no typeof on older versions, traditional preprocessor), so it keeps the
+// by-value path.
+#if defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS) || \
+    (defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG)))
+#  define CSTL_PTR_STAGING 1
 #else
-#  define CSTL_USE_VAARG 1
+#  define CSTL_PTR_STAGING 0
 #endif
 
-#if defined(_WIN32) || defined(_WIN64)
-// On Windows the dispatch macros pass values directly (not pointer-to-value).
-// va_arg(vl,void*) would read the value itself, so use PTR arithmetic instead.
-#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=(void*)V;
-#define __cstl_va_arg(PTR)	(PTR)
-// Windows: __cstl_va_arg_next is unused (Windows uses PTR-based path),
-// but define it to avoid compile errors if referenced.
-#define __cstl_va_arg_next(V)	(NULL)
-#define __cstl_va_end(V)	va_end(V)
+// CSTL_MSVC_GENERIC: 1 on MSVC built as C11 or later. MSVC keeps the by-value
+// variadic path (CSTL_PTR_STAGING stays 0 above), but that path mangles a
+// `float` element -- the default argument promotions turn it into a `double`
+// before the reader, which copies only sizeof(float) bytes, ever sees it. From
+// C11 onward _Generic lets us special-case exactly the float arguments without
+// disturbing any other type (see the dispatch section below). MSVC defines
+// __STDC_VERSION__ only when a /std:cNN flag selects C11+, which is precisely
+// when _Generic is available, so this gate doubles as the feature check.
+#if defined(OCSTL_CC_MSVC) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#  define CSTL_MSVC_GENERIC 1
 #else
+#  define CSTL_MSVC_GENERIC 0
+#endif
 
-// On Linux/macOS (GCC, Clang, TCC) the dispatch macros pass &__N (address of a local copy)
-// for each arg. So va_arg(vl, void*) returns void** -- we must dereference to get the actual value.
+// CSTL_USE_VAARG mirrors CSTL_PTR_STAGING: the staging path passes pointers, so
+// the reader must use va_arg(vl, void*); the by-value path reads raw bytes.
+#define CSTL_USE_VAARG CSTL_PTR_STAGING
+
+#if CSTL_PTR_STAGING
+// Pointer-staging path (Linux/macOS, Windows GCC/Clang): the dispatch macros
+// pass &__N (address of a typed local copy) for each arg, so va_arg(vl, void*)
+// yields the pointer to the staged value.
 #define __cstl_va_start(V,C,beg)	va_start(V,C)
 #define __cstl_va_arg_next(V)	    va_arg((V),void*)
 #define __cstl_va_end(V)	        va_end(V)
+#else
+// By-value path (Windows MSVC): values are passed directly into the va_list
+// storage. va_arg(vl,void*) would read the value itself, so use PTR arithmetic
+// to take the address of those bytes instead.
+#define __cstl_va_start(V,C,beg)	va_start(V,C);beg=(void*)V;
+#define __cstl_va_arg(PTR)	(PTR)
+// __cstl_va_arg_next is unused on this path, but define it to avoid compile
+// errors if referenced.
+#define __cstl_va_arg_next(V)	(NULL)
+#define __cstl_va_end(V)	va_end(V)
 #endif
 
 //Unary Functions
@@ -207,24 +237,37 @@ typedef long long _opencstl_ll_ua;
 #endif
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
-
-#define _cstl_deref(P) (__extension__ ({ \
-    __typeof__(*(P)) _cstl_rv; \
+// _cstl_deref(C, P): read the element that lives at address P, using C's
+// element type so the load has the element's exact WIDTH. The old version
+// always dereferenced a void* (8 bytes), which over-read any element narrower
+// than a pointer -- e.g. front()/back() on VECTOR(char) returned the element
+// byte plus 7 neighbouring bytes. Typing the load via __typeof__(*(C)) reads
+// sizeof(element) bytes instead, so char/short (and every other scalar) come
+// back correct.
+//
+// __typeof__ is available on GCC/Clang/TCC, and on MSVC from VS2022 17.9
+// (_MSC_VER 1939) even under /std:c11. Older MSVC has no typeof, so it keeps
+// the legacy pointer-width read (front()/back() stay limited there, unchanged).
+#if defined(__GNUC__) || defined(__clang__) || defined(__TINYC__)
+#define _cstl_deref(C, P) (__extension__ ({ \
+    __typeof__(*(C)) _cstl_rv; \
     __builtin_memcpy(&_cstl_rv, (const void *)(P), sizeof(_cstl_rv)); \
     _cstl_rv; \
 }))
+#elif defined(_MSC_VER) && _MSC_VER >= 1939
+// __unaligned permits a possibly-misaligned load (matches cstl_value above).
+#define _cstl_deref(C, P) (*(__typeof__(*(C)) __unaligned *)(P))
 #else
-#define _cstl_deref(P) (*(P))
+#define _cstl_deref(C, P) (*(void**)(P))
 #endif
 #define _cstl_err_ptr (void*)(size_type64)0
 
-#define cstl_front(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
+#define cstl_front(C)	_cstl_deref((C),(__is_deque((void**)&C)?\
 _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C):_cstl_err_ptr) :\
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C):\
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)(*(void**)C):_cstl_err_ptr)))
 
-#define cstl_back(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
+#define cstl_back(C)	_cstl_deref((C),(__is_deque((void**)&C)?\
 _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C+cstl_size(C)-1):_cstl_err_ptr) :\
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C+cstl_size(C)-1):\
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)((void**)C)[-2]:_cstl_err_ptr)))
@@ -264,16 +307,66 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #endif
 
 
-#if defined(OCSTL_OS_WINDOWS)
+// ---------------------------------------------------------------------------
+// MSVC (C11+) float-promotion fix via _Generic.
+//
+// _CSTL_STAGE(x) special-cases exactly the float arguments on MSVC's by-value
+// variadic path and leaves every other type untouched. A float is routed
+// through _cstl_carry_float() (defined in opencstl.h), which returns the
+// float's raw 4-byte pattern as an `unsigned` -- an integer-rank value that is
+// never promoted -- so the va_list slot holds the bytes the reader copies back.
+// Everything else (int, double, pointers, and struct rvalues such as
+// make_edge(...)) falls through `default:` unchanged. The float association
+// calls a *variadic* helper so the association stays constraint-valid for every
+// argument type, even structs that never actually select it -- MSVC otherwise
+// type-checks all _Generic associations, not just the selected one.
+#if CSTL_MSVC_GENERIC
 
-#define cstl_push(container,...)	_cstl_push(&(container),__VA_ARGS__)
-#define cstl_push_back(container,...)	_cstl_push_back(&(container),__VA_ARGS__)
-#define cstl_push_front(container,...)	_cstl_push_front(&(container),__VA_ARGS__)
-#define cstl_insert(container,...)	_cstl_insert(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_erase(container,...)	_cstl_erase(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_resize(container,...)	_cstl_resize(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_assign(container,...)	_cstl_assign(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define _CSTL_STAGE(x) _Generic((x), float: _cstl_carry_float(0, (x)), default: (x))
+
+// _CSTL_FOREACH(m, ...) -> m(a1), m(a2), ... -- a comma map written to survive
+// MSVC's traditional preprocessor (the _CSTL_EXPAND rescans force re-expansion
+// of __VA_ARGS__ at each level).
+#define _CSTL_EXPAND(x) x
+#define _CSTL_FE_1(m, a)       m(a)
+#define _CSTL_FE_2(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_1(m, __VA_ARGS__))
+#define _CSTL_FE_3(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_2(m, __VA_ARGS__))
+#define _CSTL_FE_4(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_3(m, __VA_ARGS__))
+#define _CSTL_FE_5(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_4(m, __VA_ARGS__))
+#define _CSTL_FE_6(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_5(m, __VA_ARGS__))
+#define _CSTL_FE_7(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_6(m, __VA_ARGS__))
+#define _CSTL_FE_8(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_7(m, __VA_ARGS__))
+#define _CSTL_FE_9(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_8(m, __VA_ARGS__))
+#define _CSTL_FE_10(m, a, ...) m(a), _CSTL_EXPAND(_CSTL_FE_9(m, __VA_ARGS__))
+#define _CSTL_FE_PICK(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10, NAME, ...) NAME
+#define _CSTL_FOREACH(m, ...) \
+    _CSTL_EXPAND(_CSTL_FE_PICK(__VA_ARGS__, _CSTL_FE_10, _CSTL_FE_9, _CSTL_FE_8, \
+        _CSTL_FE_7, _CSTL_FE_6, _CSTL_FE_5, _CSTL_FE_4, _CSTL_FE_3, _CSTL_FE_2, \
+        _CSTL_FE_1)(m, __VA_ARGS__))
+
+// _CSTL_VARGS(...): stage every forwarded element value.
+#define _CSTL_VARGS(...) _CSTL_FOREACH(_CSTL_STAGE, __VA_ARGS__)
+
+#else
+// Pre-C11 MSVC (no _Generic): identity, preserving the original by-value path.
+#define _CSTL_VARGS(...) __VA_ARGS__
+#endif
+
+// By-value dispatch path: Windows MSVC. GCC/Clang on Windows use the
+// pointer-staging path below (same as Linux/macOS) so float/short/char elements
+// are not corrupted by default argument promotion. On MSVC each element value
+// is wrapped in _CSTL_VARGS(): under C11+ that fixes float arguments via
+// _Generic; before C11 it is the identity and behavior is unchanged.
+#if defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_MSVC)
+
+#define cstl_push(container,...)	_cstl_push(&(container),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_push_back(container,...)	_cstl_push_back(&(container),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_push_front(container,...)	_cstl_push_front(&(container),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_insert(container,...)	_cstl_insert(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_erase(container,...)	_cstl_erase(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_resize(container,...)	_cstl_resize(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_assign(container,...)	_cstl_assign(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
 #define cstl_shrink_to_fit(container) _cstl_shrink_to_fit(&(container))
 #define cstl_max_size(container) _cstl_max_size(&container)
 
@@ -283,13 +376,12 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 //#define cstl_count(container,...)	_cstl_count(&(container),__VA_ARGS__)
 
 #define cstl_count_if(container,...)	_cstl_count_if(&(container),__VA_ARGS__)
-#define cstl_lower_bound(container,...)	_cstl_lower_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_upper_bound(container,...)	_cstl_upper_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#define cstl_lower_bound(container,...)	_cstl_lower_bound(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_upper_bound(container,...)	_cstl_upper_bound(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
 
-#define cstl_max_element(C, ...) ocstl_min_max_element(&(C), 1LL, ##__VA_ARGS__, NULL)
-#define cstl_min_element(C, ...) ocstl_min_max_element(&(C), 0LL, ##__VA_ARGS__, NULL)
-
-#elif defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS)
+// Pointer-staging dispatch path: Linux/macOS, plus Windows GCC/Clang.
+#elif defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS) || \
+    (defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG)))
 
 // _CSTL_TYPEOF is now defined unconditionally above the platform branch.
 
@@ -451,4 +543,15 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define _cstl_upper_bound_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(1?(_1):(_1)) __1=(_1);_CSTL_TYPEOF(1?(_2):(_2)) __2=(_2);_CSTL_TYPEOF(1?(_3):(_3)) __3=(_3);_CSTL_TYPEOF(1?(_4):(_4)) __4=(_4);_CSTL_TYPEOF(1?(_5):(_5)) __5=(_5);_CSTL_TYPEOF(1?(_6):(_6)) __6=(_6);_CSTL_TYPEOF(1?(_7):(_7)) __7=(_7);_CSTL_TYPEOF(1?(_8):(_8)) __8=(_8);_CSTL_TYPEOF(1?(_9):(_9)) __9=(_9);_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
 #define _cstl_upper_bound_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(1?(_1):(_1)) __1=(_1);_CSTL_TYPEOF(1?(_2):(_2)) __2=(_2);_CSTL_TYPEOF(1?(_3):(_3)) __3=(_3);_CSTL_TYPEOF(1?(_4):(_4)) __4=(_4);_CSTL_TYPEOF(1?(_5):(_5)) __5=(_5);_CSTL_TYPEOF(1?(_6):(_6)) __6=(_6);_CSTL_TYPEOF(1?(_7):(_7)) __7=(_7);_CSTL_TYPEOF(1?(_8):(_8)) __8=(_8);_CSTL_TYPEOF(1?(_9):(_9)) __9=(_9);_CSTL_TYPEOF(1?(_10):(_10)) __10=(_10);_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
 
+#endif
+
+// max_element / min_element take a comparator (or none) -- never a by-value
+// element -- so they need no promotion staging and are identical on every
+// platform/compiler. Defined here (outside the dispatch branch) so that the
+// MSVC by-value path and the GCC/Clang/Linux staging path both get them.
+#ifndef cstl_max_element
+#define cstl_max_element(C, ...) ocstl_min_max_element(&(C), 1LL, ##__VA_ARGS__, NULL)
+#endif
+#ifndef cstl_min_element
+#define cstl_min_element(C, ...) ocstl_min_max_element(&(C), 0LL, ##__VA_ARGS__, NULL)
 #endif
