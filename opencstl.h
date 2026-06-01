@@ -292,7 +292,6 @@ typedef unsigned char ubyte_x;
 #if !defined(HG_DA016F9EB7D8F6970C150189E2C1CB8B14A9E3498F8CC2778D3946451B216288_H)
 #define HG_DA016F9EB7D8F6970C150189E2C1CB8B14A9E3498F8CC2778D3946451B216288_H
 #include <stdio.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #ifdef OCSTL_OS_WINDOWS
@@ -310,6 +309,7 @@ const char *__yellow = "\033[33m";
 const char *__blue = "\033[34m";
 const char *__magenta = "\033[35m";
 const char *__cyan = "\033[36m";
+const char *__white = "\033[37m";
 const char *__reset = "\033[0m";
 #ifdef OCSTL_OS_WINDOWS
 static int s_ansi_enabled = -1;
@@ -382,40 +382,6 @@ static int __vcprintln(const char *color, const char *format, va_list args) {
 #endif
     return ret;
 }
-#if defined(OCSTL_OS_MACOS)
-void __fatal_message_box(const char *msg) {
-    char cmd[512];
-    snprintf(cmd, sizeof(cmd),
-             "osascript -e 'display dialog \"%s\" with title \"FATAL\" with icon stop buttons {\"OK\"} default button \"OK\"' > /dev/null 2>&1",
-             msg);
-    system(cmd);
-}
-#elif defined(OCSTL_CC_NVCC)
-void __fatal_message_box(const char *msg) {
-    fprintf(stderr, "[FATAL] %s\n", msg);
-}
-#elif defined(OCSTL_OS_WINDOWS)
-#if !defined(OCSTL_CC_TCC)
-void __fatal_message_box(const char *msg) {
-    MessageBoxA(NULL, msg, "FATAL", MB_OK | MB_ICONERROR);
-}
-#else
-void __fatal_message_box(const char *msg) {
-    fprintf(stderr, "[FATAL] %s\n", msg);
-}
-#endif
-#elif defined(OCSTL_OS_LINUX)
-void __fatal_message_box(const char *msg) {
-    char cmd[512];
-    snprintf(cmd, sizeof(cmd),
-             "zenity --error --title=\"FATAL\" --text=\"%s\" 2>/dev/null"
-             " || kdialog --error \"%s\" --title \"FATAL\" 2>/dev/null",
-             msg, msg);
-    if (system(cmd) != 0) {
-        fprintf(stderr, "[FATAL] %s\n", msg);
-    }
-}
-#endif
 int __clogging(const char *color, const char *format, ...) {
     va_list args;
     int ret;
@@ -1014,7 +980,7 @@ void *__dso_handle = (void *) 0;
 #include <inttypes.h>
 #include <string.h>
 #include <stdbool.h>
-typedef uintptr_t u64;
+typedef unsigned long long u64;
 #define VEB_EMPTY   (~(u64)0)
 #define HM_INIT_CAP 16
 typedef struct {
@@ -1181,8 +1147,7 @@ static void veb_del(VEB *v, u64 x) {
         veb_free(c);
         if (v->sum) { veb_del(v->sum, h); }
         if (x == v->max) {
-            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; }
-            else {
+            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; } else {
                 u64 lh = v->sum->max;
                 VEB *lc = cls_get(v, lh);
                 v->max = vidx(lh, lc->max, v->bits);
@@ -1458,8 +1423,11 @@ static VEB *giveb_veb_new(int bits) {
 }
 static void giveb_veb_free(VEB *v);
 static void giveb_cls_free_all(HashMap *hm) {
-    { size_type64 i; for (i = 0; i < hm->cap; i++)
-        if (hm->e[i].used) { giveb_veb_free((VEB *) hm->e[i].val); } }
+    {
+        size_type64 i;
+        for (i = 0; i < hm->cap; i++)
+            if (hm->e[i].used) { giveb_veb_free((VEB *) hm->e[i].val); }
+    }
     giveb_hm_free(hm);
 }
 static void giveb_veb_free(VEB *v) {
@@ -1529,8 +1497,7 @@ static void giveb_veb_del(VEB *v, u64 x) {
         giveb_veb_free(c);
         if (v->sum) { giveb_veb_del(v->sum, h); }
         if (x == v->max) {
-            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; }
-            else {
+            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; } else {
                 u64 lh = v->sum->max;
                 VEB *lc = cls_get(v, lh);
                 v->max = vidx(lh, lc->max, v->bits);
@@ -1547,10 +1514,13 @@ GIntervalVEB *giveb_new(void) {
     return iv;
 }
 void giveb_free(GIntervalVEB *iv) {
-    { size_type64 i; for (i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used) {
-            _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval));
-        } }
+    {
+        size_type64 i;
+        for (i = 0; i < iv->data->cap; i++)
+            if (iv->data->e[i].used) {
+                _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval));
+            }
+    }
     giveb_hm_free(iv->data);
     giveb_veb_free(iv->veb);
     _ocstl_dblock_free(iv, sizeof(GIntervalVEB));
@@ -3332,8 +3302,8 @@ OPENCSTL_FUNC void *__cstl_deque_upper_bound(void **container, void *value, CSTL
     return ((char *) *container) + (type_size * L);
 }
 #endif
-#if !defined(_OPENCSTL_VECTOR_H)
-#define _OPENCSTL_VECTOR_H
+#if !defined(HG_9E8754DD9A49BFB68F50F019AB05A8FACAD743956E7DC006E932CADE5A4E76C5_H)
+#define HG_9E8754DD9A49BFB68F50F019AB05A8FACAD743956E7DC006E932CADE5A4E76C5_H
 #ifndef HG_048A8560242521EC2F3FE622B58C4E931B7EBB509AC4D88DC0BBD5819918F689_H
 #define HG_048A8560242521EC2F3FE622B58C4E931B7EBB509AC4D88DC0BBD5819918F689_H
 #include <stddef.h>
@@ -3401,6 +3371,7 @@ OPENCSTL_FUNC void *__cstl_vector(size_type64 type_size, char *type) {
     void *block = calloc(header_sz + type_size, 1);
     if (block == NULL) {
         fault("Failed to allocate memory for vector");
+        return NULL;
     }
     void *ptr = ((char *) block) + header_sz;
     void **container = &ptr;
@@ -4340,6 +4311,9 @@ OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_type64 type_s
 #define _cstl_set(...)	    _CSTL_SET_EXPAND(_CSTL_SET_DISPATCH(__VA_ARGS__, NULL, NULL))
 #define _CSTL_SET_DISPATCH(KEY, COMP, ...) (KEY**)__cstl_set(sizeof(KEY),#KEY,(void*)(COMP))
 OPENCSTL_FUNC void *__cstl_set(size_type64 key_size, char *type_key, void *compare) {
+    if (compare == NULL) {
+        compare = (void *) CSTL_LESS(type_key);
+    }
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * NIDX_TREE_NODE_SIZE;
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_type64) nil;
@@ -4366,6 +4340,9 @@ OPENCSTL_FUNC void *__cstl_set(size_type64 key_size, char *type_key, void *compa
 #define _cstl_map(...)	_CSTL_MAP_EXPAND(_CSTL_MAP_DISPATCH(__VA_ARGS__, NULL, NULL))
 #define _CSTL_MAP_DISPATCH(KEY, VALUE, COMP, ...) (KEY**)__cstl_map(sizeof(KEY), sizeof(VALUE), #KEY, #VALUE, (void*)(COMP))
 OPENCSTL_FUNC void *__cstl_map(size_type64 key_size, size_type64 value_size, char *type_key, char *type_value, void *compare) {
+    if (compare == NULL) {
+        compare = (void *) CSTL_LESS(type_key);
+    }
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * 5;
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_type64) nil;
@@ -6222,7 +6199,7 @@ static double __mt19937_random(void) {
     return (double) (__mt19937_64_next() >> 11) * (1.0 / 9007199254740992.0);
 }
 static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
-    uint64_t range = (uint64_t)(hi - lo) + 1ULL;
+    uint64_t range = (uint64_t) (hi - lo) + 1ULL;
     return lo + (int64_t) __mt19937_64_bounded(range);
 }
 char *__mt19937_uuid(void) {
@@ -6261,19 +6238,19 @@ OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
     {
         size_type64 i;
         for (i = length - 1; i > 0; i--) {
-            size_type64 rng_idx = (size_type64) __mt19937_64_bounded((uint64_t)(i + 1));
+            size_type64 rng_idx = (size_type64) __mt19937_64_bounded((uint64_t) (i + 1));
             swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
         }
     }
 }
 OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     {
         size_type64 i;
         for (i = length - 1; i > 0; i--) {
-            size_type64 rng_idx = (size_type64) __mt19937_64_bounded((uint64_t)(i + 1));
+            size_type64 rng_idx = (size_type64) __mt19937_64_bounded((uint64_t) (i + 1));
             swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
         }
     }
@@ -6295,7 +6272,7 @@ OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
     {
         size_type i;
         for (i = length - 1; i > 0; i--) {
-            size_type rng_idx = (size_type) __mt19937_64_bounded((uint64_t)(i + 1));
+            size_type rng_idx = (size_type) __mt19937_64_bounded((uint64_t) (i + 1));
             swap((char *) ptr + i * type_size, (char *) ptr + rng_idx * type_size, type_size);
         }
     }
@@ -6313,7 +6290,7 @@ void __mt19937_shuffle(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) &container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
     }
@@ -6336,7 +6313,7 @@ void __mt19937_shuffle(void *container) {
 }
 typedef void (*seed_fn)(uint64_t);
 typedef double (*random_fn)(void);
-typedef int64_t( *randint_fn)(int64_t, int64_t);
+typedef int64_t (*randint_fn)(int64_t, int64_t);
 typedef char *(*uuid_fn)(void);
 typedef void (*shuffle_fn)(void *);
 typedef struct {
@@ -6369,7 +6346,7 @@ inline uint64_t random_device(void) {
     uint64_t val = 0;
 #if defined(OCSTL_CC_TCC)
     val = (uint64_t) time(NULL);
-    val ^= (uint64_t)(uintptr_t) & val;
+    val ^= (uint64_t) (uintptr_t) &val;
     val ^= val << 21;
     val ^= val >> 35;
     val ^= val << 4;
@@ -6631,9 +6608,12 @@ static char *__cstl_join(char *path1, char *path2) {
 static char *__cstl_basename(char *path) {
     size_type64 len = strlen(path);
     size_type64 start = 0;
-    { size_type64 i; for (i = 0; i < len; i++) {
-        if (__cstl_is_sep(path[i])) { start = i + 1; }
-    } }
+    {
+        size_type64 i;
+        for (i = 0; i < len; i++) {
+            if (__cstl_is_sep(path[i])) { start = i + 1; }
+        }
+    }
     size_type64 base_len = len - start;
     char *ret = (char *) malloc(base_len + 1);
     memcpy(ret, path + start, base_len);
@@ -6643,15 +6623,21 @@ static char *__cstl_basename(char *path) {
 static char **__cstl_splitext(char *path) {
     size_type64 len = strlen(path);
     size_type64 base_start = 0;
-    { size_type64 i; for (i = 0; i < len; i++) {
-        if (__cstl_is_sep(path[i])) { base_start = i + 1; }
-    } }
+    {
+        size_type64 i;
+        for (i = 0; i < len; i++) {
+            if (__cstl_is_sep(path[i])) { base_start = i + 1; }
+        }
+    }
     size_type64 nonleading = base_start;
     while (nonleading < len && path[nonleading] == '.') nonleading++;
     size_type64 dot_pos = (size_type64) -1;
-    { size_type64 i; for (i = nonleading; i < len; i++) {
-        if (path[i] == '.') { dot_pos = i; }
-    } }
+    {
+        size_type64 i;
+        for (i = nonleading; i < len; i++) {
+            if (path[i] == '.') { dot_pos = i; }
+        }
+    }
     size_type64 root_len = (dot_pos == (size_type64) -1) ? len : dot_pos;
     size_type64 ext_len = (dot_pos == (size_type64) -1) ? 0 : (len - dot_pos);
     size_type64 total = 2 * sizeof(char *) + root_len + 1 + ext_len + 1;
@@ -6684,18 +6670,21 @@ static void __cstl_makedirs(char *path) {
     if (len == 0) { return; }
     char *tmp = (char *) malloc(len + 1);
     memcpy(tmp, path, len + 1);
-    { size_type64 i; for (i = 1; i < len; i++) {
-        if (__cstl_is_sep(tmp[i])) {
-            char save = tmp[i];
-            tmp[i] = '\0';
+    {
+        size_type64 i;
+        for (i = 1; i < len; i++) {
+            if (__cstl_is_sep(tmp[i])) {
+                char save = tmp[i];
+                tmp[i] = '\0';
 #if defined(OCSTL_OS_WINDOWS)
-            CreateDirectoryA(tmp, NULL);
+                CreateDirectoryA(tmp, NULL);
 #else
-            mkdir(tmp, 0755);
+                mkdir(tmp, 0755);
 #endif
-            tmp[i] = save;
+                tmp[i] = save;
+            }
         }
-    } }
+    }
 #if defined(OCSTL_OS_WINDOWS)
     CreateDirectoryA(tmp, NULL);
 #else
@@ -6716,9 +6705,12 @@ static void __cstl_rename(char *oldpath, char *newpath) {
 static char *__cstl_dirname(char *path) {
     size_type64 len = strlen(path);
     size_type64 last_sep = (size_type64) -1;
-    { size_type64 i; for (i = 0; i < len; i++) {
-        if (__cstl_is_sep(path[i])) { last_sep = i; }
-    } }
+    {
+        size_type64 i;
+        for (i = 0; i < len; i++) {
+            if (__cstl_is_sep(path[i])) { last_sep = i; }
+        }
+    }
     if (last_sep == (size_type64) -1) {
         char *ret = (char *) malloc(1);
         ret[0] = '\0';
@@ -6841,34 +6833,7 @@ static FileSystem fs = {
 #define HG_DA46D48B7EE244BF57528FE23A9E591C1FCC07507158224C750893D3051E52D8_H
 #include <stdlib.h>
 #include <string.h>
-#if !defined(_OPENCSTL_ISORT_H)
-#define _OPENCSTL_ISORT_H
-#include <stdlib.h>
-#include <string.h>
-static void isort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
-    char *arr = (char *) base;
-    char sbuf[1024];
-    char *tmp = (width <= sizeof(sbuf)) ? sbuf : (char *) malloc(width);
-    {
-        size_type64 i;
-        for (i = 1; i < number; i++) {
-            memcpy(tmp, arr + i * width, width);
-            size_type64 lo = 0, hi = i;
-            while (lo < hi) {
-                size_type64 mid = lo + ((hi - lo) >> 1);
-                if (compare(tmp, arr + mid * width) < 0) { hi = mid; } else { lo = mid + 1; }
-            }
-            if (lo < i) {
-                memmove(arr + (lo + 1) * width, arr + lo * width, (i - lo) * width);
-                memcpy(arr + lo * width, tmp, width);
-            }
-        }
-    }
-    if (tmp != sbuf) {
-        free(tmp);
-    }
-}
-#endif
+#include "isort.h"
 #define MSORT_ISORT_THRESH 32
 static void msort_merge(char *arr, size_type64 len1, size_type64 len2, size_type64 sz,
                         CSTL_COMPARE cmp, char *buf) {
@@ -7199,6 +7164,7 @@ static void tsort(void *base, const size_type64 number, const size_type64 width,
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../swap.h"
 #define PDQ_ISORT_THRESH      24
 #define PDQ_NINTHER_THRESH   128
 #define PDQ_PARTIAL_LIMIT      8
@@ -7505,196 +7471,11 @@ static void pdqsort(void *base, size_type64 number, size_type64 width, CSTL_COMP
 #endif
 #if !defined(_OPENCSTL_PMSORT_H)
 #define _OPENCSTL_PMSORT_H
-#ifndef OPENCSTL_PTHREAD_H
-#define OPENCSTL_PTHREAD_H
-#include<string.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
-#if defined(OCSTL_OS_WINDOWS)
-#include<windows.h>
-#include<errno.h>
-#include<assert.h>
-typedef struct pthread_tag {
-    HANDLE handle;
-} pthread_t;
-typedef struct pthread_mutex_tag {
-    HANDLE handle;
-} pthread_mutex_t;
-typedef struct pthread_attr_tag {
-    int attr;
-} pthread_attr_t;
-typedef struct pthread_mutexattr_tag {
-    int attr;
-} pthread_mutexattr_t;
-typedef DWORD pthread_key_t;
-typedef struct _pthread_cleanup_stack {
-#define _PTHREAD_CLEANUP_STACK_MAX 128
-    HANDLE thread;
-    void (*routine[_PTHREAD_CLEANUP_STACK_MAX])(void *);
-    void *arg[_PTHREAD_CLEANUP_STACK_MAX];
-    size_type64 index;
-    struct _pthread_cleanup_stack *next;
-} _pthread_cleanup_stack;
-SELECT_ANY _pthread_cleanup_stack *_pthread_cleanup_stack_head = NULL;
-SELECT_ANY HANDLE _pthread_cleanup_mutex = NULL;
-static int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg) {
-    DWORD dwThreadId = 1;
-    HANDLE handle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) start_routine, arg, 0, &dwThreadId);
-    thread->handle = (HANDLE) handle;
-    return thread->handle == (HANDLE) NULL;
-}
-static void pthread_exit(void *value_ptr) {
-    if (!_pthread_cleanup_mutex) {
-        if (!_pthread_cleanup_mutex)
-            _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
-    }
-    WaitForSingleObject(_pthread_cleanup_mutex, INFINITE);
-    HANDLE thread = GetCurrentThread();
-    _pthread_cleanup_stack **head = &_pthread_cleanup_stack_head;
-    _pthread_cleanup_stack *rts = NULL;
-    while (*head) {
-        _pthread_cleanup_stack *tmp = *head;
-        int b = (*head)->thread == thread;
-        if (b) { *head = (*head)->next; }
-        if (*head) {head = &(*head)->next; }
-        if (b) {rts = tmp; }
-    }
-    if (rts) {
-        while (rts->index--) {
-            rts->routine[rts->index](rts->arg[rts->index]);
-        }
-        free(rts);
-    }
-    TerminateThread(GetCurrentThread(), *(int *) value_ptr);
-    ReleaseMutex(_pthread_cleanup_mutex);
-}
-static int pthread_join(pthread_t thread, void **value_ptr) {
-    DWORD r = WaitForSingleObject(thread.handle, INFINITE);
-    CloseHandle(thread.handle);
-    return r == WAIT_OBJECT_0 ? 0 : EINVAL;
-}
-static pthread_t pthread_self(void) {
-    pthread_t pt;
-    pt.handle = GetCurrentThread();
-    return pt;
-}
-static int pthread_detach(pthread_t thread) {
-    return CloseHandle(thread.handle);
-}
-static int pthread_cancel(pthread_t thread) {
-    TerminateThread(thread.handle, 1);
-    return 0;
-}
-static void pthread_cleanup_push(void (*routine)(void *), void *arg) {
-    if (!_pthread_cleanup_mutex) {
-        if (!_pthread_cleanup_mutex)
-            _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
-    }
-    WaitForSingleObject(_pthread_cleanup_mutex, INFINITE);
-    HANDLE thread = GetCurrentThread();
-    _pthread_cleanup_stack **head = &_pthread_cleanup_stack_head;
-    while (*head) {
-        if ((*head)->thread == thread) { break; }
-        head = &(*head)->next;
-    }
-    if (!*head) {
-        *head = (_pthread_cleanup_stack *) malloc(sizeof(_pthread_cleanup_stack));
-        (*head)->index = 0;
-        (*head)->next = NULL;
-        (*head)->thread = thread;
-    }
-    (*head)->routine[(*head)->index] = routine;
-    (*head)->arg[(*head)->index] = arg;
-    (*head)->index++;
-    assert((*head)->index <= _PTHREAD_CLEANUP_STACK_MAX);
-    ReleaseMutex(_pthread_cleanup_mutex);
-}
-static void pthread_cleanup_pop(int execute) {
-    if (!_pthread_cleanup_mutex) {
-        if (!_pthread_cleanup_mutex)
-            _pthread_cleanup_mutex = CreateMutexA(NULL, FALSE, NULL);
-    }
-    WaitForSingleObject(_pthread_cleanup_mutex, INFINITE);
-    HANDLE thread = GetCurrentThread();
-    _pthread_cleanup_stack **head = &_pthread_cleanup_stack_head;
-    while (*head) {
-        _pthread_cleanup_stack *tmp = *head;
-        if ((*head)->thread == thread) {
-            --(*head)->index;
-            if ((*head)->index == 0) {
-                *head = (*head)->next;
-                while (execute && tmp->index--) {
-                    tmp->routine[tmp->index](tmp->arg[tmp->index]);
-                }
-                free(tmp);
-            }
-            break;
-        } else {
-            head = &(*head)->next;
-        }
-    }
-    ReleaseMutex(_pthread_cleanup_mutex);
-}
-static int pthread_mutexattr_destroy(pthread_mutexattr_t *attr) {
-    return 0;
-}
-static int pthread_mutexattr_init(pthread_mutexattr_t *attr) {
-    return 0;
-}
-static int pthread_mutex_destroy(pthread_mutex_t *mutex) {
-    return !CloseHandle(mutex->handle);
-}
-static int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) {
-    HANDLE handle = CreateMutexA(NULL, FALSE, NULL);
-    if (handle != NULL) {
-        mutex->handle = handle;
-        return 0;
-    } else {
-        return 1;
-    }
-}
-static int pthread_mutex_lock(pthread_mutex_t *mutex) {
-    return (WaitForSingleObject(mutex->handle, INFINITE) == WAIT_OBJECT_0) ? 0 : EINVAL;
-}
-static int pthread_mutex_trylock(pthread_mutex_t *mutex) {
-    DWORD retvalue = WaitForSingleObject(mutex->handle, 0);
-    switch (WaitForSingleObject(mutex->handle, 0)) {
-        case WAIT_OBJECT_0: return 0;
-        case WAIT_TIMEOUT: return EBUSY;
-        default: return EINVAL;
-    }
-}
-static int pthread_mutex_unlock(pthread_mutex_t *mutex) {
-    return !ReleaseMutex(mutex->handle);
-}
-static int pthread_key_create(pthread_key_t *key, void (*destr_function)(void *)) {
-    DWORD dkey = TlsAlloc();
-    if (dkey != 0xFFFFFFFF) {
-        *key = dkey;
-        return 0;
-    } else {
-        return EAGAIN;
-    }
-}
-static int pthread_key_delete(pthread_key_t key) {
-    return TlsFree(key) ? 0 : EINVAL;
-}
-static int pthread_setspecific(pthread_key_t key, const void *pointer) {
-    return TlsSetValue(key, (LPVOID) pointer) ? 0 : EINVAL;
-}
-static void *pthread_getspecific(pthread_key_t key) {
-    return TlsGetValue(key);
-}
-#else
-#include <pthread.h>
-#endif
-#ifdef __cplusplus
-}
-#endif
-#endif
+#include "../pthread_cc.h"
 #include <stdlib.h>
 #include <string.h>
+#include "msort.h"
+#include "../types.h"
 #ifndef PS_MAX_DEPTH
 #define PS_MAX_DEPTH 4
 #endif
@@ -7780,61 +7561,61 @@ static void pmsort(void *base, const size_type64 number, const size_type64 width
 #ifndef HG_D7646DD772B09DF3EE2DCC0297DBFB1B7FD25970A91191BCE38ED4816C2801D7_H
 #define HG_D7646DD772B09DF3EE2DCC0297DBFB1B7FD25970A91191BCE38ED4816C2801D7_H
 #if defined(OCSTL_OS_MACOS)
-    #if     defined(OCSTL_CC_CLANG)
-        #define     cstl_best_stable_sort msort
-        #define     cstl_unstable_sort pdqsort
-    #elif   defined(OCSTL_CC_GCC)
-        #define     cstl_best_stable_sort tsort
-        #define     cstl_unstable_sort pdqsort
-    #elif   defined(OCSTL_CC_TCC)
-        #define     cstl_best_stable_sort tsort
-        #define     cstl_unstable_sort qsort
-    #else
-        #define cstl_best_stable_sort msort
-         #define cstl_unstable_sort qsort
-    #endif
-#endif
-#if defined(OCSTL_OS_LINUX)
-    #if  defined(OCSTL_CC_CLANG)
-        #define cstl_best_stable_sort msort
-        #define cstl_unstable_sort pdqsort
-    #elif  defined(OCSTL_CC_GCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif  defined(OCSTL_CC_TCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort qsort
-    #elif defined(OCSTL_CC_NVCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #else
-        #define cstl_best_stable_sort msort
-        #define cstl_unstable_sort qsort
-    #endif
-#endif
-#if defined(OCSTL_OS_WINDOWS)
-    #if defined(OCSTL_CC_CLANG)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_GCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_TCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_MSVC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_NVCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_POCC)
-        #define cstl_best_stable_sort msort
-        #define cstl_unstable_sort qsort
-    #else
+#if     defined(OCSTL_CC_CLANG)
+#define     cstl_best_stable_sort msort
+#define     cstl_unstable_sort pdqsort
+#elif   defined(OCSTL_CC_GCC)
+#define     cstl_best_stable_sort tsort
+#define     cstl_unstable_sort pdqsort
+#elif   defined(OCSTL_CC_TCC)
+#define     cstl_best_stable_sort tsort
+#define     cstl_unstable_sort qsort
+#else
 #define cstl_best_stable_sort msort
 #define cstl_unstable_sort qsort
-    #endif
+#endif
+#endif
+#if defined(OCSTL_OS_LINUX)
+#if  defined(OCSTL_CC_CLANG)
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort pdqsort
+#elif  defined(OCSTL_CC_GCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif  defined(OCSTL_CC_TCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort qsort
+#elif defined(OCSTL_CC_NVCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#else
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort qsort
+#endif
+#endif
+#if defined(OCSTL_OS_WINDOWS)
+#if defined(OCSTL_CC_CLANG)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_GCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_TCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_MSVC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_NVCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_POCC)
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort qsort
+#else
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort qsort
+#endif
 #endif
 #endif
 #ifndef OPENCSTL_RSORT_H
@@ -7935,6 +7716,7 @@ static void rsort64(int64_t *__base, size_type64 n) {
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../types.h"
 #define IPN_INSERTION_SORT_THRESHOLD    20
 #define IPN_SMALL_SORT_THRESHOLD        20
 #define IPN_PSEUDO_MEDIAN_REC_THRESHOLD 1024

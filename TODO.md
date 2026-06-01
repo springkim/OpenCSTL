@@ -4,7 +4,7 @@
 
 ### ASAP
 
-- [ ] MacOS::MsgBoxGUI
+ - [x] MacOS::MsgBoxGUI
 
  - [x] Bitset
  - [x] String

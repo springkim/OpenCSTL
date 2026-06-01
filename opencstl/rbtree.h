@@ -41,6 +41,7 @@
 
 #include"error.h"
 #include"zalloc.h"
+#include"compare.h"
 
 #define P	    (-4)
 #define R       (-1)
@@ -154,6 +155,9 @@ OPENCSTL_FUNC void *__cstl_tree_node_pooled(void **container, size_type64 type_s
 
 
 OPENCSTL_FUNC void *__cstl_set(size_type64 key_size, char *type_key, void *compare) {
+    if (compare == NULL) {
+        compare = (void *) CSTL_LESS(type_key);
+    }
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * NIDX_TREE_NODE_SIZE;
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_type64) nil;
@@ -187,6 +191,9 @@ OPENCSTL_FUNC void *__cstl_set(size_type64 key_size, char *type_key, void *compa
 #define _cstl_map(...)	_CSTL_MAP_EXPAND(_CSTL_MAP_DISPATCH(__VA_ARGS__, NULL, NULL))
 #define _CSTL_MAP_DISPATCH(KEY, VALUE, COMP, ...) (KEY**)__cstl_map(sizeof(KEY), sizeof(VALUE), #KEY, #VALUE, (void*)(COMP))
 OPENCSTL_FUNC void *__cstl_map(size_type64 key_size, size_type64 value_size, char *type_key, char *type_value, void *compare) {
+    if (compare == NULL) {
+        compare = (void *) CSTL_LESS(type_key);
+    }
     if (nil == NULL) {
         nil = nil_buffer + sizeof(void *) * 5;
         _(nil, -1) = _(nil, -2) = _(nil, -4) = (size_type64) nil;

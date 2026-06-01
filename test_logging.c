@@ -9,5 +9,5 @@ int main() {
     logging.error("error logging message");
     logging.critical("critical logging message");
     logging.fatal("fatal logging message");
-    MsgBoxGUI("%d / 0  - divide by zero", 777);
+    // MsgBoxGUI("%d / 0  - divide by zero", 777);
 }

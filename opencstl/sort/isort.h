@@ -40,7 +40,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "types.h"
+#include "../types.h"
 
 static void isort(void *base, size_type64 number, size_type64 width, CSTL_COMPARE compare) {
     char *arr = (char *) base;

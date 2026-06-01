@@ -39,7 +39,6 @@
 #define HG_DA016F9EB7D8F6970C150189E2C1CB8B14A9E3498F8CC2778D3946451B216288_H
 
 #include <stdio.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -62,7 +61,7 @@ const char *__yellow = "\033[33m";
 const char *__blue = "\033[34m";
 const char *__magenta = "\033[35m";
 const char *__cyan = "\033[36m";
-// const char *__white = "\033[37m";
+const char *__white = "\033[37m";
 const char *__reset = "\033[0m";
 
 #ifdef OCSTL_OS_WINDOWS
@@ -99,11 +98,11 @@ static int s_stdout_is_tty = -1;
 
 static int stdout_supports_ansi(void) {
     if (s_stdout_is_tty == -1) {
-        // Xcode 콘솔, 파일 리다이렉트, 파이프 등은 TTY가 아님
+        // The Xcode console, file redirection, pipes, etc. are not TTYs
         if (!isatty(fileno(stdout))) {
             s_stdout_is_tty = 0;
         } else {
-            // TERM 환경변수가 "dumb"이거나 없으면 색상 비활성화
+            // If the TERM environment variable is set to "dumb" or is missing, colouring is disabled
             const char *term = getenv("TERM");
             if (term == NULL || strcmp(term, "dumb") == 0) {
                 s_stdout_is_tty = 0;
@@ -147,43 +146,6 @@ static int __vcprintln(const char *color, const char *format, va_list args) {
     return ret;
 }
 
-
-#if defined(OCSTL_OS_MACOS)
-
-void __fatal_message_box(const char *msg) {
-    char cmd[512];
-    snprintf(cmd, sizeof(cmd),
-             "osascript -e 'display dialog \"%s\" with title \"FATAL\" with icon stop buttons {\"OK\"} default button \"OK\"' > /dev/null 2>&1",
-             msg);
-    system(cmd);
-}
-#elif defined(OCSTL_CC_NVCC)
-void __fatal_message_box(const char *msg) {
-    fprintf(stderr, "[FATAL] %s\n", msg);
-}
-#elif defined(OCSTL_OS_WINDOWS)
-#if !defined(OCSTL_CC_TCC)
-void __fatal_message_box(const char *msg) {
-    MessageBoxA(NULL, msg, "FATAL", MB_OK | MB_ICONERROR);
-}
-#else
-void __fatal_message_box(const char *msg) {
-    fprintf(stderr, "[FATAL] %s\n", msg);
-}
-#endif
-#elif defined(OCSTL_OS_LINUX)
-void __fatal_message_box(const char *msg) {
-    char cmd[512];
-    // zenity ?놁쑝硫?kdialog, ?????놁쑝硫?stderr
-    snprintf(cmd, sizeof(cmd),
-             "zenity --error --title=\"FATAL\" --text=\"%s\" 2>/dev/null"
-             " || kdialog --error \"%s\" --title \"FATAL\" 2>/dev/null",
-             msg, msg);
-    if (system(cmd) != 0) {
-        fprintf(stderr, "[FATAL] %s\n", msg);
-    }
-}
-#endif
 
 int __clogging(const char *color, const char *format, ...) {
     va_list args;

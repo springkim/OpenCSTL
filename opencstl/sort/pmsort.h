@@ -37,11 +37,11 @@
 #pragma once
 #if !defined(_OPENCSTL_PMSORT_H)
 #define _OPENCSTL_PMSORT_H
-#include "pthread_cc.h"
+#include "../pthread_cc.h"
 #include <stdlib.h>
 #include <string.h>
 #include "msort.h"
-#include "types.h"
+#include "../types.h"
 #ifndef PS_MAX_DEPTH
 #define PS_MAX_DEPTH 4
 #endif

@@ -41,7 +41,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "swap.h"
+#include "../swap.h"
 #define PDQ_ISORT_THRESH      24
 #define PDQ_NINTHER_THRESH   128
 #define PDQ_PARTIAL_LIMIT      8

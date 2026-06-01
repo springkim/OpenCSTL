@@ -41,11 +41,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "crossplatform.h"
-#include "msort.h"
-#include "tsort.h"
-#include "pdqsort.h"
+#include "sort/msort.h"
+#include "sort/tsort.h"
+#include "sort/pdqsort.h"
 #include "deque.h"
-#include "pmsort.h"
+#include "sort/pmsort.h"
 
 #include "list.h"
 #include "defines.h"
@@ -53,7 +53,7 @@
 #include "compare.h"
 #include "bestsort.h"
 #include "rsort.h"
-#include "ipnsort.h"
+#include "sort/ipnsort.h"
 
 // ██╗░░░██╗███╗░░██╗░██████╗████████╗░█████╗░██████╗░██╗░░░░░███████╗░░░░░░░██████╗░█████╗░██████╗░████████╗
 // ██║░░░██║████╗░██║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██╔════╝░░░░░░██╔════╝██╔══██╗██╔══██╗╚══██╔══╝

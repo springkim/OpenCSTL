@@ -196,7 +196,7 @@ static double __mt19937_random(void) {
 
 // [lo, hi] inclusive integer range (supports negative)
 static int64_t __mt19937_randint(int64_t lo, int64_t hi) {
-    uint64_t range = (uint64_t)(hi - lo) + 1ULL;
+    uint64_t range = (uint64_t) (hi - lo) + 1ULL;
     return lo + (int64_t) __mt19937_64_bounded(range);
 }
 
@@ -247,7 +247,7 @@ OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
     {
         size_type64 i;
         for (i = length - 1; i > 0; i--) {
-            size_type64 rng_idx = (size_type64) __mt19937_64_bounded((uint64_t)(i + 1));
+            size_type64 rng_idx = (size_type64) __mt19937_64_bounded((uint64_t) (i + 1));
             swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
         }
     }
@@ -255,13 +255,13 @@ OPENCSTL_FUNC void __cstl_vector_shuffle(void **container) {
 
 OPENCSTL_FUNC void __cstl_deque_shuffle(void **container) {
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
-    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
-    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t)(-2) * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (NIDX_TSIZE) * (ptrdiff_t) sizeof(size_type64) + distance);
+    size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
 
     {
         size_type64 i;
         for (i = length - 1; i > 0; i--) {
-            size_type64 rng_idx = (size_type64) __mt19937_64_bounded((uint64_t)(i + 1));
+            size_type64 rng_idx = (size_type64) __mt19937_64_bounded((uint64_t) (i + 1));
             swap((char *) (*container) + i * type_size, (char *) (*container) + rng_idx * type_size, type_size);
         }
     }
@@ -287,7 +287,7 @@ OPENCSTL_FUNC void __cstl_list_shuffle(void **container) {
     {
         size_type i;
         for (i = length - 1; i > 0; i--) {
-            size_type rng_idx = (size_type) __mt19937_64_bounded((uint64_t)(i + 1));
+            size_type rng_idx = (size_type) __mt19937_64_bounded((uint64_t) (i + 1));
             swap((char *) ptr + i * type_size, (char *) ptr + rng_idx * type_size, type_size);
         }
     }
@@ -308,7 +308,7 @@ void __mt19937_shuffle(void *container) {
     size_type64 container_type;
     if (__is_deque((void **) &container)) {
         ptrdiff_t distance = OPENCSTL_NIDX(((void**)&container), -1) + 1;
-        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t)(NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
+        container_type = *(_opencstl_ll_ua *) ((char *) *(void **) &container + (ptrdiff_t) (NIDX_CTYPE) * (ptrdiff_t) sizeof(size_type64) + distance);
     } else {
         container_type = OPENCSTL_NIDX(((void**)&container), NIDX_CTYPE);
     }
@@ -334,7 +334,7 @@ typedef void (*seed_fn)(uint64_t);
 
 typedef double (*random_fn)(void);
 
-typedef int64_t( *randint_fn)(int64_t, int64_t);
+typedef int64_t (*randint_fn)(int64_t, int64_t);
 
 typedef char *(*uuid_fn)(void);
 
@@ -380,7 +380,7 @@ inline uint64_t random_device(void) {
     uint64_t val = 0;
 #if defined(OCSTL_CC_TCC)
     val = (uint64_t) time(NULL);
-    val ^= (uint64_t)(uintptr_t) & val; // 스택 주소 XOR
+    val ^= (uint64_t) (uintptr_t) &val; // 스택 주소 XOR
     val ^= val << 21;
     val ^= val >> 35;
     val ^= val << 4;

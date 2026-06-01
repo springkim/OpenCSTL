@@ -38,63 +38,63 @@
 #ifndef HG_D7646DD772B09DF3EE2DCC0297DBFB1B7FD25970A91191BCE38ED4816C2801D7_H
 #define HG_D7646DD772B09DF3EE2DCC0297DBFB1B7FD25970A91191BCE38ED4816C2801D7_H
 #if defined(OCSTL_OS_MACOS)
-    #if     defined(OCSTL_CC_CLANG)
-        #define     cstl_best_stable_sort msort
-        #define     cstl_unstable_sort pdqsort
-    #elif   defined(OCSTL_CC_GCC)
-        #define     cstl_best_stable_sort tsort
-        #define     cstl_unstable_sort pdqsort
-    #elif   defined(OCSTL_CC_TCC)
-        #define     cstl_best_stable_sort tsort
-        #define     cstl_unstable_sort qsort
-    #else
-        #define cstl_best_stable_sort msort
-         #define cstl_unstable_sort qsort
-    #endif
+#if     defined(OCSTL_CC_CLANG)
+#define     cstl_best_stable_sort msort
+#define     cstl_unstable_sort pdqsort
+#elif   defined(OCSTL_CC_GCC)
+#define     cstl_best_stable_sort tsort
+#define     cstl_unstable_sort pdqsort
+#elif   defined(OCSTL_CC_TCC)
+#define     cstl_best_stable_sort tsort
+#define     cstl_unstable_sort qsort
+#else
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort qsort
+#endif
 #endif
 
 #if defined(OCSTL_OS_LINUX)
-    #if  defined(OCSTL_CC_CLANG)
-        #define cstl_best_stable_sort msort
-        #define cstl_unstable_sort pdqsort
-    #elif  defined(OCSTL_CC_GCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif  defined(OCSTL_CC_TCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort qsort
+#if  defined(OCSTL_CC_CLANG)
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort pdqsort
+#elif  defined(OCSTL_CC_GCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif  defined(OCSTL_CC_TCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort qsort
 
-    #elif defined(OCSTL_CC_NVCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #else
-        #define cstl_best_stable_sort msort
-        #define cstl_unstable_sort qsort
-    #endif
+#elif defined(OCSTL_CC_NVCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#else
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort qsort
+#endif
 #endif
 
 #if defined(OCSTL_OS_WINDOWS)
-    #if defined(OCSTL_CC_CLANG)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_GCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_TCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_MSVC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_NVCC)
-        #define cstl_best_stable_sort tsort
-        #define cstl_unstable_sort pdqsort
-    #elif defined(OCSTL_CC_POCC)
-        #define cstl_best_stable_sort msort
-        #define cstl_unstable_sort qsort
-    #else
+#if defined(OCSTL_CC_CLANG)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_GCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_TCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_MSVC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_NVCC)
+#define cstl_best_stable_sort tsort
+#define cstl_unstable_sort pdqsort
+#elif defined(OCSTL_CC_POCC)
 #define cstl_best_stable_sort msort
 #define cstl_unstable_sort qsort
-    #endif
+#else
+#define cstl_best_stable_sort msort
+#define cstl_unstable_sort qsort
+#endif
 #endif
 #endif

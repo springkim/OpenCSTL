@@ -46,7 +46,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-typedef uintptr_t u64;
+typedef unsigned long long u64;
 
 
 #define VEB_EMPTY   (~(u64)0)
@@ -264,8 +264,7 @@ static void veb_del(VEB *v, u64 x) {
         veb_free(c);
         if (v->sum) { veb_del(v->sum, h); }
         if (x == v->max) {
-            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; }
-            else {
+            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; } else {
                 u64 lh = v->sum->max; // 비어있지 않은 마지막 클러스터
                 VEB *lc = cls_get(v, lh);
                 v->max = vidx(lh, lc->max, v->bits);
@@ -600,8 +599,11 @@ static VEB *giveb_veb_new(int bits) {
 static void giveb_veb_free(VEB *v);
 
 static void giveb_cls_free_all(HashMap *hm) {
-    { size_type64 i; for (i = 0; i < hm->cap; i++)
-        if (hm->e[i].used) { giveb_veb_free((VEB *) hm->e[i].val); } }
+    {
+        size_type64 i;
+        for (i = 0; i < hm->cap; i++)
+            if (hm->e[i].used) { giveb_veb_free((VEB *) hm->e[i].val); }
+    }
     giveb_hm_free(hm);
 }
 
@@ -676,8 +678,7 @@ static void giveb_veb_del(VEB *v, u64 x) {
         giveb_veb_free(c);
         if (v->sum) { giveb_veb_del(v->sum, h); }
         if (x == v->max) {
-            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; }
-            else {
+            if (!v->sum || veb_empty(v->sum)) { v->max = v->min; } else {
                 u64 lh = v->sum->max;
                 VEB *lc = cls_get(v, lh);
                 v->max = vidx(lh, lc->max, v->bits);
@@ -699,10 +700,13 @@ GIntervalVEB *giveb_new(void) {
 
 
 void giveb_free(GIntervalVEB *iv) {
-    { size_type64 i; for (i = 0; i < iv->data->cap; i++)
-        if (iv->data->e[i].used) {
-            _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval));
-        } }
+    {
+        size_type64 i;
+        for (i = 0; i < iv->data->cap; i++)
+            if (iv->data->e[i].used) {
+                _ocstl_dblock_free(iv->data->e[i].val, sizeof(GInterval));
+            }
+    }
     giveb_hm_free(iv->data);
     giveb_veb_free(iv->veb);
     _ocstl_dblock_free(iv, sizeof(GIntervalVEB));

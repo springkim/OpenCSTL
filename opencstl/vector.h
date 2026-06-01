@@ -35,8 +35,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 //
 #pragma once
-#if !defined(_OPENCSTL_VECTOR_H)
-#define _OPENCSTL_VECTOR_H
+#if !defined(HG_9E8754DD9A49BFB68F50F019AB05A8FACAD743956E7DC006E932CADE5A4E76C5_H)
+#define HG_9E8754DD9A49BFB68F50F019AB05A8FACAD743956E7DC006E932CADE5A4E76C5_H
 #include "zalloc.h"
 #include "van_emde_boas_tree.h"
 #include "swap.h"
@@ -54,6 +54,7 @@ OPENCSTL_FUNC void *__cstl_vector(size_type64 type_size, char *type) {
     void *block = calloc(header_sz + type_size, 1);
     if (block == NULL) {
         fault("Failed to allocate memory for vector");
+        return NULL;
     }
     void *ptr = ((char *) block) + header_sz;
     void **container = &ptr;
