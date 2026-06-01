@@ -58,7 +58,6 @@ static char *opencstl_env(void) {
 #define __VERSION__ "TCC Compiler"
 #elif defined(OCSTL_CC_MSVC)
 
-
 #if   _MSC_VER >= 1960
 #define __VERSION__ "VS20xx"
 #elif _MSC_VER >= 1950
@@ -75,6 +74,8 @@ static char *opencstl_env(void) {
 #define __VERSION__ "VSxxxx"
 #endif
 
+#elif defined(OCSTL_CC_POCC)
+#define __VERSION__ "POCC Compiler"
 #endif
 
 #endif

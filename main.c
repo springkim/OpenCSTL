@@ -5,12 +5,12 @@
 #define OPENCSTL_TRACER
 
 //g#include "opencstl.h"
+//#include "opencstl/opencstl.h"
+#if defined(__POCC__) || defined(__BORLANDC__) || defined(__cplusplus)
+#include "opencstl.h"
+#else
 #include "opencstl/opencstl.h"
-// #if defined(__POCC__) || defined(__BORLANDC__) || defined(__cplusplus)
-// #include "opencstl.h"
-// #else
-// #include "opencstl/opencstl.h"
-// #endif
+#endif
 
 void cstl_vector_test01(void) {
     MsgBoxCLI("OpenCSTL / VECTOR TEST01");

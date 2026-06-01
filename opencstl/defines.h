@@ -357,7 +357,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 // are not corrupted by default argument promotion. On MSVC each element value
 // is wrapped in _CSTL_VARGS(): under C11+ that fixes float arguments via
 // _Generic; before C11 it is the identity and behavior is unchanged.
-#if defined(OCSTL_OS_WINDOWS) && defined(OCSTL_CC_MSVC)
+#if defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_POCC))
 
 #define cstl_push(container,...)	_cstl_push(&(container),_CSTL_VARGS(__VA_ARGS__))
 #define cstl_push_back(container,...)	_cstl_push_back(&(container),_CSTL_VARGS(__VA_ARGS__))

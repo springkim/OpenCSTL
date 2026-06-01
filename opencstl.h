@@ -720,20 +720,27 @@ typedef long long _opencstl_ll_ua;
 #define cstl_value(iter, TYPE) \
 (*(TYPE *)memcpy(&(TYPE){0}, (char *)(iter) + sizeof(*(iter)), sizeof(TYPE)))
 #endif
-#if defined(_WIN32) || defined(_WIN64)
-#  define CSTL_USE_VAARG 0
+#if defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS) || \
+    (defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG)))
+#  define CSTL_PTR_STAGING 1
 #else
-#  define CSTL_USE_VAARG 1
+#  define CSTL_PTR_STAGING 0
 #endif
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(OCSTL_CC_MSVC) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#  define CSTL_MSVC_GENERIC 1
+#else
+#  define CSTL_MSVC_GENERIC 0
+#endif
+#define CSTL_USE_VAARG CSTL_PTR_STAGING
+#if CSTL_PTR_STAGING
+#define __cstl_va_start(V,C,beg)	va_start(V,C)
+#define __cstl_va_arg_next(V)	    va_arg((V),void*)
+#define __cstl_va_end(V)	        va_end(V)
+#else
 #define __cstl_va_start(V,C,beg)	va_start(V,C);beg=(void*)V;
 #define __cstl_va_arg(PTR)	(PTR)
 #define __cstl_va_arg_next(V)	(NULL)
 #define __cstl_va_end(V)	va_end(V)
-#else
-#define __cstl_va_start(V,C,beg)	va_start(V,C)
-#define __cstl_va_arg_next(V)	    va_arg((V),void*)
-#define __cstl_va_end(V)	        va_end(V)
 #endif
 #define cstl_pop(container)	        _cstl_pop(&(container))
 #define cstl_pop_back(container)	_cstl_pop_back(&(container))
@@ -758,21 +765,23 @@ typedef long long _opencstl_ll_ua;
 #if !defined(__clang__)
 #endif
 #endif
-#if defined(__GNUC__) || defined(__clang__)
-#define _cstl_deref(P) (__extension__ ({ \
-    __typeof__(*(P)) _cstl_rv; \
+#if defined(__GNUC__) || defined(__clang__) || defined(__TINYC__)
+#define _cstl_deref(C, P) (__extension__ ({ \
+    __typeof__(*(C)) _cstl_rv; \
     __builtin_memcpy(&_cstl_rv, (const void *)(P), sizeof(_cstl_rv)); \
     _cstl_rv; \
 }))
+#elif defined(_MSC_VER) && _MSC_VER >= 1939
+#define _cstl_deref(C, P) (*(__typeof__(*(C)) __unaligned *)(P))
 #else
-#define _cstl_deref(P) (*(P))
+#define _cstl_deref(C, P) (*(void**)(P))
 #endif
 #define _cstl_err_ptr (void*)(size_type64)0
-#define cstl_front(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
+#define cstl_front(C)	_cstl_deref((C),(__is_deque((void**)&C)?\
 _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C):_cstl_err_ptr) :\
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C):\
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)(*(void**)C):_cstl_err_ptr)))
-#define cstl_back(C)	_cstl_deref((void**)(__is_deque((void**)&C)?\
+#define cstl_back(C)	_cstl_deref((C),(__is_deque((void**)&C)?\
 _cstl_deque_type(&C)==OPENCSTL_DEQUE?(void*)(C+cstl_size(C)-1):(_cstl_deque_type(&C)==OPENCSTL_QUEUE?(void*)(C+cstl_size(C)-1):_cstl_err_ptr) :\
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_VECTOR?(void*)(C+cstl_size(C)-1):\
 (OPENCSTL_NIDX(((void**)&C), NIDX_CTYPE)==OPENCSTL_LIST)?(void*)((void**)C)[-2]:_cstl_err_ptr)))
@@ -793,24 +802,45 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #else
 #define _CSTL_TYPEOF(x)  void*
 #endif
-#if defined(OCSTL_OS_WINDOWS)
-#define cstl_push(container,...)	_cstl_push(&(container),__VA_ARGS__)
-#define cstl_push_back(container,...)	_cstl_push_back(&(container),__VA_ARGS__)
-#define cstl_push_front(container,...)	_cstl_push_front(&(container),__VA_ARGS__)
-#define cstl_insert(container,...)	_cstl_insert(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_erase(container,...)	_cstl_erase(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_resize(container,...)	_cstl_resize(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_assign(container,...)	_cstl_assign(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
+#if CSTL_MSVC_GENERIC
+#define _CSTL_STAGE(x) _Generic((x), float: _cstl_carry_float(0, (x)), default: (x))
+#define _CSTL_EXPAND(x) x
+#define _CSTL_FE_1(m, a)       m(a)
+#define _CSTL_FE_2(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_1(m, __VA_ARGS__))
+#define _CSTL_FE_3(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_2(m, __VA_ARGS__))
+#define _CSTL_FE_4(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_3(m, __VA_ARGS__))
+#define _CSTL_FE_5(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_4(m, __VA_ARGS__))
+#define _CSTL_FE_6(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_5(m, __VA_ARGS__))
+#define _CSTL_FE_7(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_6(m, __VA_ARGS__))
+#define _CSTL_FE_8(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_7(m, __VA_ARGS__))
+#define _CSTL_FE_9(m, a, ...)  m(a), _CSTL_EXPAND(_CSTL_FE_8(m, __VA_ARGS__))
+#define _CSTL_FE_10(m, a, ...) m(a), _CSTL_EXPAND(_CSTL_FE_9(m, __VA_ARGS__))
+#define _CSTL_FE_PICK(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10, NAME, ...) NAME
+#define _CSTL_FOREACH(m, ...) \
+    _CSTL_EXPAND(_CSTL_FE_PICK(__VA_ARGS__, _CSTL_FE_10, _CSTL_FE_9, _CSTL_FE_8, \
+        _CSTL_FE_7, _CSTL_FE_6, _CSTL_FE_5, _CSTL_FE_4, _CSTL_FE_3, _CSTL_FE_2, \
+        _CSTL_FE_1)(m, __VA_ARGS__))
+#define _CSTL_VARGS(...) _CSTL_FOREACH(_CSTL_STAGE, __VA_ARGS__)
+#else
+#define _CSTL_VARGS(...) __VA_ARGS__
+#endif
+#if defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_POCC))
+#define cstl_push(container,...)	_cstl_push(&(container),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_push_back(container,...)	_cstl_push_back(&(container),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_push_front(container,...)	_cstl_push_front(&(container),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_insert(container,...)	_cstl_insert(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_erase(container,...)	_cstl_erase(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_resize(container,...)	_cstl_resize(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_assign(container,...)	_cstl_assign(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_find(container,...)	_cstl_find(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
 #define cstl_shrink_to_fit(container) _cstl_shrink_to_fit(&(container))
 #define cstl_max_size(container) _cstl_max_size(&container)
 #define cstl_reverse(container) _cstl_reverse(&(container))
 #define cstl_count_if(container,...)	_cstl_count_if(&(container),__VA_ARGS__)
-#define cstl_lower_bound(container,...)	_cstl_lower_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_upper_bound(container,...)	_cstl_upper_bound(&(container),ARGN(__VA_ARGS__),__VA_ARGS__)
-#define cstl_max_element(C, ...) ocstl_min_max_element(&(C), 1LL, ##__VA_ARGS__, NULL)
-#define cstl_min_element(C, ...) ocstl_min_max_element(&(C), 0LL, ##__VA_ARGS__, NULL)
-#elif defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS)
+#define cstl_lower_bound(container,...)	_cstl_lower_bound(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
+#define cstl_upper_bound(container,...)	_cstl_upper_bound(&(container),ARGN(__VA_ARGS__),_CSTL_VARGS(__VA_ARGS__))
+#elif defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS) || \
+    (defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_GCC) || defined(OCSTL_CC_CLANG)))
 #define cstl_push_back(C,...) _linux_cstl_push_back(C,__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)(C,__VA_ARGS__)
 #define _linux_cstl_push_back(C,_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) _cstl_push_back ## _ ## N
 #define _cstl_push_back_0(C)    {_CSTL_TYPEOF(&C) __0=&C;_cstl_push_back( __0);}
@@ -960,6 +990,12 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define _cstl_upper_bound_8(C,argc,_1,_2,_3,_4,_5,_6,_7,_8)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(1?(_1):(_1)) __1=(_1);_CSTL_TYPEOF(1?(_2):(_2)) __2=(_2);_CSTL_TYPEOF(1?(_3):(_3)) __3=(_3);_CSTL_TYPEOF(1?(_4):(_4)) __4=(_4);_CSTL_TYPEOF(1?(_5):(_5)) __5=(_5);_CSTL_TYPEOF(1?(_6):(_6)) __6=(_6);_CSTL_TYPEOF(1?(_7):(_7)) __7=(_7);_CSTL_TYPEOF(1?(_8):(_8)) __8=(_8);_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8);}))
 #define _cstl_upper_bound_9(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(1?(_1):(_1)) __1=(_1);_CSTL_TYPEOF(1?(_2):(_2)) __2=(_2);_CSTL_TYPEOF(1?(_3):(_3)) __3=(_3);_CSTL_TYPEOF(1?(_4):(_4)) __4=(_4);_CSTL_TYPEOF(1?(_5):(_5)) __5=(_5);_CSTL_TYPEOF(1?(_6):(_6)) __6=(_6);_CSTL_TYPEOF(1?(_7):(_7)) __7=(_7);_CSTL_TYPEOF(1?(_8):(_8)) __8=(_8);_CSTL_TYPEOF(1?(_9):(_9)) __9=(_9);_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9);}))
 #define _cstl_upper_bound_10(C,argc,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)    (({_CSTL_TYPEOF(&C) __0=&C;_CSTL_TYPEOF(1?(_1):(_1)) __1=(_1);_CSTL_TYPEOF(1?(_2):(_2)) __2=(_2);_CSTL_TYPEOF(1?(_3):(_3)) __3=(_3);_CSTL_TYPEOF(1?(_4):(_4)) __4=(_4);_CSTL_TYPEOF(1?(_5):(_5)) __5=(_5);_CSTL_TYPEOF(1?(_6):(_6)) __6=(_6);_CSTL_TYPEOF(1?(_7):(_7)) __7=(_7);_CSTL_TYPEOF(1?(_8):(_8)) __8=(_8);_CSTL_TYPEOF(1?(_9):(_9)) __9=(_9);_CSTL_TYPEOF(1?(_10):(_10)) __10=(_10);_cstl_upper_bound( __0,argc,&__1,&__2,&__3,&__4,&__5,&__6,&__7,&__8,&__9,&__10);}))
+#endif
+#ifndef cstl_max_element
+#define cstl_max_element(C, ...) ocstl_min_max_element(&(C), 1LL, ##__VA_ARGS__, NULL)
+#endif
+#ifndef cstl_min_element
+#define cstl_min_element(C, ...) ocstl_min_max_element(&(C), 0LL, ##__VA_ARGS__, NULL)
 #endif
 #ifndef HG_A94B3E44530BB2645037A72BDDC08C58C0745DF063F67BDE67204EE65ED05A0C_H
 #define HG_A94B3E44530BB2645037A72BDDC08C58C0745DF063F67BDE67204EE65ED05A0C_H
@@ -2885,7 +2921,7 @@ OPENCSTL_FUNC void __cstl_deque_assign(void **container, size_type64 n, void *va
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -2922,7 +2958,7 @@ OPENCSTL_FUNC void __cstl_deque_push_back(void **container, void *value) {
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -2956,7 +2992,7 @@ OPENCSTL_FUNC void __cstl_deque_push_front(void **container, void *value) {
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -3006,7 +3042,7 @@ OPENCSTL_FUNC void __cstl_deque_insert(void **container, void *it, size_type64 n
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -3058,7 +3094,7 @@ OPENCSTL_FUNC void __cstl_deque_resize(void **container, size_type64 n, void *va
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 capacity = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-3) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -3127,7 +3163,7 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -3204,7 +3240,7 @@ OPENCSTL_FUNC size_type64 __cstl_deque_count(void **container, void *value) {
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
     char *type = (char *) *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-4) * (ptrdiff_t) sizeof(size_type64) + distance);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -3245,7 +3281,7 @@ OPENCSTL_FUNC void *__cstl_deque_lower_bound(void **container, void *value, CSTL
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -3272,7 +3308,7 @@ OPENCSTL_FUNC void *__cstl_deque_upper_bound(void **container, void *value, CSTL
     ptrdiff_t distance = OPENCSTL_NIDX(container, -1) + 1;
     size_type64 type_size = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) NIDX_TSIZE * (ptrdiff_t) sizeof(size_type64) + distance);
     size_type64 length = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-2) * (ptrdiff_t) sizeof(size_type64) + distance);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = *(_opencstl_ll_ua *) ((char *) *(void **) container + (ptrdiff_t) (-8) * (ptrdiff_t) sizeof(size_type64) + distance);
     float valuef = 0.0F;
     if (is_float) {
@@ -3392,7 +3428,7 @@ OPENCSTL_FUNC void __cstl_vector_assign(void **container, size_type64 n, void *v
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -3428,7 +3464,7 @@ OPENCSTL_FUNC void __cstl_vector_push_back(void **container, void *value) {
     size_type64 length = OPENCSTL_NIDX(container, -1);
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -3474,7 +3510,7 @@ OPENCSTL_FUNC void __cstl_vector_insert(void **container, void *iter, size_type6
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     size_type64 pos = (*(char **) iter - *(char **) container) / type_size;
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -3535,7 +3571,7 @@ OPENCSTL_FUNC void __cstl_vector_resize(void **container, size_type64 n, void *v
     size_type64 length = OPENCSTL_NIDX(container, -1);
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -3571,7 +3607,7 @@ OPENCSTL_FUNC void *__cstl_vector_find(void **container, void *iter_begin, void 
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
     size_type64 pos = (*(char **) iter_begin - *(char **) container) / type_size;
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -3662,7 +3698,7 @@ OPENCSTL_FUNC size_type64 __cstl_vector_count(void **container, void *value) {
     size_type64 length = OPENCSTL_NIDX(container, -1);
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -3707,7 +3743,7 @@ OPENCSTL_FUNC void *__cstl_vector_lower_bound(void **container, void *value, CST
     size_type64 length = OPENCSTL_NIDX(container, -1);
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -3736,7 +3772,7 @@ OPENCSTL_FUNC void *__cstl_vector_upper_bound(void **container, void *value, CST
     size_type64 length = OPENCSTL_NIDX(container, -1);
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -3805,7 +3841,7 @@ OPENCSTL_FUNC void __cstl_list_push_back_front(void **container, void *value, in
     void **tail = (void **) &OPENCSTL_NIDX(container, NTAIL(ntail));
     void **head = (void **) &OPENCSTL_NIDX(container, nhead);
     void *n = __cstl_list_node(type_size);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -3865,7 +3901,7 @@ OPENCSTL_FUNC void __cstl_list_insert(void **container, void **iter, size_type64
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     void **tail = (void **) &OPENCSTL_NIDX(container, -2);
     void **head = (void **) &OPENCSTL_NIDX(container, 0);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -3962,7 +3998,7 @@ OPENCSTL_FUNC void __cstl_list_free(void **container) {
 }
 OPENCSTL_FUNC void *__cstl_list_find(void **container, void **iter_begin, void *value) {
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -4433,7 +4469,7 @@ OPENCSTL_FUNC void __cstl_tree_insert(void **container, void *key, void *value) 
     size_type64 value_size = OPENCSTL_NIDX(container, -4);
     size_type64 type_size = key_size + value_size;
     CSTL_COMPARE compare = (CSTL_COMPARE) OPENCSTL_NIDX(container, -2);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
     size_type64 is_float_value = OPENCSTL_NIDX(container, -9);
     float keyf = 0.0F;
@@ -4575,7 +4611,7 @@ OPENCSTL_FUNC void *__cstl_tree_find(void **container, void *key) {
     size_type64 key_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 value_size = OPENCSTL_NIDX(container, -4);
     size_type64 type_size = key_size + value_size;
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
     float keyf = 0.0F;
     if (is_float_key) {
@@ -5008,7 +5044,7 @@ void __cstl_hashtable_insert(void **container, void *key, void *value) {
     size_type64 type_size = key_size + value_size;
     size_type64 cap_mask = OPENCSTL_NIDX(container, -7);
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
     size_type64 is_float_value = OPENCSTL_NIDX(container, -9);
     float kf = 0.f, vf = 0.f;
@@ -5058,7 +5094,7 @@ void __cstl_hashtable_erase(void **container, void *key) {
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     size_type64 value_size = OPENCSTL_NIDX(container, -4);
     size_type64 type_size = key_size + value_size;
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
     float kf = 0.f;
     if (is_float_key) {
@@ -5101,7 +5137,7 @@ void *__cstl_hashtable_find(void **container, void *key) {
     uint8_t *ctrl = (uint8_t *) (uintptr_t) OPENCSTL_NIDX(container, -6);
     size_type64 value_size = OPENCSTL_NIDX(container, -4);
     size_type64 type_size = key_size + value_size;
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float_key = OPENCSTL_NIDX(container, -8);
     float kf = 0.f;
     if (is_float_key) {
@@ -5379,7 +5415,7 @@ OPENCSTL_FUNC void *__cstl_array_find(void **container, void *iter_begin, void *
     size_type64 type_size = OPENCSTL_NIDX(container, NIDX_TSIZE);
     size_type64 length = OPENCSTL_NIDX(container, -1);
     size_type64 pos = (*(char **) iter_begin - *(char **) container) / type_size;
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -5432,7 +5468,7 @@ OPENCSTL_FUNC size_type64 __cstl_array_count(void **container, void *value) {
     size_type64 length = OPENCSTL_NIDX(container, -1);
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -5477,7 +5513,7 @@ OPENCSTL_FUNC void *__cstl_array_lower_bound(void **container, void *value, CSTL
     size_type64 length = OPENCSTL_NIDX(container, -1);
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -5506,7 +5542,7 @@ OPENCSTL_FUNC void *__cstl_array_upper_bound(void **container, void *value, CSTL
     size_type64 length = OPENCSTL_NIDX(container, -1);
     size_type64 capacity = OPENCSTL_NIDX(container, -2);
     char *type = (char *) OPENCSTL_NIDX(container, -4);
-#if !defined(__linux__) && !defined(__APPLE__)
+#if !CSTL_PTR_STAGING && !CSTL_MSVC_GENERIC
     size_type64 is_float = OPENCSTL_NIDX(container, -8);
     float valuef = 0.0F;
     if (is_float) {
@@ -8648,6 +8684,8 @@ static char *opencstl_env(void) {
 #else
 #define __VERSION__ "VSxxxx"
 #endif
+#elif defined(OCSTL_CC_POCC)
+#define __VERSION__ "POCC Compiler"
 #endif
 #endif
 #endif
@@ -10543,6 +10581,17 @@ _cstl_push_back(__0, &__1);}
 #define new_set             cstl_set
 #define new_map             cstl_map
 #define new_priority_queue  cstl_priority_queue
+#endif
+#if CSTL_MSVC_GENERIC
+OPENCSTL_FUNC unsigned _cstl_carry_float(int _tag, ...) {
+    va_list _ap;
+    union { float f; unsigned u; } _conv;
+    va_start(_ap, _tag);
+    _conv.u = 0;
+    _conv.f = (float) va_arg(_ap, double);
+    va_end(_ap);
+    return _conv.u;
+}
 #endif
 OPENCSTL_FUNC void _cstl_assign(void *container, int argc, ...) {
     va_list vl;
