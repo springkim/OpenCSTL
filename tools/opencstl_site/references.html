@@ -1,0 +1,1254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OpenCSTL · API Reference</title>
+<meta name="description" content="Function signature reference for every OpenCSTL container — vector, list, deque, set, map, unordered_set, unordered_map, stack, queue, priority_queue." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,30..100,0..1&family=Lora:ital,wght@0,400..600;1,400..500&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #F2ECE0;
+    --bg-elev: #FAF6EC;
+    --bg-deep: #EBE3D2;
+    --ink: #181612;
+    --ink-mute: #524A3D;
+    --ink-soft: #8B8273;
+    --line: #D6CDB9;
+    --line-soft: #E6DEC9;
+    --accent: #B73813;
+    --green: #1F4A3B;
+
+    --serif: "Fraunces", "Iowan Old Style", "Hoefler Text", Georgia, serif;
+    --body:  "Lora", Georgia, "Times New Roman", serif;
+    --mono:  "JetBrains Mono", "Menlo", "Consolas", monospace;
+
+    --page-max: 1240px;
+    --gutter: clamp(20px, 4vw, 56px);
+    --rad: 4px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(24,22,18,.06) 50%, transparent 51%),
+      radial-gradient(1px 1px at 70% 80%, rgba(24,22,18,.05) 50%, transparent 51%),
+      radial-gradient(1px 1px at 40% 90%, rgba(24,22,18,.04) 50%, transparent 51%);
+    background-size: 320px 320px, 480px 480px, 560px 560px;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  .container {
+    max-width: var(--page-max);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+  }
+
+  /* ── topbar ───────────────────────────────────────────── */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(242,236,224,.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .topbar__inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .brand {
+    display: inline-flex; align-items: baseline; gap: 10px;
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+  }
+  .brand__mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px;
+    background: var(--ink); color: var(--bg);
+    font-family: var(--mono);
+    font-size: 13px; font-weight: 700;
+    border-radius: 3px;
+    transform: translateY(3px);
+  }
+  .brand__tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    margin-left: 4px;
+  }
+  .nav {
+    display: flex; align-items: center; gap: 28px;
+    font-family: var(--mono);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+  }
+  .nav a { color: var(--ink-mute); transition: color .15s; }
+  .nav a:hover { color: var(--accent); }
+  .nav a.current { color: var(--ink); }
+  .nav__cta {
+    padding: 8px 14px;
+    background: var(--ink); color: var(--bg) !important;
+    border-radius: 3px;
+    transition: background .15s;
+  }
+  .nav__cta:hover { background: var(--accent) !important; }
+  @media (max-width: 900px) {
+    .nav { gap: 16px; }
+    .nav a:not(.nav__cta):not(.current) { display: none; }
+  }
+
+  /* ── hero ─────────────────────────────────────────────── */
+  .ref-hero {
+    padding: clamp(48px, 7vw, 88px) 0 clamp(36px, 5vw, 64px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: .18em;
+    margin-bottom: 24px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 32px; height: 1px;
+    background: var(--accent);
+  }
+  h1.headline {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-variation-settings: "opsz" 144, "SOFT" 30;
+    font-size: clamp(40px, 6vw, 76px);
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    margin: 0 0 20px;
+  }
+  h1.headline em {
+    font-style: italic;
+    font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+    color: var(--accent);
+  }
+  .ref-hero__lede {
+    font-size: clamp(17px, 1.4vw, 19px);
+    line-height: 1.6;
+    color: var(--ink-mute);
+    max-width: 62ch;
+    margin: 0 0 36px;
+  }
+  .ref-hero__lede code,
+  .ref-head__lede code,
+  .ref-table td.desc code,
+  .ref-notes__list code {
+    font-family: var(--mono);
+    font-size: .85em;
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+  .ref-hero__lede code,
+  .ref-head__lede code,
+  .ref-table td.desc code {
+    background: var(--bg-deep);
+    color: var(--ink);
+  }
+
+  .ref-toc {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .ref-toc a {
+    display: inline-flex; align-items: center;
+    padding: 8px 14px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-mute);
+    transition: border-color .15s, color .15s, background .15s;
+  }
+  .ref-toc a:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: var(--bg);
+  }
+
+  /* ── per-container section ────────────────────────────── */
+  .ref-section {
+    padding: clamp(56px, 7vw, 96px) 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .ref-section:nth-of-type(even) { background: var(--bg-elev); }
+
+  .ref-head {
+    display: flex; align-items: baseline; gap: 24px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .ref-head__num {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: .14em;
+    flex-shrink: 0;
+  }
+  .ref-head__body { flex: 1; min-width: 0; }
+  .section__label {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: .2em;
+    margin-bottom: 14px;
+  }
+  .section__label::before {
+    content: ""; width: 24px; height: 1px; background: var(--ink-soft);
+  }
+  h2.ref-title {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: clamp(28px, 3.5vw, 40px);
+    line-height: 1.05;
+    margin: 0 0 16px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  h2.ref-title .ref-tparam {
+    color: var(--accent);
+    font-weight: 400;
+  }
+  .ref-head__lede {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-mute);
+    max-width: 70ch;
+    margin: 0;
+  }
+
+  .ref-cat { margin-bottom: 28px; }
+  .ref-cat:last-child { margin-bottom: 0; }
+  .ref-cat__title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: .2em;
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--rad);
+    overflow: hidden;
+    table-layout: fixed;
+  }
+  .ref-section:nth-of-type(even) .ref-table { background: var(--bg); }
+  .ref-table td {
+    padding: 11px 18px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+    word-wrap: break-word;
+  }
+  .ref-table tr:last-child td { border-bottom: none; }
+  .ref-table td.sig {
+    font-family: var(--mono);
+    font-size: 13.5px;
+    color: var(--ink);
+    width: 52%;
+  }
+  .ref-table td.desc {
+    font-family: var(--body);
+    font-size: 15px;
+    color: var(--ink-mute);
+    line-height: 1.55;
+  }
+  @media (max-width: 720px) {
+    .ref-table { table-layout: auto; }
+    .ref-table td.sig { width: auto; }
+  }
+
+  /* ── notes ────────────────────────────────────────────── */
+  .ref-notes {
+    background: var(--ink);
+    color: var(--bg);
+    padding: clamp(48px, 6vw, 80px) 0;
+  }
+  .ref-notes h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-variation-settings: "opsz" 96, "SOFT" 30;
+    font-size: clamp(28px, 4vw, 44px);
+    line-height: 1.1;
+    margin: 0 0 28px;
+    color: var(--bg);
+  }
+  .ref-notes h2 em {
+    font-style: italic;
+    color: #E8B864;
+    font-variation-settings: "opsz" 96, "SOFT" 100, "WONK" 1;
+  }
+  .ref-notes .section__label { color: rgba(242,236,224,.55); }
+  .ref-notes .section__label::before { background: rgba(242,236,224,.45); }
+  .ref-notes__list {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; gap: 18px;
+    max-width: 80ch;
+  }
+  .ref-notes__list li {
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(242,236,224,.85);
+    padding-left: 22px;
+    position: relative;
+  }
+  .ref-notes__list li::before {
+    content: "→";
+    position: absolute;
+    left: 0; top: 0;
+    color: #E8B864;
+    font-family: var(--mono);
+  }
+  .ref-notes__list code {
+    background: rgba(232,224,204,.1);
+    color: #E8B864;
+  }
+
+  /* ── footer ───────────────────────────────────────────── */
+  footer.foot {
+    background: var(--bg-deep);
+    padding: 48px 0 32px;
+  }
+  .foot__top {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 18px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  .foot__nav {
+    display: flex; flex-wrap: wrap; gap: 24px;
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: var(--ink-mute);
+  }
+  .foot__nav a { transition: color .15s; }
+  .foot__nav a:hover { color: var(--accent); }
+  .foot__bottom {
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── topbar ──────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="container topbar__inner">
+    <a class="brand" href="index.html">
+      <span class="brand__mark">{}</span>
+      OpenCSTL
+      <span class="brand__tag">v1.0</span>
+    </a>
+    <nav class="nav">
+      <a href="index.html#why">Why</a>
+      <a href="index.html#compare">Compare</a>
+      <a href="index.html#containers">Containers</a>
+      <a href="index.html#install">Install</a>
+      <a href="references.html" class="current">References</a>
+      <a href="https://github.com/springkim/OpenCSTL" class="nav__cta" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ─── hero ────────────────────────────────────────────── -->
+<section class="ref-hero">
+  <div class="container">
+    <div class="eyebrow">OpenCSTL · API</div>
+    <h1 class="headline">API <em>Reference.</em></h1>
+    <p class="ref-hero__lede">
+      Function signatures for every OpenCSTL container. Optional parameters
+      are shown in brackets <code>[...]</code>. Comparator and hash function
+      arguments are always optional — omitting them uses the built-in
+      default for the type.
+    </p>
+    <nav class="ref-toc" aria-label="Container index">
+      <a href="#vector">vector</a>
+      <a href="#list">list</a>
+      <a href="#deque">deque</a>
+      <a href="#array">array</a>
+      <a href="#set">set</a>
+      <a href="#map">map</a>
+      <a href="#unordered_set">unordered_set</a>
+      <a href="#unordered_map">unordered_map</a>
+      <a href="#stack">stack</a>
+      <a href="#queue">queue</a>
+      <a href="#priority_queue">priority_queue</a>
+      <a href="#bitset">bitset</a>
+    </nav>
+  </div>
+</section>
+
+<!-- ─── VECTOR ──────────────────────────────────────────── -->
+<section class="ref-section" id="vector">
+  <div class="container">
+    <div class="ref-head">
+      <div class="ref-head__num">01 / 12</div>
+      <div class="ref-head__body">
+        <div class="section__label">Sequence · contiguous</div>
+        <h2 class="ref-title">VECTOR<span class="ref-tparam">&lt;type&gt;</span></h2>
+        <p class="ref-head__lede">
+          Dynamic array with contiguous storage and amortized <code>O(1)</code>
+          append. Supports <code>v[i]</code> index access — a real C array
+          subscript, not a function call.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Construction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">VECTOR(&lt;type&gt;) v = new_vector(&lt;type&gt;);</td><td class="desc">Construct an empty vector.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Iterators</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type*&gt; begin(v);</td><td class="desc">Iterator to the first element.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; end(v);</td><td class="desc">Past-the-end iterator.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; rbegin(v);</td><td class="desc">Reverse iterator to the last element.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; rend(v);</td><td class="desc">Reverse past-the-beginning iterator.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Capacity</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">size_t size(v);</td><td class="desc">Number of elements.</td></tr>
+        <tr><td class="sig">bool empty(v);</td><td class="desc"><code>true</code> if the vector contains no elements.</td></tr>
+        <tr><td class="sig">size_t capacity(v);</td><td class="desc">Allocated capacity in elements.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Element access</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">v[i]</td><td class="desc">Direct subscript access — works like a plain C array.</td></tr>
+        <tr><td class="sig">&lt;type&gt; front(v);</td><td class="desc">First element.</td></tr>
+        <tr><td class="sig">&lt;type&gt; back(v);</td><td class="desc">Last element.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Modifiers</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void push_back(v, value);</td><td class="desc">Append <code>value</code> at the end.</td></tr>
+        <tr><td class="sig">void pop_back(v);</td><td class="desc">Remove the last element.</td></tr>
+        <tr><td class="sig">void insert(v, iter, value);</td><td class="desc">Insert <code>value</code> before <code>iter</code>.</td></tr>
+        <tr><td class="sig">void insert(v, iter, N, value);</td><td class="desc">Insert <code>N</code> copies of <code>value</code> before <code>iter</code>.</td></tr>
+        <tr><td class="sig">void erase(v, iter);</td><td class="desc">Remove the element at <code>iter</code>.</td></tr>
+        <tr><td class="sig">void erase(v, iter_begin, iter_end);</td><td class="desc">Remove the range <code>[iter_begin, iter_end)</code>.</td></tr>
+        <tr><td class="sig">void resize(v, N [, value]);</td><td class="desc">Resize to <code>N</code>; fill new slots with <code>value</code> if given.</td></tr>
+        <tr><td class="sig">void assign(v, N [, value]);</td><td class="desc">Replace contents with <code>N</code> copies of <code>value</code>.</td></tr>
+        <tr><td class="sig">void clear(v);</td><td class="desc">Remove all elements.</td></tr>
+        <tr><td class="sig">void destroy(v);</td><td class="desc">Free the vector's memory.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Search</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type*&gt; find(v, value);</td><td class="desc">Linear search from <code>begin</code>; returns <code>end(v)</code> if not found.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; find(v, iter, value);</td><td class="desc">Linear search starting at <code>iter</code>.</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── LIST ────────────────────────────────────────────── -->
+<section class="ref-section" id="list">
+  <div class="container">
+    <div class="ref-head">
+      <div class="ref-head__num">02 / 12</div>
+      <div class="ref-head__body">
+        <div class="section__label">Sequence · linked</div>
+        <h2 class="ref-title">LIST<span class="ref-tparam">&lt;type&gt;</span></h2>
+        <p class="ref-head__lede">
+          Doubly linked list with <code>O(1)</code> insert/erase at any
+          iterator position. Use <code>next(it)</code> / <code>prev(it)</code>
+          to advance — never <code>it++</code>.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Construction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">LIST(&lt;type&gt;) l = new_list(&lt;type&gt;);</td><td class="desc">Construct an empty list.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Iterators</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type*&gt; begin(l);</td><td class="desc">Iterator to the first element.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; end(l);</td><td class="desc">Past-the-end iterator.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; rbegin(l);</td><td class="desc">Reverse iterator to the last element.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; rend(l);</td><td class="desc">Reverse past-the-beginning iterator.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; next(iter);</td><td class="desc">Advance one position. Use instead of <code>it++</code>.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; prev(iter);</td><td class="desc">Step back one position.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Capacity</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">size_t size(l);</td><td class="desc">Number of elements.</td></tr>
+        <tr><td class="sig">bool empty(l);</td><td class="desc"><code>true</code> if the list is empty.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Element access</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type&gt; front(l);</td><td class="desc">First element.</td></tr>
+        <tr><td class="sig">&lt;type&gt; back(l);</td><td class="desc">Last element.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Modifiers</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void push_back(l, value);</td><td class="desc">Append <code>value</code> at the end.</td></tr>
+        <tr><td class="sig">void pop_back(l);</td><td class="desc">Remove the last element.</td></tr>
+        <tr><td class="sig">void push_front(l, value);</td><td class="desc">Prepend <code>value</code> at the front.</td></tr>
+        <tr><td class="sig">void pop_front(l);</td><td class="desc">Remove the first element.</td></tr>
+        <tr><td class="sig">void insert(l, iter, value);</td><td class="desc">Insert <code>value</code> before <code>iter</code>.</td></tr>
+        <tr><td class="sig">void insert(l, iter, N, value);</td><td class="desc">Insert <code>N</code> copies of <code>value</code>.</td></tr>
+        <tr><td class="sig">void erase(l, iter);</td><td class="desc">Remove the element at <code>iter</code>.</td></tr>
+        <tr><td class="sig">void erase(l, iter_begin, iter_end);</td><td class="desc">Remove the range <code>[iter_begin, iter_end)</code>.</td></tr>
+        <tr><td class="sig">void resize(l, N [, value]);</td><td class="desc">Resize to <code>N</code>; fill new slots with <code>value</code> if given.</td></tr>
+        <tr><td class="sig">void assign(l, N [, value]);</td><td class="desc">Replace contents with <code>N</code> copies of <code>value</code>.</td></tr>
+        <tr><td class="sig">void clear(l);</td><td class="desc">Remove all elements.</td></tr>
+        <tr><td class="sig">void destroy(l);</td><td class="desc">Free the list's memory.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Search</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type*&gt; find(l, value);</td><td class="desc">Linear search from <code>begin</code>.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; find(l, iter, value);</td><td class="desc">Linear search starting at <code>iter</code>.</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DEQUE ───────────────────────────────────────────── -->
+<section class="ref-section" id="deque">
+  <div class="container">
+    <div class="ref-head">
+      <div class="ref-head__num">03 / 12</div>
+      <div class="ref-head__body">
+        <div class="section__label">Sequence · double-ended</div>
+        <h2 class="ref-title">DEQUE<span class="ref-tparam">&lt;type&gt;</span></h2>
+        <p class="ref-head__lede">
+          Double-ended queue with <code>O(1)</code> push/pop at both ends.
+          Like <code>vector</code>, supports <code>q[i]</code> subscript
+          access.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Construction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">DEQUE(&lt;type&gt;) q = new_deque(&lt;type&gt;);</td><td class="desc">Construct an empty deque.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Iterators</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type*&gt; begin(q);</td><td class="desc">Iterator to the first element.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; end(q);</td><td class="desc">Past-the-end iterator.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; rbegin(q);</td><td class="desc">Reverse iterator to the last element.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; rend(q);</td><td class="desc">Reverse past-the-beginning iterator.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Capacity</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">size_t size(q);</td><td class="desc">Number of elements.</td></tr>
+        <tr><td class="sig">bool empty(q);</td><td class="desc"><code>true</code> if the deque is empty.</td></tr>
+        <tr><td class="sig">size_t capacity(q);</td><td class="desc">Allocated capacity in elements.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Element access</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">q[i]</td><td class="desc">Direct subscript access — works like a plain C array.</td></tr>
+        <tr><td class="sig">&lt;type&gt; front(q);</td><td class="desc">First element.</td></tr>
+        <tr><td class="sig">&lt;type&gt; back(q);</td><td class="desc">Last element.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Modifiers</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void push_back(q, value);</td><td class="desc">Append <code>value</code> at the back.</td></tr>
+        <tr><td class="sig">void pop_back(q);</td><td class="desc">Remove the last element.</td></tr>
+        <tr><td class="sig">void push_front(q, value);</td><td class="desc">Prepend <code>value</code> at the front.</td></tr>
+        <tr><td class="sig">void pop_front(q);</td><td class="desc">Remove the first element.</td></tr>
+        <tr><td class="sig">void insert(q, iter, value);</td><td class="desc">Insert <code>value</code> before <code>iter</code>.</td></tr>
+        <tr><td class="sig">void insert(q, iter, N, value);</td><td class="desc">Insert <code>N</code> copies of <code>value</code>.</td></tr>
+        <tr><td class="sig">void erase(q, iter);</td><td class="desc">Remove the element at <code>iter</code>.</td></tr>
+        <tr><td class="sig">void erase(q, iter_begin, iter_end);</td><td class="desc">Remove the range <code>[iter_begin, iter_end)</code>.</td></tr>
+        <tr><td class="sig">void resize(q, N [, value]);</td><td class="desc">Resize to <code>N</code>; fill new slots with <code>value</code> if given.</td></tr>
+        <tr><td class="sig">void assign(q, N [, value]);</td><td class="desc">Replace contents with <code>N</code> copies of <code>value</code>.</td></tr>
+        <tr><td class="sig">void clear(q);</td><td class="desc">Remove all elements.</td></tr>
+        <tr><td class="sig">void destroy(q);</td><td class="desc">Free the deque's memory.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Search</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type*&gt; find(q, value);</td><td class="desc">Linear search from <code>begin</code>.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; find(q, iter, value);</td><td class="desc">Linear search starting at <code>iter</code>.</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── ARRAY ───────────────────────────────────────────── -->
+<section class="ref-section" id="array">
+  <div class="container">
+    <div class="ref-head">
+      <div class="ref-head__num">04 / 12</div>
+      <div class="ref-head__body">
+        <div class="section__label">Sequence · fixed-size</div>
+        <h2 class="ref-title">ARRAY<span class="ref-tparam">&lt;type, N&gt;</span></h2>
+        <p class="ref-head__lede">
+          Fixed-size contiguous container — the C analogue of
+          <code>std::array&lt;T, N&gt;</code>. Like <code>vector</code>,
+          supports <code>a[i]</code> subscript access, but the length is
+          locked at construction.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Construction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">ARRAY(&lt;type&gt;) a = new_array(&lt;type&gt;, N);</td><td class="desc">Construct a fixed-length array of <code>N</code> elements.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Iterators</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type*&gt; begin(a);</td><td class="desc">Iterator to the first element.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; end(a);</td><td class="desc">Past-the-end iterator.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; rbegin(a);</td><td class="desc">Reverse iterator to the last element.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; rend(a);</td><td class="desc">Reverse past-the-beginning iterator.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; next(iter);</td><td class="desc">Advance one position.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; prev(iter);</td><td class="desc">Step back one position.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Capacity</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">size_t size(a);</td><td class="desc">Number of elements (equals <code>N</code>).</td></tr>
+        <tr><td class="sig">size_t max_size(a);</td><td class="desc">Maximum size — same as <code>size</code> for a fixed array.</td></tr>
+        <tr><td class="sig">size_t capacity(a);</td><td class="desc">Allocated capacity.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Element access</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">a[i]</td><td class="desc">Direct subscript access — works like a plain C array.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Operations</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void reverse(a);</td><td class="desc">Reverse the elements in place.</td></tr>
+        <tr><td class="sig">size_t count(a, value);</td><td class="desc">Number of elements equal to <code>value</code>.</td></tr>
+        <tr><td class="sig">size_t count_if(a, predicate);</td><td class="desc">Number of elements for which <code>predicate</code> returns true.</td></tr>
+        <tr><td class="sig">void destroy(a);</td><td class="desc">Free the array's memory.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Search</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type*&gt; find(a, iter, value);</td><td class="desc">Linear search starting at <code>iter</code>.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; lower_bound(a, value, cmp);</td><td class="desc">First position where <code>value</code> could be inserted without breaking sort order.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; upper_bound(a, value, cmp);</td><td class="desc">One past the last position equal to <code>value</code> in a sorted range.</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SET ─────────────────────────────────────────────── -->
+<section class="ref-section" id="set">
+  <div class="container">
+    <div class="ref-head">
+      <div class="ref-head__num">05 / 12</div>
+      <div class="ref-head__body">
+        <div class="section__label">Associative · ordered</div>
+        <h2 class="ref-title">SET<span class="ref-tparam">&lt;type&gt;</span></h2>
+        <p class="ref-head__lede">
+          Sorted set backed by a red-black tree. <code>O(log n)</code>
+          insert, erase, and lookup. Comparator argument is optional —
+          defaults to <code>memcmp</code> over the element bytes.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Construction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">SET(&lt;type&gt;) s = new_set(&lt;type&gt; [, cmp]);</td><td class="desc">Construct an empty set. <code>cmp</code> is optional.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Iterators</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type*&gt; begin(s);</td><td class="desc">Iterator to the smallest element.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; end(s);</td><td class="desc">Past-the-end iterator.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; rbegin(s);</td><td class="desc">Reverse iterator to the largest element.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; rend(s);</td><td class="desc">Reverse past-the-beginning iterator.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; next(iter);</td><td class="desc">In-order successor. Use instead of <code>it++</code>.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; prev(iter);</td><td class="desc">In-order predecessor.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Capacity</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">size_t size(s);</td><td class="desc">Number of elements.</td></tr>
+        <tr><td class="sig">bool empty(s);</td><td class="desc"><code>true</code> if the set is empty.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Modifiers</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void insert(s, value);</td><td class="desc">Insert <code>value</code>; no-op if already present.</td></tr>
+        <tr><td class="sig">void erase(s, iter);</td><td class="desc">Remove the element at <code>iter</code>.</td></tr>
+        <tr><td class="sig">void clear(s);</td><td class="desc">Remove all elements.</td></tr>
+        <tr><td class="sig">void destroy(s);</td><td class="desc">Free the set's memory.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Search</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type*&gt; find(s, value);</td><td class="desc"><code>O(log n)</code> lookup; returns <code>end(s)</code> if not found.</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── MAP ─────────────────────────────────────────────── -->
+<section class="ref-section" id="map">
+  <div class="container">
+    <div class="ref-head">
+      <div class="ref-head__num">06 / 12</div>
+      <div class="ref-head__body">
+        <div class="section__label">Associative · ordered</div>
+        <h2 class="ref-title">MAP<span class="ref-tparam">&lt;key, value&gt;</span></h2>
+        <p class="ref-head__lede">
+          Sorted key→value map backed by a red-black tree. Iterators yield
+          key pointers; use <code>first(it)</code> and
+          <code>second(it, V)</code> to read the key and value.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Construction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">MAP(&lt;key&gt;) m = new_map(&lt;key&gt;, &lt;value&gt; [, cmp]);</td><td class="desc">Construct an empty map. <code>cmp</code> is optional.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Iterators</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;key*&gt; begin(m);</td><td class="desc">Iterator to the smallest key.</td></tr>
+        <tr><td class="sig">&lt;key*&gt; end(m);</td><td class="desc">Past-the-end iterator.</td></tr>
+        <tr><td class="sig">&lt;key*&gt; rbegin(m);</td><td class="desc">Reverse iterator to the largest key.</td></tr>
+        <tr><td class="sig">&lt;key*&gt; rend(m);</td><td class="desc">Reverse past-the-beginning iterator.</td></tr>
+        <tr><td class="sig">&lt;key*&gt; next(iter);</td><td class="desc">In-order successor.</td></tr>
+        <tr><td class="sig">&lt;key*&gt; prev(iter);</td><td class="desc">In-order predecessor.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Capacity</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">size_t size(m);</td><td class="desc">Number of entries.</td></tr>
+        <tr><td class="sig">bool empty(m);</td><td class="desc"><code>true</code> if the map is empty.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Element access</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;key&gt; first(iter);</td><td class="desc">Extract the key from an iterator.</td></tr>
+        <tr><td class="sig">&lt;value&gt; second(iter, &lt;value&gt;);</td><td class="desc">Extract the value from an iterator. Value type must be supplied.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Modifiers</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void insert(m, key, value);</td><td class="desc">Insert or assign the entry <code>key → value</code>.</td></tr>
+        <tr><td class="sig">void erase(m, iter);</td><td class="desc">Remove the entry at <code>iter</code>.</td></tr>
+        <tr><td class="sig">void clear(m);</td><td class="desc">Remove all entries.</td></tr>
+        <tr><td class="sig">void destroy(m);</td><td class="desc">Free the map's memory.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Search</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;key*&gt; find(m, key);</td><td class="desc"><code>O(log n)</code> lookup by key.</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── UNORDERED_SET ───────────────────────────────────── -->
+<section class="ref-section" id="unordered_set">
+  <div class="container">
+    <div class="ref-head">
+      <div class="ref-head__num">07 / 12</div>
+      <div class="ref-head__body">
+        <div class="section__label">Unordered associative</div>
+        <h2 class="ref-title">UNORDERED_SET<span class="ref-tparam">&lt;type&gt;</span></h2>
+        <p class="ref-head__lede">
+          Hash set with <code>O(1)</code> average insert, erase, and lookup.
+          <code>rbegin</code>/<code>rend</code> walk buckets in reverse —
+          not sorted order. Hash function argument is optional.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Construction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">UNORDERED_SET(&lt;type&gt;) h = new_unordered_set(&lt;type&gt; [, hash_fn]);</td><td class="desc">Construct an empty hash set.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Iterators</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type*&gt; begin(h);</td><td class="desc">Iterator to the first occupied bucket.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; end(h);</td><td class="desc">Past-the-end iterator.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; rbegin(h);</td><td class="desc">Reverse bucket-order iterator.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; rend(h);</td><td class="desc">Reverse past-the-beginning iterator.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; next(iter);</td><td class="desc">Advance to the next occupied bucket.</td></tr>
+        <tr><td class="sig">&lt;type*&gt; prev(iter);</td><td class="desc">Step back one occupied bucket.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Capacity</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">size_t size(h);</td><td class="desc">Number of stored elements.</td></tr>
+        <tr><td class="sig">bool empty(h);</td><td class="desc"><code>true</code> if the set is empty.</td></tr>
+        <tr><td class="sig">size_t capacity(h);</td><td class="desc">Number of buckets.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Element access</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">h[i]</td><td class="desc">Direct bucket-slot access — <code>0</code> means empty.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Modifiers</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void insert(h, value);</td><td class="desc">Insert <code>value</code>; no-op if already present.</td></tr>
+        <tr><td class="sig">void erase(h, iter);</td><td class="desc">Remove the element at <code>iter</code>.</td></tr>
+        <tr><td class="sig">void clear(h);</td><td class="desc">Remove all elements.</td></tr>
+        <tr><td class="sig">void destroy(h);</td><td class="desc">Free the set's memory.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Search</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type*&gt; find(h, value);</td><td class="desc"><code>O(1)</code> average lookup.</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── UNORDERED_MAP ───────────────────────────────────── -->
+<section class="ref-section" id="unordered_map">
+  <div class="container">
+    <div class="ref-head">
+      <div class="ref-head__num">08 / 12</div>
+      <div class="ref-head__body">
+        <div class="section__label">Unordered associative</div>
+        <h2 class="ref-title">UNORDERED_MAP<span class="ref-tparam">&lt;key, value&gt;</span></h2>
+        <p class="ref-head__lede">
+          Hashed key→value map with <code>O(1)</code> average access. Uses
+          <code>first(it)</code> and <code>second(it, V)</code> to read
+          entries, just like <code>MAP</code>.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Construction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">UNORDERED_MAP(&lt;key&gt;) m = new_unordered_map(&lt;key&gt;, &lt;value&gt; [, hash_fn]);</td><td class="desc">Construct an empty hash map.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Iterators</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;key*&gt; begin(m);</td><td class="desc">Iterator to the first occupied bucket.</td></tr>
+        <tr><td class="sig">&lt;key*&gt; end(m);</td><td class="desc">Past-the-end iterator.</td></tr>
+        <tr><td class="sig">&lt;key*&gt; rbegin(m);</td><td class="desc">Reverse bucket-order iterator.</td></tr>
+        <tr><td class="sig">&lt;key*&gt; rend(m);</td><td class="desc">Reverse past-the-beginning iterator.</td></tr>
+        <tr><td class="sig">&lt;key*&gt; next(iter);</td><td class="desc">Advance to the next occupied bucket.</td></tr>
+        <tr><td class="sig">&lt;key*&gt; prev(iter);</td><td class="desc">Step back one occupied bucket.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Capacity</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">size_t size(m);</td><td class="desc">Number of stored entries.</td></tr>
+        <tr><td class="sig">bool empty(m);</td><td class="desc"><code>true</code> if the map is empty.</td></tr>
+        <tr><td class="sig">size_t capacity(m);</td><td class="desc">Number of buckets.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Element access</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;key&gt; first(iter);</td><td class="desc">Extract the key from an iterator.</td></tr>
+        <tr><td class="sig">&lt;value&gt; second(iter, &lt;value&gt;);</td><td class="desc">Extract the value from an iterator. Value type must be supplied.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Modifiers</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void insert(m, key, value);</td><td class="desc">Insert or assign the entry <code>key → value</code>.</td></tr>
+        <tr><td class="sig">void erase(m, iter);</td><td class="desc">Remove the entry at <code>iter</code>.</td></tr>
+        <tr><td class="sig">void clear(m);</td><td class="desc">Remove all entries.</td></tr>
+        <tr><td class="sig">void destroy(m);</td><td class="desc">Free the map's memory.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Search</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;key*&gt; find(m, key);</td><td class="desc"><code>O(1)</code> average lookup by key.</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── STACK ───────────────────────────────────────────── -->
+<section class="ref-section" id="stack">
+  <div class="container">
+    <div class="ref-head">
+      <div class="ref-head__num">09 / 12</div>
+      <div class="ref-head__body">
+        <div class="section__label">Adaptor · LIFO</div>
+        <h2 class="ref-title">STACK<span class="ref-tparam">&lt;type&gt;</span></h2>
+        <p class="ref-head__lede">
+          Last-in / first-out adaptor. Exposes the canonical
+          <code>push</code> / <code>pop</code> / <code>top</code> trio.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Construction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">STACK(&lt;type&gt;) s = new_stack(&lt;type&gt;);</td><td class="desc">Construct an empty stack.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Capacity</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">size_t size(s);</td><td class="desc">Number of elements.</td></tr>
+        <tr><td class="sig">bool empty(s);</td><td class="desc"><code>true</code> if the stack is empty.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Element access</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type&gt; top(s);</td><td class="desc">Peek at the top element.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Modifiers</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void push(s, value);</td><td class="desc">Push <code>value</code> onto the top.</td></tr>
+        <tr><td class="sig">void pop(s);</td><td class="desc">Remove the top element.</td></tr>
+        <tr><td class="sig">void clear(s);</td><td class="desc">Remove all elements.</td></tr>
+        <tr><td class="sig">void destroy(s);</td><td class="desc">Free the stack's memory.</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── QUEUE ───────────────────────────────────────────── -->
+<section class="ref-section" id="queue">
+  <div class="container">
+    <div class="ref-head">
+      <div class="ref-head__num">10 / 12</div>
+      <div class="ref-head__body">
+        <div class="section__label">Adaptor · FIFO</div>
+        <h2 class="ref-title">QUEUE<span class="ref-tparam">&lt;type&gt;</span></h2>
+        <p class="ref-head__lede">
+          First-in / first-out adaptor. <code>push</code> appends at the
+          back; <code>pop</code> removes from the front.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Construction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">QUEUE(&lt;type&gt;) q = new_queue(&lt;type&gt;);</td><td class="desc">Construct an empty queue.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Capacity</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">size_t size(q);</td><td class="desc">Number of elements.</td></tr>
+        <tr><td class="sig">bool empty(q);</td><td class="desc"><code>true</code> if the queue is empty.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Element access</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type&gt; front(q);</td><td class="desc">Peek at the front element.</td></tr>
+        <tr><td class="sig">&lt;type&gt; back(q);</td><td class="desc">Peek at the back element.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Modifiers</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void push(q, value);</td><td class="desc">Enqueue <code>value</code> at the back.</td></tr>
+        <tr><td class="sig">void pop(q);</td><td class="desc">Dequeue the front element.</td></tr>
+        <tr><td class="sig">void clear(q);</td><td class="desc">Remove all elements.</td></tr>
+        <tr><td class="sig">void destroy(q);</td><td class="desc">Free the queue's memory.</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PRIORITY_QUEUE ─────────────────────────────────── -->
+<section class="ref-section" id="priority_queue">
+  <div class="container">
+    <div class="ref-head">
+      <div class="ref-head__num">11 / 12</div>
+      <div class="ref-head__body">
+        <div class="section__label">Adaptor · heap</div>
+        <h2 class="ref-title">PRIORITY_QUEUE<span class="ref-tparam">&lt;type&gt;</span></h2>
+        <p class="ref-head__lede">
+          Binary-heap adaptor. <code>push</code> and <code>pop</code> are
+          both <code>O(log n)</code>. Comparator argument is optional —
+          defaults to max-heap ordering.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Construction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">PRIORITY_QUEUE(&lt;type&gt;) pq = new_priority_queue(&lt;type&gt; [, cmp]);</td><td class="desc">Construct an empty priority queue.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Capacity</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">size_t size(pq);</td><td class="desc">Number of elements.</td></tr>
+        <tr><td class="sig">bool empty(pq);</td><td class="desc"><code>true</code> if the queue is empty.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Element access</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">&lt;type&gt; top(pq);</td><td class="desc">Peek at the highest-priority element.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Modifiers</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void push(pq, value);</td><td class="desc">Insert <code>value</code> — <code>O(log n)</code>.</td></tr>
+        <tr><td class="sig">void pop(pq);</td><td class="desc">Remove the top — <code>O(log n)</code>.</td></tr>
+        <tr><td class="sig">void clear(pq);</td><td class="desc">Remove all elements.</td></tr>
+        <tr><td class="sig">void destroy(pq);</td><td class="desc">Free the queue's memory.</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── BITSET ──────────────────────────────────────────── -->
+<section class="ref-section" id="bitset">
+  <div class="container">
+    <div class="ref-head">
+      <div class="ref-head__num">12 / 12</div>
+      <div class="ref-head__body">
+        <div class="section__label">Special · bit sequence</div>
+        <h2 class="ref-title">BITSET<span class="ref-tparam">&lt;N&gt;</span></h2>
+        <p class="ref-head__lede">
+          Fixed-size sequence of <code>N</code> bits — the C analogue of
+          <code>std::bitset&lt;N&gt;</code>. Operations are accessed through
+          the <code>bitset.</code> namespace, a struct of function pointers
+          that gives the call sites a method-like shape.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Construction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">BITSET b = new_bitset(N);</td><td class="desc">Construct a bitset of <code>N</code> bits, all zero.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Capacity</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">size_t bitset.nbits(b);</td><td class="desc">Number of bits in the set.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Bit query</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">bool bitset.test(b, idx);</td><td class="desc"><code>true</code> if bit <code>idx</code> is 1.</td></tr>
+        <tr><td class="sig">size_t bitset.count(b);</td><td class="desc">Number of bits set to 1.</td></tr>
+        <tr><td class="sig">bool bitset.all(b);</td><td class="desc"><code>true</code> if every bit is 1.</td></tr>
+        <tr><td class="sig">bool bitset.any(b);</td><td class="desc"><code>true</code> if at least one bit is 1.</td></tr>
+        <tr><td class="sig">bool bitset.none(b);</td><td class="desc"><code>true</code> if every bit is 0.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Modifiers</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void bitset.set(b);</td><td class="desc">Set every bit to 1.</td></tr>
+        <tr><td class="sig">void bitset.reset(b);</td><td class="desc">Set every bit to 0.</td></tr>
+        <tr><td class="sig">void bitset.set_at(b, idx, val);</td><td class="desc">Set bit <code>idx</code> to <code>val</code>.</td></tr>
+        <tr><td class="sig">void bitset.flip(b);</td><td class="desc">Flip every bit.</td></tr>
+        <tr><td class="sig">void bitset.flip_at(b, idx);</td><td class="desc">Flip the bit at <code>idx</code>.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Conversion</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">char* bitset.to_string(b);</td><td class="desc">Render as a string with MSB first — matches <code>std::bitset::to_string</code>.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="ref-cat">
+      <h3 class="ref-cat__title">Destruction</h3>
+      <table class="ref-table"><tbody>
+        <tr><td class="sig">void destroy(b);</td><td class="desc">Free the bitset's memory.</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── notes ───────────────────────────────────────────── -->
+<section class="ref-notes">
+  <div class="container">
+    <div class="section__label">Notes</div>
+    <h2>One handful of <em>rules</em> covers every container.</h2>
+    <ul class="ref-notes__list">
+      <li><code>float</code> is supported, but <code>typedef</code>-aliased float types are not recognized — use the <code>float</code> keyword directly.</li>
+      <li>Sequence containers (<code>VECTOR</code>, <code>DEQUE</code>) use <code>&lt;type*&gt;</code> as the handle type. Node-based containers (<code>LIST</code>, <code>SET</code>, <code>MAP</code>, <code>UNORDERED_SET</code>, <code>UNORDERED_MAP</code>) use <code>&lt;type**&gt;</code>.</li>
+      <li>For node-based containers, always use <code>next(it)</code> and <code>prev(it)</code> to advance iterators — never <code>it++</code> or <code>it--</code>.</li>
+      <li><code>UNORDERED_SET</code> and <code>UNORDERED_MAP</code> support <code>rbegin</code>, <code>rend</code>, and <code>prev</code>, but they visit elements in reverse bucket-traversal order — not reverse sorted order.</li>
+      <li>Comparator and hash function arguments are <strong>optional</strong>. Omitting them uses the built-in default for the type: <code>new_set(int)</code>, <code>new_map(int, double)</code>, <code>new_priority_queue(int)</code>, <code>new_unordered_set(int)</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─── footer ──────────────────────────────────────────── -->
+<footer class="foot">
+  <div class="container">
+    <div class="foot__top">
+      <a class="brand" href="index.html">
+        <span class="brand__mark">{}</span>
+        OpenCSTL
+      </a>
+      <nav class="foot__nav">
+        <a href="index.html">Home</a>
+        <a href="index.html#compare">Compare</a>
+        <a href="index.html#install">Install</a>
+        <a href="https://github.com/springkim/OpenCSTL" target="_blank" rel="noopener">GitHub ↗</a>
+      </nav>
+    </div>
+    <div class="foot__bottom">
+      <span>© 2026 OpenCSTL · MIT License</span>
+      <span>Built for C99 and above</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

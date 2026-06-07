@@ -1,0 +1,1565 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>OpenCSTL — C++ STL semantics, in pure C</title>
+    <meta name="description"
+          content="Single-header, C-native STL-like container library. push_back, insert, begin/end, rbegin/rend, first/second, [] — without templates, codegen, or per-type macro boilerplate."/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,30..100,0..1&family=Lora:ital,wght@0,400..600;1,400..500&family=JetBrains+Mono:wght@400..700&display=swap"
+          rel="stylesheet"/>
+    <style>
+        :root {
+            --bg: #F2ECE0;
+            --bg-elev: #FAF6EC;
+            --bg-deep: #EBE3D2;
+            --ink: #181612;
+            --ink-mute: #524A3D;
+            --ink-soft: #8B8273;
+            --line: #D6CDB9;
+            --line-soft: #E6DEC9;
+            --accent: #B73813;
+            --accent-deep: #8A2A0E;
+            --green: #1F4A3B;
+            --code-bg: #14120E;
+            --code-bg-soft: #1C1A14;
+            --code-fg: #E8E0CC;
+            --code-mute: #7A7363;
+            --code-key: #E0AA52;
+            --code-str: #A6BD74;
+            --code-fn: #E3835A;
+            --code-num: #C9A7E0;
+
+            --serif: "Fraunces", "Iowan Old Style", "Hoefler Text", Georgia, serif;
+            --body: "Lora", Georgia, "Times New Roman", serif;
+            --mono: "JetBrains Mono", "Menlo", "Consolas", monospace;
+
+            --page-max: 1240px;
+            --gutter: clamp(20px, 4vw, 56px);
+            --rad: 4px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--body);
+            font-size: 17px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            background-image: radial-gradient(1px 1px at 20% 30%, rgba(24, 22, 18, .06) 50%, transparent 51%),
+            radial-gradient(1px 1px at 70% 80%, rgba(24, 22, 18, .05) 50%, transparent 51%),
+            radial-gradient(1px 1px at 40% 90%, rgba(24, 22, 18, .04) 50%, transparent 51%);
+            background-size: 320px 320px, 480px 480px, 560px 560px;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        .container {
+            max-width: var(--page-max);
+            margin: 0 auto;
+            padding: 0 var(--gutter);
+        }
+
+        /* ── topbar ────────────────────────────────────────────── */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(242, 236, 224, .85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--line-soft);
+        }
+
+        .topbar__inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 10px;
+            font-family: var(--serif);
+            font-weight: 600;
+            font-size: 22px;
+            letter-spacing: -0.01em;
+        }
+
+        .brand__mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: var(--ink);
+            color: var(--bg);
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 3px;
+            transform: translateY(3px);
+        }
+
+        .brand__tag {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--ink-soft);
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            margin-left: 4px;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            font-family: var(--mono);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+        }
+
+        .nav a {
+            color: var(--ink-mute);
+            transition: color .15s;
+        }
+
+        .nav a:hover {
+            color: var(--accent);
+        }
+
+        .nav__cta {
+            padding: 8px 14px;
+            background: var(--ink);
+            color: var(--bg) !important;
+            border-radius: 3px;
+            transition: background .15s;
+        }
+
+        .nav__cta:hover {
+            background: var(--accent) !important;
+            color: var(--bg) !important;
+        }
+
+        @media (max-width: 780px) {
+            .nav {
+                gap: 16px;
+            }
+
+            .nav a:not(.nav__cta) {
+                display: none;
+            }
+        }
+
+        /* ── hero ──────────────────────────────────────────────── */
+        .hero {
+            padding: clamp(48px, 8vw, 96px) 0 clamp(48px, 6vw, 80px);
+            border-bottom: 1px solid var(--line-soft);
+            position: relative;
+        }
+
+        .hero__grid {
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            gap: clamp(32px, 5vw, 64px);
+            align-items: center;
+        }
+
+        @media (max-width: 960px) {
+            .hero__grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: .18em;
+            margin-bottom: 28px;
+        }
+
+        .eyebrow::before {
+            content: "";
+            width: 32px;
+            height: 1px;
+            background: var(--accent);
+        }
+
+        h1.headline {
+            font-family: var(--serif);
+            font-weight: 400;
+            font-variation-settings: "opsz" 144, "SOFT" 30;
+            font-size: clamp(44px, 7vw, 92px);
+            line-height: 0.96;
+            letter-spacing: -0.025em;
+            margin: 0 0 24px;
+        }
+
+        h1.headline em {
+            font-style: italic;
+            font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+            color: var(--accent);
+        }
+
+        .hero__lede {
+            font-size: clamp(17px, 1.6vw, 20px);
+            line-height: 1.55;
+            color: var(--ink-mute);
+            max-width: 56ch;
+            margin: 0 0 36px;
+        }
+
+        .hero__lede code {
+            font-family: var(--mono);
+            font-size: .85em;
+            background: var(--bg-deep);
+            padding: 1px 6px;
+            border-radius: 3px;
+            color: var(--ink);
+        }
+
+        .cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 22px;
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            border-radius: 3px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: transform .15s, background .15s, color .15s, border-color .15s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn--primary {
+            background: var(--ink);
+            color: var(--bg);
+        }
+
+        .btn--primary:hover {
+            background: var(--accent);
+        }
+
+        .btn--ghost {
+            background: transparent;
+            color: var(--ink);
+            border-color: var(--line);
+        }
+
+        .btn--ghost:hover {
+            border-color: var(--ink);
+        }
+
+        .btn__arrow {
+            transition: transform .2s;
+        }
+
+        .btn:hover .btn__arrow {
+            transform: translateX(3px);
+        }
+
+        /* ── code block ────────────────────────────────────────── */
+        .code {
+            font-family: var(--mono);
+            font-size: 13.5px;
+            line-height: 1.65;
+            background: var(--code-bg);
+            color: var(--code-fg);
+            border-radius: var(--rad);
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, .04) inset,
+            0 20px 50px -20px rgba(20, 18, 14, .35),
+            0 6px 16px -6px rgba(20, 18, 14, .2);
+        }
+
+        .code__bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: var(--code-bg-soft);
+            border-bottom: 1px solid rgba(232, 224, 204, .06);
+            font-size: 11px;
+            color: var(--code-mute);
+            text-transform: uppercase;
+            letter-spacing: .14em;
+        }
+
+        .code__dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .code__dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(232, 224, 204, .18);
+        }
+
+        .code pre {
+            margin: 0;
+            padding: 22px 24px;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .code pre::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .code pre::-webkit-scrollbar-thumb {
+            background: rgba(232, 224, 204, .15);
+            border-radius: 3px;
+        }
+
+        .tk-c {
+            color: var(--code-mute);
+            font-style: italic;
+        }
+
+        .tk-k {
+            color: var(--code-key);
+        }
+
+        .tk-t {
+            color: #8FB3DB;
+        }
+
+        .tk-fn {
+            color: var(--code-fn);
+        }
+
+        .tk-s {
+            color: var(--code-str);
+        }
+
+        .tk-n {
+            color: var(--code-num);
+        }
+
+        .tk-pp {
+            color: #C9A7E0;
+        }
+
+        .tk-mute {
+            color: var(--code-mute);
+        }
+
+        /* ── section frames ────────────────────────────────────── */
+        .section {
+            padding: clamp(64px, 9vw, 120px) 0;
+            border-bottom: 1px solid var(--line-soft);
+            position: relative;
+        }
+
+        .section__label {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--ink-soft);
+            text-transform: uppercase;
+            letter-spacing: .2em;
+            margin-bottom: 28px;
+        }
+
+        .section__label::before {
+            content: "";
+            width: 24px;
+            height: 1px;
+            background: var(--ink-soft);
+        }
+
+        h2 {
+            font-family: var(--serif);
+            font-weight: 400;
+            font-variation-settings: "opsz" 96, "SOFT" 30;
+            font-size: clamp(34px, 5vw, 60px);
+            line-height: 1.02;
+            letter-spacing: -0.02em;
+            margin: 0 0 24px;
+            max-width: 18ch;
+        }
+
+        h2 em {
+            font-style: italic;
+            font-variation-settings: "opsz" 96, "SOFT" 100, "WONK" 1;
+            color: var(--accent);
+        }
+
+        .section__lede {
+            font-size: clamp(17px, 1.4vw, 19px);
+            line-height: 1.6;
+            color: var(--ink-mute);
+            max-width: 62ch;
+            margin: 0 0 40px;
+        }
+
+        /* ── featured (Clay "compelling headline" slot) ────────── */
+        .featured {
+            background: var(--bg-elev);
+        }
+
+        .featured__grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: clamp(32px, 5vw, 72px);
+            align-items: center;
+        }
+
+        @media (max-width: 900px) {
+            .featured__grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .featured__quote {
+            font-family: var(--serif);
+            font-weight: 350;
+            font-variation-settings: "opsz" 96;
+            font-size: clamp(22px, 2.4vw, 30px);
+            line-height: 1.35;
+            color: var(--ink);
+            letter-spacing: -0.01em;
+            margin: 0 0 24px;
+            position: relative;
+            padding-left: 22px;
+            border-left: 2px solid var(--accent);
+        }
+
+        .featured__byline {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--ink-soft);
+            text-transform: uppercase;
+            letter-spacing: .14em;
+        }
+
+        /* ── gallery (4 cards) ─────────────────────────────────── */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 1080px) {
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 580px) {
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-elev);
+            border: 1px solid var(--line);
+            border-radius: var(--rad);
+            padding: 28px 24px 24px;
+            display: flex;
+            flex-direction: column;
+            transition: transform .2s, border-color .2s, box-shadow .2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: var(--ink);
+            box-shadow: 0 14px 30px -18px rgba(24, 22, 18, .3);
+        }
+
+        .card__num {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--ink-soft);
+            letter-spacing: .18em;
+            margin-bottom: 18px;
+        }
+
+        .card__title {
+            font-family: var(--serif);
+            font-weight: 500;
+            font-size: 22px;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+            margin: 0 0 12px;
+        }
+
+        .card__body {
+            font-size: 15px;
+            line-height: 1.55;
+            color: var(--ink-mute);
+            margin: 0 0 18px;
+            flex: 1;
+        }
+
+        .card__code {
+            font-family: var(--mono);
+            font-size: 12.5px;
+            background: var(--code-bg);
+            color: var(--code-fg);
+            padding: 14px 16px;
+            border-radius: 3px;
+            line-height: 1.55;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .card__code::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .card__code::-webkit-scrollbar-thumb {
+            background: rgba(232, 224, 204, .2);
+        }
+
+        /* ── comparison table ─────────────────────────────────── */
+        .compare {
+            background: var(--bg-elev);
+        }
+
+        .compare__wrap {
+            overflow-x: auto;
+            border: 1px solid var(--line);
+            border-radius: var(--rad);
+            background: var(--bg);
+        }
+
+        table.compare__table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--mono);
+            font-size: 14px;
+            min-width: 960px;
+        }
+        .compare__table thead th a {
+            color: inherit;
+            border-bottom: 1px dotted var(--line);
+            transition: color .15s, border-color .15s;
+        }
+        .compare__table thead th a:hover {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .compare__table th,
+        .compare__table td {
+            padding: 16px 18px;
+            text-align: left;
+            border-bottom: 1px solid var(--line-soft);
+        }
+        .compare__table thead th,
+        .compare__table tbody td {
+            text-align: center;
+        }
+
+        .compare__table thead th {
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .14em;
+            color: var(--ink-soft);
+            background: var(--bg-elev);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .compare__table th[scope="row"] {
+            font-weight: 400;
+            color: var(--ink);
+            font-family: var(--serif);
+            font-size: 16px;
+        }
+
+        .compare__table .own th[scope="row"],
+        .compare__table .own td {
+            background: rgba(183, 56, 19, .04);
+        }
+
+        .compare__table .own th[scope="row"] {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .yes, .no, .meh {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .yes {
+            background: rgba(31, 74, 59, .12);
+            color: var(--green);
+        }
+
+        .no {
+            background: rgba(183, 56, 19, .10);
+            color: var(--accent);
+        }
+
+        .meh {
+            background: rgba(139, 130, 115, .16);
+            color: var(--ink-mute);
+        }
+
+        /* ── containers grid ──────────────────────────────────── */
+        .containers {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1px;
+            background: var(--line);
+            border: 1px solid var(--line);
+            border-radius: var(--rad);
+            overflow: hidden;
+        }
+
+        @media (max-width: 980px) {
+            .containers {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 560px) {
+            .containers {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .container-cell {
+            background: var(--bg-elev);
+            padding: 24px 22px;
+            transition: background .15s;
+        }
+
+        .container-cell:hover {
+            background: var(--bg);
+        }
+
+        .container-cell__name {
+            font-family: var(--mono);
+            font-size: 15px;
+            color: var(--ink);
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .container-cell__desc {
+            font-size: 13px;
+            color: var(--ink-soft);
+            line-height: 1.4;
+        }
+
+        /* ── highlight / positioning section ───────────────────── */
+        .highlight {
+            background: var(--ink);
+            color: var(--bg);
+            border-bottom: none;
+        }
+
+        .highlight__inner {
+            display: grid;
+            grid-template-columns: 0.85fr 1.15fr;
+            gap: clamp(32px, 5vw, 64px);
+            align-items: start;
+        }
+
+        @media (max-width: 880px) {
+            .highlight__inner {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .highlight .section__label {
+            color: rgba(242, 236, 224, .55);
+        }
+
+        .highlight .section__label::before {
+            background: rgba(242, 236, 224, .45);
+        }
+
+        .highlight h2 {
+            color: var(--bg);
+        }
+
+        .highlight h2 em {
+            color: #E8B864;
+        }
+
+        .highlight__quote {
+            font-family: var(--serif);
+            font-weight: 300;
+            font-variation-settings: "opsz" 144;
+            font-size: clamp(20px, 1.9vw, 26px);
+            line-height: 1.45;
+            color: rgba(242, 236, 224, .92);
+            margin: 0 0 32px;
+            border-left: 2px solid var(--accent);
+            padding-left: 22px;
+        }
+
+        .highlight__quote--kr {
+            font-family: var(--serif);
+            font-size: clamp(17px, 1.5vw, 21px);
+            line-height: 1.55;
+            color: rgba(242, 236, 224, .75);
+            border-left-color: rgba(232, 184, 100, .6);
+        }
+
+        /* ── compiler matrix ──────────────────────────────────── */
+        .compilers {
+            background: var(--bg-elev);
+        }
+
+        .compilers__head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 32px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .compilers__head h2 {
+            margin-bottom: 0;
+        }
+
+        .compilers__stats {
+            display: flex;
+            gap: 32px;
+            font-family: var(--mono);
+        }
+
+        .compilers__stat {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .compilers__stat-num {
+            font-family: var(--serif);
+            font-size: clamp(34px, 4vw, 48px);
+            line-height: 1;
+            font-weight: 500;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+
+        .compilers__stat-label {
+            font-size: 11px;
+            color: var(--ink-soft);
+            text-transform: uppercase;
+            letter-spacing: .16em;
+        }
+
+        .compilers__wrap {
+            overflow-x: auto;
+            border: 1px solid var(--line);
+            border-radius: var(--rad);
+            background: var(--bg);
+        }
+
+        table.compilers__table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--mono);
+            font-size: 14px;
+            min-width: 560px;
+        }
+
+        .compilers__table th,
+        .compilers__table td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid var(--line-soft);
+        }
+
+        .compilers__table thead th {
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .16em;
+            color: var(--ink-soft);
+            background: var(--bg-elev);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .compilers__table thead th.os {
+            text-align: center;
+            width: 16%;
+        }
+
+        .compilers__table tbody td.os {
+            text-align: center;
+        }
+
+        .compilers__table tbody tr:last-child th,
+        .compilers__table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .compilers__table th[scope="row"] {
+            font-weight: 500;
+            color: var(--ink);
+            font-family: var(--mono);
+            font-size: 14px;
+        }
+
+        .compilers__table th[scope="row"] small {
+            display: block;
+            font-size: 11px;
+            color: var(--ink-soft);
+            font-weight: 400;
+            margin-top: 2px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .compilers__foot {
+            margin-top: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 18px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--ink-soft);
+            text-transform: uppercase;
+            letter-spacing: .14em;
+        }
+
+        .compilers__foot-legend {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── footer ───────────────────────────────────────────── */
+        footer.foot {
+            background: var(--bg-deep);
+            padding: 64px 0 32px;
+        }
+
+        .foot__grid {
+            display: grid;
+            grid-template-columns: 1.4fr repeat(4, 1fr);
+            gap: clamp(24px, 4vw, 48px);
+            margin-bottom: 48px;
+        }
+
+        @media (max-width: 880px) {
+            .foot__grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .foot__grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .foot__brand .brand {
+            margin-bottom: 14px;
+        }
+
+        .foot__about {
+            font-size: 14px;
+            line-height: 1.55;
+            color: var(--ink-mute);
+            max-width: 32ch;
+        }
+
+        .foot__col h4 {
+            font-family: var(--mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .16em;
+            color: var(--ink);
+            margin: 0 0 16px;
+        }
+
+        .foot__col ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .foot__col li {
+            font-size: 14px;
+            line-height: 2.1;
+            color: var(--ink-mute);
+        }
+
+        .foot__col a {
+            transition: color .15s;
+        }
+
+        .foot__col a:hover {
+            color: var(--accent);
+        }
+
+        .foot__bottom {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 12px;
+            padding-top: 24px;
+            border-top: 1px solid var(--line);
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--ink-soft);
+            text-transform: uppercase;
+            letter-spacing: .12em;
+        }
+
+        /* ── motion ───────────────────────────────────────────── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .anim {
+            animation: fadeUp .9s cubic-bezier(.2, .7, .2, 1) both;
+        }
+
+        .anim:nth-child(1) {
+            animation-delay: .05s;
+        }
+
+        .anim:nth-child(2) {
+            animation-delay: .15s;
+        }
+
+        .anim:nth-child(3) {
+            animation-delay: .25s;
+        }
+
+        .anim:nth-child(4) {
+            animation-delay: .35s;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- ─── topbar ───────────────────────────────────────────── -->
+<header class="topbar">
+    <div class="container topbar__inner">
+        <a class="brand" href="#">
+            <span class="brand__mark">{}</span>
+            OpenCSTL
+            <span class="brand__tag">v1.0</span>
+        </a>
+        <nav class="nav">
+            <a href="#why">Why</a>
+            <a href="#compare">Compare</a>
+            <a href="#containers">Containers</a>
+            <a href="#install">Install</a>
+            <a href="references.html">References</a>
+            <a href="https://github.com/springkim/OpenCSTL" class="nav__cta" target="_blank" rel="noopener">GitHub ↗</a>
+        </nav>
+    </div>
+</header>
+
+<!-- ─── hero ─────────────────────────────────────────────── -->
+<section class="hero">
+    <div class="container hero__grid">
+        <div>
+            <div class="eyebrow anim">Single-header · C89~C23 · MIT</div>
+            <h1 class="headline anim">
+                Write C.<br>
+                Feel <em>STL.</em>
+            </h1>
+            <p class="hero__lede anim">
+                OpenCSTL is a single-header, C-native container library that brings the
+                feel of C++ STL into pure C. <code>push_back</code>, <code>insert</code>,
+                <code>begin/end</code>, <code>rbegin/rend</code>,
+                <code>first/second</code>, even <code>[]</code> access — without
+                templates, codegen, or per-type macro rituals.
+            </p>
+            <div class="cta-row anim">
+                <a href="#install" class="btn btn--primary">
+                    Get started <span class="btn__arrow">→</span>
+                </a>
+                <a href="https://github.com/springkim/OpenCSTL" class="btn btn--ghost" target="_blank" rel="noopener">
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+
+        <div class="code anim" aria-label="OpenCSTL example">
+            <div class="code__bar">
+                <div class="code__dots"><span></span><span></span><span></span></div>
+                <span>example.c</span>
+            </div>
+            <pre><span class="tk-pp">#include</span> <span class="tk-s">"opencstl.h"</span>
+
+<span class="tk-k">int</span> <span class="tk-fn">main</span>(<span class="tk-k">void</span>) {
+    <span class="tk-t">VECTOR</span>(<span class="tk-k">int</span>) = <span class="tk-fn">new_vector</span>(<span
+                        class="tk-k">int</span>);
+
+    <span class="tk-fn">push_back</span>(v, <span class="tk-n">10</span>);
+    <span class="tk-fn">push_back</span>(v, <span class="tk-n">20</span>);
+    <span class="tk-fn">push_back</span>(v, <span class="tk-n">30</span>);
+
+    <span class="tk-c">// STL-like iterators…</span>
+    <span class="tk-k">for</span> (<span class="tk-t">int* </span>it = <span class="tk-fn">begin</span>(v); it != <span
+                        class="tk-fn">end</span>(v); it = <span class="tk-fn">next</span>(v, it))
+        <span class="tk-fn">printf</span>(<span class="tk-s">"%d\n"</span>, *it);
+
+    <span class="tk-c">// …or just index it like an array.</span>
+    <span class="tk-k">for</span> (<span class="tk-k">size_t</span> i = <span class="tk-n">0</span>; i &lt; <span
+                        class="tk-fn">size</span>(v); i++)
+        <span class="tk-fn">printf</span>(<span class="tk-s">"v[%zu] = %d\n"</span>, i, v[i]);
+}</pre>
+        </div>
+    </div>
+</section>
+
+<!-- ─── featured ───────────────────────────────────────────
+     Clay "compelling headline" slot → OpenCSTL positioning -->
+<section class="section featured" id="why">
+    <div class="container featured__grid">
+        <div>
+            <div class="section__label">The pitch</div>
+            <h2>Not just another C container <em>library.</em></h2>
+            <p class="section__lede">
+                Most C container libraries give you the data structures.
+                OpenCSTL gives you the <em>sensation</em> of writing STL — in code
+                that still compiles cleanly under C99 on tcc, NVCC, Pelles C, and
+                every mainstream compiler.
+            </p>
+            <a href="#compare" class="btn btn--ghost">See the comparison <span class="btn__arrow">→</span></a>
+        </div>
+        <div>
+            <p class="featured__quote">
+                OpenCSTL lets C programmers use containers with familiar C++ STL
+                semantics — <em>push_back</em>, <em>insert</em>,
+                <em>begin/end</em>, <em>rbegin/rend</em>, <em>first/second</em>,
+                even <em>[ ]</em> access where applicable — without templates,
+                code generation, or per-type macro boilerplate.
+            </p>
+            <div class="featured__byline">— Project positioning, README.md</div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── gallery (4 differentiators) ──────────────────────── -->
+<section class="section">
+    <div class="container">
+        <div class="section__label">What makes it different</div>
+        <h2>Four design choices, end to <em>end.</em></h2>
+        <p class="section__lede">
+            The differences with STC, M*LIB, and CC are not cosmetic. They change
+            what writing a C file <em>feels like</em>.
+        </p>
+
+        <div class="gallery">
+
+            <article class="card">
+                <div class="card__num">01 / API parity</div>
+                <h3 class="card__title">C++ STL names. Same semantics.</h3>
+                <p class="card__body">
+                    <code>push_back</code>, <code>insert</code>, <code>begin/end</code>,
+                    <code>rbegin/rend</code>, <code>next/prev</code>, <code>first/second</code>
+                    — they all mean what a C++ programmer expects them to mean.
+                </p>
+                <pre class="card__code"><span class="tk-fn" style="color:#E3835A">push_back</span>(v, <span class="tk-n"
+                                                                                                            style="color:#C9A7E0">42</span>);
+<span class="tk-fn" style="color:#E3835A">insert</span>(m, <span class="tk-n" style="color:#C9A7E0">1</span>, <span
+                            class="tk-s" style="color:#A6BD74">"one"</span>);
+<span class="tk-fn" style="color:#E3835A">rbegin</span>(m);
+it-&gt;first;</pre>
+            </article>
+
+            <article class="card">
+                <div class="card__num">02 / Distribution</div>
+                <h3 class="card__title">One header. Zero codegen.</h3>
+                <p class="card__body">
+                    Drop <code>opencstl.h</code> in. Done. No
+                    <code>#define TYPE int</code> ritual, no template instantiation
+                    file, no per-type forward declarations cluttering the top of
+                    your translation unit.
+                </p>
+                <pre class="card__code"><span class="tk-pp" style="color:#C9A7E0">#include</span> <span class="tk-s"
+                                                                                                        style="color:#A6BD74">"opencstl.h"</span>
+
+<span class="tk-c" style="color:#7A7363">// that's it.</span></pre>
+            </article>
+
+            <article class="card">
+                <div class="card__num">03 / Uniformity</div>
+                <h3 class="card__title">One function name, every container.</h3>
+                <p class="card__body">
+                    <code>push_back</code> works on <code>vector</code>, <code>list</code>,
+                    <code>deque</code>. <code>insert</code> works on every container that
+                    can take an insert. No prefix soup. No name suffixes.
+                </p>
+                <pre class="card__code"><span class="tk-fn" style="color:#E3835A">push_back</span>(vec,  x);
+<span class="tk-fn" style="color:#E3835A">push_back</span>(list, y);
+<span class="tk-fn" style="color:#E3835A">push_back</span>(deq,  z);</pre>
+            </article>
+
+            <article class="card">
+                <div class="card__num">04 / Interop</div>
+                <h3 class="card__title">Plays with <code>qsort</code> and <code>bsearch</code>.</h3>
+                <p class="card__body">
+                    <code>v[i]</code> and <code>q[i]</code> are real array accesses —
+                    <code>vector</code> and <code>deque</code> both subscript like
+                    plain C arrays. That means the C standard library still works —
+                    pass containers to <code>qsort</code>, <code>bsearch</code>,
+                    anywhere that takes a pointer and a size.
+                </p>
+                <pre class="card__code"><span class="tk-fn" style="color:#E3835A">qsort</span>(v, <span class="tk-fn"
+                                                                                                        style="color:#E3835A">size</span>(v),
+      <span class="tk-k" style="color:#E0AA52">sizeof</span>(<span class="tk-k" style="color:#E0AA52">char</span>*),
+      <span class="tk-fn" style="color:#E3835A">LESS</span>(<span class="tk-k"
+                                                                  style="color:#E0AA52">char</span>*));</pre>
+            </article>
+
+        </div>
+    </div>
+</section>
+
+<!-- ─── comparison ──────────────────────────────────────── -->
+<section class="section compare" id="compare">
+    <div class="container">
+        <div class="section__label">Library comparison</div>
+        <h2>Where OpenCSTL <em>fits</em> in the C ecosystem.</h2>
+        <p class="section__lede">
+            The C generic-container space has good libraries. OpenCSTL is the
+            only one that ticks every box on this list — and that combination
+            is what reproduces the C++ STL feel.
+        </p>
+
+        <div class="compare__wrap">
+            <table class="compare__table">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th scope="col">OpenCSTL</th>
+                    <th scope="col"><a href="https://github.com/stclib/STC" target="_blank" rel="noopener">STC</a></th>
+                    <th scope="col"><a href="https://github.com/P-p-H-d/mlib" target="_blank" rel="noopener">M*LIB</a></th>
+                    <th scope="col"><a href="https://github.com/JacksonAllan/CC" target="_blank" rel="noopener">CC</a></th>
+                    <th scope="col"><a href="https://github.com/LeoVen/C-Macro-Collections" target="_blank" rel="noopener">CMC</a></th>
+                    <th scope="col"><a href="https://github.com/srdja/Collections-C" target="_blank" rel="noopener">Collections-C</a></th>
+                    <th scope="col"><a href="https://github.com/nothings/stb" target="_blank" rel="noopener">stb_ds</a></th>
+                    <th scope="col"><a href="https://github.com/attractivechaos/klib" target="_blank" rel="noopener">klib</a></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr class="own">
+                    <th scope="row"><code>v[i]</code> / <code>q[i]</code> index access</th>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="no">✗</span></td>
+                </tr>
+                <tr class="own">
+                    <th scope="row">No forward declaration</th>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="no">✗</span></td>
+                </tr>
+                <tr class="own">
+                    <th scope="row">C99 support</th>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                </tr>
+                <tr class="own">
+                    <th scope="row">Header-only</th>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                </tr>
+                <tr class="own">
+                    <th scope="row">Single-file header</th>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="no">✗</span></td>ㅁㄱㄱ묘fkd
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="no">✗</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="no">✗</span></td>
+                </tr>
+                <tr class="own">
+                    <th scope="row">Same interface across containers</th>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="meh">~</span></td>
+                    <td><span class="meh">~</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="yes">✓</span></td>
+                    <td><span class="meh">~</span></td>
+                    <td><span class="no">✗</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ─── containers grid ─────────────────────────────────── -->
+<section class="section" id="containers">
+    <div class="container">
+        <div class="section__label">10 containers, one mental model</div>
+        <h2>Most of the STL you actually <em>reach</em> for.</h2>
+        <p class="section__lede">
+            The set leans on what C programmers use day to day — sequence,
+            associative, and hashed — plus the adaptor trio
+            (<code>stack</code>, <code>queue</code>, <code>priority_queue</code>).
+        </p>
+
+        <div class="containers">
+            <div class="container-cell">
+                <div class="container-cell__name">vector</div>
+                <div class="container-cell__desc">Dynamic array, <code>v[i]</code> access</div>
+            </div>
+            <div class="container-cell">
+                <div class="container-cell__name">deque</div>
+                <div class="container-cell__desc">Double-ended queue, <code>q[i]</code> access</div>
+            </div>
+            <div class="container-cell">
+                <div class="container-cell__name">list</div>
+                <div class="container-cell__desc">Doubly-linked list</div>
+            </div>
+            <div class="container-cell">
+                <div class="container-cell__name">set</div>
+                <div class="container-cell__desc">Ordered, balanced tree</div>
+            </div>
+            <div class="container-cell">
+                <div class="container-cell__name">map</div>
+                <div class="container-cell__desc">Ordered key → value</div>
+            </div>
+            <div class="container-cell">
+                <div class="container-cell__name">unordered_set</div>
+                <div class="container-cell__desc">Hashed, O(1) avg</div>
+            </div>
+            <div class="container-cell">
+                <div class="container-cell__name">unordered_map</div>
+                <div class="container-cell__desc">Hashed key → value</div>
+            </div>
+            <div class="container-cell">
+                <div class="container-cell__name">stack</div>
+                <div class="container-cell__desc">LIFO adaptor</div>
+            </div>
+            <div class="container-cell">
+                <div class="container-cell__name">queue</div>
+                <div class="container-cell__desc">FIFO adaptor</div>
+            </div>
+            <div class="container-cell">
+                <div class="container-cell__name">priority_queue</div>
+                <div class="container-cell__desc">Heap-based adaptor</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── highlight (testimonial slot reused) ─────────────── -->
+<section class="section highlight">
+    <div class="container highlight__inner">
+        <div>
+            <div class="section__label">The one-line pitch</div>
+            <h2>STL-like, the C <em>way.</em></h2>
+        </div>
+        <div>
+            <p class="highlight__quote">
+                OpenCSTL is not just another C container library. It is a
+                single-header, C-native STL-like library that lets C programmers
+                write containers with familiar C++ STL semantics — without
+                templates, code generation, or per-type macro boilerplate.
+            </p>
+            <p class="highlight__quote highlight__quote--kr">
+                OpenCSTL은 단순한 C 컨테이너 라이브러리가 아닙니다.
+                <code>push_back</code>, <code>insert</code>, <code>begin/end</code>,
+                <code>rbegin/rend</code>, <code>first/second</code>, <code>[ ]</code>
+                접근까지 C++ STL의 사용감을 C 코드 안에서 그대로 구현한
+                single-header C-native STL-like library입니다.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ─── install / compilers strip ───────────────────────── -->
+<section class="section" id="install" style="padding-bottom: clamp(48px, 6vw, 80px);">
+    <div class="container">
+        <div class="section__label">Install</div>
+        <h2>One file. Drop it in. <em>Compile.</em></h2>
+        <p class="section__lede">
+            No build system to configure, no submodule to wire up, no per-type
+            template instantiation file to maintain. Curl it, include it, ship.
+        </p>
+
+        <div class="code" style="max-width: 720px;">
+            <div class="code__bar">
+                <div class="code__dots"><span></span><span></span><span></span></div>
+                <span>shell</span>
+            </div>
+            <pre><span class="tk-mute">$</span> curl -LO https://raw.githubusercontent.com/springkim/OpenCSTL/refs/heads/master/opencstl.h
+<span class="tk-mute">$</span> gcc main.c -p main
+<span class="tk-mute">$</span> ./main</pre>
+        </div>
+    </div>
+</section>
+
+<section class="section compilers" id="compilers">
+    <div class="container">
+        <div class="compilers__head">
+            <div>
+                <div class="section__label">Cross-platform compatibility</div>
+                <h2>Nine compilers. Three <em>OSes.</em></h2>
+                <p class="section__lede" style="margin: 0;">
+                    From <code>MSVC 2026</code> to <code>tcc</code>, from Windows to
+                    Linux to macOS — OpenCSTL builds cleanly across the C ecosystem
+                    you actually ship in. Every C standard from
+                    <code>C89</code> through <code>C23</code> is supported, and the
+                    single header even compiles on C++ compilers.
+                </p>
+            </div>
+            <div class="compilers__stats">
+                <div class="compilers__stat">
+                    <span class="compilers__stat-num">9</span>
+                    <span class="compilers__stat-label">Compilers</span>
+                </div>
+                <div class="compilers__stat">
+                    <span class="compilers__stat-num">3</span>
+                    <span class="compilers__stat-label">Platforms</span>
+                </div>
+                <div class="compilers__stat">
+                    <span class="compilers__stat-num">C89→C23</span>
+                    <span class="compilers__stat-label">+ C++ compilers</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="compilers__wrap">
+            <table class="compilers__table">
+                <thead>
+                <tr>
+                    <th>Compiler</th>
+                    <th class="os">Windows</th>
+                    <th class="os">macOS</th>
+                    <th class="os">Linux</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th scope="row">MSVC <small>cl</small></th>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="no">✗</span></td>
+                    <td class="os"><span class="no">✗</span></td>
+                </tr>
+                <tr>
+                    <th scope="row">GNU / MinGW64 <small>gcc</small></th>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="yes">✓</span></td>
+                </tr>
+                <tr>
+                    <th scope="row">LLVM <small>clang</small></th>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="yes">✓</span></td>
+                </tr>
+                <tr>
+                    <th scope="row">Intel <small>icx-cc</small></th>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="no">✗</span></td>
+                    <td class="os"><span class="yes">✓</span></td>
+                </tr>
+                <tr>
+                    <th scope="row">Tiny C Compiler <small>tcc</small></th>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="yes">✓</span></td>
+                </tr>
+                <tr>
+                    <th scope="row">zig cc</th>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="yes">✓</span></td>
+                </tr>
+                <tr>
+                    <th scope="row">Pelles C <small>pocc</small></th>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="no">✗</span></td>
+                    <td class="os"><span class="no">✗</span></td>
+                </tr>
+                <tr>
+                    <th scope="row">NVCC <small>nvcc</small></th>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="no">✗</span></td>
+                </tr>
+                <tr>
+                    <th scope="row">C++Builder <small>bcc64x</small></th>
+                    <td class="os"><span class="yes">✓</span></td>
+                    <td class="os"><span class="no">✗</span></td>
+                    <td class="os"><span class="no">✗</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="compilers__foot">
+            <span class="compilers__foot-legend"><span class="yes">✓</span> Supported</span>
+            <span class="compilers__foot-legend"><span class="no">✗</span> Not supported</span>
+            <span style="margin-left: auto;">Standards: C89 · C99 · C11 · C17 · C23 · also builds on C++ compilers</span>
+        </div>
+    </div>
+</section>
+
+<!-- ─── footer ──────────────────────────────────────────── -->
+<footer class="foot">
+    <div class="container">
+        <div class="foot__grid">
+            <div class="foot__brand">
+                <a class="brand" href="#">
+                    <span class="brand__mark">{}</span>
+                    OpenCSTL
+                </a>
+                <p class="foot__about">
+                    A single-header C99 container library that brings C++ STL
+                    semantics into pure C — without templates or codegen.
+                </p>
+            </div>
+
+            <div class="foot__col">
+                <h4>Project</h4>
+                <ul>
+                    <li><a href="#why">Why OpenCSTL</a></li>
+                    <li><a href="#compare">Comparison</a></li>
+                    <li><a href="#install">Install</a></li>
+                    <li><a href="#">Changelog</a></li>
+                </ul>
+            </div>
+
+            <div class="foot__col">
+                <h4>Containers</h4>
+                <ul>
+                    <li><a href="#">vector · deque · list</a></li>
+                    <li><a href="#">set · map</a></li>
+                    <li><a href="#">unordered_set / _map</a></li>
+                    <li><a href="#">stack · queue · pqueue</a></li>
+                </ul>
+            </div>
+
+            <div class="foot__col">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">Examples</a></li>
+                    <li><a href="#">Benchmarks</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+
+            <div class="foot__col">
+                <h4>Community</h4>
+                <ul>
+                    <li><a href="https://github.com/springkim/OpenCSTL" target="_blank" rel="noopener">GitHub ↗</a></li>
+                    <li><a href="https://github.com/springkim/OpenCSTL/issues" target="_blank" rel="noopener">Issues</a>
+                    </li>
+                    <li><a href="https://github.com/springkim/OpenCSTL/discussions" target="_blank" rel="noopener">Discussions</a>
+                    </li>
+                    <li><a href="https://github.com/springkim/OpenCSTL/blob/master/LICENSE" target="_blank"
+                           rel="noopener">License (MIT)</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="foot__bottom">
+            <span>© 2026 OpenCSTL · MIT License</span>
+            <span>Built for C99 and above</span>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

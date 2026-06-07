@@ -19,6 +19,8 @@ def save_kv(filename: str, k: str, v: str):
 s = "OPENCSTL_VECTOR_H"
 digest = hashlib.sha256(s.encode("utf-8")).hexdigest().upper()
 
+digest = hashlib.md5(s.encode("utf-8")).hexdigest().upper()
+
 header_guard = 'HG_' + digest + '_H'
 print(header_guard)
 

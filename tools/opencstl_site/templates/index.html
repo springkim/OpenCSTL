@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenCSTL — Documentation</title>
+    <meta name="description" content="OpenCSTL: C++ STL containers, in pure C. Single-header, header-only library." />
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --color-brand-50: #f5f3ff;
+        --color-brand-100: #ede9fe;
+        --color-brand-200: #ddd6fe;
+        --color-brand-300: #c4b5fd;
+        --color-brand-400: #a78bfa;
+        --color-brand-500: #8b5cf6;
+        --color-brand-600: #7c3aed;
+        --color-brand-700: #6d28d9;
+        --color-brand-800: #5b21b6;
+        --color-brand-900: #4c1d95;
+        --color-ink: #0f0a1f;
+        --font-display: "Inter", "Segoe UI", system-ui, sans-serif;
+        --font-mono: ui-monospace, "JetBrains Mono", Consolas, monospace;
+      }
+    </style>
+    <style>
+      html, body, #root { height: 100%; }
+      body {
+        margin: 0;
+        font-family: var(--font-display);
+        background: #efeaff;
+        color: var(--color-ink);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+      * { box-sizing: border-box; }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { scrollbar-width: none; }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-violet-200 p-3 sm:p-6 lg:p-10">
+        <div class="mx-auto max-w-7xl rounded-3xl bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 shadow-2xl overflow-hidden">
+          {# Header bar #}
+          <div class="grid grid-cols-2 lg:grid-cols-3 gap-2 px-4 sm:px-6 py-3 text-white/90 text-[11px] sm:text-xs tracking-wide uppercase">
+            <div class="flex items-center gap-2">
+              <span class="opacity-70">C Library</span>
+              <span class="hidden sm:inline opacity-40">•</span>
+              <span class="hidden sm:inline opacity-70">Docs Web App</span>
+            </div>
+            <div class="hidden lg:block text-center font-medium tracking-wider">
+              OpenCSTL Documentation
+            </div>
+            <div class="text-right tabular-nums opacity-80">2026</div>
+          </div>
+
+          <div class="px-3 sm:px-5 lg:px-6 pb-3 sm:pb-5 lg:pb-6">
+            <div class="grid gap-4 lg:gap-6 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px]">
+              <div class="space-y-4">
+                {# Page title #}
+                <div class="px-4 sm:px-6 pb-4 sm:pb-6">
+                  <h1 class="text-white text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight">
+                    C/C++ Style API
+                  </h1>
+                  <p class="text-white/70 text-sm sm:text-base mt-1">
+                    Docs Web App
+                  </p>
+                </div>
+
+                {# Dashboard #}
+                <div class="bg-white rounded-2xl shadow-[0_20px_60px_-30px_rgba(20,5,60,0.4)] overflow-hidden">
+                  {# Toolbar #}
+                  <div class="flex items-center gap-3 px-4 sm:px-5 py-3 border-b border-slate-100">
+                    <div class="flex items-center gap-2 shrink-0">
+                      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-bold text-sm shadow">
+                        C
+                      </div>
+                      <span class="hidden sm:inline font-semibold text-slate-800">OpenCSTL</span>
+                    </div>
+
+                    <div class="flex-1 min-w-0 relative">
+                      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                          <circle cx="11" cy="11" r="7" />
+                          <path d="m20 20-3.5-3.5" stroke-linecap="round" />
+                        </svg>
+                      </span>
+                      <input
+                        placeholder="Search containers, functions, headers…"
+                        class="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400"
+                      />
+                    </div>
+
+                    <div class="hidden sm:flex items-center gap-2 shrink-0">
+                      <button class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 grid place-items-center text-slate-500">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                          <path d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5" stroke-linecap="round" />
+                          <path d="M9 17a3 3 0 006 0" stroke-linecap="round" />
+                        </svg>
+                      </button>
+                      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-fuchsia-500 ring-2 ring-white shadow"></div>
+                    </div>
+                  </div>
+
+                  {# Welcome row #}
+                  <div class="px-4 sm:px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xl">👋</span>
+                      <div>
+                        <div class="font-semibold text-slate-800">Welcome to OpenCSTL</div>
+                        <div class="text-xs text-slate-500">C++ STL containers, in pure C</div>
+                      </div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 ml-auto">
+                      <span class="px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-50 text-amber-700 ring-1 ring-amber-200">v2026.1</span>
+                      <span class="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">Header-only</span>
+                      <span class="px-2.5 py-1 text-[11px] font-medium rounded-md bg-sky-50 text-sky-700 ring-1 ring-sky-200">C90 → C23</span>
+                    </div>
+                  </div>
+
+                  {# Tabs #}
+                  <div class="px-4 sm:px-5 pt-3">
+                    <div class="flex gap-1 overflow-x-auto no-scrollbar" id="tabs">
+                      {% for t in tabs %}
+                      <button
+                        type="button"
+                        data-tab="{{ t }}"
+                        class="tab-btn px-3 py-1.5 text-sm rounded-lg whitespace-nowrap transition {% if loop.first %}bg-brand-600 text-white shadow{% else %}text-slate-500 hover:bg-slate-100{% endif %}"
+                      >
+                        {{ t }}
+                      </button>
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  {# Container cards #}
+                  <div class="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for c in containers %}
+                    <div class="rounded-xl bg-slate-50 ring-1 ring-slate-200 p-3 hover:shadow-md transition">
+                      <div class="relative rounded-lg overflow-hidden bg-slate-900 text-slate-100 p-3 font-mono text-[11px] leading-relaxed h-32">
+                        <pre class="whitespace-pre-wrap break-words">{{ c.snippet }}</pre>
+                        <span class="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-bold ring-1 {{ tone_bg[c.tone] }}">
+                          {{ c.tag }}
+                        </span>
+                      </div>
+                      <div class="mt-3 flex items-center justify-between">
+                        <div>
+                          <div class="font-semibold text-slate-800 text-sm">{{ c.name }}(T)</div>
+                          <div class="text-xs text-slate-500 line-clamp-1">{{ c.desc }}</div>
+                        </div>
+                      </div>
+                      <div class="mt-2 text-[11px] tabular-nums text-slate-400 font-mono">
+                        {{ c.stamp }}
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+
+                  {# Quick Reference #}
+                  <div class="border-t border-slate-100 px-4 sm:px-5 py-4">
+                    <div class="flex items-center gap-2 mb-3">
+                      <span class="w-6 h-6 rounded-md bg-slate-900 text-white grid place-items-center text-[10px] font-bold">⚡</span>
+                      <h3 class="font-semibold text-slate-800">Quick Reference</h3>
+                      <span class="ml-auto text-xs text-slate-400 hidden sm:inline">Common operations across containers</span>
+                    </div>
+                    <div class="space-y-2">
+                      {% for row in quick_ref %}
+                      <div class="grid grid-cols-12 items-center gap-2 px-3 py-2 rounded-lg bg-slate-50 ring-1 ring-slate-100">
+                        <div class="col-span-12 sm:col-span-5 flex items-center gap-2">
+                          <span class="w-1.5 h-1.5 rounded-full bg-brand-500"></span>
+                          <code class="text-xs sm:text-sm font-mono text-slate-800">{{ row.name }}()</code>
+                        </div>
+                        <div class="col-span-7 sm:col-span-4 text-xs text-slate-500 truncate">{{ row.container }}</div>
+                        <div class="col-span-5 sm:col-span-3 flex items-center justify-end gap-1.5">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold ring-1 {{ tone_bg[row.tone] }}">
+                            {{ row.big }}
+                          </span>
+                          <span class="hidden md:inline text-[10px] text-slate-400">{{ row.small }}</span>
+                        </div>
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <aside class="lg:pt-2">
+                <div class="space-y-4">
+                  {# AutoLayoutCard #}
+                  <div class="rounded-2xl p-5 text-white bg-gradient-to-br from-brand-500 via-brand-600 to-brand-800 shadow-[0_20px_50px_-25px_rgba(80,30,200,0.7)]">
+                    <div class="text-xs uppercase tracking-widest opacity-80">Built with</div>
+                    <div class="text-2xl font-semibold mt-1 leading-tight">
+                      Pure C,<br />Single Header
+                    </div>
+                    <div class="mt-4 rounded-lg bg-white/10 backdrop-blur p-3 font-mono text-[11px] leading-relaxed">
+                      <span class="opacity-70">#include</span>
+                      <span class="text-amber-200">"opencstl.h"</span>
+                      <br />
+                      <span class="opacity-70">// 10 containers, one file</span>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between">
+                      <button class="px-3 py-1.5 rounded-md bg-white text-brand-700 text-xs font-semibold hover:bg-brand-50">
+                        Get started →
+                      </button>
+                      <div class="flex -space-x-1.5">
+                        <span class="w-6 h-6 rounded-full bg-amber-300 ring-2 ring-brand-600"></span>
+                        <span class="w-6 h-6 rounded-full bg-emerald-300 ring-2 ring-brand-600"></span>
+                        <span class="w-6 h-6 rounded-full bg-rose-300 ring-2 ring-brand-600"></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {# ProfileCard #}
+                  <div class="rounded-2xl bg-white p-4 shadow-[0_20px_50px_-30px_rgba(20,5,60,0.4)]">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-full bg-gradient-to-br from-brand-400 to-fuchsia-500 grid place-items-center text-white font-bold shadow">
+                        KB
+                      </div>
+                      <div>
+                        <div class="font-semibold text-slate-800 text-sm">Kim Bomm</div>
+                        <div class="text-xs text-slate-500">Author · Maintainer</div>
+                      </div>
+                      <button class="ml-auto text-xs px-2.5 py-1 rounded-md bg-brand-50 text-brand-700 font-semibold ring-1 ring-brand-200">
+                        ★ Star
+                      </button>
+                    </div>
+                    <div class="mt-4 grid grid-cols-3 text-center divide-x divide-slate-100">
+                      <div>
+                        <div class="text-lg font-bold text-slate-800">10</div>
+                        <div class="text-[10px] uppercase text-slate-400 tracking-wide">Containers</div>
+                      </div>
+                      <div>
+                        <div class="text-lg font-bold text-slate-800">9</div>
+                        <div class="text-[10px] uppercase text-slate-400 tracking-wide">Compilers</div>
+                      </div>
+                      <div>
+                        <div class="text-lg font-bold text-slate-800">3</div>
+                        <div class="text-[10px] uppercase text-slate-400 tracking-wide">OSes</div>
+                      </div>
+                    </div>
+                    <div class="mt-4">
+                      <div class="flex items-center justify-between text-[11px] text-slate-500 mb-1">
+                        <span>Coverage</span>
+                        <span class="font-semibold text-slate-700">92%</span>
+                      </div>
+                      <div class="h-2 rounded-full bg-slate-100 overflow-hidden">
+                        <div class="h-full w-[92%] bg-gradient-to-r from-brand-400 to-brand-600"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {# ComponentsCard #}
+                  <div class="rounded-2xl p-5 text-white bg-gradient-to-br from-rose-500 via-rose-600 to-rose-700 shadow-[0_20px_50px_-25px_rgba(200,30,80,0.6)]">
+                    <div class="text-4xl font-bold leading-none">10+</div>
+                    <div class="mt-2 text-lg font-semibold">Containers</div>
+                    <div class="text-xs opacity-80">implemented end-to-end</div>
+                    <div class="mt-4 flex flex-wrap gap-1.5">
+                      {% for x in components %}
+                      <span class="text-[10px] px-2 py-0.5 rounded bg-white/15 backdrop-blur">{{ x }}</span>
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  {# CompilerCards #}
+                  <div class="grid grid-cols-2 gap-3">
+                    {% for cc in compilers %}
+                    <div class="rounded-xl bg-white p-3 shadow-[0_15px_40px_-25px_rgba(20,5,60,0.35)]">
+                      <div class="flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-md {{ cc.color }} grid place-items-center text-white text-[10px] font-bold">
+                          {{ cc.name[:2] }}
+                        </span>
+                        <div>
+                          <div class="text-sm font-semibold text-slate-800">{{ cc.name }}</div>
+                          <div class="text-[10px] text-slate-400">Verified</div>
+                        </div>
+                      </div>
+                      <div class="mt-2 flex gap-1">
+                        {% for p in platforms %}
+                        <span class="flex-1 text-center text-[9px] py-0.5 rounded {% if p in cc.supports %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-400{% endif %}">
+                          {{ p }}
+                        </span>
+                        {% endfor %}
+                      </div>
+                      <div class="mt-2 text-[10px] font-mono tabular-nums text-slate-400">11:03:09:52</div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+
+          <footer class="px-4 sm:px-6 py-3 text-[11px] text-white/60 flex items-center justify-between border-t border-white/10">
+            <span>© 2018–2026 Kim Bomm · OpenCSTL License</span>
+            <span class="font-mono tabular-nums">11:03:09:52</span>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const buttons = document.querySelectorAll('.tab-btn');
+        const ACTIVE = ['bg-brand-600', 'text-white', 'shadow'];
+        const INACTIVE = ['text-slate-500', 'hover:bg-slate-100'];
+        buttons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            buttons.forEach((b) => {
+              ACTIVE.forEach((c) => b.classList.remove(c));
+              INACTIVE.forEach((c) => b.classList.add(c));
+            });
+            INACTIVE.forEach((c) => btn.classList.remove(c));
+            ACTIVE.forEach((c) => btn.classList.add(c));
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

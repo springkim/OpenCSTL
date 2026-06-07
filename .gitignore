@@ -358,3 +358,4 @@ helper/
 cmake-build/
 .DS_Store
 usage/
+test_build/

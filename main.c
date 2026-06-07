@@ -683,6 +683,7 @@ void test05(void) {
 
 
 int main() {
+    double t_beg = ttime();
     // cstl_set_test01();
     // return 0;
     // VECTOR(int) vec = new_vector(int);
@@ -729,5 +730,8 @@ int main() {
     logging.warning(opencstl_env());
     logging.warning(opencstl_version());
     logging.warning(__VERSION__);
+
+    double t_end = ttime();
+    printf("duration : %f ms\n", t_end - t_beg);
     return 0;
 }

@@ -57,7 +57,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../types.h"
+#include "types.h"
 
 #define IPN_INSERTION_SORT_THRESHOLD    20
 #define IPN_SMALL_SORT_THRESHOLD        20
