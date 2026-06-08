@@ -539,6 +539,8 @@ OPENCSTL_FUNC size_type _cstl_size(void *container) {
             sz = __cstl_tree_size((void **) container);
         }
         break;
+        case OPENCSTL_STACK:
+        case OPENCSTL_QUEUE:
         case OPENCSTL_DEQUE: {
             sz = __cstl_deque_size((void **) container);
         }

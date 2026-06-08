@@ -135,7 +135,13 @@ foreach (_t IN ITEMS
         test_map
         test_unordered_set
         test_unordered_map
-        test_bitset)
+        test_bitset
+        test_csv
+        test_json
+        test_sort
+        test_stack
+        test_queue
+        test_str)
     add_executable(${_t}
             tests/${_t}.c
             tests/unity/unity.c)
