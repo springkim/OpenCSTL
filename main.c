@@ -722,7 +722,7 @@ int main() {
     //MsgBoxGUI("Test GUI Message");
 
     int cnt = cpu_count();
-    printf("cnt: %d\n", cnt);
+    printf("cpu count: %d\n", cnt);
 
     test05();
 

@@ -408,15 +408,15 @@ OPENCSTL_FUNC void __cstl_list_swap_data(void *a, void *b, size_type64 n) {
 }
 
 OPENCSTL_FUNC void *__cstl_list_mid_node(void *low, void *high) {
-    void *slow = low;
-    void *fast = low;
-    while (fast != high) {
-        fast = (void *) OPENCSTL_NIDX(&fast, -1);
-        if (fast == high) { break; }
-        fast = (void *) OPENCSTL_NIDX(&fast, -1);
-        slow = (void *) OPENCSTL_NIDX(&slow, -1);
+    void *turtle = low;
+    void *rabbit = low;
+    while (rabbit != high) {
+        rabbit = (void *) OPENCSTL_NIDX(&rabbit, -1);
+        if (rabbit == high) { break; }
+        rabbit = (void *) OPENCSTL_NIDX(&rabbit, -1);
+        turtle = (void *) OPENCSTL_NIDX(&turtle, -1);
     }
-    return slow;
+    return turtle;
 }
 
 OPENCSTL_FUNC void __cstl_list_median_of_three(void *low, void *high, size_type64 type_size,
