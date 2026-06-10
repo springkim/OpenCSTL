@@ -26,7 +26,7 @@ jobs:
           - compiler: { name: tcc, cc: tcc, pkg: tcc }
             std: c17
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install ${{ matrix.compiler.name }}
         run: |
           sudo apt-get update
@@ -53,7 +53,7 @@ jobs:
           - { name: gcc-14,      cc: gcc-14, install: "brew install gcc@14" }
         std: [c99, c11, c17]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install ${{ matrix.compiler.name }}
         run: ${{ matrix.compiler.install }}
         if: matrix.compiler.install != ''
@@ -78,12 +78,12 @@ jobs:
           - { name: clang-cl, generator: "Visual Studio 17 2022", arch: x64, toolset: "ClangCL" }
           - { name: mingw,    generator: "MinGW Makefiles" }
     steps:
-      - uses: actions/checkout@v4
-      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: actions/checkout@v6
+      - uses: ilammy/msvc-dev-cmd@v1.13.0
         if: matrix.toolchain.name == 'msvc' || matrix.toolchain.name == 'clang-cl'
       - name: Setup MinGW
         if: matrix.toolchain.name == 'mingw'
-        uses: msys2/setup-msys2@v2
+        uses: msys2/setup-msys2@v2.31.1
         with:
           msystem: MINGW64
           install: mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake
@@ -112,8 +112,8 @@ jobs:
         std: [c99, c11, c17]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: mlugg/setup-zig@v1
+      - uses: actions/checkout@v6
+      - uses: mlugg/setup-zig@v2
         with:
           version: 0.13.0
       - name: Build with zig cc
@@ -133,8 +133,8 @@ jobs:
   nvcc:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: Jimver/cuda-toolkit@v0.2.16
+      - uses: actions/checkout@v6
+      - uses: Jimver/cuda-toolkit@v0.2.35
         with:
           cuda: '12.4.0'
           method: 'network'
