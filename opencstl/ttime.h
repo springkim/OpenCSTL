@@ -41,15 +41,21 @@
 #include "crossplatform.h"
 #include <stdio.h>
 
+#if defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_TCC) || \
+    defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_POCC) || defined(OCSTL_CC_NVCC))
 
-#if defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_TCC) ||defined(OCSTL_CC_CLANG) || defined(OCSTL_CC_POCC) || defined(OCSTL_CC_NVCC))
-
-#if defined(OCSTL_CC_TCC) || defined(OCSTL_CC_POCC) || defined(OCSTL_CC_NVCC) || defined(OCSTL_CC_CLANG)
-#include <windows.h>
-#else
+#if defined(OCSTL_CC_MSVC)
 #include <winnt.h>
 #include <profileapi.h>
+#include <synchapi.h>
+#else
+#include <windows.h>
 #endif
+
+
+static void tsleep(double ms) {
+    Sleep((DWORD)(ms + 0.5));
+}
 static double ttime(void) {
     LARGE_INTEGER freq, counter;
     QueryPerformanceFrequency(&freq);
@@ -57,10 +63,19 @@ static double ttime(void) {
     return (double) counter.QuadPart * 1000.0 / (double) freq.QuadPart;
 }
 
-#elif defined(__MINGW32__) || defined(__MINGW64__) || defined(__GNUC__) || defined(__TINYC__)
+#else  /* MinGW / GCC / TinyC / 기타 POSIX */
 
 #include <sys/time.h>
 #include <time.h>
+#include <errno.h>
+
+static void tsleep(double ms) {
+    struct timespec req, rem;
+    req.tv_sec = (time_t) (ms / 1000.0);
+    req.tv_nsec = (long) ((ms - (double) req.tv_sec * 1000.0) * 1000000.0);
+    while (nanosleep(&req, &rem) == -1 && errno == EINTR)
+        req = rem; /* 남은 시간만큼 다시 대기 */
+}
 
 static double ttime(void) {
     struct timeval tv;
@@ -68,17 +83,28 @@ static double ttime(void) {
     return (double) tv.tv_sec * 1000.0 + (double) tv.tv_usec / 1000.0;
 }
 
-#else
-//#error Unsupported compiler/platform
-#include <sys/time.h>
-#include <time.h>
-
-static double ttime(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (double) tv.tv_sec * 1000.0 + (double) tv.tv_usec / 1000.0;
-}
 #endif
 
+
+// ░█████╗░██╗░░██╗██████╗░░█████╗░███╗░░██╗░█████╗░
+// ██╔══██╗██║░░██║██╔══██╗██╔══██╗████╗░██║██╔══██╗
+// ██║░░╚═╝███████║██████╔╝██║░░██║██╔██╗██║██║░░██║
+// ██║░░██╗██╔══██║██╔══██╗██║░░██║██║╚████║██║░░██║
+// ╚█████╔╝██║░░██║██║░░██║╚█████╔╝██║░╚███║╚█████╔╝
+// ░╚════╝░╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚══╝░╚════╝░
+
+typedef double (*ttime_func)(void);
+
+typedef void (*sleep_func)(double);
+
+typedef struct CHRONO {
+    ttime_func now;
+    sleep_func sleep;
+} CHRONO;
+
+static CHRONO chrono = {
+    ttime,
+    tsleep,
+};
 
 #endif

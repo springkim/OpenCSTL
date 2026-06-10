@@ -143,6 +143,12 @@ int main() {
 | [`QUEUE`](__queue.md) | Adaptor | `T*` | ❌ | — |
 | [`PRIORITY_QUEUE`](__priority_queue.md) | Adaptor | `T*` | ❌ | — |
 
+## Utilities
+
+| Utility | Description |
+|---------|-------------|
+| [`ttime` / `chrono.now`](./ttime.md) | Timer API that returns `double` values in milliseconds (ms). |
+
 ## Notes
 
 - `float` is supported on MSVC, but `typedef`-aliased float types are not recognized. Use the `float` keyword directly.

@@ -1,10 +1,10 @@
+import json
 from enum import Enum
 import platform
-import argparse
 
 
 # https://fsymbols.com/generators/
-def getOS():
+def get_os():
     OS = None
     match platform.system():
         case 'Windows':
@@ -15,52 +15,54 @@ def getOS():
             OS = 'Linux'
         case _:
             raise Exception('Unsupported OS')
-    print(f'Detected OS: {OS}')
     return OS
 
 
-OS = getOS()
-if OS == 'Windows':
-    class Color(Enum):
-        Black = 'Black'
-        DarkBlue = 'DarkBlue'
-        DarkGreen = 'DarkGreen'
-        DarkCyan = 'DarkCyan'
-        DarkRed = 'DarkRed'
-        DarkMagenta = 'DarkMagenta'
-        DarkYellow = 'DarkYellow'
-        Gray = 'Gray'
-        DarkGray = 'DarkGray'
-        Blue = 'Blue'
-        Green = 'Green'
-        Cyan = 'Cyan'
-        Red = 'Red'
-        Magenta = 'Magenta'
-        Yellow = 'Yellow'
-        White = 'White'
-if OS == 'macOS':
-    class Color(Enum):
-        Black = "'\\033[30m'"
-        Red = "'\\033[31m'"
-        Green = "'\\033[32m'"
-        Yellow = "'\\033[33m'"
-        Blue = "'\\033[34m'"
-        Magenta = "'\\033[35m'"
-        Cyan = "'\\033[36m'"
-        White = "'\\033[37m'"
-        Reset = "'\\033[0m'"
-        NC = "'\\033[0m'"
-if OS == "Linux":
-    class Color(Enum):
-        Black = "\033[30m"
-        Red = "\033[31m"
-        Green = "\033[32m"
-        Yellow = "\033[33m"
-        Blue = "\033[34m"
-        Magenta = "\033[35m"
-        Cyan = "\033[36m"
-        White = "\033[37m"
-        NC = "\033[0m"
+OS = get_os()
+match OS:
+    case 'Windows':
+        class Color(Enum):
+            Black = 'Black'
+            DarkBlue = 'DarkBlue'
+            DarkGreen = 'DarkGreen'
+            DarkCyan = 'DarkCyan'
+            DarkRed = 'DarkRed'
+            DarkMagenta = 'DarkMagenta'
+            DarkYellow = 'DarkYellow'
+            Gray = 'Gray'
+            DarkGray = 'DarkGray'
+            Blue = 'Blue'
+            Green = 'Green'
+            Cyan = 'Cyan'
+            Red = 'Red'
+            Magenta = 'Magenta'
+            Yellow = 'Yellow'
+            White = 'White'
+    case 'macOS':
+        class Color(Enum):
+            Black = "'\\033[30m'"
+            Red = "'\\033[31m'"
+            Green = "'\\033[32m'"
+            Yellow = "'\\033[33m'"
+            Blue = "'\\033[34m'"
+            Magenta = "'\\033[35m'"
+            Cyan = "'\\033[36m'"
+            White = "'\\033[37m'"
+            Reset = "'\\033[0m'"
+            NC = "'\\033[0m'"
+    case 'Linux':
+        class Color(Enum):
+            Black = "\033[30m"
+            Red = "\033[31m"
+            Green = "\033[32m"
+            Yellow = "\033[33m"
+            Blue = "\033[34m"
+            Magenta = "\033[35m"
+            Cyan = "\033[36m"
+            White = "\033[37m"
+            NC = "\033[0m"
+    case _:
+        raise Exception('Unsupported OS')
 messages = {
     "A": [
         "░█████╗░",
@@ -497,7 +499,7 @@ messages = {
 }
 
 
-def check_text(text):
+def check_text(s: str):
     allowed_chars = """
     ABCDEFGHIJKLMN
     OPQRSTUVWXYZ
@@ -506,7 +508,7 @@ def check_text(text):
     _
     """.strip().replace("\n", "")
 
-    text_upper = text.upper()
+    text_upper = s.upper()
 
     for c in text_upper:
         if c not in allowed_chars:
@@ -514,62 +516,54 @@ def check_text(text):
     return text_upper
 
 
-def main():
-    parser = argparse.ArgumentParser(description='Write a message to the console')
-    parser.add_argument('-c', '--comment', default=None,
-                        choices=['c', 'python'],
-                        help='Write message as a comment')
-    args = parser.parse_args()
-    COMMENT = None
-    if args.comment == 'python':
-        COMMENT = '#'
-    elif args.comment == 'c':
-        COMMENT = '//'
+text = input("Enter text: ")
+comment = ''
+if text[0] == '-':
+    OS = 'Comment'
+    text = text[1:]
+    comment_type = input("Enter Language: ")
+    if comment_type in ['c', 'c++', 'C', 'C++']:
+        comment = '// '
+    elif comment_type in ['py', 'python', 'pl', 'perl']:
+        comment = '# '
     else:
-        COMMENT = None
+        raise ("unknown comment")
+color: str = Color.Cyan.value
 
-    text = input("Enter text: ")
+text = check_text(text)
+chars = []
+for c in text:
+    message = messages[c]
+    chars.append(message)
 
-    text = check_text(text)
-    chars = []
-    for c in text:
-        message = messages[c]
-        chars.append(message)
+cmds = []
+command = 'powershell -Command "'
+for i in range(6):
+    line = ''
+    for char in chars:
+        line += char[i]
+    if OS == 'macOS':
+        cmd = f"echo {color}{line}{Color.NC.value}"
+        cmds.append(cmd)
+    elif OS == 'Windows':
+        cmd = f"Write-Host '{line}' -ForegroundColor {color};"
+        command += cmd
+    elif OS == 'Linux':
+        cmd = f'echo -e {color}{line}{Color.NC.value}'
+        cmds.append(cmd)
+    elif OS == 'Comment':
+        cmd = comment + line
+        cmds.append(cmd)
+command += '"'
+if OS != "Windows":
+    command = "\n".join(cmds)
 
-    cmds = []
-    command = 'powershell -Command "'
-    for i in range(6):
-        line = ''
-        for char in chars:
-            line += char[i]
-        if COMMENT == '#':
-            cmd = f'{COMMENT} {line}'
-            cmds.append(cmd)
-        elif COMMENT == '//':
-            cmd = f'{COMMENT} {line}'
-            cmds.append(cmd)
-        elif OS == 'macOS':
-            cmd = f"echo {Color.Cyan.value}{line}{Color.NC.value}"
-            cmds.append(cmd)
-        elif OS == "Linux":
-            cmd = f"echo -e {Color.Cyan.value}{line}{Color.NC.value}"
-            cmds.append(cmd)
-        elif OS == 'Windows':
-            cmd = f"Write-Host '{line}' -ForegroundColor {Color.Cyan.value};"
-            command += cmd
-    command += '"'
-    if OS != "Windows":
-        command = "\n".join(cmds)
+print(command)
 
-    print(command)
-    try:
-        import pyperclip
+try:
+    import pyperclip
 
-        pyperclip.copy(command)
-        print("Copied to clipboard")
-    except ImportError as e:
-        pass
-
-
-if __name__ == '__main__':
-    main()
+    pyperclip.copy(command)
+    print("Copied to clipboard!")
+except ImportError as e:
+    pass

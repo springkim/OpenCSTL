@@ -23,6 +23,11 @@
 
 * mt19937
 
+# Time
+
+* ttime
+* chrono.now
+
 # Logging
 
 * logging
