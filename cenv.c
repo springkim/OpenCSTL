@@ -173,11 +173,7 @@ int main() {
     puts(OCSTL_CC_STR);
     puts(OCSTL_C_VERSION_STR);
     puts(OCSTL_OPTIMIZED_STR);
-    if (sizeof(void *) == 4) {
-        puts("32bit");
-    } else {
-        puts("64bit");
-    }
+    puts((sizeof(void*)==4)?"32bit": "64bit");
     puts(LANGUAGE);
 }
 #endif
