@@ -100,7 +100,9 @@ static char *__cstl_join(char *path1, char *path2) {
         return ret;
     }
     bool need_sep = !__cstl_is_sep(path1[l1 - 1]);
-    size_type64 total = l1 + (need_sep ? 1 : 0) + l2;
+    size_type64 sep = need_sep ? 1 : 0;
+    if (l1 > (size_type64)-1 - sep - l2 - 1) { return NULL; }
+    size_type64 total = l1 + sep + l2;
     char *ret = (char *) malloc(total + 1);
     memcpy(ret, path1, l1);
     size_type64 pos = l1;
