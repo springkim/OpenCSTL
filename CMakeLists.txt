@@ -126,6 +126,14 @@ endif ()
 # ------------------------------------------------------------------
 enable_testing()
 
+# tcc does not implement the __builtin_isnan/__builtin_isinf intrinsics that
+# glibc's isnan/isinf macros expand to, so Unity's float assertions fail to
+# link. Provide those builtins as plain functions for tcc builds.
+set(OPENCSTL_TEST_EXTRA_SOURCES "")
+if (CMAKE_C_COMPILER MATCHES "tcc")
+    set(OPENCSTL_TEST_EXTRA_SOURCES ${CMAKE_SOURCE_DIR}/tests/tcc_builtins.c)
+endif ()
+
 foreach (_t IN ITEMS
         test_deque_algorithm
         test_array
@@ -144,7 +152,8 @@ foreach (_t IN ITEMS
         test_str)
     add_executable(${_t}
             tests/${_t}.c
-            tests/unity/unity.c)
+            tests/unity/unity.c
+            ${OPENCSTL_TEST_EXTRA_SOURCES})
     target_include_directories(${_t} PRIVATE ${CMAKE_SOURCE_DIR} tests/unity)
     target_compile_definitions(${_t} PRIVATE UNITY_INCLUDE_DOUBLE)
     if (MSVC)
